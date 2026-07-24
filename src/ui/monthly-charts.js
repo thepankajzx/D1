@@ -2,14 +2,14 @@ import { auth } from "../auth.js";
 import { getRecordsByDateRange } from "../db.js";
 
 const habits = [
-    { id: "wakeScore", label: "Wake Up (Time)", type: "time" },
-    { id: "sleepScore", label: "Sleep (Time)", type: "sleepTime" },
-    { id: "studyScore", label: "Govt Study (Hrs)", type: "duration" },
-    { id: "workoutScore", label: "Workout (Hrs)", type: "duration" },
-    { id: "musicScore", label: "Music+Phone (Hrs)", type: "duration" },
-    { id: "pornScore", label: "Porn (Score)", max: 20, type: "score" },
-    { id: "masturbationScore", label: "Masturbation (Score)", max: 10, type: "score" },
-    { id: "overallScore", label: "Overall Score (%)", max: 100, type: "score" }
+    { id: "wakeScore", inputKey: "wake", label: "Wake Up", max: 15, type: "time" },
+    { id: "sleepScore", inputKey: "sleep", label: "Sleep Time", max: 10, type: "time" },
+    { id: "studyScore", inputKey: "studyMins", label: "Govt Study", max: 20, type: "duration" },
+    { id: "workoutScore", inputKey: "workoutMins", label: "Workout", max: 10, type: "duration" },
+    { id: "musicScore", inputKey: "musicMins", label: "Music+Phone", max: 15, type: "duration" },
+    { id: "pornScore", inputKey: "porn", label: "Porn", max: 20, type: "boolean" },
+    { id: "masturbationScore", inputKey: "masturbation", label: "Masturbation", max: 10, type: "boolean" },
+    { id: "overallScore", inputKey: null, label: "Overall Score", max: 100, type: "score" }
 ];
 
 // Colors for the charts
@@ -20,6 +20,7 @@ const colors = [
 
 let chartInstances = [];
 let modalChartInstance = null;
+let currentRecords = []; // Store current records globally for tooltips
 
 export function initCharts() {
     const filtersContainer = document.getElementById("chart-habits");
@@ -54,52 +55,27 @@ export function initCharts() {
     });
 }
 
-// Convert HH:MM to float hours
-function timeToFloat(timeStr) {
-    if (!timeStr) return null;
-    const [h, m] = timeStr.split(':').map(Number);
-    return h + (m / 60);
-}
-
-// Helper to extract the right data point based on habit type
+// Helper to extract the score for Y-axis
 function extractData(record, habit) {
-    if (habit.type === "time") {
-        return timeToFloat(record.inputs.wake);
-    }
-    if (habit.type === "sleepTime") {
-        let val = timeToFloat(record.inputs.sleep);
-        if (val !== null && val < 12) {
-            val += 24; // map times like 1 AM to 25 for smoother graph
-        }
-        return val;
-    }
-    if (habit.type === "duration") {
-        if (habit.id === "studyScore") return record.inputs.studyMins / 60;
-        if (habit.id === "musicScore") return record.inputs.musicMins / 60;
-        if (habit.id === "workoutScore") {
-            // handle old records
-            if (record.inputs.workout !== undefined) return record.inputs.workout === 'Yes' ? 0.5 : 0;
-            return (record.inputs.workoutMins || 0) / 60;
-        }
-    }
-    // Type Score
-    return habit.id === 'overallScore' ? record.overallScore : record.scores[habit.id];
+    if (habit.id === 'overallScore') return record.overallScore || 0;
+    return (record.scores && record.scores[habit.id]) || 0;
 }
 
-function formatFloatToTime(val, isSleep) {
-    if (val === null || isNaN(val)) return '-';
-    if (isSleep && val >= 24) val -= 24;
-    let h = Math.floor(val);
-    let m = Math.round((val - h) * 60);
-    if (m === 60) { h += 1; m = 0; }
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
-
-function formatFloatToDuration(val) {
-    if (val === null || isNaN(val)) return '-';
-    let h = Math.floor(val);
-    let m = Math.round((val - h) * 60);
-    return `${h}h ${m}m`;
+// Helper to format the original raw value for the tooltip
+function formatRawValue(record, habit) {
+    if (habit.id === 'overallScore') return `${record.overallScore}%`;
+    
+    let raw = record.inputs[habit.inputKey];
+    if (habit.type === 'duration') {
+        if (habit.inputKey === 'workoutMins' && record.inputs.workout !== undefined) {
+            return record.inputs.workout === 'Yes' ? 'Done' : 'No';
+        }
+        let mins = parseInt(raw) || 0;
+        let h = Math.floor(mins / 60);
+        let m = mins % 60;
+        return `${h}h ${m}m`;
+    }
+    return raw || '-';
 }
 
 // Format "2026-07-21" to "21 Jul"
@@ -120,6 +96,7 @@ export async function renderCharts(startDateStr, endDateStr) {
     container.innerHTML = "";
     
     const records = await getRecordsByDateRange(auth.currentUser.uid, startDateStr, endDateStr);
+    currentRecords = records;
     if (records.length === 0) {
         container.innerHTML = "<p>No data in this date range.</p>";
         return;
@@ -181,18 +158,20 @@ export async function renderCharts(startDateStr, endDateStr) {
                     }
                 },
                 plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 const habit = selectedHabits[context.datasetIndex];
-                                const val = context.parsed.y;
-                                if (habit.type === 'time' || habit.type === 'sleepTime') {
-                                    return `${habit.label}: ${formatFloatToTime(val, habit.type === 'sleepTime')}`;
-                                }
-                                if (habit.type === 'duration') {
-                                    return `${habit.label}: ${formatFloatToDuration(val)}`;
-                                }
-                                return `${habit.label}: ${val}`;
+                                const record = currentRecords[context.dataIndex];
+                                const score = context.parsed.y;
+                                const rawVal = formatRawValue(record, habit);
+                                return `${habit.label}: ${rawVal} (Score: ${score})`;
                             }
                         }
                     }
@@ -259,17 +238,19 @@ export async function renderCharts(startDateStr, endDateStr) {
                         }
                     },
                     plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const val = context.parsed.y;
-                                    if (habit.type === 'time' || habit.type === 'sleepTime') {
-                                        return `${habit.label}: ${formatFloatToTime(val, habit.type === 'sleepTime')}`;
-                                    }
-                                    if (habit.type === 'duration') {
-                                        return `${habit.label}: ${formatFloatToDuration(val)}`;
-                                    }
-                                    return `${habit.label}: ${val}`;
+                                    const record = currentRecords[context.dataIndex];
+                                    const score = context.parsed.y;
+                                    const rawVal = formatRawValue(record, habit);
+                                    return `${habit.label}: ${rawVal} (Score: ${score})`;
                                 }
                             }
                         }
@@ -306,21 +287,18 @@ export function openChartModal(title, datasets, labels, habit = null) {
     const tooltipConfig = {
         callbacks: {
             label: function(context) {
-                const val = context.parsed.y;
                 const dsLabel = context.dataset.label;
+                const score = context.parsed.y;
+                const record = currentRecords[context.dataIndex];
                 
                 // If we passed a specific habit, use it. Otherwise guess from label (for combined)
                 const h = habit || habits.find(hbt => hbt.label === dsLabel);
                 
-                if (h) {
-                    if (h.type === 'time' || h.type === 'sleepTime') {
-                        return `${h.label}: ${formatFloatToTime(val, h.type === 'sleepTime')}`;
-                    }
-                    if (h.type === 'duration') {
-                        return `${h.label}: ${formatFloatToDuration(val)}`;
-                    }
+                if (h && record) {
+                    const rawVal = formatRawValue(record, h);
+                    return `${h.label}: ${rawVal} (Score: ${score})`;
                 }
-                return `${dsLabel}: ${val}`;
+                return `${dsLabel}: ${score}`;
             }
         }
     };
@@ -339,7 +317,11 @@ export function openChartModal(title, datasets, labels, habit = null) {
         plugins: {
             tooltip: tooltipConfig,
             legend: {
-                labels: { font: { size: 14 } } // Bigger legend on mobile
+                labels: { 
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: { size: 14 } 
+                } // Bigger legend on mobile
             }
         }
     };
