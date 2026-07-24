@@ -9,7 +9,7 @@ const settingsMsg = document.getElementById("settings-msg");
 let currentSettings = null;
 
 export async function initProfile() {
-    profileEmail.textContent = auth.currentUser.email;
+    profileEmail.textContent = auth.currentUser.uid; // This is now the secret code
 
     btnLogout.addEventListener("click", async () => {
         await logout();

@@ -12,11 +12,11 @@
         <!-- Auth Section -->
         <div id="auth-section" class="screen">
             <div class="auth-card card">
-                <h2>Login</h2>
+                <h2>Enter Secret Code</h2>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Your data is saved to whatever code you enter here.</p>
                 <form id="login-form">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                    <input type="password" id="login-password" placeholder="Password" required>
-                    <button type="submit" class="submit-btn mt-1">Login</button>
+                    <input type="password" id="login-password" placeholder="Enter your secret code (e.g. MySecret123)" required>
+                    <button type="submit" class="submit-btn mt-1">Access Tracker</button>
                     <p id="auth-error" class="error mt-1"></p>
                 </form>
             </div>
@@ -163,7 +163,7 @@
                 <section id="tab-profile" class="tab-content hidden">
                     <div class="card">
                         <h2>Profile</h2>
-                        <p>Email: <span id="profile-email"></span></p>
+                        <p>Secret Code: <span id="profile-email"></span></p>
                         <button id="btn-logout" class="submit-btn outline mt-1">Logout</button>
                     </div>
 

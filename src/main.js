@@ -53,10 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Login Form
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("login-email").value;
-        const pass = document.getElementById("login-password").value;
+        const code = document.getElementById("login-password").value;
         try {
-            await login(email, pass);
+            await login(code);
         } catch (error) {
             authError.textContent = "Login failed: " + error.message;
         }
