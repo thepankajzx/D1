@@ -27,6 +27,22 @@ export function initHeatmap() {
             modal.classList.add("hidden");
         }
     });
+
+    // Re-render when filter changes
+    const filterEl = document.getElementById("heatmap-filter");
+    if (filterEl) {
+        filterEl.addEventListener("change", async () => {
+            // Need to get the date range from current UI state
+            const monthInput = document.getElementById("heatmap-month").value;
+            if (monthInput) {
+                const [year, month] = monthInput.split("-");
+                await renderHeatmap(
+                    `${year}-${month}-01`, 
+                    `${year}-${month}-${new Date(year, month, 0).getDate()}`
+                );
+            }
+        });
+    }
 }
 
 // Generate the heatmap view based on date range
@@ -79,6 +95,19 @@ function createMonthBlock(year, month) {
         grid.appendChild(empty);
     }
     
+    const filterEl = document.getElementById("heatmap-filter");
+    const filter = filterEl ? filterEl.value : "overallScore";
+    const maxScores = {
+        wakeScore: 15,
+        sleepScore: 10,
+        studyScore: 20,
+        musicScore: 15,
+        workoutScore: 10,
+        pornScore: 20,
+        masturbationScore: 10,
+        overallScore: 100
+    };
+
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const record = currentRecords.find(r => r.date === dateStr);
@@ -87,9 +116,17 @@ function createMonthBlock(year, month) {
         dayBox.className = "day-box";
         
         if (record) {
-            dayBox.classList.add(getScoreClass(record.overallScore));
-            dayBox.textContent = `${record.overallScore}%`;
-            dayBox.title = `${dateStr}: ${record.overallScore}%`;
+            let percentage = 0;
+            if (filter === "overallScore") {
+                percentage = record.overallScore;
+            } else {
+                const score = record.scores[filter] || 0;
+                percentage = (score / maxScores[filter]) * 100;
+            }
+
+            dayBox.classList.add(getScoreClass(percentage));
+            dayBox.textContent = `${Math.round(percentage)}%`;
+            dayBox.title = `${dateStr}: ${Math.round(percentage)}%`;
             dayBox.addEventListener("click", () => openModal(record));
         } else {
             dayBox.style.backgroundColor = "#eee";
@@ -118,16 +155,22 @@ function openModal(record) {
     document.getElementById("modal-score").textContent = `${record.overallScore}%`;
     document.getElementById("modal-score").className = `score-val ${getScoreClass(record.overallScore)}`;
     
-    const workoutDisplay = record.inputs.workout !== undefined ? record.inputs.workout : `${Math.floor(record.inputs.workoutMins/60)}h ${record.inputs.workoutMins%60}m`;
+    function formatDuration(mins) {
+        if (mins === undefined || isNaN(mins)) return "0h 0m";
+        return `${Math.floor(mins/60)}h ${mins%60}m`;
+    }
     
+    const workoutDisplay = record.inputs.workout !== undefined ? record.inputs.workout : formatDuration(record.inputs.workoutMins);
+    
+    const details = document.getElementById("modal-details");
     details.innerHTML = `
-        <div><strong>Wake:</strong> ${record.inputs.wake} <br><small>(${record.scores.wakeScore} pts)</small></div>
-        <div><strong>Sleep:</strong> ${record.inputs.sleep} <br><small>(${record.scores.sleepScore} pts)</small></div>
-        <div><strong>Study:</strong> ${Math.floor(record.inputs.studyMins/60)}h ${record.inputs.studyMins%60}m <br><small>(${record.scores.studyScore} pts)</small></div>
-        <div><strong>Music/Ph:</strong> ${Math.floor(record.inputs.musicMins/60)}h ${record.inputs.musicMins%60}m <br><small>(${record.scores.musicScore} pts)</small></div>
-        <div><strong>Porn:</strong> ${record.inputs.porn} <br><small>(${record.scores.pornScore} pts)</small></div>
-        <div><strong>Masturbation:</strong> ${record.inputs.masturbation} <br><small>(${record.scores.masturbationScore} pts)</small></div>
-        <div><strong>Workout:</strong> ${workoutDisplay} <br><small>(${record.scores.workoutScore} pts)</small></div>
+        <div><strong>Wake:</strong> ${record.inputs.wake || '-'} <br><small>(${record.scores.wakeScore || 0} pts)</small></div>
+        <div><strong>Sleep:</strong> ${record.inputs.sleep || '-'} <br><small>(${record.scores.sleepScore || 0} pts)</small></div>
+        <div><strong>Study:</strong> ${formatDuration(record.inputs.studyMins)} <br><small>(${record.scores.studyScore || 0} pts)</small></div>
+        <div><strong>Music/Ph:</strong> ${formatDuration(record.inputs.musicMins)} <br><small>(${record.scores.musicScore || 0} pts)</small></div>
+        <div><strong>Porn:</strong> ${record.inputs.porn || '-'} <br><small>(${record.scores.pornScore || 0} pts)</small></div>
+        <div><strong>Masturbation:</strong> ${record.inputs.masturbation || '-'} <br><small>(${record.scores.masturbationScore || 0} pts)</small></div>
+        <div><strong>Workout:</strong> ${workoutDisplay} <br><small>(${record.scores.workoutScore || 0} pts)</small></div>
     `;
     
     modal.classList.remove("hidden");
