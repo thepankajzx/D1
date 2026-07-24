@@ -117,11 +117,14 @@ function createMonthBlock(year, month) {
         if (record) {
             let percentage = 0;
             if (filter === "overallScore") {
-                percentage = record.overallScore;
+                percentage = record.overallScore || 0;
             } else {
-                const score = record.scores[filter] || 0;
-                percentage = (score / maxScores[filter]) * 100;
+                const score = (record.scores && record.scores[filter] !== undefined) ? record.scores[filter] : 0;
+                const max = maxScores[filter] || 1;
+                percentage = (score / max) * 100;
             }
+
+            if (isNaN(percentage)) percentage = 0;
 
             dayBox.classList.add(getScoreClass(percentage));
             dayBox.textContent = `${Math.round(percentage)}%`;
