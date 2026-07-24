@@ -125,13 +125,17 @@ function switchMonthlyTab(tabId) {
     subHeatmapBtn.classList.remove("active");
     subChartsBtn.classList.remove("active");
 
+    const hf = document.getElementById("heatmap-filter-group");
+
     if (tabId === "heatmap") {
         viewHeatmap.classList.remove("hidden");
         subHeatmapBtn.classList.add("active");
+        if(hf) hf.style.display = "block";
         loadMonthlyData("heatmap");
     } else {
         viewCharts.classList.remove("hidden");
         subChartsBtn.classList.add("active");
+        if(hf) hf.style.display = "none";
         loadMonthlyData("charts");
     }
 }

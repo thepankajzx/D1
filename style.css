@@ -96,8 +96,21 @@ nav button.active {
     padding: 20px;
 }
 
-.form-group {
-    margin-bottom: 15px;
+/* Flex Controls */
+.flex-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.control-group {
+    flex: 1;
+    min-width: 250px;
+}
+
+.chart-controls {
+    margin-bottom: 20px;
 }
 
 .form-group label {

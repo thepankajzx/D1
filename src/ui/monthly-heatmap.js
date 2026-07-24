@@ -7,6 +7,8 @@ const modal = document.getElementById("detail-modal");
 const closeModalBtn = document.getElementById("close-modal");
 
 let currentRecords = [];
+let currentStart = null;
+let currentEnd = null;
 
 export function initHeatmap() {
     togglePercent.addEventListener("change", () => {
@@ -28,18 +30,11 @@ export function initHeatmap() {
         }
     });
 
-    // Re-render when filter changes
-    const filterEl = document.getElementById("heatmap-filter");
-    if (filterEl) {
-        filterEl.addEventListener("change", async () => {
-            // Need to get the date range from current UI state
-            const monthInput = document.getElementById("heatmap-month").value;
-            if (monthInput) {
-                const [year, month] = monthInput.split("-");
-                await renderHeatmap(
-                    `${year}-${month}-01`, 
-                    `${year}-${month}-${new Date(year, month, 0).getDate()}`
-                );
+    const goBtn = document.getElementById("heatmap-go-btn");
+    if (goBtn) {
+        goBtn.addEventListener("click", () => {
+            if (currentStart && currentEnd) {
+                drawGrid();
             }
         });
     }
@@ -50,17 +45,21 @@ export async function renderHeatmap(startDateStr, endDateStr) {
     if (!auth.currentUser) return;
     
     // Convert strings to Date objects to get month/year boundaries
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
+    currentStart = new Date(startDateStr);
+    currentEnd = new Date(endDateStr);
     
     // Get all records in range
     currentRecords = await getRecordsByDateRange(auth.currentUser.uid, startDateStr, endDateStr);
     
+    drawGrid();
+}
+
+function drawGrid() {
     container.innerHTML = "";
     
     // Iterate month by month
-    let currentMonth = new Date(start.getFullYear(), start.getMonth(), 1);
-    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+    let currentMonth = new Date(currentStart.getFullYear(), currentStart.getMonth(), 1);
+    const endMonth = new Date(currentEnd.getFullYear(), currentEnd.getMonth(), 1);
     
     while (currentMonth <= endMonth) {
         const year = currentMonth.getFullYear();

@@ -117,38 +117,49 @@
                         <button id="sub-charts">Charts</button>
                     </div>
 
-                    <div class="controls card mt-1">
-                        <label>Date Range:</label>
-                        <select id="monthly-range">
-                            <option value="current">Current Month</option>
-                            <option value="30">Last 30 Days</option>
-                            <option value="90">Last 90 Days</option>
-                            <option value="180">Last 180 Days</option>
-                            <option value="365">Last 365 Days</option>
-                            <option value="custom">Custom Range</option>
-                        </select>
-                        <div id="custom-range-inputs" class="hidden mt-1">
-                            <input type="date" id="range-start"> to <input type="date" id="range-end">
-                            <button id="apply-custom-range" class="submit-btn inline-btn">Apply</button>
+                    <div class="controls card mt-1 flex-controls">
+                        <div class="control-group">
+                            <label>Date Range:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="monthly-range" style="flex: 1;">
+                                    <option value="current">Current Month</option>
+                                    <option value="30">Last 30 Days</option>
+                                    <option value="90">Last 90 Days</option>
+                                    <option value="180">Last 180 Days</option>
+                                    <option value="365">Last 365 Days</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div id="custom-range-inputs" class="hidden mt-1">
+                                <input type="date" id="range-start"> to <input type="date" id="range-end">
+                                <button id="apply-custom-range" class="submit-btn inline-btn">Apply</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="heatmap-filter-group">
+                            <label>Heatmap Filter:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="heatmap-filter" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                                    <option value="overallScore">Overall Score</option>
+                                    <option value="wakeScore">Wake Up</option>
+                                    <option value="sleepScore">Sleep</option>
+                                    <option value="studyScore">Govt Study</option>
+                                    <option value="musicScore">Music + Phone</option>
+                                    <option value="workoutScore">Workout</option>
+                                    <option value="pornScore">Porn</option>
+                                    <option value="masturbationScore">Masturbation</option>
+                                </select>
+                                <button id="heatmap-go-btn" class="submit-btn inline-btn" style="margin: 0; padding: 8px 15px;">Go</button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Heatmap Sub-tab -->
                     <div id="view-heatmap" class="mt-2">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <div class="toggle-container" style="margin: 0;">
-                                <label><input type="checkbox" id="toggle-percent"> Show %</label>
+                                <label><input type="checkbox" id="toggle-percent"> Show % on Boxes</label>
                             </div>
-                            <select id="heatmap-filter" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-                                <option value="overallScore">Overall Score</option>
-                                <option value="wakeScore">Wake Up</option>
-                                <option value="sleepScore">Sleep</option>
-                                <option value="studyScore">Govt Study</option>
-                                <option value="musicScore">Music + Phone</option>
-                                <option value="workoutScore">Workout</option>
-                                <option value="pornScore">Porn</option>
-                                <option value="masturbationScore">Masturbation</option>
-                            </select>
                         </div>
                         <div id="heatmap-container" class="heatmap-grid-container mt-1"></div>
                     </div>
