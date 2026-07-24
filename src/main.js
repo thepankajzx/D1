@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const code = document.getElementById("login-password").value;
         try {
             await login(code);
+            window.location.reload(); // Refresh to trigger onAuthChange and update UI
         } catch (error) {
             authError.textContent = "Login failed: " + error.message;
         }
