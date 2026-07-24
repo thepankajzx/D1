@@ -11,7 +11,9 @@ export async function initDailyEntry() {
     const today = new Date();
     const tzOffset = today.getTimezoneOffset() * 60000;
     const localISOTime = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
-    document.getElementById("entry-date").value = localISOTime;
+    const dateInput = document.getElementById("entry-date");
+    dateInput.value = localISOTime;
+    dateInput.max = localISOTime; // Prevent entering future dates
 
     dailyForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -78,6 +80,10 @@ export async function initDailyEntry() {
             window.dispatchEvent(new Event('record-saved'));
             
             await updateDashboard(uid);
+            
+            // Dispatch event so other components (heatmap, charts) can refresh
+            window.dispatchEvent(new Event('data-updated'));
+            
         } catch (error) {
             console.error(error);
             entryMsg.textContent = "Error saving record.";

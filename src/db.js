@@ -67,3 +67,17 @@ export async function getAllRecords(uid) {
     });
     return records;
 }
+
+// Danger Zone: Wipe records before a specific date
+import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+export async function wipeOldRecords(uid, beforeDateStr) {
+    const records = await getAllRecords(uid);
+    for (const r of records) {
+        if (r.date < beforeDateStr) { 
+            const docRef = doc(db, "users", uid, "records", r.date);
+            await deleteDoc(docRef);
+            console.log(`Deleted record for ${r.date}`);
+        }
+    }
+    console.log("Wipe complete!");
+}

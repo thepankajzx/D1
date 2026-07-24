@@ -1,9 +1,10 @@
-import { auth, login } from "./auth.js";
+import { auth, login, logOut } from "./auth.js";
 import { onAuthChange } from "./auth.js";
 import { initProfile } from "./ui/profile.js";
 import { initDailyEntry, updateDashboard } from "./ui/daily-entry.js";
 import { initHeatmap, renderHeatmap } from "./ui/monthly-heatmap.js";
 import { initCharts, renderCharts } from "./ui/monthly-charts.js";
+import { wipeOldRecords } from "./db.js";
 
 // DOM Elements
 const authSection = document.getElementById("auth-section");
@@ -86,9 +87,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    applyCustomRangeBtn.addEventListener("click", () => {
+    document.getElementById("apply-custom-range").addEventListener("click", () => {
         loadMonthlyData();
     });
+
+    window.addEventListener('data-updated', () => {
+        // Refresh the heatmap/charts data in background so it's ready
+        loadMonthlyData();
+    });
+
+    // Expose a global method for the user to wipe all old data via console
+    window.wipeDatabase = async function() {
+        if (!auth.currentUser) {
+            console.error("Not logged in");
+            return;
+        }
+        const today = new Date();
+        const tzOffset = today.getTimezoneOffset() * 60000;
+        const localTodayStr = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
+        
+        // Wipe everything strictly before localTodayStr. Or wait, user says "aaj se pehle ka", so < today.
+        // If they want to wipe EVERYTHING, even today, they can just use a future date like "2030-01-01"
+        console.log("Wiping all records...");
+        await wipeOldRecords(auth.currentUser.uid, "2030-01-01");
+        console.log("Database Wiped! Please refresh the page.");
+        alert("Database successfully wiped! Refreshing page...");
+        window.location.reload();
+    };
 
     generateChartsBtn.addEventListener("click", () => {
         loadMonthlyData("charts");
