@@ -1,29 +1,25 @@
-export const auth = {
-    currentUser: null
-};
+import { auth } from "./firebase-config.js";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 export async function login(email, password) {
-    if (email === "CODYOFFICIAL84@GMAIL.COM" && password === "A1@pankaj") {
-        localStorage.setItem("loggedIn", "true");
-        auth.currentUser = { uid: "hardcoded_user", email: email };
-        return auth.currentUser;
-    } else {
-        throw new Error("Incorrect Email or Password");
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email.toLowerCase(), password);
+        return userCredential.user;
+    } catch (error) {
+        if (error.code === 'auth/unauthorized-domain') {
+            throw new Error("Domain Whitelist Error: कृपया Firebase Console में Authentication > Settings > Authorized Domains में जाकर 'thepankajzx.github.io' ऐड करें।");
+        } else if (error.code === 'auth/invalid-credential') {
+            throw new Error("Incorrect Email or Password (पासवर्ड या ईमेल गलत है)");
+        } else {
+            throw error;
+        }
     }
 }
 
 export function logout() {
-    localStorage.removeItem("loggedIn");
-    auth.currentUser = null;
-    window.location.reload();
+    return signOut(auth);
 }
 
 export function onAuthChange(callback) {
-    if (localStorage.getItem("loggedIn") === "true") {
-        auth.currentUser = { uid: "hardcoded_user", email: "CODYOFFICIAL84@GMAIL.COM" };
-        callback(auth.currentUser);
-    } else {
-        auth.currentUser = null;
-        callback(null);
-    }
+    onAuthStateChanged(auth, callback);
 }
