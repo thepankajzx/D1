@@ -160,6 +160,7 @@
                             <div class="toggle-container" style="margin: 0;">
                                 <label><input type="checkbox" id="toggle-percent"> Show % on Boxes</label>
                             </div>
+                            <button id="zoom-heatmap" class="zoom-btn" title="Expand Heatmap" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">🔍 Fullscreen</button>
                         </div>
                         <div id="heatmap-container" class="heatmap-grid-container mt-1"></div>
                     </div>
@@ -237,8 +238,9 @@
         <div class="modal-content" style="width: 95%; max-width: 1000px; height: 80vh; background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column;">
             <span class="close-btn" id="close-chart-modal">&times;</span>
             <h3 id="chart-modal-title" style="margin-top: 0; margin-bottom: 15px; text-align: center;"></h3>
-            <div id="chart-modal-body" style="flex: 1; position: relative; width: 100%;">
+            <div id="chart-modal-body" style="flex: 1; position: relative; width: 100%; overflow: auto;">
                 <canvas id="chart-modal-canvas"></canvas>
+                <div id="heatmap-modal-canvas" style="display: none; width: 100%;"></div>
             </div>
         </div>
     </div>

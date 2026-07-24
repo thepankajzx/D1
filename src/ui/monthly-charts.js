@@ -139,10 +139,10 @@ export async function renderCharts(startDateStr, endDateStr) {
 
     if (mode === "combined") {
         const card = document.createElement("div");
-        card.className = "card mt-1";
+        card.className = "card mt-2";
         card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h4 style="margin:0;">Combined Performance</h4>
-                            <button class="zoom-btn" title="Expand Chart">🔍</button>
+                            <h3>Combined Performance</h3>
+                            <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">🔍 Fullscreen</button>
                           </div>`;
 
         const wrapper = document.createElement("div");
@@ -216,7 +216,7 @@ export async function renderCharts(startDateStr, endDateStr) {
             card.className = "card mt-1";
             card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4>${habit.label}</h4>
-                                <button class="zoom-btn" title="Expand Chart">🔍</button>
+                                <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">🔍 Fullscreen</button>
                               </div>`;
             
             const wrapper = document.createElement("div");
@@ -284,15 +284,21 @@ export async function renderCharts(startDateStr, endDateStr) {
     }
 }
 
-function openChartModal(title, datasets, labels, habit = null) {
-    document.getElementById("chart-modal-title").textContent = title;
-    const modalCanvas = document.getElementById("chart-modal-canvas");
+export function openChartModal(title, datasets, labels, habit = null) {
+    const modal = document.getElementById("chart-modal");
+    const modalTitle = document.getElementById("chart-modal-title");
+    const canvas = document.getElementById("chart-modal-canvas");
+    const heatmapCanvas = document.getElementById("heatmap-modal-canvas");
+    
+    heatmapCanvas.style.display = "none";
+    canvas.style.display = "block";
+
+    modal.style.display = "flex";
+    modalTitle.textContent = title;
     
     if (modalChartInstance) {
         modalChartInstance.destroy();
     }
-    
-    document.getElementById("chart-modal").style.display = "flex";
     
     // Configure tooltip exactly like original
     const tooltipConfig = {
@@ -340,7 +346,7 @@ function openChartModal(title, datasets, labels, habit = null) {
         options.scales.y.max = habit.max;
     }
 
-    modalChartInstance = new Chart(modalCanvas, {
+    modalChartInstance = new Chart(canvas, {
         type: 'line',
         data: { labels, datasets },
         options: options

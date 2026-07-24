@@ -38,6 +38,25 @@ export function initHeatmap() {
             }
         });
     }
+
+    const zoomHeatmapBtn = document.getElementById("zoom-heatmap");
+    if (zoomHeatmapBtn) {
+        zoomHeatmapBtn.addEventListener("click", () => {
+            const modal = document.getElementById("chart-modal");
+            const modalTitle = document.getElementById("chart-modal-title");
+            const canvas = document.getElementById("chart-modal-canvas");
+            const heatmapCanvas = document.getElementById("heatmap-modal-canvas");
+            
+            heatmapCanvas.style.display = "block";
+            canvas.style.display = "none";
+            
+            heatmapCanvas.className = "heatmap-grid-container";
+            heatmapCanvas.innerHTML = container.innerHTML;
+            
+            modal.style.display = "flex";
+            modalTitle.textContent = "Heatmap (Fullscreen)";
+        });
+    }
 }
 
 // Generate the heatmap view based on date range
