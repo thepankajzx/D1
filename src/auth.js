@@ -1,14 +1,29 @@
-import { auth } from "./firebase-config.js";
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+export const auth = {
+    currentUser: null
+};
 
-export function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+export async function login(email, password) {
+    if (email === "CODYOFFICIAL84@GMAIL.COM" && password === "A1@pankaj") {
+        localStorage.setItem("loggedIn", "true");
+        auth.currentUser = { uid: "hardcoded_user", email: email };
+        return auth.currentUser;
+    } else {
+        throw new Error("Incorrect Email or Password");
+    }
 }
 
 export function logout() {
-    return signOut(auth);
+    localStorage.removeItem("loggedIn");
+    auth.currentUser = null;
+    window.location.reload();
 }
 
 export function onAuthChange(callback) {
-    onAuthStateChanged(auth, callback);
+    if (localStorage.getItem("loggedIn") === "true") {
+        auth.currentUser = { uid: "hardcoded_user", email: "CODYOFFICIAL84@GMAIL.COM" };
+        callback(auth.currentUser);
+    } else {
+        auth.currentUser = null;
+        callback(null);
+    }
 }
