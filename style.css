@@ -298,14 +298,12 @@ select {
     cursor: default;
 }
 
-/* Color Scale (90-100, 80-89, 70-79, 60-69, 50-59, 40-49, below 40) */
-.score-90 { background-color: #1e7b2b; color: white; }
-.score-80 { background-color: #32a844; color: white; }
-.score-70 { background-color: #7bc96f; color: black; }
-.score-60 { background-color: #fada5e; color: black; }
-.score-50 { background-color: #ffa500; color: black; }
-.score-40 { background-color: #ff4500; color: white; }
-.score-30 { background-color: #d93025; color: white; }
+/* Color Scale (Red to Green strictly) */
+.score-90 { background-color: #1B5E20; color: white; }
+.score-75 { background-color: #4CAF50; color: white; }
+.score-60 { background-color: #81C784; color: black; }
+.score-40 { background-color: #EF5350; color: black; }
+.score-39 { background-color: #B71C1C; color: white; }
 
 .toggle-container {
     text-align: right;

@@ -165,12 +165,10 @@ function createMonthBlock(year, month) {
 
 function getScoreClass(score) {
     if (score >= 90) return "score-90";
-    if (score >= 80) return "score-80";
-    if (score >= 70) return "score-70";
+    if (score >= 75) return "score-75";
     if (score >= 60) return "score-60";
-    if (score >= 50) return "score-50";
     if (score >= 40) return "score-40";
-    return "score-30";
+    return "score-39";
 }
 
 function openModal(record) {
