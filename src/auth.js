@@ -7,6 +7,9 @@ export async function login(secretCode) {
         throw new Error("Please enter a valid code.");
     }
     const code = secretCode.trim();
+    if (code !== "Pankaj@2026") {
+        throw new Error("Access Denied: Invalid secret code.");
+    }
     localStorage.setItem("habit_secret_code", code);
     auth.currentUser = { uid: code };
     return auth.currentUser;
@@ -20,7 +23,7 @@ export function logout() {
 
 export function onAuthChange(callback) {
     const code = localStorage.getItem("habit_secret_code");
-    if (code) {
+    if (code === "Pankaj@2026") {
         auth.currentUser = { uid: code };
         callback(auth.currentUser);
     } else {
