@@ -1,4 +1,4 @@
-import { auth, login, logOut } from "./auth.js";
+import { auth, login, logout } from "./auth.js";
 import { onAuthChange } from "./auth.js";
 import { initProfile } from "./ui/profile.js";
 import { initDailyEntry, updateDashboard } from "./ui/daily-entry.js";
