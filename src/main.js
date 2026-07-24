@@ -173,11 +173,14 @@ function getDateRange() {
 }
 
 async function loadMonthlyData(forceTab = null) {
+    const range = getDateRange();
+    if (!range) return;
+
     const activeTab = forceTab || (subHeatmapBtn.classList.contains("active") ? "heatmap" : "charts");
 
     if (activeTab === "heatmap") {
-        await renderHeatmap();
+        await renderHeatmap(range.start, range.end);
     } else {
-        await renderCharts();
+        await renderCharts(range.start, range.end);
     }
 }

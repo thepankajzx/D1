@@ -229,22 +229,21 @@ select {
 /* Heatmap */
 .heatmap-grid-container {
     display: flex;
-    overflow-x: auto;
+    flex-wrap: wrap;
     gap: 20px;
-    padding-bottom: 10px;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 .month-block {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .month-block h4 {
     margin-bottom: 10px;
     font-size: 0.9rem;
     color: #555;
-    text-align: center;
 }
 
 .heatmap-wrapper {
@@ -288,9 +287,7 @@ select {
 
 .percent-text {
     display: none;
-    font-weight: bold !important;
-    color: #ffffff !important;
-    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.8) !important;
+    font-weight: bold;
 }
 .show-percent .percent-text {
     display: inline;
@@ -301,12 +298,14 @@ select {
     cursor: default;
 }
 
-/* Color Scale (Red to Green strictly) */
-.score-level-5 { background-color: #1B5E20; }
-.score-level-4 { background-color: #4CAF50; }
-.score-level-3 { background-color: #81C784; }
-.score-level-2 { background-color: #EF5350; }
-.score-level-1 { background-color: #B71C1C; }
+/* Color Scale (90-100, 80-89, 70-79, 60-69, 50-59, 40-49, below 40) */
+.score-90 { background-color: #1e7b2b; color: white; }
+.score-80 { background-color: #32a844; color: white; }
+.score-70 { background-color: #7bc96f; color: black; }
+.score-60 { background-color: #fada5e; color: black; }
+.score-50 { background-color: #ffa500; color: black; }
+.score-40 { background-color: #ff4500; color: white; }
+.score-30 { background-color: #d93025; color: white; }
 
 .toggle-container {
     text-align: right;
