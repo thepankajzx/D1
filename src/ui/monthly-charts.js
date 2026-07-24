@@ -142,7 +142,7 @@ export async function renderCharts(startDateStr, endDateStr) {
         card.className = "card mt-2";
         card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3>Combined Performance</h3>
-                            <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">🔍 Fullscreen</button>
+                            <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶ Fullscreen</button>
                           </div>`;
 
         const wrapper = document.createElement("div");
@@ -216,7 +216,7 @@ export async function renderCharts(startDateStr, endDateStr) {
             card.className = "card mt-1";
             card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4>${habit.label}</h4>
-                                <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">🔍 Fullscreen</button>
+                                <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶ Fullscreen</button>
                               </div>`;
             
             const wrapper = document.createElement("div");
