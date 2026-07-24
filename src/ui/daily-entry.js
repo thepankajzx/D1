@@ -90,6 +90,35 @@ export async function initDailyEntry() {
     }
 }
 
+function getScoreClass(score) {
+    if (score >= 90) return "score-90";
+    if (score >= 75) return "score-75";
+    if (score >= 60) return "score-60";
+    if (score >= 40) return "score-40";
+    return "score-39";
+}
+
+function applyCardColor(elementId, scoreStr) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const card = el.closest(".dash-card");
+    if (!card) return;
+    
+    // Remove existing score classes
+    Array.from(card.classList).forEach(cls => {
+        if (cls.startsWith("score-")) {
+            card.classList.remove(cls);
+        }
+    });
+
+    if (scoreStr !== "-") {
+        const score = parseFloat(scoreStr);
+        if (!isNaN(score)) {
+            card.classList.add(getScoreClass(score));
+        }
+    }
+}
+
 export async function updateDashboard(uid) {
     const records = await getAllRecords(uid);
     if (!records || records.length === 0) return;
@@ -100,21 +129,27 @@ export async function updateDashboard(uid) {
     const localTodayStr = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
     
     const todayRecord = records.find(r => r.date === localTodayStr);
-    document.getElementById("dash-today").textContent = todayRecord ? todayRecord.overallScore : "-";
+    const todayScore = todayRecord ? todayRecord.overallScore : "-";
+    document.getElementById("dash-today").textContent = todayScore;
+    applyCardColor("dash-today", todayScore);
 
     // Overall Avg
     const overallSum = records.reduce((sum, r) => sum + r.overallScore, 0);
     const overallAvg = (overallSum / records.length).toFixed(1);
     document.getElementById("dash-overall").textContent = overallAvg;
+    applyCardColor("dash-overall", overallAvg);
 
     // Last 7 days avg
     const sevenDaysAgo = new Date(Date.now() - tzOffset - (7 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
     const recent7 = records.filter(r => r.date > sevenDaysAgo && r.date <= localTodayStr);
     if (recent7.length > 0) {
         const sum7 = recent7.reduce((sum, r) => sum + r.overallScore, 0);
-        document.getElementById("dash-7day").textContent = (sum7 / recent7.length).toFixed(1);
+        const avg7 = (sum7 / recent7.length).toFixed(1);
+        document.getElementById("dash-7day").textContent = avg7;
+        applyCardColor("dash-7day", avg7);
     } else {
         document.getElementById("dash-7day").textContent = "-";
+        applyCardColor("dash-7day", "-");
     }
 
     // Current Month Avg
@@ -122,8 +157,11 @@ export async function updateDashboard(uid) {
     const currentMonthRecords = records.filter(r => r.date.startsWith(currentMonthPrefix));
     if (currentMonthRecords.length > 0) {
         const sumMonth = currentMonthRecords.reduce((sum, r) => sum + r.overallScore, 0);
-        document.getElementById("dash-month").textContent = (sumMonth / currentMonthRecords.length).toFixed(1);
+        const avgMonth = (sumMonth / currentMonthRecords.length).toFixed(1);
+        document.getElementById("dash-month").textContent = avgMonth;
+        applyCardColor("dash-month", avgMonth);
     } else {
         document.getElementById("dash-month").textContent = "-";
+        applyCardColor("dash-month", "-");
     }
 }
