@@ -47,6 +47,18 @@ export async function initProfile() {
         }
     });
 
+    const btnWipeData = document.getElementById("btn-wipe-data");
+    if (btnWipeData) {
+        btnWipeData.addEventListener("click", () => {
+            const confirmed = confirm("Are you sure you want to delete ALL your data? This cannot be undone!");
+            if (confirmed) {
+                if (window.wipeDatabase) {
+                    window.wipeDatabase();
+                }
+            }
+        });
+    }
+
     await loadSettings();
 }
 
