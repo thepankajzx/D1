@@ -230,21 +230,23 @@ export async function renderCharts(startDateStr, endDateStr) {
             
             const data = records.map(r => extractData(r, habit));
             
+            const chartDataset = [{
+                label: habit.label,
+                data: data,
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '33',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            }];
+
             const chart = new Chart(canvas, {
                 type: 'line',
                 data: {
                     labels,
-                    datasets: [{
-                        label: habit.label,
-                        data: data,
-                        borderColor: colors[i % colors.length],
-                        backgroundColor: colors[i % colors.length] + '33',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
-                    }]
+                    datasets: chartDataset
                 },
                 options: {
                     responsive: true,
@@ -278,7 +280,7 @@ export async function renderCharts(startDateStr, endDateStr) {
             
             // Add zoom functionality
             card.querySelector('.zoom-btn').addEventListener('click', () => {
-                openChartModal(habit.label, [datasets[0]], labels, habit);
+                openChartModal(habit.label, chartDataset, labels, habit);
             });
         });
     }

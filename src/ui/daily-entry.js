@@ -76,6 +76,32 @@ export async function initDailyEntry() {
             entryMsg.style.color = "green";
             setTimeout(() => { entryMsg.textContent = ""; }, 3000);
             
+            // Populate score labels
+            const getScoreColor = (score, max) => {
+                const percent = (score / max) * 100;
+                if(percent >= 90) return "#1b5e20";
+                if(percent >= 70) return "#4caf50";
+                if(percent >= 50) return "#ff9800";
+                if(percent >= 30) return "#f44336";
+                return "#b71c1c";
+            };
+            
+            const updateLabel = (id, score, max) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = `${score}/${max}`;
+                    el.style.color = getScoreColor(score, max);
+                }
+            };
+            
+            updateLabel("label-score-wake", scores.wakeScore, 15);
+            updateLabel("label-score-sleep", scores.sleepScore, 10);
+            updateLabel("label-score-porn", scores.pornScore, 20);
+            updateLabel("label-score-masturbation", scores.masturbationScore, 10);
+            updateLabel("label-score-study", scores.studyScore, 20);
+            updateLabel("label-score-workout", scores.workoutScore, 10);
+            updateLabel("label-score-music", scores.musicScore, 15);
+            
             // Dispatch event to refresh dashboard and charts
             window.dispatchEvent(new Event('record-saved'));
             

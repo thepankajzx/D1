@@ -25,9 +25,9 @@
         <!-- Main App Section -->
         <div id="main-section" class="screen hidden">
             <header>
-                <div class="logo">HabitTracker</div>
+                <div class="logo" style="color: #0F9D58; font-family: 'Brush Script MT', 'Comic Sans MS', cursive; font-size: 1.8rem; font-weight: bold; letter-spacing: 1px;">Definite</div>
                 <nav>
-                    <button id="nav-daily" class="active">Daily</button>
+                    <button id="nav-daily" class="active circle-btn">D</button>
                     <button id="nav-monthly" class="circle-btn">M</button>
                     <button id="nav-profile" class="icon-btn">👤</button>
                 </nav>
@@ -63,43 +63,43 @@
                             <input type="date" id="entry-date" required>
                         </div>
                         <div class="form-group">
-                            <label>Wake Up Time</label>
+                            <label style="display:flex; justify-content:space-between;">Wake Up Time <span id="label-score-wake" style="font-weight:bold;"></span></label>
                             <input type="time" id="entry-wake" required>
                         </div>
                         <div class="form-group">
-                            <label>Sleep Time</label>
+                            <label style="display:flex; justify-content:space-between;">Sleep Time <span id="label-score-sleep" style="font-weight:bold;"></span></label>
                             <input type="time" id="entry-sleep" required>
                         </div>
                         <div class="form-group">
-                            <label>Porn</label>
+                            <label style="display:flex; justify-content:space-between;">Porn <span id="label-score-porn" style="font-weight:bold;"></span></label>
                             <select id="entry-porn">
                                 <option value="No">No</option>
                                 <option value="Yes">Yes</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Masturbation</label>
+                            <label style="display:flex; justify-content:space-between;">Masturbation <span id="label-score-masturbation" style="font-weight:bold;"></span></label>
                             <select id="entry-masturbation">
                                 <option value="No">No</option>
                                 <option value="Yes">Yes</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Government Study</label>
+                            <label style="display:flex; justify-content:space-between;">Government Study <span id="label-score-study" style="font-weight:bold;"></span></label>
                             <div class="time-inputs">
                                 <input type="number" id="entry-study-h" min="0" placeholder="Hours" required>
                                 <input type="number" id="entry-study-m" min="0" max="59" placeholder="Minutes" required>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Workout</label>
+                            <label style="display:flex; justify-content:space-between;">Workout <span id="label-score-workout" style="font-weight:bold;"></span></label>
                             <div class="time-inputs">
                                 <input type="number" id="entry-workout-h" min="0" placeholder="Hours" required>
                                 <input type="number" id="entry-workout-m" min="0" max="59" placeholder="Minutes" required>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Music + Non-Work Phone</label>
+                            <label style="display:flex; justify-content:space-between;">Music + Phone <span id="label-score-music" style="font-weight:bold;"></span></label>
                             <div class="time-inputs">
                                 <input type="number" id="entry-music-h" min="0" placeholder="Hours" required>
                                 <input type="number" id="entry-music-m" min="0" max="59" placeholder="Minutes" required>
