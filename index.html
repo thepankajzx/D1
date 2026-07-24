@@ -135,8 +135,20 @@
 
                     <!-- Heatmap Sub-tab -->
                     <div id="view-heatmap" class="mt-2">
-                        <div class="toggle-container">
-                            <label><input type="checkbox" id="toggle-percent"> Show %</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <div class="toggle-container" style="margin: 0;">
+                                <label><input type="checkbox" id="toggle-percent"> Show %</label>
+                            </div>
+                            <select id="heatmap-filter" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                                <option value="overallScore">Overall Score</option>
+                                <option value="wakeScore">Wake Up</option>
+                                <option value="sleepScore">Sleep</option>
+                                <option value="studyScore">Govt Study</option>
+                                <option value="musicScore">Music + Phone</option>
+                                <option value="workoutScore">Workout</option>
+                                <option value="pornScore">Porn</option>
+                                <option value="masturbationScore">Masturbation</option>
+                            </select>
                         </div>
                         <div id="heatmap-container" class="heatmap-grid-container mt-1"></div>
                     </div>
