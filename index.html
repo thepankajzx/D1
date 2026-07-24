@@ -118,23 +118,7 @@
                     </div>
 
                     <div class="controls card mt-1 flex-controls">
-                        <div class="control-group">
-                            <label>Date Range:</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <select id="monthly-range" style="flex: 1;">
-                                    <option value="current">Current Month</option>
-                                    <option value="30">Last 30 Days</option>
-                                    <option value="90">Last 90 Days</option>
-                                    <option value="180">Last 180 Days</option>
-                                    <option value="365">Last 365 Days</option>
-                                    <option value="custom">Custom Range</option>
-                                </select>
-                            </div>
-                            <div id="custom-range-inputs" class="hidden mt-1">
-                                <input type="date" id="range-start"> to <input type="date" id="range-end">
-                                <button id="apply-custom-range" class="submit-btn inline-btn">Apply</button>
-                            </div>
-                        </div>
+                        <!-- Chart filters moved down. Heatmap doesn't use Date Range anymore. -->
 
                         <div class="control-group" id="heatmap-filter-group">
                             <label>Heatmap Filter:</label>
@@ -171,10 +155,10 @@
                             <div class="habit-filters" id="chart-habits">
                                 <!-- Checkboxes injected via JS -->
                             </div>
-                            <h4 class="mt-1">Display Mode</h4>
-                            <div class="mode-toggle">
-                                <label><input type="radio" name="chartMode" value="combined" checked> Combined</label>
-                                <label><input type="radio" name="chartMode" value="separate"> Separate</label>
+                            
+                            <h4 class="mt-1">Date Range</h4>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <input type="date" id="chart-start-date"> to <input type="date" id="chart-end-date">
                             </div>
                             <button id="generate-charts" class="submit-btn mt-1">Generate Charts</button>
                         </div>
@@ -234,7 +218,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js removed for native canvas implementation -->
     <script type="module" src="./src/main.js"></script>
 </body>
 </html>
