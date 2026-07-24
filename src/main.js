@@ -169,22 +169,34 @@ function switchMonthlyTab(tabId) {
 function getDateRange() {
     const range = monthlyRange.value;
     const today = new Date();
-    const tzOffset = today.getTimezoneOffset() * 60000;
     
-    // Default: local today
-    let endDate = new Date(Date.now() - tzOffset);
-    let startDate = new Date(Date.now() - tzOffset);
+    // Helper to format local date as YYYY-MM-DD
+    const toLocalISO = (d) => {
+        const yr = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const da = String(d.getDate()).padStart(2, '0');
+        return `${yr}-${mo}-${da}`;
+    };
 
     if (range === "current") {
-        startDate.setDate(1); // First day of current month
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        return { start: toLocalISO(start), end: toLocalISO(today) };
     } else if (range === "30") {
-        startDate.setDate(startDate.getDate() - 30);
+        const start = new Date(today);
+        start.setDate(today.getDate() - 30);
+        return { start: toLocalISO(start), end: toLocalISO(today) };
     } else if (range === "90") {
-        startDate.setDate(startDate.getDate() - 90);
+        const start = new Date(today);
+        start.setDate(today.getDate() - 90);
+        return { start: toLocalISO(start), end: toLocalISO(today) };
     } else if (range === "180") {
-        startDate.setDate(startDate.getDate() - 180);
+        const start = new Date(today);
+        start.setDate(today.getDate() - 180);
+        return { start: toLocalISO(start), end: toLocalISO(today) };
     } else if (range === "365") {
-        startDate.setDate(startDate.getDate() - 365);
+        const start = new Date(today);
+        start.setDate(today.getDate() - 365);
+        return { start: toLocalISO(start), end: toLocalISO(today) };
     } else if (range === "custom") {
         const customStart = document.getElementById("range-start").value;
         const customEnd = document.getElementById("range-end").value;
@@ -192,10 +204,7 @@ function getDateRange() {
         return { start: customStart, end: customEnd };
     }
 
-    return {
-        start: startDate.toISOString().split('T')[0],
-        end: endDate.toISOString().split('T')[0]
-    };
+    return { start: toLocalISO(today), end: toLocalISO(today) };
 }
 
 async function loadMonthlyData(forceTab = null) {
