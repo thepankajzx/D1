@@ -232,6 +232,15 @@
             <h1 id="modal-score" class="score-val"></h1>
             <div id="modal-details" class="details-grid mt-1"></div>
         </div>
+    <!-- Chart Modal -->
+    <div id="chart-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="width: 95%; max-width: 1000px; height: 80vh; background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column;">
+            <span class="close-btn" id="close-chart-modal">&times;</span>
+            <h3 id="chart-modal-title" style="margin-top: 0; margin-bottom: 15px; text-align: center;"></h3>
+            <div id="chart-modal-body" style="flex: 1; position: relative; width: 100%;">
+                <canvas id="chart-modal-canvas"></canvas>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

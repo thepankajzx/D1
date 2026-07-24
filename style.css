@@ -332,14 +332,25 @@ select {
 
 .chart-wrapper {
     width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 10px;
+    position: relative; /* Better for Chart.js */
 }
 
 .chart-wrapper canvas {
-    min-width: 600px; /* Forces scrolling on small screens */
+    /* Removed min-width to allow mobile responsive shrinking */
     width: 100% !important;
+}
+
+.zoom-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+.zoom-btn:hover {
+    background: #f0f0f0;
 }
 
 /* Modal */

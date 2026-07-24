@@ -19,12 +19,15 @@ const colors = [
 ];
 
 let chartInstances = [];
+let modalChartInstance = null;
 
 export function initCharts() {
     const filtersContainer = document.getElementById("chart-habits");
+    if (!filtersContainer) return;
+    filtersContainer.innerHTML = "";
     
     // Inject checkboxes
-    habits.forEach((habit, idx) => {
+    habits.forEach((habit) => {
         const label = document.createElement("label");
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
@@ -34,6 +37,20 @@ export function initCharts() {
         label.appendChild(checkbox);
         label.appendChild(document.createTextNode(" " + habit.label));
         filtersContainer.appendChild(label);
+    });
+
+    const genBtn = document.getElementById("generate-charts");
+    if (genBtn) {
+        genBtn.addEventListener("click", renderCharts);
+    }
+
+    // Modal Close
+    document.getElementById("close-chart-modal").addEventListener("click", () => {
+        document.getElementById("chart-modal").style.display = "none";
+        if (modalChartInstance) {
+            modalChartInstance.destroy();
+            modalChartInstance = null;
+        }
     });
 }
 
@@ -121,11 +138,20 @@ export async function renderCharts(startDateStr, endDateStr) {
     const mode = document.querySelector("input[name='chartMode']:checked").value;
 
     if (mode === "combined") {
+        const card = document.createElement("div");
+        card.className = "card mt-1";
+        card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin:0;">Combined Performance</h4>
+                            <button class="zoom-btn" title="Expand Chart">🔍</button>
+                          </div>`;
+
         const wrapper = document.createElement("div");
         wrapper.className = "chart-wrapper";
+        wrapper.style.marginTop = "10px";
         const canvas = document.createElement("canvas");
         wrapper.appendChild(canvas);
-        container.appendChild(wrapper);
+        card.appendChild(wrapper);
+        container.appendChild(card);
         
         const datasets = selectedHabits.map((habit, i) => {
             return {
@@ -178,12 +204,20 @@ export async function renderCharts(startDateStr, endDateStr) {
         wrapper.style.height = '400px';
         chartInstances.push(chart);
         
+        // Add zoom functionality
+        card.querySelector('.zoom-btn').addEventListener('click', () => {
+            openChartModal("Combined Performance", datasets, labels);
+        });
+        
     } else {
         // Separate Mode
         selectedHabits.forEach((habit, i) => {
             const card = document.createElement("div");
             card.className = "card mt-1";
-            card.innerHTML = `<h4>${habit.label}</h4>`;
+            card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>${habit.label}</h4>
+                                <button class="zoom-btn" title="Expand Chart">🔍</button>
+                              </div>`;
             
             const wrapper = document.createElement("div");
             wrapper.className = "chart-wrapper";
@@ -241,6 +275,74 @@ export async function renderCharts(startDateStr, endDateStr) {
                 }
             });
             chartInstances.push(chart);
+            
+            // Add zoom functionality
+            card.querySelector('.zoom-btn').addEventListener('click', () => {
+                openChartModal(habit.label, [datasets[0]], labels, habit);
+            });
         });
     }
+}
+
+function openChartModal(title, datasets, labels, habit = null) {
+    document.getElementById("chart-modal-title").textContent = title;
+    const modalCanvas = document.getElementById("chart-modal-canvas");
+    
+    if (modalChartInstance) {
+        modalChartInstance.destroy();
+    }
+    
+    document.getElementById("chart-modal").style.display = "flex";
+    
+    // Configure tooltip exactly like original
+    const tooltipConfig = {
+        callbacks: {
+            label: function(context) {
+                const val = context.parsed.y;
+                const dsLabel = context.dataset.label;
+                
+                // If we passed a specific habit, use it. Otherwise guess from label (for combined)
+                const h = habit || habits.find(hbt => hbt.label === dsLabel);
+                
+                if (h) {
+                    if (h.type === 'time' || h.type === 'sleepTime') {
+                        return `${h.label}: ${formatFloatToTime(val, h.type === 'sleepTime')}`;
+                    }
+                    if (h.type === 'duration') {
+                        return `${h.label}: ${formatFloatToDuration(val)}`;
+                    }
+                }
+                return `${dsLabel}: ${val}`;
+            }
+        }
+    };
+    
+    // Common options
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+            y: { 
+                beginAtZero: true,
+                grace: '10%'
+            }
+        },
+        plugins: {
+            tooltip: tooltipConfig,
+            legend: {
+                labels: { font: { size: 14 } } // Bigger legend on mobile
+            }
+        }
+    };
+    
+    if (habit && habit.max !== undefined) {
+        options.scales.y.max = habit.max;
+    }
+
+    modalChartInstance = new Chart(modalCanvas, {
+        type: 'line',
+        data: { labels, datasets },
+        options: options
+    });
 }
