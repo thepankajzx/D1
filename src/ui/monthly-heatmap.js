@@ -81,11 +81,26 @@ function createMonthBlock(year, month) {
     title.textContent = `${monthNames[month]} ${year}`;
     block.appendChild(title);
     
+    const wrapper = document.createElement("div");
+    wrapper.className = "heatmap-wrapper";
+
+    const yAxis = document.createElement("div");
+    yAxis.className = "heatmap-y-axis";
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(d => {
+        const dEl = document.createElement("div");
+        dEl.textContent = d;
+        yAxis.appendChild(dEl);
+    });
+    wrapper.appendChild(yAxis);
+    
     const grid = document.createElement("div");
     grid.className = "heatmap-grid";
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayIndex = new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+    // JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+    // We want Mon=0, Tue=1, ..., Sun=6
+    const firstDay = new Date(year, month, 1).getDay();
+    const firstDayIndex = (firstDay + 6) % 7;
     
     // Add empty boxes for offset
     for (let i = 0; i < firstDayIndex; i++) {
@@ -127,7 +142,12 @@ function createMonthBlock(year, month) {
             if (isNaN(percentage)) percentage = 0;
 
             dayBox.classList.add(getScoreClass(percentage));
-            dayBox.textContent = `${Math.round(percentage)}%`;
+            
+            const textSpan = document.createElement("span");
+            textSpan.className = "percent-text";
+            textSpan.textContent = `${Math.round(percentage)}%`;
+            dayBox.appendChild(textSpan);
+            
             dayBox.title = `${dateStr}: ${Math.round(percentage)}%`;
             dayBox.addEventListener("click", () => openModal(record));
         } else {
@@ -138,7 +158,8 @@ function createMonthBlock(year, month) {
         grid.appendChild(dayBox);
     }
     
-    block.appendChild(grid);
+    wrapper.appendChild(grid);
+    block.appendChild(wrapper);
     return block;
 }
 
