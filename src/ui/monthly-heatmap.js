@@ -118,7 +118,8 @@ function openModal(record) {
     document.getElementById("modal-score").textContent = `${record.overallScore}%`;
     document.getElementById("modal-score").className = `score-val ${getScoreClass(record.overallScore)}`;
     
-    const details = document.getElementById("modal-details");
+    const workoutDisplay = record.inputs.workout !== undefined ? record.inputs.workout : `${Math.floor(record.inputs.workoutMins/60)}h ${record.inputs.workoutMins%60}m`;
+    
     details.innerHTML = `
         <div><strong>Wake:</strong> ${record.inputs.wake} <br><small>(${record.scores.wakeScore} pts)</small></div>
         <div><strong>Sleep:</strong> ${record.inputs.sleep} <br><small>(${record.scores.sleepScore} pts)</small></div>
@@ -126,7 +127,7 @@ function openModal(record) {
         <div><strong>Music/Ph:</strong> ${Math.floor(record.inputs.musicMins/60)}h ${record.inputs.musicMins%60}m <br><small>(${record.scores.musicScore} pts)</small></div>
         <div><strong>Porn:</strong> ${record.inputs.porn} <br><small>(${record.scores.pornScore} pts)</small></div>
         <div><strong>Masturbation:</strong> ${record.inputs.masturbation} <br><small>(${record.scores.masturbationScore} pts)</small></div>
-        <div><strong>Workout:</strong> ${record.inputs.workout} <br><small>(${record.scores.workoutScore} pts)</small></div>
+        <div><strong>Workout:</strong> ${workoutDisplay} <br><small>(${record.scores.workoutScore} pts)</small></div>
     `;
     
     modal.classList.remove("hidden");

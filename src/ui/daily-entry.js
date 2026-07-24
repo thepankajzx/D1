@@ -37,12 +37,16 @@ export async function initDailyEntry() {
         const mMusic = parseInt(document.getElementById("entry-music-m").value) || 0;
         const musicMins = (hMusic * 60) + mMusic;
 
+        const hWorkout = parseInt(document.getElementById("entry-workout-h").value) || 0;
+        const mWorkout = parseInt(document.getElementById("entry-workout-m").value) || 0;
+        const workoutMins = (hWorkout * 60) + mWorkout;
+
         const inputs = {
             wake: document.getElementById("entry-wake").value,
             sleep: document.getElementById("entry-sleep").value,
             porn: document.getElementById("entry-porn").value,
             masturbation: document.getElementById("entry-masturbation").value,
-            workout: document.getElementById("entry-workout").value,
+            workoutMins: workoutMins,
             studyMins: studyMins,
             musicMins: musicMins
         };

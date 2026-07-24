@@ -65,7 +65,15 @@ export function calculateScores(inputs, targets) {
     
     const pornScore = (inputs.porn === 'No') ? 20 : 0;
     const masturbationScore = (inputs.masturbation === 'No') ? 10 : 0;
-    const workoutScore = (inputs.workout === 'Yes') ? 10 : 0;
+    
+    // Workout (Max 10)
+    let workoutScore = 0;
+    if (inputs.workout !== undefined) {
+        // Fallback for old data where workout was Yes/No
+        workoutScore = (inputs.workout === 'Yes') ? 10 : 0;
+    } else {
+        workoutScore = (inputs.workoutMins > 0) ? 10 : 0;
+    }
     
     // Study (Max 20)
     let studyScore = 20;
