@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- App Shell -->
+    <div id="app">
+        <!-- Auth Section -->
+        <div id="auth-section" class="screen">
+            <div class="auth-card card">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit" class="submit-btn mt-1">Login</button>
+                    <p id="auth-error" class="error mt-1"></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="main-section" class="screen hidden">
+            <header>
+                <div class="logo">HabitTracker</div>
+                <nav>
+                    <button id="nav-daily" class="active">Daily</button>
+                    <button id="nav-monthly" class="circle-btn">M</button>
+                    <button id="nav-profile" class="icon-btn">👤</button>
+                </nav>
+            </header>
+
+            <main>
+                <!-- Daily Entry Tab -->
+                <section id="tab-daily" class="tab-content">
+                    <!-- Dashboard Cards -->
+                    <div class="dashboard">
+                        <div class="card dash-card">
+                            <h3>Today</h3>
+                            <div id="dash-today" class="score-val">-</div>
+                        </div>
+                        <div class="card dash-card">
+                            <h3>7 Days</h3>
+                            <div id="dash-7day" class="score-val">-</div>
+                        </div>
+                        <div class="card dash-card">
+                            <h3>Month</h3>
+                            <div id="dash-month" class="score-val">-</div>
+                        </div>
+                        <div class="card dash-card">
+                            <h3>Overall</h3>
+                            <div id="dash-overall" class="score-val">-</div>
+                        </div>
+                    </div>
+
+                    <form id="daily-form" class="entry-form card mt-2">
+                        <h2>Daily Entry</h2>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="entry-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Wake Up Time</label>
+                            <input type="time" id="entry-wake" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sleep Time</label>
+                            <input type="time" id="entry-sleep" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Porn</label>
+                            <select id="entry-porn">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Masturbation</label>
+                            <select id="entry-masturbation">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Government Study</label>
+                            <div class="time-inputs">
+                                <input type="number" id="entry-study-h" min="0" placeholder="Hours" required>
+                                <input type="number" id="entry-study-m" min="0" max="59" placeholder="Minutes" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Workout</label>
+                            <select id="entry-workout">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Music + Non-Work Phone</label>
+                            <div class="time-inputs">
+                                <input type="number" id="entry-music-h" min="0" placeholder="Hours" required>
+                                <input type="number" id="entry-music-m" min="0" max="59" placeholder="Minutes" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn mt-1" id="entry-submit-btn">Submit Today's Record</button>
+                        <p id="entry-msg" class="mt-1"></p>
+                    </form>
+                </section>
+
+                <!-- Monthly Tab -->
+                <section id="tab-monthly" class="tab-content hidden">
+                    <div class="monthly-tabs">
+                        <button id="sub-heatmap" class="active">Heatmap</button>
+                        <button id="sub-charts">Charts</button>
+                    </div>
+
+                    <div class="controls card mt-1">
+                        <label>Date Range:</label>
+                        <select id="monthly-range">
+                            <option value="current">Current Month</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="180">Last 180 Days</option>
+                            <option value="365">Last 365 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                        <div id="custom-range-inputs" class="hidden mt-1">
+                            <input type="date" id="range-start"> to <input type="date" id="range-end">
+                            <button id="apply-custom-range" class="submit-btn inline-btn">Apply</button>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap Sub-tab -->
+                    <div id="view-heatmap" class="mt-2">
+                        <div class="toggle-container">
+                            <label><input type="checkbox" id="toggle-percent"> Show %</label>
+                        </div>
+                        <div id="heatmap-container" class="heatmap-grid-container mt-1"></div>
+                    </div>
+
+                    <!-- Charts Sub-tab -->
+                    <div id="view-charts" class="hidden mt-2 card">
+                        <div class="chart-controls">
+                            <h4>Select Habits</h4>
+                            <div class="habit-filters" id="chart-habits">
+                                <!-- Checkboxes injected via JS -->
+                            </div>
+                            <h4 class="mt-1">Display Mode</h4>
+                            <div class="mode-toggle">
+                                <label><input type="radio" name="chartMode" value="combined" checked> Combined</label>
+                                <label><input type="radio" name="chartMode" value="separate"> Separate</label>
+                            </div>
+                            <button id="generate-charts" class="submit-btn mt-1">Generate Charts</button>
+                        </div>
+                        <div id="charts-container" class="mt-2"></div>
+                    </div>
+                </section>
+
+                <!-- Profile Tab -->
+                <section id="tab-profile" class="tab-content hidden">
+                    <div class="card">
+                        <h2>Profile</h2>
+                        <p>Email: <span id="profile-email"></span></p>
+                        <button id="btn-logout" class="submit-btn outline mt-1">Logout</button>
+                    </div>
+
+                    <div class="card mt-2">
+                        <h2>Settings (Targets)</h2>
+                        <form id="settings-form">
+                            <div class="form-group">
+                                <label>Wake Up Target Time</label>
+                                <input type="time" id="set-wake" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Sleep Target Time</label>
+                                <input type="time" id="set-sleep" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Govt Study Target</label>
+                                <div class="time-inputs">
+                                    <input type="number" id="set-study-h" min="0" placeholder="Hours" required>
+                                    <input type="number" id="set-study-m" min="0" max="59" placeholder="Minutes" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Music + Phone Max Limit</label>
+                                <div class="time-inputs">
+                                    <input type="number" id="set-music-h" min="0" placeholder="Hours" required>
+                                    <input type="number" id="set-music-m" min="0" max="59" placeholder="Minutes" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn mt-1">Save Settings</button>
+                            <p id="settings-msg" class="mt-1"></p>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-content card">
+            <span class="close-btn" id="close-modal">&times;</span>
+            <h2 id="modal-date"></h2>
+            <h1 id="modal-score" class="score-val"></h1>
+            <div id="modal-details" class="details-grid mt-1"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
