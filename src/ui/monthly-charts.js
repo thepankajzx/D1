@@ -4,7 +4,7 @@ import { getRecordsByDateRange } from "../db.js";
 const habits = [
     { id: "wakeScore", inputKey: "wake", label: "Wake Up", max: 15, type: "time" },
     { id: "sleepScore", inputKey: "sleep", label: "Sleep Time", max: 10, type: "time" },
-    { id: "studyScore", inputKey: "studyMins", label: "Govt Study", max: 20, type: "duration" },
+    { id: "studyScore", inputKey: "studyMins", label: "Study", max: 20, type: "duration" },
     { id: "workoutScore", inputKey: "workoutMins", label: "Workout", max: 10, type: "duration" },
     { id: "musicScore", inputKey: "musicMins", label: "Music+Phone", max: 15, type: "duration" },
     { id: "pornScore", inputKey: "porn", label: "Porn", max: 20, type: "boolean" },
@@ -119,7 +119,7 @@ export async function renderCharts(startDateStr, endDateStr) {
         card.className = "card mt-2";
         card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3>Combined Performance</h3>
-                            <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶ Fullscreen</button>
+                            <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶</button>
                           </div>`;
 
         const wrapper = document.createElement("div");
@@ -161,7 +161,10 @@ export async function renderCharts(startDateStr, endDateStr) {
                     legend: {
                         labels: {
                             usePointStyle: true,
-                            pointStyle: 'circle'
+                            pointStyle: 'circle',
+                            pointStyleWidth: 10,
+                            boxWidth: 10,
+                            boxHeight: 10
                         }
                     },
                     tooltip: {
@@ -195,7 +198,7 @@ export async function renderCharts(startDateStr, endDateStr) {
             card.className = "card mt-1";
             card.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4>${habit.label}</h4>
-                                <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶ Fullscreen</button>
+                                <button class="zoom-btn" title="Expand Chart" style="padding: 6px 12px; font-size: 0.9rem; background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⛶</button>
                               </div>`;
             
             const wrapper = document.createElement("div");
@@ -241,7 +244,10 @@ export async function renderCharts(startDateStr, endDateStr) {
                         legend: {
                             labels: {
                                 usePointStyle: true,
-                                pointStyle: 'circle'
+                                pointStyle: 'circle',
+                                pointStyleWidth: 10,
+                                boxWidth: 10,
+                                boxHeight: 10
                             }
                         },
                         tooltip: {
@@ -320,6 +326,9 @@ export function openChartModal(title, datasets, labels, habit = null) {
                 labels: { 
                     usePointStyle: true,
                     pointStyle: 'circle',
+                    pointStyleWidth: 10,
+                    boxWidth: 10,
+                    boxHeight: 10,
                     font: { size: 14 } 
                 } // Bigger legend on mobile
             }

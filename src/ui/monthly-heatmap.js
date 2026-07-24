@@ -168,7 +168,7 @@ function createMonthBlock(year, month) {
             dayBox.appendChild(textSpan);
             
             dayBox.title = `${dateStr}: ${Math.round(percentage)}%`;
-            dayBox.addEventListener("click", () => openModal(record));
+            dayBox.addEventListener("click", () => openModal(record, filter, percentage));
         } else {
             dayBox.style.backgroundColor = "#eee";
             dayBox.title = `${dateStr}: No data`;
@@ -190,10 +190,10 @@ function getScoreClass(score) {
     return "score-39";
 }
 
-function openModal(record) {
+function openModal(record, filter, percentage) {
     document.getElementById("modal-date").textContent = record.date;
-    document.getElementById("modal-score").textContent = `${record.overallScore}%`;
-    document.getElementById("modal-score").className = `score-val ${getScoreClass(record.overallScore)}`;
+    document.getElementById("modal-score").textContent = `${Math.round(percentage)}%`;
+    document.getElementById("modal-score").className = `score-val ${getScoreClass(percentage)}`;
     
     function formatDuration(mins) {
         if (mins === undefined || isNaN(mins)) return "0h 0m";
@@ -202,16 +202,22 @@ function openModal(record) {
     
     const workoutDisplay = record.inputs.workout !== undefined ? record.inputs.workout : formatDuration(record.inputs.workoutMins);
     
+    const allDetails = {
+        wakeScore: `<div><strong>Wake:</strong> ${record.inputs.wake || '-'} <br><small>(${record.scores.wakeScore || 0} pts)</small></div>`,
+        sleepScore: `<div><strong>Sleep:</strong> ${record.inputs.sleep || '-'} <br><small>(${record.scores.sleepScore || 0} pts)</small></div>`,
+        studyScore: `<div><strong>Study:</strong> ${formatDuration(record.inputs.studyMins)} <br><small>(${record.scores.studyScore || 0} pts)</small></div>`,
+        musicScore: `<div><strong>Music/Ph:</strong> ${formatDuration(record.inputs.musicMins)} <br><small>(${record.scores.musicScore || 0} pts)</small></div>`,
+        pornScore: `<div><strong>Porn:</strong> ${record.inputs.porn || '-'} <br><small>(${record.scores.pornScore || 0} pts)</small></div>`,
+        masturbationScore: `<div><strong>Masturbation:</strong> ${record.inputs.masturbation || '-'} <br><small>(${record.scores.masturbationScore || 0} pts)</small></div>`,
+        workoutScore: `<div><strong>Workout:</strong> ${workoutDisplay} <br><small>(${record.scores.workoutScore || 0} pts)</small></div>`
+    };
+    
     const details = document.getElementById("modal-details");
-    details.innerHTML = `
-        <div><strong>Wake:</strong> ${record.inputs.wake || '-'} <br><small>(${record.scores.wakeScore || 0} pts)</small></div>
-        <div><strong>Sleep:</strong> ${record.inputs.sleep || '-'} <br><small>(${record.scores.sleepScore || 0} pts)</small></div>
-        <div><strong>Study:</strong> ${formatDuration(record.inputs.studyMins)} <br><small>(${record.scores.studyScore || 0} pts)</small></div>
-        <div><strong>Music/Ph:</strong> ${formatDuration(record.inputs.musicMins)} <br><small>(${record.scores.musicScore || 0} pts)</small></div>
-        <div><strong>Porn:</strong> ${record.inputs.porn || '-'} <br><small>(${record.scores.pornScore || 0} pts)</small></div>
-        <div><strong>Masturbation:</strong> ${record.inputs.masturbation || '-'} <br><small>(${record.scores.masturbationScore || 0} pts)</small></div>
-        <div><strong>Workout:</strong> ${workoutDisplay} <br><small>(${record.scores.workoutScore || 0} pts)</small></div>
-    `;
+    if (filter === "overallScore") {
+        details.innerHTML = Object.values(allDetails).join("");
+    } else {
+        details.innerHTML = allDetails[filter] || "";
+    }
     
     modal.classList.remove("hidden");
 }
