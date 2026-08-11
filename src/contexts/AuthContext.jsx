@@ -17,15 +17,27 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authTimeout, setAuthTimeout] = useState(false);
 
   useEffect(() => {
+    // If Firebase takes too long, likely an IndexedDB / "Database is closing" issue.
+    const timer = setTimeout(() => {
+      if (loading) {
+        setAuthTimeout(true);
+      }
+    }, 5000);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+      clearTimeout(timer);
     });
 
-    return unsubscribe;
-  }, []);
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [loading]);
 
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
@@ -51,9 +63,40 @@ export function AuthProvider({ children }) {
     logout
   };
 
+  if (authTimeout && loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-surface text-center">
+        <span className="material-symbols-outlined text-4xl text-error mb-4">error</span>
+        <h2 className="font-headline-md text-error mb-2">Authentication Error</h2>
+        <p className="font-body-md text-on-surface-variant max-w-md mb-6">
+          The app is unable to connect to the authentication database. This usually happens if the browser restricts access (e.g. "Database is closing") or if there are multiple tabs open.
+        </p>
+        <button 
+          onClick={() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload();
+          }}
+          className="bg-primary text-on-primary px-6 py-3 rounded-full hover:opacity-90 transition-opacity"
+        >
+          Clear Data & Reload
+        </button>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-surface">
+          <div className="flex flex-col items-center gap-4">
+            <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+            <span className="font-label-md text-on-surface-variant">Loading Definite...</span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }

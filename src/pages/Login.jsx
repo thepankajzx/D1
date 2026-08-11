@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { currentUser, login, signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -41,7 +49,11 @@ export default function Login() {
       await loginWithGoogle();
       navigate('/');
     } catch (err) {
-      setError('Failed to sign in with Google: ' + err.message);
+      if (err.message.includes('Database is closing') || err.message.includes('hidden')) {
+        setError('Database Error: Browser closed the connection. Please click "Continue with Google" again.');
+      } else {
+        setError('Failed to sign in with Google: ' + err.message);
+      }
     } finally {
       setLoading(false);
     }

@@ -1,0 +1,427 @@
+:root {
+    /* VIBRANT & CLEAN COLORS */
+    --sub-bg-page: #F8FAFC; 
+    --sub-text-main: #0F172A; 
+    --sub-text-muted: #475569; 
+    --sub-text-sub: #64748B;
+    --sub-border-light: #CBD5E1; 
+    --sub-primary-border: #A5B4FC;
+    --sub-bg-card: #FFFFFF;
+    
+    --sub-brand-blue: #4338CA; 
+    --sub-brand-purple: #7C3AED; 
+    --sub-brand-green: #059669; 
+    
+    --sub-free-bg: #FFFFFF;
+    --sub-free-pill-bg: #ECFDF5;
+    --sub-free-pill-border: #6EE7B7; 
+    --sub-free-icon: #059669;
+    
+    --sub-pro-bg: #FFFFFF;
+    --sub-pro-card-border: #818CF8; 
+    --sub-pro-pill-bg: #EEF2FF;
+    --sub-pro-pill-border: #A5B4FC; 
+    --sub-pro-icon: #4338CA;
+    
+    --sub-shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --sub-shadow-card: 0 20px 40px rgba(67, 56, 202, 0.15); 
+    
+    --sub-radius-xl: 24px;
+    --sub-radius-lg: 16px;
+    --sub-radius-md: 12px;
+    --sub-radius-pill: 100px;
+}
+
+.subscription-page {
+    background-color: var(--sub-bg-page);
+    color: var(--sub-text-main);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    padding: 32px 16px; 
+    min-height: 100vh;
+}
+
+.subscription-page .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+.subscription-page svg { display: inline-block; vertical-align: middle; }
+
+/* --- 1. HERO SECTION --- */
+.subscription-page .hero {
+    display: flex;
+    flex-direction: column; 
+    gap: 40px;
+    margin-bottom: 48px;
+}
+
+.subscription-page .hero-left {
+    width: 100%;
+    max-width: 560px;
+}
+
+.subscription-page .top-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--sub-brand-blue);
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    background: #EEF2FF;
+    padding: 6px 12px;
+    border-radius: 100px;
+    border: 1px solid #C7D2FE;
+}
+
+.subscription-page .hero h1 {
+    font-size: 2.4rem; 
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: var(--sub-text-main);
+}
+
+.subscription-page .hero h1 .gradient-text {
+    background: linear-gradient(135deg, #4F46E5, #9333EA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: block;
+}
+
+.subscription-page .hero .desc {
+    font-size: 1rem;
+    color: var(--sub-text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.subscription-page .hero-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.subscription-page .hero-bullet {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--sub-text-main);
+    font-weight: 500;
+}
+
+.subscription-page .hero-bullet-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; border: 1px solid;
+}
+.subscription-page .icon-green { background: var(--sub-free-pill-bg); color: var(--sub-free-icon); border-color: var(--sub-free-pill-border); }
+.subscription-page .icon-purple { background: var(--sub-pro-pill-bg); color: var(--sub-brand-blue); border-color: var(--sub-pro-pill-border); }
+
+/* --- 3. PREMIUM DASHBOARD VISUAL (Spaced out Grid with Hub) --- */
+.subscription-page .hero-right {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subscription-page .analytics-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Dotted Connecting Lines */
+.subscription-page .hub-lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.subscription-page .hub-lines svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.subscription-page .hub-lines line {
+    stroke: #C7D2FE;
+    stroke-width: 2;
+    stroke-dasharray: 4 6;
+}
+
+/* 2x2 Grid Layout for Cards */
+.subscription-page .analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    position: relative;
+    z-index: 2;
+    padding: 24px 0;
+}
+
+/* The Premium Hub in the Center */
+.subscription-page .hub-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.subscription-page .hub-glow {
+    position: absolute;
+    width: 70px; height: 70px;
+    background: var(--sub-brand-purple);
+    filter: blur(20px);
+    opacity: 0.5;
+    border-radius: 50%;
+}
+
+.subscription-page .hub-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #7C3AED, #4338CA);
+    border-radius: 50%;
+    border: 4px solid var(--sub-bg-page);
+    display: flex; justify-content: center; align-items: center;
+    color: white;
+    box-shadow: 0 8px 20px rgba(67, 56, 202, 0.4);
+    position: relative;
+    z-index: 2;
+}
+
+/* Dashboard Mock Cards */
+.subscription-page .mock-card {
+    background: var(--sub-bg-card);
+    border-radius: var(--sub-radius-lg);
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    border: 1px solid var(--sub-border-light);
+    display: flex; flex-direction: column; justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.subscription-page .mock-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(67, 56, 202, 0.12);
+    border-color: var(--sub-primary-border);
+}
+
+.subscription-page .mc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.subscription-page .mc-title { font-size: 0.85rem; font-weight: 800; color: var(--sub-text-main); margin-bottom: 2px;}
+.subscription-page .mc-sub { font-size: 0.65rem; color: var(--sub-text-sub); font-weight: 600; margin-bottom: 12px; }
+
+.subscription-page .mc-badge {
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.subscription-page .mc-badge.free { background: var(--sub-free-pill-bg); color: var(--sub-brand-green); }
+.subscription-page .mc-badge.pro { background: var(--sub-text-main); color: #FFF; }
+
+/* Heatmap Specific */
+.subscription-page .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.subscription-page .hm-cell { aspect-ratio: 1; border-radius: 2px; background: #E2E8F0; }
+.subscription-page .hm-cell.lvl-1 { background: #C7D2FE; }
+.subscription-page .hm-cell.lvl-2 { background: #818CF8; }
+.subscription-page .hm-cell.lvl-3 { background: #4F46E5; }
+
+/* Bar Chart */
+.subscription-page .bar-chart-mock { display: flex; align-items: flex-end; justify-content: space-between; height: 50px; gap: 4px;}
+.subscription-page .mock-bar { flex: 1; border-radius: 3px 3px 0 0; background: #CBD5E1; }
+.subscription-page .mock-bar.active { background: var(--sub-brand-blue); }
+.subscription-page .mock-bar.semi { background: #A5B4FC; }
+
+/* ==============================================================
+   COMBINED GRID (Pricing Cards + Feature Pills ALIGNED) 
+   ============================================================== */
+.subscription-page .comparison-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+/* Redefine card properties inside the combined layout */
+.subscription-page .card {
+    background: var(--sub-free-bg);
+    border: 2px solid var(--sub-border-light);
+    border-radius: var(--sub-radius-xl);
+    padding: 28px 24px; 
+    box-shadow: var(--sub-shadow-soft);
+    display: flex; flex-direction: column;
+    height: 100%;
+}
+
+.subscription-page .card-pro {
+    background: var(--sub-pro-bg);
+    border: 3px solid var(--sub-pro-card-border);
+    box-shadow: var(--sub-shadow-card);
+}
+
+.subscription-page .card-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.subscription-page .card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; border: 1px solid;
+}
+.subscription-page .icon-free-card { background: var(--sub-free-pill-bg); color: var(--sub-brand-green); border-color: var(--sub-free-pill-border); }
+.subscription-page .icon-pro-card { background: var(--sub-pro-pill-bg); color: var(--sub-brand-blue); border-color: var(--sub-pro-pill-border); margin-bottom: 0;}
+
+.subscription-page .card h2 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; color: var(--sub-text-main); }
+.subscription-page .card p.sub { color: var(--sub-text-muted); font-size: 0.95rem; margin-bottom: 24px; font-weight: 500; }
+
+.subscription-page .price-wrap { margin-bottom: 24px; }
+.subscription-page .price { font-size: 3rem; font-weight: 800; line-height: 1; color: var(--sub-text-main); }
+.subscription-page .price-span { color: var(--sub-text-muted); font-size: 0.95rem; font-weight: 600; margin-top: 8px; }
+
+.subscription-page .popular-badge {
+    background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+    color: var(--sub-brand-blue); font-size: 0.75rem; font-weight: 800;
+    padding: 6px 12px; border-radius: var(--sub-radius-pill);
+    display: flex; align-items: center; gap: 4px; text-transform: uppercase;
+    border: 1px solid var(--sub-pro-card-border);
+}
+
+.subscription-page .card-list { list-style: none; margin-bottom: 32px; flex: 1; padding: 0; }
+.subscription-page .card-list li {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    font-size: 0.95rem; font-weight: 600; color: var(--sub-text-main);
+}
+.subscription-page .card-list li svg { flex-shrink: 0; }
+.subscription-page .card-list li svg.check-green { color: var(--sub-brand-green); }
+.subscription-page .card-list li svg.check-purple { color: var(--sub-brand-blue); }
+
+/* Radios */
+.subscription-page .radio-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+.subscription-page .radio-label {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; border: 2px solid var(--sub-border-light);
+    border-radius: var(--sub-radius-md); cursor: pointer;
+    background: #FFF; transition: all 0.2s;
+}
+.subscription-page .radio-label.active { border: 2px solid var(--sub-brand-blue); background: var(--sub-pro-pill-bg); }
+
+.subscription-page .radio-left { display: flex; align-items: center; gap: 10px; }
+.subscription-page .custom-radio {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid #94A3B8; display: flex; align-items: center; justify-content: center;
+}
+.subscription-page .radio-label.active .custom-radio { border-color: var(--sub-brand-blue); }
+.subscription-page .radio-label.active .custom-radio::after {
+    content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--sub-brand-blue);
+}
+
+.subscription-page .radio-text-main { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 6px; color: var(--sub-text-main); flex-wrap: wrap;}
+.subscription-page .save-badge { background: #10B981; color: #FFFFFF; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; white-space: nowrap;}
+.subscription-page .radio-text-sub { font-size: 0.8rem; color: var(--sub-text-muted); font-weight: 500; margin-top: 2px; }
+
+.subscription-page .radio-price { text-align: right; }
+.subscription-page .r-price { font-weight: 800; font-size: 1.15rem; color: var(--sub-text-main); }
+.subscription-page .r-strike { font-size: 0.8rem; color: #64748B; text-decoration: line-through; font-weight: 600; }
+
+.subscription-page .btn {
+    width: 100%; padding: 16px; border-radius: var(--sub-radius-md);
+    font-size: 1rem; font-weight: 700; display: flex; align-items: center;
+    justify-content: center; gap: 8px; cursor: pointer; transition: all 0.3s; border: none;
+    margin-top: auto; /* Push button to bottom */
+}
+.subscription-page .btn-outline { background: transparent; border: 2px solid var(--sub-text-main); color: var(--sub-text-main); }
+.subscription-page .btn-primary { background: linear-gradient(135deg, #4F46E5, #7C3AED); color: #FFF; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
+
+.subscription-page .secure-text { text-align: center; font-size: 0.75rem; color: var(--sub-text-muted); margin-top: 14px; display: flex; justify-content: center; align-items: center; gap: 6px; font-weight: 600; }
+
+/* Feature Pills Layout Updates */
+.subscription-page .feature-card {
+    background: var(--sub-free-bg); border: 2px solid var(--sub-border-light);
+    border-radius: var(--sub-radius-xl); padding: 28px 20px; box-shadow: var(--sub-shadow-soft);
+    height: 100%;
+}
+
+.subscription-page .fc-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.subscription-page .fc-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid; flex-shrink: 0;}
+.subscription-page .fc-icon-green { background: var(--sub-free-pill-bg); color: var(--sub-brand-green); border-color: var(--sub-free-pill-border); }
+.subscription-page .fc-icon-purple { background: var(--sub-pro-pill-bg); color: var(--sub-brand-blue); border-color: var(--sub-pro-pill-border); }
+
+.subscription-page .fc-title { font-weight: 800; font-size: 1.1rem; color: var(--sub-text-main); line-height: 1.2;}
+.subscription-page .fc-sub { font-size: 0.85rem; color: var(--sub-text-muted); font-weight: 500; margin-top: 4px;}
+
+.subscription-page .pills-container { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.subscription-page .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: var(--sub-radius-pill);
+    font-size: 0.8rem; font-weight: 700; background: #FFF;
+}
+.subscription-page .pill-free { border: 2px solid var(--sub-free-pill-border); color: var(--sub-text-main); }
+.subscription-page .pill-free svg { color: var(--sub-brand-green); width: 14px; stroke-width: 3;}
+
+.subscription-page .pill-pro { border: 2px solid var(--sub-pro-pill-border); color: var(--sub-brand-blue); }
+.subscription-page .pill-pro svg { color: var(--sub-brand-blue); width: 14px; stroke-width: 2.5;}
+
+/* --- 4. TRUST FOOTER --- */
+.subscription-page .trust-footer {
+    border-top: 2px solid var(--sub-border-light);
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column; 
+    gap: 24px;
+}
+.subscription-page .trust-item { display: flex; align-items: flex-start; gap: 14px; }
+.subscription-page .trust-item svg { color: var(--sub-brand-blue); width: 28px; height: 28px; flex-shrink: 0;}
+.subscription-page .trust-title { font-weight: 800; font-size: 0.95rem; color: var(--sub-text-main); margin-bottom: 2px; }
+.subscription-page .trust-desc { font-size: 0.85rem; color: var(--sub-text-muted); line-height: 1.4; font-weight: 500;}
+
+/* ==============================================================
+   MEDIA QUERIES FOR DESKTOP / TABLET UPGRADES 
+   ============================================================== */
+@media (min-width: 900px) {
+    .subscription-page { padding: 60px 40px; }
+    
+    .subscription-page .hero { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 72px; gap: 40px; }
+    .subscription-page .hero-right { flex: 1; justify-content: flex-end; padding: 0;}
+    
+    .subscription-page .hero h1 { font-size: 3.2rem; }
+    
+    /* Apply 2x2 grid layout for exact horizontal alignment on larger screens */
+    .subscription-page .comparison-layout { 
+        display: grid;
+        grid-template-columns: 1fr 1fr; 
+        gap: 24px; 
+    }
+    .subscription-page .free-pricing { grid-column: 1; grid-row: 1; }
+    .subscription-page .free-features { grid-column: 1; grid-row: 2; }
+    .subscription-page .pro-pricing { grid-column: 2; grid-row: 1; }
+    .subscription-page .pro-features { grid-column: 2; grid-row: 2; }
+    
+    .subscription-page .card { padding: 40px; }
+    .subscription-page .feature-card { padding: 32px; }
+    .subscription-page .pill { padding: 10px 16px; font-size: 0.85rem; }
+    
+    .subscription-page .trust-footer { flex-direction: row; justify-content: space-between; padding-top: 40px;}
+    .subscription-page .trust-item { flex: 1; min-width: 250px; }
+}

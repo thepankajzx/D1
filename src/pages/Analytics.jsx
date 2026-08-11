@@ -1,41 +1,60 @@
 import { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, doc, getDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import { 
   computeKPIs, 
   generateHeatmapGrid, 
   computeHabitBreakdown, 
   identifyAreasToImprove 
 } from '../lib/analytics';
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import ReactECharts from 'echarts-for-react';
+import { Link } from 'react-router-dom';
 
 export default function Analytics() {
-  const { user } = useAuth();
+  const { currentUser: user } = useAuth();
+  const { habits, allSummaries, userDoc, loadingData } = useData();
   
   // Date Range State
   const [rangeOption, setRangeOption] = useState('30'); // '7', '30', '90', 'custom'
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
+  const [appliedCustomStart, setAppliedCustomStart] = useState('');
+  const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
+  const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
   
   // Filter States
-  const [filterMode, setFilterMode] = useState('overall'); // 'overall' or habitId
+  const [selectedHabits, setSelectedHabits] = useState([]); // Array of habit IDs
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
+  const [selectedDay, setSelectedDay] = useState(null);
+  
+  // Heatmap State
+  const [isZoomedOut, setIsZoomedOut] = useState(false);
   
   // Data States
-  const [habits, setHabits] = useState([]);
   const [summaries, setSummaries] = useState([]);
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [userDoc, setUserDoc] = useState(null);
+  const [loadingEntries, setLoadingEntries] = useState(false);
 
   // Compute actual start/end based on option
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
     const end = today.toISOString().split('T')[0];
     
-    if (rangeOption === 'custom' && customStart && customEnd) {
-      return { startDate: customStart, endDate: customEnd };
+    if (rangeOption === 'custom' && appliedCustomStart && appliedCustomEnd) {
+      return { startDate: appliedCustomStart, endDate: appliedCustomEnd };
+    }
+    
+    // Default fallback if custom is selected but not applied yet
+    if (rangeOption === 'custom') {
+      let days = 30;
+      const startObj = new Date();
+      startObj.setDate(startObj.getDate() - days + 1);
+      return {
+        startDate: startObj.toISOString().split('T')[0],
+        endDate: end
+      };
     }
     
     let days = parseInt(rangeOption) || 30;
@@ -46,39 +65,20 @@ export default function Analytics() {
       startDate: startObj.toISOString().split('T')[0],
       endDate: end
     };
-  }, [rangeOption, customStart, customEnd]);
+  }, [rangeOption, appliedCustomStart, appliedCustomEnd]);
 
-  // Initial Fetch Data (Habits & User)
+  // Fetch entries when date range changes
   useEffect(() => {
-    if (!user) return;
-    async function init() {
-      const uDoc = await getDoc(doc(db, 'users', user.uid));
-      setUserDoc(uDoc.exists() ? uDoc.data() : null);
-      
-      const habitsSnap = await getDocs(collection(db, `users/${user.uid}/habits`));
-      setHabits(habitsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }
-    init();
-  }, [user]);
-
-  // Fetch summaries and entries when date range changes
-  useEffect(() => {
-    if (!user || !startDate || !endDate) return;
+    if (!user || !startDate || !endDate || loadingData) return;
     
     async function loadRangeData() {
-      setLoading(true);
+      setLoadingEntries(true);
       try {
-        // Fetch summaries
-        const summariesSnap = await getDocs(
-          query(collection(db, `users/${user.uid}/dailySummaries`), 
-            where('__name__', '>=', startDate),
-            where('__name__', '<=', endDate)
-          )
-        );
-        const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setSummaries(fetchedSummaries);
+        // Filter summaries from global context
+        const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
+        setSummaries(rangeSummaries);
         
-        // Fetch all entries in range (using entryDate field we added in Dashboard)
+        // Fetch all entries in range
         const entriesSnap = await getDocs(
           query(collection(db, `users/${user.uid}/entries`), 
             where('entryDate', '>=', startDate),
@@ -88,15 +88,19 @@ export default function Analytics() {
         setEntries(entriesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
       } catch (e) {
         console.error("Failed to load range data", e);
+      } finally {
+        setLoadingEntries(false);
       }
-      setLoading(false);
     }
     loadRangeData();
-  }, [user, startDate, endDate]);
+  }, [user, startDate, endDate, allSummaries, loadingData]);
 
   // Computations
   const kpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
-  const heatmapGrid = useMemo(() => generateHeatmapGrid(summaries, entries, filterMode, filterMode, startDate, endDate), [summaries, entries, filterMode, startDate, endDate]);
+  const heatmapGrid = useMemo(() => {
+      const activeHabitId = selectedHabits.length === 1 ? selectedHabits[0] : 'overall';
+      return generateHeatmapGrid(summaries, entries, activeHabitId === 'overall' ? 'overall' : 'habit', activeHabitId, startDate, endDate);
+  }, [summaries, entries, selectedHabits, startDate, endDate]);
   const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
@@ -128,16 +132,107 @@ export default function Analytics() {
     });
   }, [startDate, endDate, summaries, entries, habits]);
 
-  if (loading && !summaries.length) {
+  // ECharts Options Generator
+  const getEChartOption = (habitIds) => {
+    // habitIds is an array. If empty, show overall.
+    const isOverall = habitIds.length === 0;
+    
+    const series = isOverall
+      ? [{
+          name: 'Overall Score',
+          type: 'line',
+          data: chartData.map(d => d.overallScore),
+          itemStyle: { color: '#d0bcff' }, // var(--primary) fallback, echarts handles hex better
+          lineStyle: { width: 3 },
+          showSymbol: false,
+          smooth: true
+        }]
+      : habitIds.map((id, index) => {
+          const habit = habits.find(h => h.id === id);
+          // simple color palette for multiple lines
+          const colors = ['#d0bcff', '#4ade80', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6'];
+          return {
+            name: habit?.name || id,
+            type: 'line',
+            data: chartData.map(d => d[id] === null ? '-' : d[id]),
+            connectNulls: true,
+            itemStyle: { color: colors[index % colors.length] },
+            lineStyle: { width: 3 },
+            showSymbol: false,
+            smooth: true
+          };
+        });
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'var(--surface-container-high)',
+        borderColor: 'var(--outline-variant)',
+        textStyle: { color: 'var(--on-surface)' },
+        valueFormatter: (value) => value !== '-' ? `${value}%` : 'N/A'
+      },
+      legend: {
+        show: true,
+        textStyle: { color: 'var(--on-surface-variant)' },
+        bottom: 0
+      },
+      grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: chartData.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        axisLabel: { color: '#868381', fontSize: 10 },
+        axisLine: { show: false },
+        axisTick: { show: false }
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: 100,
+        axisLabel: { color: '#868381', fontSize: 10 },
+        splitLine: { lineStyle: { type: 'dashed', color: '#eeedf3' } }
+      },
+      series: series
+    };
+  };
+
+  if (loadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex flex-col gap-8 w-full animate-pulse">
+        <div className="h-12 bg-surface-container-high rounded-lg w-48 mb-8"></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-surface-container-high rounded-2xl"></div>)}
+        </div>
+        <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-8"></div>
+      </div>
+    );
+  }
+
+  if (habits.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
+        <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-5xl text-primary">bar_chart</span>
+        </div>
+        <h1 className="font-headline-lg text-headline-lg text-on-surface">No Data Available</h1>
+        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+          Your analytics will appear here once you start tracking habits. 
+        </p>
+        <Link 
+          to="/onboarding/select" 
+          className="mt-4 bg-primary text-on-primary px-6 py-3 rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity"
+        >
+          Add a Habit
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-container-max-width mx-auto">
+    <div className="flex flex-col gap-8 w-full">
       {/* Header & Date Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
@@ -145,7 +240,7 @@ export default function Analytics() {
           <p className="font-body-md text-body-md text-on-surface-variant">Analyze your habit consistency and intensity over time.</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-surface-container rounded-lg p-1 border border-outline-variant">
+        <div className="flex items-center gap-2 bg-surface-container rounded-lg p-1 border border-outline-variant shadow-sm">
           {['7', '30', '90'].map(val => (
             <button 
               key={val}
@@ -157,15 +252,38 @@ export default function Analytics() {
           ))}
           <div className="relative group">
             <button 
-              onClick={() => setRangeOption('custom')}
+              onClick={() => {
+                setRangeOption('custom');
+                setIsCustomDropdownOpen(!isCustomDropdownOpen);
+              }}
               className={`px-3 py-1.5 rounded-md font-label-sm text-label-sm transition-colors flex items-center gap-1 ${rangeOption === 'custom' ? 'bg-surface shadow-sm border border-outline-variant text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant'}`}
             >
               Custom <span className="material-symbols-outlined text-[16px]">calendar_today</span>
             </button>
-            {rangeOption === 'custom' && (
-              <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant rounded-lg p-2 flex flex-col gap-2 z-20 shadow-lg">
-                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded p-1" />
-                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm rounded p-1" />
+            {isCustomDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant rounded-xl p-3 flex flex-col gap-3 z-20 shadow-lg min-w-[200px]">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-on-surface-variant">Start Date</label>
+                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded-md p-2 bg-surface-container border border-outline-variant text-on-surface" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-on-surface-variant">End Date</label>
+                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm rounded-md p-2 bg-surface-container border border-outline-variant text-on-surface" />
+                </div>
+                <button 
+                  onClick={() => {
+                     if(customStart && customEnd) {
+                        setAppliedCustomStart(customStart);
+                        setAppliedCustomEnd(customEnd);
+                        setIsCustomDropdownOpen(false);
+                     } else {
+                        alert("Please select both start and end dates.");
+                     }
+                  }}
+                  className="w-full bg-primary text-on-primary py-2 rounded-md font-label-sm mt-1 hover:opacity-90"
+                >
+                  Show Analytics
+                </button>
               </div>
             )}
           </div>
@@ -174,29 +292,29 @@ export default function Analytics() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col gap-2">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Score</span>
           <div className="flex items-baseline gap-2">
             <span className="font-headline-lg text-headline-lg text-primary">{kpis.averageScore}</span>
             <span className="font-mono-data text-mono-data text-on-surface-variant">/100</span>
           </div>
         </div>
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col gap-2">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Best Day</span>
           <span className="font-headline-lg text-headline-lg text-primary">{kpis.bestDayScore || '--'}</span>
           <span className="font-body-md text-body-md text-on-surface-variant mt-auto">{kpis.bestDay || 'N/A'}</span>
         </div>
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col gap-2">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Consistency</span>
           <div className="flex items-baseline gap-1">
             <span className="font-headline-lg text-headline-lg text-primary">{kpis.consistency}</span>
             <span className="font-headline-md text-headline-md text-primary">%</span>
           </div>
-          <div className="w-full h-1 bg-surface-container rounded-full mt-auto overflow-hidden">
+          <div className="w-full h-1.5 bg-surface-container rounded-full mt-auto overflow-hidden">
             <div className="h-full bg-primary" style={{ width: `${kpis.consistency}%` }}></div>
           </div>
         </div>
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col gap-2">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Streak</span>
           <div className="flex items-baseline gap-2">
             <span className="font-headline-lg text-headline-lg text-primary">{userDoc?.currentStreak || 0}</span>
@@ -204,7 +322,7 @@ export default function Analytics() {
           </div>
           <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
         </div>
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col gap-2 col-span-2 md:col-span-1">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 col-span-2 md:col-span-1 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracked Days</span>
           <div className="flex items-baseline gap-2">
             <span className="font-headline-lg text-headline-lg text-primary">{kpis.trackedDays}</span>
@@ -217,75 +335,162 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Trend Line Chart */}
-        <div className="lg:col-span-2 bg-surface border border-outline-variant rounded-xl p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
-            <div className="flex gap-2">
-                <select 
-                  className="bg-surface-container border border-outline-variant rounded p-1 text-sm text-on-surface"
-                  value={filterMode}
-                  onChange={(e) => setFilterMode(e.target.value)}
+        <div className="lg:col-span-2 bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
+          <div className="flex flex-col mb-6 gap-4">
+            <div className="flex justify-between items-center">
+                <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
+                {selectedHabits.length > 1 && (
+                    <div className="flex bg-surface-container rounded-lg p-1 border border-outline-variant">
+                        <button 
+                          onClick={() => setChartMode('combined')}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Combined
+                        </button>
+                        <button 
+                          onClick={() => setChartMode('separate')}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Separate
+                        </button>
+                    </div>
+                )}
+            </div>
+            
+            {/* Pill Selectors */}
+            <div className="flex flex-wrap gap-2">
+                <button 
+                    onClick={() => setSelectedHabits([])}
+                    className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${selectedHabits.length === 0 ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
                 >
-                    <option value="overall">Overall</option>
-                    {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                </select>
+                    Overall
+                </button>
+                {habits.map(h => {
+                    const isSelected = selectedHabits.includes(h.id);
+                    return (
+                        <button
+                            key={h.id}
+                            onClick={() => {
+                                if (isSelected) {
+                                    setSelectedHabits(selectedHabits.filter(id => id !== h.id));
+                                } else {
+                                    setSelectedHabits([...selectedHabits, h.id]);
+                                }
+                            }}
+                            className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${isSelected ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
+                        >
+                            {h.name}
+                        </button>
+                    );
+                })}
             </div>
           </div>
-          <div className="flex-grow w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eeedf3" />
-                <XAxis dataKey="date" tick={{fontSize: 10, fill: '#868381'}} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{fontSize: 10, fill: '#868381'}} axisLine={false} tickLine={false} />
-                <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#faf9fe', borderRadius: '8px', border: '1px solid #c4c7c7' }}
-                  itemStyle={{ color: '#000' }}
-                />
-                {filterMode === 'overall' ? (
-                  <Line type="monotone" dataKey="overallScore" stroke="#000" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
-                ) : (
-                  <Line type="monotone" dataKey={filterMode} stroke="#000" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls={true} />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
+          
+          <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
+            {chartMode === 'combined' || selectedHabits.length <= 1 ? (
+              <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
+            ) : (
+              selectedHabits.map(habitId => (
+                <div key={habitId} className="flex flex-col">
+                  <h3 className="text-sm font-medium text-on-surface-variant ml-4 mb-2">{habits.find(h=>h.id === habitId)?.name}</h3>
+                  <ReactECharts option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Heatmap */}
-        <div className="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-headline-md text-headline-md text-on-surface">Consistency Map</h2>
+            <button 
+                onClick={() => setIsZoomedOut(!isZoomedOut)}
+                className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 text-xs font-medium"
+            >
+                <span className="material-symbols-outlined text-[16px]">{isZoomedOut ? 'zoom_in' : 'zoom_out'}</span>
+                {isZoomedOut ? 'Zoom In' : 'Zoom Out'}
+            </button>
           </div>
           
-          <div className="flex-grow flex flex-col overflow-x-auto pb-2">
-            <div className="flex gap-2">
-              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant h-[108px]">
+          <div className={`flex-grow flex flex-col overflow-x-auto pb-2 scrollbar-hide`}>
+            <div className={`flex gap-3 ${isZoomedOut ? 'w-full' : ''}`}>
+              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0" style={{ height: '164px' }}>
                 <span>Mon</span>
                 <span>Wed</span>
                 <span>Fri</span>
                 <span>Sun</span>
               </div>
-              <div className="grid-heatmap">
+              <div className={`grid-heatmap ${isZoomedOut ? 'w-full' : ''}`} style={{ gap: isZoomedOut ? '2px' : '4px' }}>
                 {heatmapGrid.map((cell, i) => (
                   <div 
                     key={i} 
+                    onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
                     title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
-                    className={`heatmap-cell ${cell.isPad ? 'bg-transparent' : cell.score === null ? 'bg-surface-container' : `bg-perf-${cell.perfBand}`}`}
+                    className={`heatmap-cell transition-colors hover:ring-2 hover:ring-primary/50 ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer'} ${!cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? `bg-perf-${cell.perfBand}` : ''}`}
+                    style={isZoomedOut ? { width: '100%', minWidth: '4px', height: 'auto', aspectRatio: '1/1' } : {}}
                   ></div>
                 ))}
               </div>
             </div>
           </div>
           
+          {/* Day Details Panel */}
+          {selectedDay && (
+            <div className="mt-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant animate-in fade-in zoom-in duration-200">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-label-md text-primary">
+                  {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                </h3>
+                <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-2">
+                {(() => {
+                  const daySummary = summaries.find(s => s.id === selectedDay);
+                  const dayEntries = entries.filter(e => e.entryDate === selectedDay);
+                  
+                  if (!daySummary && dayEntries.length === 0) {
+                    return <p className="text-xs text-on-surface-variant">No data recorded for this day.</p>;
+                  }
+                  
+                  return (
+                    <>
+                      <div className="flex justify-between items-center text-xs pb-2 border-b border-outline-variant">
+                        <span className="font-semibold text-on-surface">Overall Score</span>
+                        <span className="font-mono-data font-bold text-primary">{daySummary?.overallScore ?? '--'}%</span>
+                      </div>
+                      {habits.map(habit => {
+                        const entry = dayEntries.find(e => e.habitId === habit.id);
+                        if (!entry) return null;
+                        
+                        return (
+                          <div key={habit.id} className="flex justify-between items-center text-xs">
+                            <span className="text-on-surface-variant truncate max-w-[150px]">{habit.name}</span>
+                            <span className="font-mono-data text-on-surface">
+                              {entry.computedScore !== null ? `${entry.computedScore}%` : 'Logged'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+          
           {/* Legend */}
-          <div className="flex items-center justify-end gap-2 mt-4 font-mono-data text-[10px] text-on-surface-variant">
+          <div className="flex items-center justify-end gap-2 mt-6 font-mono-data text-[10px] text-on-surface-variant">
             <span>Less</span>
-            <div className="flex gap-1">
-              <div className="w-3 h-3 rounded-sm bg-perf-0 border border-outline-variant"></div>
-              <div className="w-3 h-3 rounded-sm bg-perf-3"></div>
-              <div className="w-3 h-3 rounded-sm bg-perf-5"></div>
-              <div className="w-3 h-3 rounded-sm bg-perf-8"></div>
-              <div className="w-3 h-3 rounded-sm bg-perf-10"></div>
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-[3px] bg-perf-0 border border-outline-variant"></div>
+              <div className="w-3 h-3 rounded-[3px] bg-perf-1"></div>
+              <div className="w-3 h-3 rounded-[3px] bg-perf-2"></div>
+              <div className="w-3 h-3 rounded-[3px] bg-perf-3"></div>
+              <div className="w-3 h-3 rounded-[3px] bg-perf-4"></div>
+              <div className="w-3 h-3 rounded-[3px] bg-perf-5"></div>
             </div>
             <span>More</span>
           </div>
@@ -293,37 +498,37 @@ export default function Analytics() {
       </div>
 
       {/* Habit Performance Table */}
-      <div className="bg-surface border border-outline-variant rounded-xl overflow-hidden mb-8">
+      <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl overflow-hidden mb-8">
         <div className="p-6 border-b border-outline-variant">
           <h2 className="font-headline-md text-headline-md text-on-surface">Habit Breakdown</h2>
         </div>
-        <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <table className="w-full text-left border-collapse min-w-full">
             <thead>
-              <tr className="font-label-sm text-label-sm text-on-surface-variant opacity-70 border-b border-outline-variant">
-                <th className="p-4 font-medium">Habit</th>
-                <th className="p-4 font-medium text-right">Average Score</th>
-                <th className="p-4 font-medium text-right">Consistency</th>
-                <th className="p-4 font-medium text-right">Best / Lowest</th>
+              <tr className="font-label-sm text-[10px] md:text-xs text-on-surface-variant bg-surface-container-lowest border-b border-outline-variant uppercase tracking-wider">
+                <th className="px-3 py-4 font-medium rounded-tl-lg">Habit</th>
+                <th className="px-3 py-4 font-medium text-right whitespace-nowrap">Avg Score</th>
+                <th className="px-3 py-4 font-medium text-right hidden sm:table-cell">Consistency</th>
+                <th className="px-3 py-4 font-medium text-right rounded-tr-lg whitespace-nowrap">Best/Worst</th>
               </tr>
             </thead>
-            <tbody className="font-body-md text-body-md text-on-surface">
+            <tbody className="font-body-md text-xs md:text-sm text-on-surface">
               {breakdown.map((b) => (
                 <tr key={b.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
-                  <td className="p-4 flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary group-hover:scale-125 transition-transform"></div>
-                    {b.name}
+                  <td className="px-3 py-4 flex items-center gap-2">
+                     <div className="w-2 h-2 rounded-full bg-primary opacity-80 group-hover:scale-125 transition-transform shrink-0"></div>
+                    <span className="font-medium truncate max-w-[100px] md:max-w-[200px]">{b.name}</span>
                   </td>
-                  <td className="p-4 text-right font-mono-data">{Math.round(b.avgScore)}</td>
-                  <td className="p-4 text-right">
+                  <td className="px-3 py-4 text-right font-mono-data font-semibold">{Math.round(b.avgScore)}</td>
+                  <td className="px-3 py-4 text-right hidden sm:table-cell">
                     <div className="flex items-center justify-end gap-2">
-                      <span className="font-mono-data">{b.consistency}%</span>
-                      <div className="w-16 h-1 bg-surface-container rounded-full overflow-hidden inline-block">
+                      <span className="font-mono-data text-xs">{b.consistency}%</span>
+                      <div className="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden inline-block shrink-0">
                         <div className="h-full bg-primary" style={{ width: `${b.consistency}%` }}></div>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-right font-mono-data text-on-surface-variant">
+                  <td className="px-3 py-4 text-right font-mono-data text-on-surface-variant whitespace-nowrap text-[10px] md:text-xs">
                     {b.bestScore ?? '--'} / {b.lowestScore ?? '--'}
                   </td>
                 </tr>
@@ -334,12 +539,15 @@ export default function Analytics() {
         
         {/* Areas to Improve */}
         {areasToImprove.length > 0 && (
-          <div className="p-6 bg-error-container text-on-error-container text-sm">
-            <h3 className="font-bold mb-2">Areas to Improve</h3>
-            <ul className="list-disc pl-5 space-y-1">
+          <div className="p-6 bg-error-container/20 text-on-surface text-sm border-t border-outline-variant">
+            <h3 className="font-bold mb-3 flex items-center gap-2 text-error">
+              <span className="material-symbols-outlined text-lg">trending_down</span>
+              Areas to Improve
+            </h3>
+            <ul className="list-disc pl-5 space-y-2 text-on-surface-variant">
               {areasToImprove.map(h => (
                 <li key={h.id}>
-                  {h.name} has averaged {Math.round(h.avgScore)}% this {rangeOption === 'custom' ? 'period' : `${rangeOption} days`}.
+                  <strong className="text-on-surface">{h.name}</strong> has averaged {Math.round(h.avgScore)}% this {rangeOption === 'custom' ? 'period' : `${rangeOption} days`}.
                 </li>
               ))}
             </ul>

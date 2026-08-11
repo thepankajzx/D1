@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 
 export default function OnboardingSelect() {
   const [habits, setHabits] = useState([]);
@@ -10,8 +11,10 @@ export default function OnboardingSelect() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   
   const { currentUser } = useAuth();
+  const { habits: existingHabits = [] } = useData();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,10 +45,10 @@ export default function OnboardingSelect() {
     if (isSelected) {
       setSelectedHabits(selectedHabits.filter(h => h.id !== habit.id));
     } else {
-      if (selectedHabits.length < 8) {
+      if ((existingHabits.length + selectedHabits.length) < 8) {
         setSelectedHabits([...selectedHabits, habit]);
       } else {
-        alert("You can only select up to 8 habits to start.");
+        setShowPaywall(true);
       }
     }
   };
@@ -112,7 +115,7 @@ export default function OnboardingSelect() {
             Choose up to 8 habits to track
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant">
-            {selectedHabits.length} of 8 selected
+            {existingHabits.length + selectedHabits.length} of 8 limits reached
           </p>
         </div>
 
@@ -191,6 +194,35 @@ export default function OnboardingSelect() {
           </button>
         </div>
       </div>
+
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center">
+            <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl" style={{fontVariationSettings: "'FILL' 1"}}>workspace_premium</span>
+            </div>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Habit Limit Reached</h3>
+            <p className="text-on-surface-variant text-sm mb-6">
+              You can only select up to 8 habits on the free plan. Upgrade to Pro to unlock unlimited habits and advanced analytics.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => navigate('/subscription')}
+                className="w-full py-3 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90"
+              >
+                Explore Pro
+              </button>
+              <button
+                onClick={() => setShowPaywall(false)}
+                className="w-full py-3 border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-variant"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

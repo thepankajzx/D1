@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
+import { calculateScore } from '../lib/scoring';
 
 export default function OnboardingTargets() {
   const [habits, setHabits] = useState([]);
@@ -10,6 +12,7 @@ export default function OnboardingTargets() {
   const [saving, setSaving] = useState(false);
   
   const { currentUser } = useAuth();
+  const { refreshData } = useData();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,7 +79,10 @@ export default function OnboardingTargets() {
           target0: finalTarget0
         });
       }
-      navigate('/dashboard'); // Go to main dashboard when done
+      if (refreshData) {
+        await refreshData();
+      }
+      navigate('/'); // Go to main dashboard when done
     } catch (error) {
       console.error("Error saving targets:", error);
       alert("Failed to save targets.");
@@ -121,67 +127,135 @@ export default function OnboardingTargets() {
 
         <div className="flex flex-col gap-6">
           {habits.map(habit => {
-            const isBinaryOrSubjective = habit.scoringType === 'binary' || habit.scoringType === 'subjective';
+            const isBinary = habit.scoringType === 'binary';
+            const isSubjective = habit.scoringType === 'subjective';
+            const isTime = habit.scoringType === 'time';
+            
+            // Preview logic
+            let previewScore = null;
+            if (!isBinary && !isSubjective) {
+                let currentVal = habit.previewValue !== undefined ? habit.previewValue : (habit.target0 !== undefined ? habit.target0 : 0);
+                
+                let adjustedVal = currentVal;
+                if (isTime && habit.id.includes('sleep') && currentVal < 12 * 60) {
+                  adjustedVal += 1440;
+                }
+                
+                const rawScore = calculateScore(habit.scoringType, habit.direction, adjustedVal, habit.target100, habit.target0);
+                previewScore = rawScore !== null ? Math.max(0, Math.min(100, Math.round(rawScore))) : 0;
+            }
 
             return (
-              <div key={habit.id} className="bg-surface-container-low border border-outline-variant rounded-xl p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-primary">
+              <div key={habit.id} className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex flex-col gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-primary shadow-sm border border-outline-variant/30">
                     <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>{habit.icon}</span>
                   </div>
                   <div>
-                    <h2 className="font-label-sm text-label-sm font-semibold">{habit.name}</h2>
-                    <span className="text-xs text-on-surface-variant">{habit.scoringType} • {habit.unit}</span>
+                    <h2 className="font-label-sm text-label-sm font-bold text-on-surface">{habit.name}</h2>
+                    <span className="text-xs text-on-surface-variant font-medium">{habit.scoringType} • {habit.unit}</span>
                   </div>
                 </div>
 
-                {isBinaryOrSubjective ? (
-                  <p className="text-sm text-on-surface-variant bg-surface p-3 rounded-lg border border-outline-variant/50">
-                    This habit is tracked simply by logging it. No targets needed.
+                {isBinary ? (
+                  <div className="text-sm text-on-surface-variant bg-surface p-4 rounded-lg border border-outline-variant/50">
+                    <strong className="text-on-surface block mb-2">Track this habit using a simple Yes/No.</strong>
+                    Logging <span className="font-bold text-primary">Yes</span> earns you 100% of the points, and <span className="font-bold">No</span> earns 0%.
+                  </div>
+                ) : isSubjective ? (
+                  <p className="text-sm text-on-surface-variant bg-surface p-4 rounded-lg border border-outline-variant/50">
+                    This habit is tracked on a subjective 1-10 scale and does not affect your overall score.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-on-surface-variant">
-                        100% Score (Optimal)
-                      </label>
-                      {habit.scoringType === 'time' ? (
-                        <input 
-                          type="time" 
-                          value={formatTimeString(habit.target100)}
-                          onChange={(e) => handleTargetChange(habit.id, 'target100', parseTimeString(e.target.value))}
-                          className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface w-full"
-                        />
-                      ) : (
-                        <input 
-                          type="number" 
-                          value={habit.target100 || 0}
-                          onChange={(e) => handleTargetChange(habit.id, 'target100', e.target.value)}
-                          className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface w-full"
-                        />
-                      )}
+                  <div className="flex flex-col gap-6">
+                    {/* Target Inputs */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-on-surface-variant flex items-center gap-1 uppercase tracking-wider">
+                          100% Score <span className="material-symbols-outlined text-[14px]">edit</span>
+                        </label>
+                        {isTime ? (
+                          <input 
+                            type="time" 
+                            value={formatTimeString(habit.target100)}
+                            onChange={(e) => handleTargetChange(habit.id, 'target100', parseTimeString(e.target.value))}
+                            className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
+                          />
+                        ) : (
+                          <input 
+                            type="number" 
+                            value={habit.target100 || 0}
+                            onChange={(e) => handleTargetChange(habit.id, 'target100', Number(e.target.value))}
+                            className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
+                          />
+                        )}
+                        <span className="text-[10px] text-on-surface-variant">Optimal</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-on-surface-variant flex items-center gap-1 uppercase tracking-wider">
+                          0% Score <span className="material-symbols-outlined text-[14px]">edit</span>
+                        </label>
+                        {isTime ? (
+                          <input 
+                            type="time" 
+                            value={formatTimeString(habit.target0)}
+                            onChange={(e) => handleTargetChange(habit.id, 'target0', parseTimeString(e.target.value))}
+                            className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
+                          />
+                        ) : (
+                          <input 
+                            type="number" 
+                            value={habit.target0 || 0}
+                            onChange={(e) => handleTargetChange(habit.id, 'target0', Number(e.target.value))}
+                            className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
+                          />
+                        )}
+                        <span className="text-[10px] text-on-surface-variant">Baseline (Min)</span>
+                      </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-medium text-on-surface-variant">
-                        0% Score (Baseline)
-                      </label>
-                      {habit.scoringType === 'time' ? (
-                        <input 
-                          type="time" 
-                          value={formatTimeString(habit.target0)}
-                          onChange={(e) => handleTargetChange(habit.id, 'target0', parseTimeString(e.target.value))}
-                          className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface w-full"
-                        />
-                      ) : (
-                        <input 
-                          type="number" 
-                          value={habit.target0 || 0}
-                          onChange={(e) => handleTargetChange(habit.id, 'target0', e.target.value)}
-                          className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface w-full"
-                        />
-                      )}
+
+                    {/* Interactive Preview */}
+                    <div className="bg-surface p-4 rounded-xl border border-primary/20 shadow-sm relative overflow-hidden">
+                       <div className="absolute top-0 left-0 w-1 bg-primary h-full"></div>
+                       <div className="flex justify-between items-center mb-4">
+                           <span className="text-xs font-bold text-primary uppercase tracking-wider">Live Preview</span>
+                           <div className="px-2 py-0.5 bg-primary text-on-primary rounded font-mono-data text-xs font-bold shadow-sm">
+                               {previewScore}% Score
+                           </div>
+                       </div>
+                       
+                       <div className="flex flex-col gap-2">
+                          <div className="flex justify-between text-xs text-on-surface-variant">
+                             <span>
+                               {isTime ? '00:00' : '0'}
+                             </span>
+                             <span className="font-bold text-on-surface">
+                               {habit.previewValue !== undefined 
+                                  ? (isTime ? formatTimeString(habit.previewValue) : habit.previewValue) 
+                                  : (isTime ? formatTimeString(habit.target0) : habit.target0)}
+                             </span>
+                             <span>
+                               {isTime 
+                                  ? formatTimeString(Math.max(habit.target100, habit.target0) + 120) 
+                                  : Math.max(habit.target100, habit.target0) * 1.5 || 100}
+                             </span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max={isTime ? 1440 : Math.max(habit.target100, habit.target0) * 1.5 || 100}
+                            step={isTime ? "15" : "1"}
+                            value={habit.previewValue !== undefined ? habit.previewValue : (habit.target0 || 0)}
+                            onChange={(e) => handleTargetChange(habit.id, 'previewValue', Number(e.target.value))}
+                            className="custom-slider w-full" 
+                          />
+                          <p className="text-[10px] text-on-surface-variant text-center mt-2">
+                             Drag to see how your daily score will be calculated based on your targets.
+                          </p>
+                       </div>
                     </div>
+
                   </div>
                 )}
               </div>

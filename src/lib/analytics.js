@@ -96,12 +96,15 @@ export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabi
     const data = scoreMap.get(dateStr);
     const score = data?.score !== undefined && data?.score !== null ? data.score : null;
     
-    // Bucket into 10 bands (perf-0 to perf-10)
+    // Bucket into 5 bands (perf-1 to perf-5)
     let perfBand = 0;
     if (score !== null) {
       if (score === 0) perfBand = 0;
-      else if (score >= 100) perfBand = 10;
-      else perfBand = Math.ceil(score / 10);
+      else if (score <= 20) perfBand = 1;
+      else if (score <= 40) perfBand = 2;
+      else if (score <= 60) perfBand = 3;
+      else if (score <= 80) perfBand = 4;
+      else perfBand = 5;
     }
     
     return {
@@ -156,8 +159,8 @@ export function computeHabitBreakdown(habits, entries, startDate, endDate) {
   });
   
   // Exclude purely subjective habits from ranking if desired, 
-  // but we can just filter them out or put them at bottom
-  return breakdown.filter(h => h.scoringType !== 'subjective').sort((a, b) => a.avgScore - b.avgScore);
+  // but we want to show them in the breakdown so users can see their entries.
+  return breakdown.sort((a, b) => b.consistency - a.consistency);
 }
 
 export function identifyAreasToImprove(breakdown) {

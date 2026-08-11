@@ -108,7 +108,9 @@ export default function HabitCard({ habit, entry, onUpdate }) {
               type="range" 
               min="1" max="10" step="1" 
               value={val}
-              onChange={(e) => handleChange(Number(e.target.value))}
+              onChange={(e) => setVal(Number(e.target.value))}
+              onPointerUp={(e) => handleChange(Number(e.target.value))}
+              onTouchEnd={(e) => handleChange(Number(e.target.value))}
               className="subjective-slider" 
             />
             <div className="text-center font-mono-data text-primary font-bold">
@@ -126,21 +128,38 @@ export default function HabitCard({ habit, entry, onUpdate }) {
         
         return (
           <div className="flex flex-col gap-4 flex-grow justify-end">
-            <div className="flex justify-between text-xs text-on-surface-variant">
+            <div className="flex justify-between items-center text-xs text-on-surface-variant">
               <span>0 {habit.unit}</span>
               <span>Target: {habit.target100} {habit.unit}</span>
             </div>
-            <input 
-              type="range" 
-              min={minSlider} 
-              max={maxSlider} 
-              step={habit.scoringType === 'number' ? '1' : '5'}
-              value={val}
-              onChange={(e) => handleChange(Number(e.target.value))}
-              className="custom-slider" 
-            />
-            <div className="text-center font-mono-data text-primary font-bold mt-2">
-              {val} {habit.unit}
+            <div className="flex items-center gap-4">
+                <input 
+                  type="range" 
+                  min={minSlider} 
+                  max={maxSlider} 
+                  step={habit.scoringType === 'number' ? '1' : '5'}
+                  value={val}
+                  onChange={(e) => setVal(Number(e.target.value))}
+                  onPointerUp={(e) => handleChange(Number(e.target.value))}
+                  onTouchEnd={(e) => handleChange(Number(e.target.value))}
+                  className="custom-slider flex-grow" 
+                />
+                <div className="relative flex items-center">
+                    <input
+                      type="number"
+                      min="0"
+                      value={val === 0 ? '' : val}
+                      placeholder="0"
+                      onChange={(e) => setVal(Number(e.target.value))}
+                      onBlur={(e) => handleChange(Number(e.target.value))}
+                      onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                          }
+                      }}
+                      className="w-20 bg-surface-container border border-outline-variant rounded-md px-2 py-1.5 text-center font-mono-data text-primary focus:border-primary focus:outline-none transition-colors"
+                    />
+                </div>
             </div>
           </div>
         );
