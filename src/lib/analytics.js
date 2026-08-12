@@ -50,13 +50,16 @@ export function computeKPIs(summaries, startDate, endDate) {
 
 export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabitId, startDate, endDate) {
   // A heatmap usually shows columns of weeks, 7 rows per column (Mon - Sun).
-  // First, we create an array of all dates from startDate to endDate.
-  const dates = [];
+  const datesByMonth = new Map();
   let current = new Date(startDate);
   const end = new Date(endDate);
   
   while (current <= end) {
-    dates.push(new Date(current));
+    const monthKey = `${current.getFullYear()}-${current.getMonth()}`;
+    if (!datesByMonth.has(monthKey)) {
+      datesByMonth.set(monthKey, []);
+    }
+    datesByMonth.get(monthKey).push(new Date(current));
     current.setDate(current.getDate() + 1);
   }
 
@@ -81,46 +84,52 @@ export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabi
     });
   }
 
-  // We need to pad the front so the first column starts on the right day of the week
-  // JS getDay() is 0 for Sun, 1 for Mon. Let's make 0 = Mon, 6 = Sun
-  const firstDay = dates[0];
-  const dayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0
+  const result = [];
   
-  const paddedDates = Array(dayOfWeek).fill(null).concat(dates);
+  for (const [monthKey, monthDates] of datesByMonth.entries()) {
+    const firstDay = monthDates[0];
+    const dayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0
+    
+    const paddedDates = Array(dayOfWeek).fill(null).concat(monthDates);
+    
+    const gridCells = paddedDates.map(date => {
+      if (!date) return { isPad: true };
+      
+      const dateStr = date.toISOString().split('T')[0];
+      const data = scoreMap.get(dateStr);
+      const score = data?.score !== undefined && data?.score !== null ? data.score : null;
+      
+      let perfBand = 0;
+      if (score !== null) {
+        if (score <= 10) perfBand = 1;
+        else if (score <= 20) perfBand = 2;
+        else if (score <= 30) perfBand = 3;
+        else if (score <= 40) perfBand = 4;
+        else if (score <= 50) perfBand = 5;
+        else if (score <= 60) perfBand = 6;
+        else if (score <= 70) perfBand = 7;
+        else if (score <= 80) perfBand = 8;
+        else if (score <= 90) perfBand = 9;
+        else perfBand = 10;
+      }
+      
+      return {
+        isPad: false,
+        date: dateStr,
+        score: score,
+        perfBand: perfBand,
+        meta: data?.meta
+      };
+    });
+    
+    const monthLabel = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    result.push({
+      monthLabel,
+      cells: gridCells
+    });
+  }
   
-  // Format the output grid
-  const gridCells = paddedDates.map(date => {
-    if (!date) return { isPad: true };
-    
-    const dateStr = date.toISOString().split('T')[0];
-    const data = scoreMap.get(dateStr);
-    const score = data?.score !== undefined && data?.score !== null ? data.score : null;
-    
-    // Bucket into 10 bands (perf-1 to perf-10)
-    let perfBand = 0;
-    if (score !== null) {
-      if (score <= 10) perfBand = 1;
-      else if (score <= 20) perfBand = 2;
-      else if (score <= 30) perfBand = 3;
-      else if (score <= 40) perfBand = 4;
-      else if (score <= 50) perfBand = 5;
-      else if (score <= 60) perfBand = 6;
-      else if (score <= 70) perfBand = 7;
-      else if (score <= 80) perfBand = 8;
-      else if (score <= 90) perfBand = 9;
-      else perfBand = 10;
-    }
-    
-    return {
-      isPad: false,
-      date: dateStr,
-      score: score,
-      perfBand: perfBand,
-      meta: data?.meta
-    };
-  });
-  
-  return gridCells;
+  return result;
 }
 
 export function computeHabitBreakdown(habits, entries, startDate, endDate) {
