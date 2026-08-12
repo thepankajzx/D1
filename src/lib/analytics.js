@@ -96,15 +96,19 @@ export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabi
     const data = scoreMap.get(dateStr);
     const score = data?.score !== undefined && data?.score !== null ? data.score : null;
     
-    // Bucket into 5 bands (perf-1 to perf-5)
+    // Bucket into 10 bands (perf-1 to perf-10)
     let perfBand = 0;
     if (score !== null) {
-      if (score === 0) perfBand = 0;
-      else if (score <= 20) perfBand = 1;
-      else if (score <= 40) perfBand = 2;
-      else if (score <= 60) perfBand = 3;
-      else if (score <= 80) perfBand = 4;
-      else perfBand = 5;
+      if (score <= 10) perfBand = 1;
+      else if (score <= 20) perfBand = 2;
+      else if (score <= 30) perfBand = 3;
+      else if (score <= 40) perfBand = 4;
+      else if (score <= 50) perfBand = 5;
+      else if (score <= 60) perfBand = 6;
+      else if (score <= 70) perfBand = 7;
+      else if (score <= 80) perfBand = 8;
+      else if (score <= 90) perfBand = 9;
+      else perfBand = 10;
     }
     
     return {

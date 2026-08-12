@@ -7,6 +7,20 @@ import HabitCard from '../components/HabitCard';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
 
+const getPerfColor = (score) => {
+  if (score === null || score === undefined || score === 0) return 'var(--color-outline-variant)';
+  if (score <= 10) return 'var(--color-perf-1)';
+  if (score <= 20) return 'var(--color-perf-2)';
+  if (score <= 30) return 'var(--color-perf-3)';
+  if (score <= 40) return 'var(--color-perf-4)';
+  if (score <= 50) return 'var(--color-perf-5)';
+  if (score <= 60) return 'var(--color-perf-6)';
+  if (score <= 70) return 'var(--color-perf-7)';
+  if (score <= 80) return 'var(--color-perf-8)';
+  if (score <= 90) return 'var(--color-perf-9)';
+  return 'var(--color-perf-10)';
+};
+
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
   const { habits, allSummaries, setAllSummaries, priorityModeEnabled, loadingData, refreshData } = useData();
@@ -307,10 +321,11 @@ export default function Dashboard() {
                 cx="50" cy="50" r="45" 
                 strokeDasharray="282.7" 
                 strokeDashoffset={dashoffset}
+                style={{ stroke: getPerfColor(scorePercentage) }}
               ></circle>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center flex-col">
-              <span className="font-mono-data text-mono-data text-2xl font-bold text-primary">{scorePercentage}%</span>
+              <span className="font-mono-data text-mono-data text-2xl font-bold" style={{ color: getPerfColor(scorePercentage) }}>{scorePercentage}%</span>
             </div>
           </div>
         </div>

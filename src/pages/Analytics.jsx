@@ -14,12 +14,30 @@ import { Link } from 'react-router-dom';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
-  if (score === 0) return 'bg-perf-0';
-  if (score <= 20) return 'bg-perf-1';
-  if (score <= 40) return 'bg-perf-2';
-  if (score <= 60) return 'bg-perf-3';
-  if (score <= 80) return 'bg-perf-4';
-  return 'bg-perf-5';
+  if (score <= 10) return 'bg-perf-1';
+  if (score <= 20) return 'bg-perf-2';
+  if (score <= 30) return 'bg-perf-3';
+  if (score <= 40) return 'bg-perf-4';
+  if (score <= 50) return 'bg-perf-5';
+  if (score <= 60) return 'bg-perf-6';
+  if (score <= 70) return 'bg-perf-7';
+  if (score <= 80) return 'bg-perf-8';
+  if (score <= 90) return 'bg-perf-9';
+  return 'bg-perf-10';
+};
+
+const getPerfTextColorClass = (score) => {
+  if (score === null || score === undefined) return 'text-on-surface-variant';
+  if (score <= 10) return 'text-perf-1';
+  if (score <= 20) return 'text-perf-2';
+  if (score <= 30) return 'text-perf-3';
+  if (score <= 40) return 'text-perf-4';
+  if (score <= 50) return 'text-perf-5';
+  if (score <= 60) return 'text-perf-6';
+  if (score <= 70) return 'text-perf-7';
+  if (score <= 80) return 'text-perf-8';
+  if (score <= 90) return 'text-perf-9';
+  return 'text-perf-10';
 };
 
 export default function Analytics() {
@@ -183,6 +201,22 @@ export default function Analytics() {
         });
 
     return {
+      visualMap: {
+        show: false,
+        pieces: [
+          { min: -1, max: 10, color: '#7f1d1d' },
+          { min: 10.01, max: 20, color: '#991b1b' },
+          { min: 20.01, max: 30, color: '#b91c1c' },
+          { min: 30.01, max: 40, color: '#dc2626' },
+          { min: 40.01, max: 50, color: '#f87171' },
+          { min: 50.01, max: 60, color: '#86efac' },
+          { min: 60.01, max: 70, color: '#4ade80' },
+          { min: 70.01, max: 80, color: '#22c55e' },
+          { min: 80.01, max: 90, color: '#16a34a' },
+          { min: 90.01, max: 100, color: '#14532d' }
+        ],
+        outOfRange: { color: '#868381' }
+      },
       tooltip: {
         trigger: 'axis',
         backgroundColor: 'var(--surface-container-high)',
@@ -314,7 +348,7 @@ export default function Analytics() {
         <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Score</span>
           <div className="flex items-baseline gap-2">
-            <span className="font-headline-lg text-headline-lg text-primary">{kpis.averageScore}</span>
+            <span className={`font-headline-lg text-headline-lg ${getPerfTextColorClass(kpis.averageScore)}`}>{kpis.averageScore}</span>
             <span className="font-mono-data text-mono-data text-on-surface-variant">/100</span>
           </div>
         </div>
@@ -419,7 +453,7 @@ export default function Analytics() {
                   <div key={`avg-${habitId}`} className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-4 min-w-[120px]">
                     <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium truncate max-w-[100px]">{habit?.name}</span>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="font-headline-md text-primary">{avg}</span>
+                      <span className={`font-headline-md ${getPerfTextColorClass(avg)}`}>{avg}</span>
                       <span className="text-xs text-on-surface-variant">All-Time Avg</span>
                     </div>
                   </div>
@@ -573,16 +607,20 @@ export default function Analytics() {
           
           {/* Legend */}
           <div className="flex items-center justify-end gap-2 mt-6 font-mono-data text-[10px] text-on-surface-variant">
-            <span>Less</span>
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-[3px] bg-perf-0 border border-outline-variant"></div>
-              <div className="w-3 h-3 rounded-[3px] bg-perf-1"></div>
-              <div className="w-3 h-3 rounded-[3px] bg-perf-2"></div>
-              <div className="w-3 h-3 rounded-[3px] bg-perf-3"></div>
-              <div className="w-3 h-3 rounded-[3px] bg-perf-4"></div>
-              <div className="w-3 h-3 rounded-[3px] bg-perf-5"></div>
+            <span>0-10</span>
+            <div className="flex gap-1">
+              <div className="w-3 h-3 rounded-[2px] bg-perf-1" title="0-10"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-2" title="11-20"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-3" title="21-30"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-4" title="31-40"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-5" title="41-50"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-6" title="51-60"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-7" title="61-70"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-8" title="71-80"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-9" title="81-90"></div>
+              <div className="w-3 h-3 rounded-[2px] bg-perf-10" title="91-100"></div>
             </div>
-            <span>More</span>
+            <span>90-100</span>
           </div>
         </div>
       </div>
@@ -606,10 +644,10 @@ export default function Analytics() {
               {breakdown.map((b) => (
                 <tr key={b.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
                   <td className="px-3 py-4 flex items-center gap-2">
-                     <div className="w-2 h-2 rounded-full bg-primary opacity-80 group-hover:scale-125 transition-transform shrink-0"></div>
+                     <div className={`w-2 h-2 rounded-full ${getPerfBandClass(b.avgScore)} opacity-80 group-hover:scale-125 transition-transform shrink-0`}></div>
                     <span className="font-medium truncate max-w-[100px] md:max-w-[200px]">{b.name}</span>
                   </td>
-                  <td className="px-3 py-4 text-right font-mono-data font-semibold">{Math.round(b.avgScore)}</td>
+                  <td className={`px-3 py-4 text-right font-mono-data font-semibold ${getPerfTextColorClass(b.avgScore)}`}>{Math.round(b.avgScore)}</td>
                   <td className="px-3 py-4 text-right hidden sm:table-cell">
                     <div className="flex items-center justify-end gap-2">
                       <span className="font-mono-data text-xs">{b.consistency}%</span>
@@ -637,7 +675,7 @@ export default function Analytics() {
             <ul className="list-disc pl-5 space-y-2 text-on-surface-variant">
               {areasToImprove.map(h => (
                 <li key={h.id}>
-                  <strong className="text-on-surface">{h.name}</strong> has averaged {Math.round(h.avgScore)}% this {rangeOption === 'custom' ? 'period' : `${rangeOption} days`}.
+                  <strong className="text-on-surface">{h.name}</strong> has averaged <strong className={getPerfTextColorClass(h.avgScore)}>{Math.round(h.avgScore)}%</strong> this {rangeOption === 'custom' ? 'period' : `${rangeOption} days`}.
                 </li>
               ))}
             </ul>
