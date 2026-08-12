@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { setPersistence, browserSessionPersistence } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -24,14 +25,23 @@ export default function Login() {
       setError('');
       setLoading(true);
       // Try to log in first. If it fails due to user not found, try to sign up.
+      let userCred;
       try {
-        await login(email, password);
+        userCred = await login(email, password);
       } catch (loginError) {
         if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
           // Fallback to signup if account doesn't exist
-          await signup(email, password);
+          userCred = await signup(email, password);
         } else {
           throw loginError;
+        }
+      }
+      // Ensure Firestore user doc exists
+      if (userCred?.user) {
+        const userRef = doc(db, 'users', userCred.user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, { createdAt: new Date().toISOString(), currentStreak: 0, longestStreak: 0 });
         }
       }
       navigate('/');
@@ -46,7 +56,15 @@ export default function Login() {
     try {
       setError('');
       setLoading(true);
-      await loginWithGoogle();
+      const result = await loginWithGoogle();
+      // Ensure Firestore user doc exists for Google sign-in
+      if (result?.user) {
+        const userRef = doc(db, 'users', result.user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, { createdAt: new Date().toISOString(), currentStreak: 0, longestStreak: 0 });
+        }
+      }
       navigate('/');
     } catch (err) {
       if (err.message.includes('Database is closing') || err.message.includes('hidden')) {

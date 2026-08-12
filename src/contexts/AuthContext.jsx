@@ -22,9 +22,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // If Firebase takes too long, likely an IndexedDB / "Database is closing" issue.
     const timer = setTimeout(() => {
-      if (loading) {
-        setAuthTimeout(true);
-      }
+      setAuthTimeout(true);
     }, 5000);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -37,7 +35,7 @@ export function AuthProvider({ children }) {
       unsubscribe();
       clearTimeout(timer);
     };
-  }, [loading]);
+  }, []);
 
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);

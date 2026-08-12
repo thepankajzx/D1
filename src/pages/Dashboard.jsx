@@ -89,16 +89,7 @@ export default function Dashboard() {
     loadDateData();
   }, [selectedDate, habits.length, user?.uid, loadingData]);
 
-  // Auto-save with debounce
-  useEffect(() => {
-    if (!pendingChanges || isSaving || !user) return;
 
-    const timer = setTimeout(() => {
-      handleSaveProgress();
-    }, 1500); // 1.5 second debounce
-
-    return () => clearTimeout(timer);
-  }, [pendingChanges, entries, dailySummary, isSaving, user]);
 
   const handleSaveProgress = async () => {
     if (!user || !pendingChanges) return;
@@ -162,7 +153,7 @@ export default function Dashboard() {
         // Write Streaks
         const { currentStreak, longestStreak } = recalculateStreaks(allSummaries);
         const userRef = doc(db, 'users', user.uid);
-        batch.update(userRef, { currentStreak, longestStreak });
+        batch.set(userRef, { currentStreak, longestStreak }, { merge: true });
         
         await batch.commit();
         setPendingChanges(false);
