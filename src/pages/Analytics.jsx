@@ -12,6 +12,16 @@ import {
 import ReactECharts from 'echarts-for-react';
 import { Link } from 'react-router-dom';
 
+const getPerfBandClass = (score) => {
+  if (score === null || score === undefined) return '';
+  if (score === 0) return 'bg-perf-0';
+  if (score <= 20) return 'bg-perf-1';
+  if (score <= 40) return 'bg-perf-2';
+  if (score <= 60) return 'bg-perf-3';
+  if (score <= 80) return 'bg-perf-4';
+  return 'bg-perf-5';
+};
+
 export default function Analytics() {
   const { currentUser: user } = useAuth();
   const { habits, allSummaries, userDoc, loadingData } = useData();
@@ -521,9 +531,15 @@ export default function Analytics() {
                     
                     return (
                       <>
-                        <div className="flex justify-between items-center bg-primary-container p-4 rounded-xl border border-primary/20">
-                          <span className="font-label-md text-on-primary-container font-bold uppercase tracking-wide">Overall Score</span>
-                          <span className="font-headline-sm font-bold text-on-primary-container">{daySummary?.overallScore ?? '--'}%</span>
+                        <div className="relative overflow-hidden flex justify-between items-center bg-primary-container p-4 rounded-xl border border-primary/20">
+                          {daySummary?.overallScore !== undefined && (
+                            <div 
+                              className={`absolute top-0 left-0 h-full opacity-40 ${getPerfBandClass(daySummary.overallScore)}`}
+                              style={{ width: `${daySummary.overallScore}%` }}
+                            ></div>
+                          )}
+                          <span className="relative z-10 font-label-md text-on-primary-container font-bold uppercase tracking-wide">Overall Score</span>
+                          <span className="relative z-10 font-headline-sm font-bold text-on-primary-container">{daySummary?.overallScore ?? '--'}%</span>
                         </div>
                         <div className="flex flex-col gap-3">
                           <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-1 mt-2">Habit Breakdown</h4>
@@ -532,9 +548,15 @@ export default function Analytics() {
                             if (!entry) return null;
                             
                             return (
-                              <div key={habit.id} className="flex justify-between items-center p-3 rounded-lg bg-surface-container border border-outline-variant hover:bg-surface-variant transition-colors">
-                                <span className="font-body-md text-on-surface">{habit.name}</span>
-                                <span className="font-mono-data font-bold text-on-surface">
+                              <div key={habit.id} className="relative overflow-hidden flex justify-between items-center p-3 rounded-lg bg-surface-container border border-outline-variant hover:bg-surface-variant transition-colors">
+                                {entry.computedScore !== null && (
+                                  <div 
+                                    className={`absolute top-0 left-0 h-full opacity-30 ${getPerfBandClass(entry.computedScore)}`}
+                                    style={{ width: `${entry.computedScore}%` }}
+                                  ></div>
+                                )}
+                                <span className="relative z-10 font-body-md text-on-surface">{habit.name}</span>
+                                <span className="relative z-10 font-mono-data font-bold text-on-surface">
                                   {entry.computedScore !== null ? `${entry.computedScore}%` : 'Logged'}
                                 </span>
                               </div>
