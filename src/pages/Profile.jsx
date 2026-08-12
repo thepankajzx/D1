@@ -37,52 +37,7 @@ export default function Profile() {
     }
   };
 
-  const handleRunMigration = async () => {
-    if (!window.confirm("This will scan your old data and update summaries to support the new faster Analytics. It may take a minute. Proceed?")) return;
-    
-    try {
-      alert("Migration started. Please wait...");
-      // Fetch all entries
-      const entriesSnap = await getDocs(collection(db, `users/${currentUser.uid}/entries`));
-      const entries = entriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // Group by entryDate
-      const entriesByDate = {};
-      entries.forEach(e => {
-        if (!entriesByDate[e.entryDate]) entriesByDate[e.entryDate] = [];
-        entriesByDate[e.entryDate].push(e);
-      });
-      
-      let batch = writeBatch(db);
-      let opCount = 0;
-      
-      for (const date of Object.keys(entriesByDate)) {
-        const dateEntries = entriesByDate[date];
-        const habitScores = {};
-        dateEntries.forEach(e => {
-           habitScores[e.habitId] = e.computedScore !== null && e.computedScore !== undefined ? e.computedScore : 0;
-        });
-        
-        batch.set(doc(db, `users/${currentUser.uid}/dailySummaries`, date), { habitScores }, { merge: true });
-        opCount++;
-        
-        if (opCount >= 400) {
-           await batch.commit();
-           batch = writeBatch(db);
-           opCount = 0;
-        }
-      }
-      
-      if (opCount > 0) {
-        await batch.commit();
-      }
-      
-      alert("Migration complete! Your Analytics will now load instantly.");
-    } catch (e) {
-      console.error(e);
-      alert("Migration failed: " + e.message);
-    }
-  };
+
 
   const handleAddHabitClick = (e) => {
     e.preventDefault();
@@ -137,19 +92,7 @@ export default function Profile() {
           </div>
         </section>
 
-        {/* Developer Actions */}
-        <section className="bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col gap-6 shadow-sm">
-          <h2 className="font-headline-md text-headline-md text-on-surface">Data Actions</h2>
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-on-surface-variant mb-2">Run this one-time migration to upgrade your old data to the new fast Analytics format.</p>
-            <button 
-              onClick={handleRunMigration}
-              className="w-full py-2 bg-surface-container-high border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-variant text-center"
-            >
-              Run Data Migration
-            </button>
-          </div>
-        </section>
+
 
         {/* Membership Info Card */}
         <section className="bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col gap-6 shadow-sm">
