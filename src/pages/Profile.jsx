@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 export default function Profile() {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { habits, setHabits, loadingData } = useData();
 
   // Theme state and toggle logic
@@ -34,6 +34,16 @@ export default function Profile() {
     } catch (error) {
       console.error("Error deleting habit:", error);
       alert("Failed to delete habit.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error("Failed to log out", error);
+      alert("Failed to log out");
     }
   };
 
@@ -111,6 +121,17 @@ export default function Profile() {
               Manage Subscription
             </button>
           </div>
+        </section>
+
+        {/* Account Actions */}
+        <section className="bg-surface border border-error/30 rounded-2xl p-6 flex flex-col gap-6 shadow-sm mt-4 md:mt-0">
+          <button 
+            onClick={handleLogout}
+            className="w-full py-3 bg-error/10 text-error font-semibold rounded-lg hover:bg-error/20 flex items-center justify-center gap-2 transition-colors"
+          >
+            <span className="material-symbols-outlined">logout</span>
+            Log Out
+          </button>
         </section>
       </div>
 
