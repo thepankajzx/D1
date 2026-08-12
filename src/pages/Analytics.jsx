@@ -201,22 +201,7 @@ export default function Analytics() {
         });
 
     return {
-      visualMap: {
-        show: false,
-        pieces: [
-          { min: -1, max: 10, color: '#7f1d1d' },
-          { min: 10.01, max: 20, color: '#991b1b' },
-          { min: 20.01, max: 30, color: '#b91c1c' },
-          { min: 30.01, max: 40, color: '#dc2626' },
-          { min: 40.01, max: 50, color: '#f87171' },
-          { min: 50.01, max: 60, color: '#86efac' },
-          { min: 60.01, max: 70, color: '#4ade80' },
-          { min: 70.01, max: 80, color: '#22c55e' },
-          { min: 80.01, max: 90, color: '#16a34a' },
-          { min: 90.01, max: 100, color: '#14532d' }
-        ],
-        outOfRange: { color: '#868381' }
-      },
+
       tooltip: {
         trigger: 'axis',
         backgroundColor: 'var(--surface-container-high)',
