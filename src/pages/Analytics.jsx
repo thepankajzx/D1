@@ -74,13 +74,14 @@ export default function Analytics() {
     async function loadRangeData() {
       setLoadingEntries(true);
       try {
-        // Filter summaries from global context
+        // Filter summaries from global context for backwards compat
         const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
         setSummaries(rangeSummaries);
         
-        // Fetch all entries in range
+        // Fetch entries ONLY for the selected date range to prevent main-thread freeze
         const entriesSnap = await getDocs(
-          query(collection(db, `users/${user.uid}/entries`), 
+          query(
+            collection(db, `users/${user.uid}/entries`),
             where('entryDate', '>=', startDate),
             where('entryDate', '<=', endDate)
           )
@@ -104,11 +105,19 @@ export default function Analytics() {
   const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
+  // Determine effective start date for chart/heatmap visualization based on first logged entry
+  const effectiveStartDate = useMemo(() => {
+    const firstLogDate = allSummaries.length > 0 
+      ? allSummaries.reduce((min, s) => s.id < min ? s.id : min, allSummaries[0].id) 
+      : null;
+    return firstLogDate && firstLogDate > startDate ? firstLogDate : startDate;
+  }, [startDate, allSummaries]);
+
   // Chart Data Prep
   const chartData = useMemo(() => {
-    // Generate dates array
+    // Generate dates array starting from effectiveStartDate
     const dates = [];
-    let current = new Date(startDate);
+    let current = new Date(effectiveStartDate);
     const end = new Date(endDate);
     while (current <= end) {
       dates.push(current.toISOString().split('T')[0]);
@@ -125,7 +134,7 @@ export default function Analytics() {
       // Habits
       habits.forEach(h => {
         const entry = entries.find(e => e.entryDate === dateStr && e.habitId === h.id);
-        dataPoint[h.id] = entry?.computedScore !== undefined && entry?.computedScore !== null ? entry.computedScore : null;
+        dataPoint[h.id] = entry?.computedScore !== undefined && entry?.computedScore !== null ? entry.computedScore : 0;
       });
       
       return dataPoint;
@@ -154,7 +163,7 @@ export default function Analytics() {
           return {
             name: habit?.name || id,
             type: 'line',
-            data: chartData.map(d => d[id] === null ? '-' : d[id]),
+            data: chartData.map(d => d[id]),
             connectNulls: true,
             itemStyle: { color: colors[index % colors.length] },
             lineStyle: { width: 3 },
@@ -385,6 +394,29 @@ export default function Analytics() {
                 })}
             </div>
           </div>
+
+          {/* All-Time Average Widgets (Multi-Selection) */}
+          {selectedHabits.length > 0 && (
+            <div className="flex flex-wrap gap-4 mb-6">
+              {selectedHabits.map(habitId => {
+                const habit = habits.find(h => h.id === habitId);
+                const habitScores = allSummaries
+                  .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
+                  .map(s => s.habitScores[habitId]);
+                const avg = habitScores.length > 0 ? Math.round(habitScores.reduce((sum, score) => sum + score, 0) / habitScores.length) : 0;
+                
+                return (
+                  <div key={`avg-${habitId}`} className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-4 min-w-[120px]">
+                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium truncate max-w-[100px]">{habit?.name}</span>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="font-headline-md text-primary">{avg}</span>
+                      <span className="text-xs text-on-surface-variant">All-Time Avg</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           
           <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
             {chartMode === 'combined' || selectedHabits.length <= 1 ? (
@@ -413,6 +445,32 @@ export default function Analytics() {
             </button>
           </div>
           
+          {/* All-Time Average Widget (Single Selection - Heatmap) */}
+          <div className="mb-6 flex">
+            <div className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-5">
+              <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">
+                {selectedHabits.length === 1 ? habits.find(h => h.id === selectedHabits[0])?.name + " (All-Time Avg)" : "Overall (All-Time Avg)"}
+              </span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="font-headline-md text-primary">
+                  {(() => {
+                    if (selectedHabits.length === 1) {
+                      const habitId = selectedHabits[0];
+                      const habitScores = allSummaries
+                        .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
+                        .map(s => s.habitScores[habitId]);
+                      return habitScores.length > 0 ? Math.round(habitScores.reduce((sum, score) => sum + score, 0) / habitScores.length) : 0;
+                    } else {
+                      const validSummaries = allSummaries.filter(s => s.overallScore !== undefined);
+                      return validSummaries.length > 0 ? Math.round(validSummaries.reduce((sum, s) => sum + s.overallScore, 0) / validSummaries.length) : 0;
+                    }
+                  })()}
+                </span>
+                <span className="text-xs text-on-surface-variant">/100</span>
+              </div>
+            </div>
+          </div>
+
           <div className={`flex-grow flex flex-col overflow-x-auto pb-2 scrollbar-hide`}>
             <div className={`flex gap-3 ${isZoomedOut ? 'w-full' : ''}`}>
               <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0" style={{ height: '164px' }}>
@@ -435,48 +493,58 @@ export default function Analytics() {
             </div>
           </div>
           
-          {/* Day Details Panel */}
+          {/* Day Details Modal */}
           {selectedDay && (
-            <div className="mt-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant animate-in fade-in zoom-in duration-200">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-label-md text-primary">
-                  {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
-                </h3>
-                <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface">
-                  <span className="material-symbols-outlined text-sm">close</span>
-                </button>
-              </div>
-              <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-2">
-                {(() => {
-                  const daySummary = summaries.find(s => s.id === selectedDay);
-                  const dayEntries = entries.filter(e => e.entryDate === selectedDay);
-                  
-                  if (!daySummary && dayEntries.length === 0) {
-                    return <p className="text-xs text-on-surface-variant">No data recorded for this day.</p>;
-                  }
-                  
-                  return (
-                    <>
-                      <div className="flex justify-between items-center text-xs pb-2 border-b border-outline-variant">
-                        <span className="font-semibold text-on-surface">Overall Score</span>
-                        <span className="font-mono-data font-bold text-primary">{daySummary?.overallScore ?? '--'}%</span>
-                      </div>
-                      {habits.map(habit => {
-                        const entry = dayEntries.find(e => e.habitId === habit.id);
-                        if (!entry) return null;
-                        
-                        return (
-                          <div key={habit.id} className="flex justify-between items-center text-xs">
-                            <span className="text-on-surface-variant truncate max-w-[150px]">{habit.name}</span>
-                            <span className="font-mono-data text-on-surface">
-                              {entry.computedScore !== null ? `${entry.computedScore}%` : 'Logged'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </>
-                  );
-                })()}
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface-container-highest/80 px-4">
+              <div className="w-full max-w-sm p-6 rounded-2xl bg-surface border border-outline-variant shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
+                  <h3 className="font-headline-sm text-on-surface">
+                    {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </h3>
+                  <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {(() => {
+                    const daySummary = summaries.find(s => s.id === selectedDay);
+                    const dayEntries = entries.filter(e => e.entryDate === selectedDay);
+                    
+                    if (!daySummary && dayEntries.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center py-8 text-on-surface-variant">
+                          <span className="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
+                          <p className="font-body-md text-center">No data recorded for this day.</p>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between items-center bg-primary-container p-4 rounded-xl border border-primary/20">
+                          <span className="font-label-md text-on-primary-container font-bold uppercase tracking-wide">Overall Score</span>
+                          <span className="font-headline-sm font-bold text-on-primary-container">{daySummary?.overallScore ?? '--'}%</span>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-1 mt-2">Habit Breakdown</h4>
+                          {habits.map(habit => {
+                            const entry = dayEntries.find(e => e.habitId === habit.id);
+                            if (!entry) return null;
+                            
+                            return (
+                              <div key={habit.id} className="flex justify-between items-center p-3 rounded-lg bg-surface-container border border-outline-variant hover:bg-surface-variant transition-colors">
+                                <span className="font-body-md text-on-surface">{habit.name}</span>
+                                <span className="font-mono-data font-bold text-on-surface">
+                                  {entry.computedScore !== null ? `${entry.computedScore}%` : 'Logged'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}

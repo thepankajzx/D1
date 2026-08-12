@@ -1,17 +1,19 @@
 import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import Seed from './pages/Seed';
-import OnboardingWelcome from './pages/OnboardingWelcome';
-import OnboardingSelect from './pages/OnboardingSelect';
-import OnboardingTargets from './pages/OnboardingTargets';
-import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
-import Subscription from './pages/Subscription';
+
+const Login = lazy(() => import('./pages/Login'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Seed = lazy(() => import('./pages/Seed'));
+const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
+const OnboardingSelect = lazy(() => import('./pages/OnboardingSelect'));
+const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Subscription = lazy(() => import('./pages/Subscription'));
 
 function Layout({ children }) {
 // ... keep layout same ...
@@ -40,7 +42,7 @@ function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background pb-16 md:pb-0">
       {/* Top Navbar - Full Width on PC */}
-      <nav className="bg-surface text-primary font-body-md text-body-md docked full-width border-b border-outline-variant/30 flat shadow-sm transition-all duration-200 ease-in-out fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 backdrop-blur-md bg-surface/90">
+      <nav className="bg-surface text-primary font-body-md text-body-md docked full-width border-b border-outline-variant/30 flat shadow-sm transition-colors duration-200 ease-in-out fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface/95">
         <div className="flex items-center gap-8">
           <Link to="/" className="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2">
             <span className="material-symbols-outlined">rocket_launch</span>
@@ -104,21 +106,27 @@ function App() {
       <AuthProvider>
         <DataProvider>
           <HashRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
-                <Route path="/profile" element={<Layout><Profile /></Layout>} />
-                <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
+            <Suspense fallback={
+              <div className="flex min-h-screen items-center justify-center text-primary bg-background">
+                <span className="material-symbols-outlined animate-spin text-4xl">sync</span>
+              </div>
+            }>
+              <Routes>
+                <Route path="/login" element={<Login />} />
                 
-                <Route path="/seed" element={<Seed />} />
-                <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
-                <Route path="/onboarding/select" element={<OnboardingSelect />} />
-                <Route path="/onboarding/targets" element={<OnboardingTargets />} />
-              </Route>
-            </Routes>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Layout><Dashboard /></Layout>} />
+                  <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+                  <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                  <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
+                  
+                  <Route path="/seed" element={<Seed />} />
+                  <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
+                  <Route path="/onboarding/select" element={<OnboardingSelect />} />
+                  <Route path="/onboarding/targets" element={<OnboardingTargets />} />
+                </Route>
+              </Routes>
+            </Suspense>
           </HashRouter>
         </DataProvider>
       </AuthProvider>

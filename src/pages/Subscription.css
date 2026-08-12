@@ -188,8 +188,7 @@
     position: absolute;
     width: 70px; height: 70px;
     background: var(--sub-brand-purple);
-    filter: blur(20px);
-    opacity: 0.5;
+    opacity: 0.2;
     border-radius: 50%;
 }
 
@@ -322,7 +321,7 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px; border: 2px solid var(--sub-border-light);
     border-radius: var(--sub-radius-md); cursor: pointer;
-    background: #FFF; transition: all 0.2s;
+    background: #FFF; transition: border-color 0.2s, background-color 0.2s;
 }
 .subscription-page .radio-label.active { border: 2px solid var(--sub-brand-blue); background: var(--sub-pro-pill-bg); }
 
@@ -347,7 +346,7 @@
 .subscription-page .btn {
     width: 100%; padding: 16px; border-radius: var(--sub-radius-md);
     font-size: 1rem; font-weight: 700; display: flex; align-items: center;
-    justify-content: center; gap: 8px; cursor: pointer; transition: all 0.3s; border: none;
+    justify-content: center; gap: 8px; cursor: pointer; transition: transform 0.3s, opacity 0.3s; border: none;
     margin-top: auto; /* Push button to bottom */
 }
 .subscription-page .btn-outline { background: transparent; border: 2px solid var(--sub-text-main); color: var(--sub-text-main); }

@@ -75,6 +75,17 @@ export default function Dashboard() {
     loadDateData();
   }, [selectedDate, habits.length, user?.uid, loadingData]);
 
+  // Auto-save with debounce
+  useEffect(() => {
+    if (!pendingChanges || isSaving || !user) return;
+
+    const timer = setTimeout(() => {
+      handleSaveProgress();
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timer);
+  }, [pendingChanges, entries, dailySummary, isSaving, user]);
+
   const handleSaveProgress = async () => {
     if (!user || !pendingChanges) return;
     setIsSaving(true);
@@ -122,6 +133,13 @@ export default function Dashboard() {
         // Write Summary
         if (dailySummary) {
             const summaryData = { ...dailySummary };
+            
+            // Add individual habit scores to the daily summary to power analytics without extra reads
+            summaryData.habitScores = {};
+            finalEntries.forEach(e => {
+                summaryData.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+            });
+            
             delete summaryData.id;
             const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, selectedDate);
             batch.set(summaryRef, summaryData, { merge: true });

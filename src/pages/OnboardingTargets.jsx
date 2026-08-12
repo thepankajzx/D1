@@ -265,7 +265,7 @@ export default function OnboardingTargets() {
       </main>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-sm border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-4 flex justify-center z-50">
+      <div className="fixed bottom-0 left-0 w-full bg-surface/95 border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-4 flex justify-center z-50">
         <div className="w-full max-w-container-max-width flex justify-center">
           <button 
             onClick={handleFinish}
