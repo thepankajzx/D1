@@ -543,7 +543,7 @@ export default function Analytics() {
                           className={`transition-colors flex items-center justify-center font-mono-data font-bold ${
                             cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
                           } ${
-                            !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? \`bg-perf-\${cell.perfBand}\` : ''
+                            !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
                           } ${
                             showPercentages && !isZoomedOut ? 'w-[28px] rounded-[6px] text-[10px] text-white/90 drop-shadow-sm' : 'heatmap-cell'
                           }`}
