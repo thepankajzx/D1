@@ -52,8 +52,8 @@ export default function RadialGauge({ habitName, percentage, timeframeLabel }) {
 
       {/* Segmented Radial Chart Area */}
       <div className="relative w-[90px] h-[90px] mb-2 flex justify-center items-center">
-        <div className="text-center z-10 flex flex-col items-center justify-center mt-2">
-          <div className={`text-3xl font-bold tracking-tight ${perfTextClass} leading-none font-headline-display`}>
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="text-[20px] font-bold tracking-tight text-on-surface leading-none font-headline-display">
             {Math.round(percentage)}%
           </div>
         </div>
