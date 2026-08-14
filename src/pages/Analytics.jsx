@@ -69,6 +69,7 @@ export default function Analytics() {
   // Filter States
   const [selectedHabits, setSelectedHabits] = useState([]); // Array of habit IDs
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
+  const [viewMode, setViewMode] = useState('charts'); // 'charts' or 'heatmap'
   const [selectedDay, setSelectedDay] = useState(null);
   
   // Heatmap State
@@ -536,6 +537,24 @@ export default function Analytics() {
         </div>
       </div>
 
+      {/* View Toggle */}
+      <div className="flex justify-center mb-6">
+        <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm">
+          <button 
+            onClick={() => setViewMode('charts')}
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'charts' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            Charts
+          </button>
+          <button 
+            onClick={() => setViewMode('heatmap')}
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'heatmap' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            Heatmap
+          </button>
+        </div>
+      </div>
+
       {/* Main Chart & Heatmap */}
       {isFutureOnly ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center mb-8">
@@ -547,10 +566,11 @@ export default function Analytics() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-6">
         
         {/* Trend Line Chart */}
-        <div className="lg:col-span-2 bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
+        {viewMode === 'charts' && (
+        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
           <div className="flex flex-col mb-6 gap-4">
             <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
@@ -558,13 +578,13 @@ export default function Analytics() {
                     <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
                         <button 
                           onClick={() => setChartMode('combined')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
                         >
                           Combined
                         </button>
                         <button 
                           onClick={() => setChartMode('separate')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
                         >
                           Separate
                         </button>
@@ -601,40 +621,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* All-Time Average Widgets (Multi-Selection) */}
-          {selectedHabits.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-8">
-              {selectedHabits.map(habitId => {
-                const habit = habits.find(h => h.id === habitId);
-                
-                // Calculate current period average
-                const currentPeriodScores = summaries
-                  .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
-                  .map(s => s.habitScores[habitId]);
-                const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
-                
-                let timeframeLabel = 'All-Time';
 
-                if (rangeOption !== 'all' && rangeOption !== 'custom') {
-                    const days = parseInt(rangeOption) || 30;
-                    timeframeLabel = `${days} Days`;
-                } else if (rangeOption === 'custom') {
-                    timeframeLabel = 'Custom';
-                }
-                
-                const displayPercentage = currentAvg;
-
-                return (
-                  <RadialGauge 
-                    key={`gauge-${habitId}`} 
-                    habitName={habit?.name || 'Unknown'} 
-                    percentage={displayPercentage} 
-                    timeframeLabel={timeframeLabel}
-                  />
-                );
-              })}
-            </div>
-          )}
           
           <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
             {chartMode === 'combined' || selectedHabits.length <= 1 ? (
@@ -657,9 +644,11 @@ export default function Analytics() {
             )}
           </div>
         </div>
+        )}
 
         {/* Heatmap */}
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
+        {viewMode === 'heatmap' && (
+        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-headline-md text-headline-md text-on-surface">Consistency Map</h2>
             <div className="flex items-center gap-4">
@@ -877,27 +866,12 @@ export default function Analytics() {
             </div>
           )}
           
-          {/* Legend */}
-          <div className="flex items-center justify-end gap-2 mt-6 font-mono-data text-[10px] text-on-surface-variant">
-            <span>0-10</span>
-            <div className="flex gap-1">
-              <div className="w-3 h-3 rounded-[2px] bg-perf-1" title="0-10"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-2" title="11-20"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-3" title="21-30"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-4" title="31-40"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-5" title="41-50"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-6" title="51-60"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-7" title="61-70"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-8" title="71-80"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-9" title="81-90"></div>
-              <div className="w-3 h-3 rounded-[2px] bg-perf-10" title="91-100"></div>
-            </div>
-            <span>90-100</span>
-          </div>
         </div>
+        )}
       </div>
 
       {/* Habit Performance Table */}
+      {viewMode === 'charts' && (
       <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl overflow-hidden mb-8">
         <div className="p-6 border-b border-outline-variant">
           <h2 className="font-headline-md text-headline-md text-on-surface">Habit Breakdown</h2>
@@ -954,6 +928,7 @@ export default function Analytics() {
           </div>
         )}
       </div>
+      )}
       </>
       )}
     </div>
