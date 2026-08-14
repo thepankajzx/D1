@@ -648,35 +648,43 @@ export default function Analytics() {
 
         {/* Heatmap */}
         {viewMode === 'heatmap' && (
-        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
+        <div className={isZoomedOut ? 'fixed inset-0 z-[9999] bg-black/90 flex flex-col p-4 sm:p-8 overflow-hidden' : 'w-full'}>
+          {isZoomedOut && (
+            <div className="flex justify-end mb-4 shrink-0">
+              <button 
+                onClick={() => setIsZoomedOut(false)} 
+                className="bg-white text-black px-4 py-2 cursor-pointer font-bold rounded hover:bg-gray-200 transition-colors"
+              >
+                Close Zoom
+              </button>
+            </div>
+          )}
+          <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full' : 'w-full'}>
+            <div className={`bg-surface flex flex-col ${isZoomedOut ? 'w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full border border-outline-variant shadow-sm rounded-2xl p-6'}`}>
+          <div className="flex justify-between items-center mb-6 shrink-0">
             <h2 className="font-headline-md text-headline-md text-on-surface">Consistency Map</h2>
             <div className="flex items-center gap-4">
               <button 
-                  onClick={() => {
-                    setShowPercentages(!showPercentages);
-                    if (!showPercentages) setIsZoomedOut(false);
-                  }}
+                  onClick={() => setShowPercentages(!showPercentages)}
                   className={`transition-colors flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border ${showPercentages ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface-container-low border-outline-variant text-on-surface-variant hover:text-primary'}`}
               >
                   <span className="material-symbols-outlined text-[16px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
                   {showPercentages ? 'Hide %' : 'Show %'}
               </button>
+              {!isZoomedOut && (
               <button 
-                  onClick={() => {
-                    setIsZoomedOut(!isZoomedOut);
-                    if (!isZoomedOut) setShowPercentages(false);
-                  }}
+                  onClick={() => setIsZoomedOut(true)}
                   className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 text-xs font-medium"
               >
-                  <span className="material-symbols-outlined text-[16px]">{isZoomedOut ? 'zoom_in' : 'zoom_out'}</span>
-                  {isZoomedOut ? 'Zoom In' : 'Zoom Out'}
+                  <span className="material-symbols-outlined text-[16px]">fullscreen</span>
+                  Zoom Out
               </button>
+              )}
             </div>
           </div>
           
           {/* All-Time Average Widget (Single Selection - Heatmap) */}
-          <div className="mb-6 flex">
+          <div className="mb-6 flex shrink-0">
             <div className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-5">
               <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">
                 {selectedHabits.length === 1 ? habits.find(h => h.id === selectedHabits[0])?.name + " (All-Time Avg)" : "Overall (All-Time Avg)"}
@@ -703,7 +711,7 @@ export default function Analytics() {
 
           <div className={`flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar`}>
             <div className={`flex gap-6 ${isZoomedOut ? 'w-full' : ''}`}>
-              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: showPercentages && !isZoomedOut ? '196px' : '154px' }}>
+              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
                 <span className="leading-tight">Mon</span>
                 <span className="leading-tight">Tue</span>
                 <span className="leading-tight">Wed</span>
@@ -719,22 +727,24 @@ export default function Analytics() {
                     <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
                       {monthData.monthLabel}
                     </span>
-                    <div className={`grid-heatmap ${isZoomedOut ? 'w-full' : ''}`} style={{ gap: isZoomedOut ? '2px' : '4px', height: showPercentages && !isZoomedOut ? '196px' : '154px' }}>
+                    <div className={`grid-heatmap ${isZoomedOut ? 'w-full' : ''}`} style={{ gap: isZoomedOut ? '2px' : '4px', height: '154px' }}>
                       {monthData.cells.map((cell, i) => (
                         <div 
                           key={i} 
                           onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
                           title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
-                          className={`transition-colors flex items-center justify-center font-mono-data font-bold ${
+                          className={`transition-colors relative flex items-center justify-center font-mono-data font-bold heatmap-cell ${
                             cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
                           } ${
                             !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
-                          } ${
-                            showPercentages && !isZoomedOut ? 'w-[28px] rounded-[6px] text-[10px] text-white/90 drop-shadow-sm' : 'heatmap-cell'
                           }`}
                           style={isZoomedOut ? { width: '100%', minWidth: '4px', height: 'auto', aspectRatio: '1/1' } : {}}
                         >
-                          {showPercentages && !isZoomedOut && !cell.isPad && cell.score !== null ? cell.score : ''}
+                          {!cell.isPad && cell.score !== null && (
+                            <span className={`absolute inset-0 flex items-center justify-center text-[9px] sm:text-[10px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages && !isZoomedOut ? 'opacity-100' : 'opacity-0'}`}>
+                              {cell.score}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -866,6 +876,8 @@ export default function Analytics() {
             </div>
           )}
           
+            </div>
+          </div>
         </div>
         )}
       </div>
