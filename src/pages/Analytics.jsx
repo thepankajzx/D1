@@ -11,6 +11,7 @@ import {
 } from '../lib/analytics';
 import ReactECharts from 'echarts-for-react';
 import { Link } from 'react-router-dom';
+import RadialGauge from '../components/RadialGauge';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
@@ -447,22 +448,57 @@ export default function Analytics() {
 
           {/* All-Time Average Widgets (Multi-Selection) */}
           {selectedHabits.length > 0 && (
-            <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex flex-wrap gap-6 mb-8 justify-center xl:justify-start">
               {selectedHabits.map(habitId => {
                 const habit = habits.find(h => h.id === habitId);
-                const habitScores = allSummaries
+                
+                // Calculate current period average
+                const currentPeriodScores = summaries
                   .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
                   .map(s => s.habitScores[habitId]);
-                const avg = habitScores.length > 0 ? Math.round(habitScores.reduce((sum, score) => sum + score, 0) / habitScores.length) : 0;
+                const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
                 
+                let changeLabel = 'All-Time Avg';
+                let changeValue = null;
+
+                if (rangeOption !== 'all' && rangeOption !== 'custom') {
+                    const days = parseInt(rangeOption) || 30;
+                    
+                    if (days === 7) changeLabel = 'Weekly Change';
+                    else if (days === 30) changeLabel = 'Monthly Change';
+                    else changeLabel = `${days}-Day Change`;
+                    
+                    // Calculate previous period average
+                    const prevStartObj = new Date(startDate);
+                    prevStartObj.setDate(prevStartObj.getDate() - days);
+                    const prevEndObj = new Date(startDate);
+                    prevEndObj.setDate(prevEndObj.getDate() - 1);
+                    
+                    const prevStart = prevStartObj.toISOString().split('T')[0];
+                    const prevEnd = prevEndObj.toISOString().split('T')[0];
+                    
+                    const prevPeriodScores = allSummaries
+                      .filter(s => s.id >= prevStart && s.id <= prevEnd && s.habitScores && s.habitScores[habitId] !== undefined)
+                      .map(s => s.habitScores[habitId]);
+                      
+                    if (prevPeriodScores.length > 0) {
+                        const prevAvg = Math.round(prevPeriodScores.reduce((sum, score) => sum + score, 0) / prevPeriodScores.length);
+                        changeValue = currentAvg - prevAvg;
+                    }
+                } else if (rangeOption === 'custom') {
+                    changeLabel = 'Custom Range Avg';
+                }
+                
+                const displayPercentage = currentAvg;
+
                 return (
-                  <div key={`avg-${habitId}`} className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-4 min-w-[120px]">
-                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium truncate max-w-[100px]">{habit?.name}</span>
-                    <div className="flex items-baseline gap-1 mt-1">
-                      <span className={`font-headline-md ${getPerfTextColorClass(avg)}`}>{avg}</span>
-                      <span className="text-xs text-on-surface-variant">All-Time Avg</span>
-                    </div>
-                  </div>
+                  <RadialGauge 
+                    key={`gauge-${habitId}`} 
+                    habitName={habit?.name || 'Unknown'} 
+                    percentage={displayPercentage} 
+                    changeLabel={changeLabel}
+                    changeValue={changeValue}
+                  />
                 );
               })}
             </div>
