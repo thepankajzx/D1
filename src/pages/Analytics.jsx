@@ -710,25 +710,27 @@ export default function Analytics() {
             </div>
           </div>
 
-          <div className={`flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar`}>
-            <div className={`flex gap-6 ${isZoomedOut ? 'w-full' : ''}`}>
-              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
-                <span className="leading-tight">Mon</span>
-                <span className="leading-tight">Tue</span>
-                <span className="leading-tight">Wed</span>
-                <span className="leading-tight">Thu</span>
-                <span className="leading-tight">Fri</span>
-                <span className="leading-tight">Sat</span>
-                <span className="leading-tight">Sun</span>
-              </div>
-              
-              <div className={`flex gap-8 ${isZoomedOut ? 'w-full' : ''}`}>
-                {heatmapGrid.map((monthData, mIndex) => (
-                  <div key={mIndex} className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
+          <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
+            <div className={`flex ${isZoomedOut ? 'flex-wrap justify-center items-start gap-x-12 gap-y-12' : 'gap-8'} w-full`}>
+              {heatmapGrid.map((monthData, mIndex) => (
+                <div key={mIndex} className="flex gap-2">
+                  {(isZoomedOut || mIndex === 0) && (
+                    <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
+                      <span className="leading-tight">Mon</span>
+                      <span className="leading-tight">Tue</span>
+                      <span className="leading-tight">Wed</span>
+                      <span className="leading-tight">Thu</span>
+                      <span className="leading-tight">Fri</span>
+                      <span className="leading-tight">Sat</span>
+                      <span className="leading-tight">Sun</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">
                       {monthData.monthLabel}
                     </span>
-                    <div className={`grid-heatmap ${isZoomedOut ? 'w-full' : ''}`} style={{ gap: isZoomedOut ? '2px' : '4px', height: '154px' }}>
+                    <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
                       {monthData.cells.map((cell, i) => (
                         <div 
                           key={i} 
@@ -739,7 +741,6 @@ export default function Analytics() {
                           } ${
                             !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
                           }`}
-                          style={isZoomedOut ? { width: '100%', minWidth: '4px', height: 'auto', aspectRatio: '1/1' } : {}}
                         >
                           {!cell.isPad && cell.score !== null && (
                             <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
@@ -750,8 +751,8 @@ export default function Analytics() {
                       ))}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
           
