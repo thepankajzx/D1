@@ -81,12 +81,15 @@ export default function Analytics() {
   const [loadingEntries, setLoadingEntries] = useState(false);
 
   // Compute actual start/end based on option
-  const { startDate, endDate } = useMemo(() => {
+  const { startDate, endDate, isFutureOnly } = useMemo(() => {
     const today = new Date();
-    const end = today.toISOString().split('T')[0];
+    const tzoffset = today.getTimezoneOffset() * 60000;
+    const end = new Date(today.getTime() - tzoffset).toISOString().split('T')[0];
     
     if (rangeOption === 'custom' && appliedCustomStart && appliedCustomEnd) {
-      return { startDate: appliedCustomStart, endDate: appliedCustomEnd };
+      const futureOnly = appliedCustomStart > end;
+      const cappedEnd = appliedCustomEnd > end ? end : appliedCustomEnd;
+      return { startDate: appliedCustomStart, endDate: cappedEnd, isFutureOnly: futureOnly };
     }
     
     // Default fallback if custom is selected but not applied yet
@@ -96,7 +99,8 @@ export default function Analytics() {
       startObj.setDate(startObj.getDate() - days + 1);
       return {
         startDate: startObj.toISOString().split('T')[0],
-        endDate: end
+        endDate: end,
+        isFutureOnly: false
       };
     }
     
@@ -106,7 +110,8 @@ export default function Analytics() {
     
     return {
       startDate: startObj.toISOString().split('T')[0],
-      endDate: end
+      endDate: end,
+      isFutureOnly: false
     };
   }, [rangeOption, appliedCustomStart, appliedCustomEnd]);
 
@@ -532,7 +537,17 @@ export default function Analytics() {
       </div>
 
       {/* Main Chart & Heatmap */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {isFutureOnly ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center mb-8">
+            <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4">event_upcoming</span>
+            <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
+            <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
+              Ye data abhi aana baaki hai. Future ki dates mein koi habit tracking data nahi hai. Please past ya current date select karein.
+            </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Trend Line Chart */}
         <div className="lg:col-span-2 bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
@@ -939,6 +954,8 @@ export default function Analytics() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
