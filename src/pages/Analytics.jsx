@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -52,6 +52,19 @@ export default function Analytics() {
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
   const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
+  const dateSelectorRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dateSelectorRef.current && !dateSelectorRef.current.contains(event.target)) {
+        setIsCustomDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   
   // Filter States
   const [selectedHabits, setSelectedHabits] = useState([]); // Array of habit IDs
@@ -422,53 +435,58 @@ export default function Analytics() {
           <p className="font-body-md text-body-md text-on-surface-variant">Analyze your habit consistency and intensity over time.</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-surface-container rounded-lg p-1 border border-outline-variant shadow-sm">
-          {['7', '30', '90'].map(val => (
-            <button 
-              key={val}
-              onClick={() => setRangeOption(val)}
-              className={`px-3 py-1.5 rounded-md font-label-sm text-label-sm transition-colors ${rangeOption === val ? 'bg-surface shadow-sm border border-outline-variant text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant'}`}
-            >
-              {val} Days
-            </button>
-          ))}
-          <div className="relative group">
+        <div className="flex flex-col items-end gap-2" ref={dateSelectorRef}>
+          <div className="flex items-center gap-1 bg-surface-container/40 backdrop-blur-md rounded-full p-1 border border-outline-variant/30 shadow-sm">
+            {['7', '30', '90'].map(val => (
+              <button 
+                key={val}
+                onClick={() => {
+                  setRangeOption(val);
+                  setIsCustomDropdownOpen(false);
+                }}
+                className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-surface shadow-sm text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+              >
+                {val} Days
+              </button>
+            ))}
             <button 
               onClick={() => {
                 setRangeOption('custom');
-                setIsCustomDropdownOpen(!isCustomDropdownOpen);
+                setIsCustomDropdownOpen(true);
               }}
-              className={`px-3 py-1.5 rounded-md font-label-sm text-label-sm transition-colors flex items-center gap-1 ${rangeOption === 'custom' ? 'bg-surface shadow-sm border border-outline-variant text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-surface shadow-sm text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
             >
               Custom <span className="material-symbols-outlined text-[16px]">calendar_today</span>
             </button>
-            {isCustomDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant rounded-xl p-3 flex flex-col gap-3 z-20 shadow-lg min-w-[200px]">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-on-surface-variant">Start Date</label>
-                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded-md p-2 bg-surface-container border border-outline-variant text-on-surface" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-on-surface-variant">End Date</label>
-                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm rounded-md p-2 bg-surface-container border border-outline-variant text-on-surface" />
-                </div>
-                <button 
-                  onClick={() => {
-                     if(customStart && customEnd) {
-                        setAppliedCustomStart(customStart);
-                        setAppliedCustomEnd(customEnd);
-                        setIsCustomDropdownOpen(false);
-                     } else {
-                        alert("Please select both start and end dates.");
-                     }
-                  }}
-                  className="w-full bg-primary text-on-primary py-2 rounded-md font-label-sm mt-1 hover:opacity-90"
-                >
-                  Show Analytics
-                </button>
-              </div>
-            )}
           </div>
+          
+          {/* Inline custom date panel */}
+          {isCustomDropdownOpen && (
+            <div className="w-full md:w-auto bg-surface-container/60 backdrop-blur-xl border border-outline-variant/40 rounded-[20px] p-3 flex flex-col sm:flex-row gap-3 items-end sm:items-center shadow-md animate-in fade-in slide-in-from-top-2 duration-200 z-10">
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant pl-1">From</label>
+                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded-xl p-2.5 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary w-full shadow-sm" />
+              </div>
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant pl-1">To</label>
+                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm rounded-xl p-2.5 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary w-full shadow-sm" />
+              </div>
+              <button 
+                onClick={() => {
+                   if(customStart && customEnd) {
+                      setAppliedCustomStart(customStart);
+                      setAppliedCustomEnd(customEnd);
+                      setIsCustomDropdownOpen(false);
+                   } else {
+                      alert("Please select both start and end dates.");
+                   }
+                }}
+                className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-label-md hover:opacity-90 transition-opacity w-full sm:w-auto whitespace-nowrap shadow-sm"
+              >
+                Show Results
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
