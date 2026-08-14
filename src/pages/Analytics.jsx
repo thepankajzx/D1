@@ -303,15 +303,35 @@ export default function Analytics() {
             } else {
               const habit = habits.find(h => h.name === seriesName);
               const habitId = habit ? habit.id : null;
-              let actual = 0;
-              let target = habit ? habit.target || 1 : 1;
-              let unit = habit ? habit.unit || 'times' : 'times';
-              
+              const formatValue = (val, type) => {
+                if (val === null || val === undefined) return '-';
+                if (type === 'binary') return val === 1 ? 'Yes' : 'No';
+                if (type === 'time') {
+                  const h = Math.floor(val / 60) % 24;
+                  const m = Math.floor(val % 60);
+                  const ampm = h >= 12 ? 'PM' : 'AM';
+                  const h12 = h % 12 || 12;
+                  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+                }
+                return val;
+              };
+
+              let actualRaw = undefined;
               if (habitId) {
                 const entry = entries.find(e => e.entryDate === pointData.date && e.habitId === habitId);
-                if (entry) {
-                  actual = entry.value || 0;
+                if (entry && entry.value !== undefined) {
+                  actualRaw = entry.value;
                 }
+              }
+
+              let actual = actualRaw !== undefined ? formatValue(actualRaw, habit?.scoringType) : '-';
+              let target = habit && habit.target100 !== undefined ? formatValue(habit.target100, habit?.scoringType) : '-';
+              let unit = habit?.unit || '';
+              
+              if (habit?.scoringType === 'binary' || habit?.scoringType === 'time') {
+                unit = '';
+              } else if (!unit) {
+                unit = 'times';
               }
               
               const isCompleted = score >= 100;
