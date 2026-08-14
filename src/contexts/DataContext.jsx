@@ -12,15 +12,27 @@ export function useData() {
 export function DataProvider({ children }) {
   const { currentUser: user } = useAuth();
   
-  const [habits, setHabits] = useState([]);
-  const [allSummaries, setAllSummaries] = useState([]);
+  const [habits, setHabits] = useState(() => {
+    const cached = localStorage.getItem(`habits_${user?.uid}`);
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [allSummaries, setAllSummaries] = useState(() => {
+    const cached = localStorage.getItem(`summaries_${user?.uid}`);
+    return cached ? JSON.parse(cached) : [];
+  });
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
   const [userDocData, setUserDocData] = useState(null);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(() => {
+    // If we have cached habits, we don't need to block the UI
+    const hasCachedData = !!localStorage.getItem(`habits_${user?.uid}`);
+    return !hasCachedData;
+  });
 
   async function loadGlobalData() {
     if (!user) return;
-    setLoadingData(true);
+    // Only show loading spinner if we don't have cached data
+    if (habits.length === 0) setLoadingData(true);
+    
     try {
       const [userDoc, habitsSnap, summariesSnap] = await Promise.all([
           getDoc(doc(db, 'users', user.uid)),
@@ -36,9 +48,11 @@ export function DataProvider({ children }) {
       const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       fetchedHabits.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       setHabits(fetchedHabits);
+      localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
       
       const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       setAllSummaries(fetchedSummaries);
+      localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(fetchedSummaries));
     } catch (error) {
       console.error("Error loading global data:", error);
     } finally {
@@ -54,6 +68,21 @@ export function DataProvider({ children }) {
       setUserDocData(null);
       setLoadingData(false);
       return;
+    }
+    
+    // Check local storage immediately when user changes
+    const cachedHabits = localStorage.getItem(`habits_${user.uid}`);
+    const cachedSummaries = localStorage.getItem(`summaries_${user.uid}`);
+    
+    if (cachedHabits) {
+      setHabits(JSON.parse(cachedHabits));
+      setLoadingData(false);
+    } else {
+      setLoadingData(true);
+    }
+    
+    if (cachedSummaries) {
+      setAllSummaries(JSON.parse(cachedSummaries));
     }
 
     loadGlobalData();

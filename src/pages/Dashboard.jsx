@@ -49,7 +49,16 @@ export default function Dashboard() {
     }
     
     async function loadDateData() {
-      setLoadingEntries(true);
+      const cacheKey = `entries_${user.uid}_${selectedDate}`;
+      const cachedEntries = localStorage.getItem(cacheKey);
+      
+      if (cachedEntries) {
+        setEntries(JSON.parse(cachedEntries));
+        setLoadingEntries(false);
+      } else {
+        setLoadingEntries(true);
+      }
+
       try {
         const promises = habits.map(habit => {
           const entryId = `${habit.id}_${selectedDate}`;
@@ -66,6 +75,7 @@ export default function Dashboard() {
         });
         
         setEntries(fetchedEntries);
+        localStorage.setItem(cacheKey, JSON.stringify(fetchedEntries));
         
         // Get today's summary from the allSummaries array if we have it
         const existingSummary = allSummaries.find(s => s.id === selectedDate);
@@ -156,7 +166,28 @@ export default function Dashboard() {
         batch.set(userRef, { currentStreak, longestStreak }, { merge: true });
         
         await batch.commit();
+        
+        // Update local cache
+        localStorage.setItem(`entries_${user.uid}_${selectedDate}`, JSON.stringify(finalEntries));
+        
         setPendingChanges(false);
+        setEntries(finalEntries);
+        
+        if (dailySummary) {
+            const updatedSummary = { id: selectedDate, ...dailySummary };
+            updatedSummary.habitScores = {};
+            finalEntries.forEach(e => {
+                updatedSummary.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+            });
+            
+            setAllSummaries(prev => {
+                const newSummaries = prev.filter(s => s.id !== selectedDate);
+                newSummaries.push(updatedSummary);
+                // Update global summaries cache
+                localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(newSummaries));
+                return newSummaries;
+            });
+        }
         
         // Refresh global data to ensure cross-page consistency (e.g. Analytics)
         if (refreshData) {
