@@ -570,7 +570,7 @@ export default function Analytics() {
 
           {/* All-Time Average Widgets (Multi-Selection) */}
           {selectedHabits.length > 0 && (
-            <div className="flex flex-wrap gap-6 mb-8 justify-center xl:justify-start">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-8">
               {selectedHabits.map(habitId => {
                 const habit = habits.find(h => h.id === habitId);
                 
@@ -580,35 +580,13 @@ export default function Analytics() {
                   .map(s => s.habitScores[habitId]);
                 const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
                 
-                let changeLabel = 'All-Time Avg';
-                let changeValue = null;
+                let timeframeLabel = 'All-Time';
 
                 if (rangeOption !== 'all' && rangeOption !== 'custom') {
                     const days = parseInt(rangeOption) || 30;
-                    
-                    if (days === 7) changeLabel = 'Weekly Change';
-                    else if (days === 30) changeLabel = 'Monthly Change';
-                    else changeLabel = `${days}-Day Change`;
-                    
-                    // Calculate previous period average
-                    const prevStartObj = new Date(startDate);
-                    prevStartObj.setDate(prevStartObj.getDate() - days);
-                    const prevEndObj = new Date(startDate);
-                    prevEndObj.setDate(prevEndObj.getDate() - 1);
-                    
-                    const prevStart = prevStartObj.toISOString().split('T')[0];
-                    const prevEnd = prevEndObj.toISOString().split('T')[0];
-                    
-                    const prevPeriodScores = allSummaries
-                      .filter(s => s.id >= prevStart && s.id <= prevEnd && s.habitScores && s.habitScores[habitId] !== undefined)
-                      .map(s => s.habitScores[habitId]);
-                      
-                    if (prevPeriodScores.length > 0) {
-                        const prevAvg = Math.round(prevPeriodScores.reduce((sum, score) => sum + score, 0) / prevPeriodScores.length);
-                        changeValue = currentAvg - prevAvg;
-                    }
+                    timeframeLabel = `${days} Days`;
                 } else if (rangeOption === 'custom') {
-                    changeLabel = 'Custom Range Avg';
+                    timeframeLabel = 'Custom';
                 }
                 
                 const displayPercentage = currentAvg;
@@ -617,10 +595,8 @@ export default function Analytics() {
                   <RadialGauge 
                     key={`gauge-${habitId}`} 
                     habitName={habit?.name || 'Unknown'} 
-                    habitIcon={habit?.icon || 'check_circle'}
                     percentage={displayPercentage} 
-                    changeLabel={changeLabel}
-                    changeValue={changeValue}
+                    timeframeLabel={timeframeLabel}
                   />
                 );
               })}
