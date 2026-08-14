@@ -540,16 +540,16 @@ export default function Analytics() {
             <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
                 {selectedHabits.length > 1 && (
-                    <div className="flex bg-surface-container rounded-lg p-1 border border-outline-variant">
+                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
                         <button 
                           onClick={() => setChartMode('combined')}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
                         >
                           Combined
                         </button>
                         <button 
                           onClick={() => setChartMode('separate')}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-surface shadow text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
                         >
                           Separate
                         </button>
