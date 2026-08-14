@@ -235,19 +235,37 @@ export default function Analytics() {
           
           const dataIndex = params[0].dataIndex;
           const pointData = chartData[dataIndex];
-          
-          // Fallback parsing for cross-browser safety if necessary, 
-          // but YYYY-MM-DD should parse correctly at midnight UTC if we use Date(pointData.date + 'T00:00:00')
           const dateObj = new Date(pointData.date + 'T00:00:00');
-          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
           
-          let html = `<div style="background: #ffffff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 12px; min-width: 210px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
-          
-          params.forEach((param, index) => {
-            if (index > 0) {
-               html += `<hr style="margin: 12px 0; border: none; border-top: 1px solid #e5e7eb;" />`;
-            }
+          if (params.length > 1) {
+            // Combined Chart - Compact List View
+            let html = `<div style="background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 8px 12px; min-width: 140px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
+            html += `<div style="font-size: 10px; color: #6b7280; margin-bottom: 8px; font-weight: 500; border-bottom: 1px solid #f3f4f6; padding-bottom: 4px;">${dateStr}</div>`;
             
+            params.forEach(param => {
+              const seriesName = param.seriesName;
+              const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
+              const color = param.color || '#3b82f6';
+              const finalColor = seriesName === 'Overall Score' ? '#8b5cf6' : color;
+              
+              html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: ${finalColor};"></div>
+                    <div style="font-size: 11px; font-weight: 500; color: #374151;">${seriesName}</div>
+                  </div>
+                  <div style="font-size: 11px; font-weight: 700; color: #111827;">${score}%</div>
+                </div>
+              `;
+            });
+            html += `</div>`;
+            return html;
+          } else {
+            // Individual Chart - Detailed View (Compact for Mobile)
+            let html = `<div style="background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 10px; min-width: 160px; max-width: 200px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
+            
+            const param = params[0];
             const seriesName = param.seriesName;
             const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
             const isOverall = seriesName === 'Overall Score';
@@ -255,11 +273,11 @@ export default function Analytics() {
             if (isOverall) {
               html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <div style="font-weight: 600; font-size: 13px; color: #111827;">Overall Score</div>
-                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; border: 1px solid #d1fae5;">${score}%</div>
+                  <div style="font-weight: 600; font-size: 12px; color: #111827;">Overall Score</div>
+                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 10px; border: 1px solid #d1fae5;">${score}%</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 10px;">
-                  <span class="material-symbols-outlined" style="font-size: 12px;">calendar_today</span>
+                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
+                  <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
                   <span>${dateStr}</span>
                 </div>
               `;
@@ -280,62 +298,59 @@ export default function Analytics() {
               const isCompleted = score >= 100;
               const statusText = isCompleted ? 'Completed' : 'Pending';
               const statusColor = isCompleted ? '#10b981' : '#f59e0b';
-              
               const icon = habit?.icon || 'check_circle';
               const color = param.color || '#3b82f6';
               
               html += `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                  <div style="display: flex; gap: 10px; align-items: center;">
-                    <div style="background: ${color}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
-                      <span class="material-symbols-outlined" style="font-size: 18px;">${icon}</span>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="background: ${color}; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">${icon}</span>
                     </div>
                     <div>
-                      <div style="font-weight: 600; font-size: 13px; color: #111827; line-height: 1.2;">${seriesName}</div>
-                      <div style="display: flex; align-items: center; gap: 4px; font-size: 9px; color: ${statusColor}; margin-top: 2px; font-weight: 500;">
-                        <div style="width: 5px; height: 5px; border-radius: 50%; background: ${statusColor};"></div>
+                      <div style="font-weight: 600; font-size: 11px; color: #111827; line-height: 1.2;">${seriesName}</div>
+                      <div style="display: flex; align-items: center; gap: 4px; font-size: 8px; color: ${statusColor}; margin-top: 2px; font-weight: 600;">
+                        <div style="width: 4px; height: 4px; border-radius: 50%; background: ${statusColor};"></div>
                         ${statusText}
                       </div>
                     </div>
                   </div>
-                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; border: 1px solid #d1fae5;">
+                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 9px; border: 1px solid #d1fae5;">
                     ${score}%
                   </div>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 10px; margin-bottom: 8px;">
-                  <span class="material-symbols-outlined" style="font-size: 12px;">calendar_today</span>
+                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px; margin-bottom: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
                   <span>${dateStr}</span>
                 </div>
                 
-                <hr style="margin: 8px 0; border: none; border-top: 1px solid #f3f4f6;" />
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #f3f4f6;" />
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; text-align: center;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; text-align: center;">
                   <!-- Actual -->
                   <div>
-                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Action (Actual)</div>
-                    <div style="font-size: 16px; font-weight: 700; color: #3b82f6; line-height: 1.1;">${actual}</div>
-                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">${unit}</div>
+                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Action</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #3b82f6; line-height: 1.1;">${actual}</div>
+                    <div style="font-size: 7px; color: #9ca3af; margin-top: 2px;">${unit}</div>
                   </div>
                   <!-- Target -->
                   <div style="border-left: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6;">
-                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Target</div>
-                    <div style="font-size: 16px; font-weight: 700; color: #4b5563; line-height: 1.1;">${target}</div>
-                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">${unit}</div>
+                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Target</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #4b5563; line-height: 1.1;">${target}</div>
+                    <div style="font-size: 7px; color: #9ca3af; margin-top: 2px;">${unit}</div>
                   </div>
                   <!-- Achievement -->
                   <div>
-                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Achievement</div>
-                    <div style="font-size: 16px; font-weight: 700; color: #10b981; line-height: 1.1;">${score}%</div>
-                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">of target</div>
+                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Done</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #10b981; line-height: 1.1;">${score}%</div>
                   </div>
                 </div>
               `;
             }
-          });
-          
-          html += `</div>`;
-          return html;
+            html += `</div>`;
+            return html;
+          }
         }
       },
       legend: {
