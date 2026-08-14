@@ -587,33 +587,34 @@ export default function Analytics() {
                     
                     return (
                       <>
-                        <div className="relative overflow-hidden flex justify-between items-center bg-primary-container p-4 rounded-xl border border-primary/20">
-                          {daySummary?.overallScore !== undefined && (
-                            <div 
-                              className={`absolute top-0 left-0 h-full opacity-40 ${getPerfBandClass(daySummary.overallScore)}`}
-                              style={{ width: `${daySummary.overallScore}%` }}
-                            ></div>
-                          )}
-                          <span className="relative z-10 font-label-md text-on-primary-container font-bold uppercase tracking-wide">Overall Score</span>
-                          <span className="relative z-10 font-headline-sm font-bold text-on-primary-container">{daySummary?.overallScore ?? '--'}%</span>
+                        {/* Overall Score — vivid full-color bar matching heatmap */}
+                        <div className={`relative overflow-hidden flex justify-between items-center p-4 rounded-xl ${getPerfBandClass(daySummary?.overallScore)}`}>
+                          <span className="relative z-10 font-label-md font-bold uppercase tracking-wide text-white drop-shadow-sm">Overall Score</span>
+                          <span className="relative z-10 font-headline-sm font-bold text-white drop-shadow-sm">{daySummary?.overallScore ?? '--'}%</span>
                         </div>
-                        <div className="flex flex-col gap-3">
-                          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-1 mt-2">Habit Breakdown</h4>
+                        <div className="flex flex-col gap-2.5 mt-2">
+                          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Habit Breakdown</h4>
                           {habits.map(habit => {
                             const entry = dayEntries.find(e => e.habitId === habit.id);
                             if (!entry) return null;
+                            const score = entry.computedScore;
                             
                             return (
-                              <div key={habit.id} className="relative overflow-hidden flex justify-between items-center p-3 rounded-lg bg-surface-container border border-outline-variant hover:bg-surface-variant transition-colors">
-                                {entry.computedScore !== null && (
+                              <div key={habit.id} className="relative overflow-hidden flex justify-between items-center p-3 rounded-xl bg-surface-container-low border border-outline-variant/50">
+                                {/* Progress fill bar — same perf color, higher opacity */}
+                                {score !== null && (
                                   <div 
-                                    className={`absolute top-0 left-0 h-full opacity-30 ${getPerfBandClass(entry.computedScore)}`}
-                                    style={{ width: `${entry.computedScore}%` }}
+                                    className={`absolute top-0 left-0 h-full opacity-70 ${getPerfBandClass(score)} rounded-xl`}
+                                    style={{ width: `${score}%`, transition: 'width 0.4s ease' }}
                                   ></div>
                                 )}
-                                <span className="relative z-10 font-body-md text-on-surface">{habit.name}</span>
-                                <span className="relative z-10 font-mono-data font-bold text-on-surface">
-                                  {entry.computedScore !== null ? `${entry.computedScore}%` : 'Logged'}
+                                <div className="relative z-10 flex items-center gap-2">
+                                  <span className="font-body-md font-medium text-on-surface">{habit.name}</span>
+                                </div>
+                                <span className={`relative z-10 font-mono-data text-sm font-bold px-2 py-0.5 rounded-md ${
+                                  score !== null && score > 50 ? 'text-white' : 'text-on-surface'
+                                } ${score !== null ? getPerfBandClass(score) : ''}`}>
+                                  {score !== null ? `${score}%` : 'Logged'}
                                 </span>
                               </div>
                             );
