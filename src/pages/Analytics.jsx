@@ -226,10 +226,117 @@ export default function Analytics() {
 
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'var(--surface-container-high)',
-        borderColor: 'var(--outline-variant)',
-        textStyle: { color: 'var(--on-surface)' },
-        valueFormatter: (value) => value !== '-' ? `${value}%` : 'N/A'
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        padding: 0,
+        shadowColor: 'transparent',
+        formatter: function (params) {
+          if (!params || !params.length) return '';
+          
+          const dataIndex = params[0].dataIndex;
+          const pointData = chartData[dataIndex];
+          
+          // Fallback parsing for cross-browser safety if necessary, 
+          // but YYYY-MM-DD should parse correctly at midnight UTC if we use Date(pointData.date + 'T00:00:00')
+          const dateObj = new Date(pointData.date + 'T00:00:00');
+          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+          
+          let html = `<div style="background: #ffffff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 12px; min-width: 210px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
+          
+          params.forEach((param, index) => {
+            if (index > 0) {
+               html += `<hr style="margin: 12px 0; border: none; border-top: 1px solid #e5e7eb;" />`;
+            }
+            
+            const seriesName = param.seriesName;
+            const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
+            const isOverall = seriesName === 'Overall Score';
+            
+            if (isOverall) {
+              html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <div style="font-weight: 600; font-size: 13px; color: #111827;">Overall Score</div>
+                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; border: 1px solid #d1fae5;">${score}%</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 10px;">
+                  <span class="material-symbols-outlined" style="font-size: 12px;">calendar_today</span>
+                  <span>${dateStr}</span>
+                </div>
+              `;
+            } else {
+              const habit = habits.find(h => h.name === seriesName);
+              const habitId = habit ? habit.id : null;
+              let actual = 0;
+              let target = habit ? habit.target || 1 : 1;
+              let unit = habit ? habit.unit || 'times' : 'times';
+              
+              if (habitId) {
+                const entry = entries.find(e => e.entryDate === pointData.date && e.habitId === habitId);
+                if (entry) {
+                  actual = entry.value || 0;
+                }
+              }
+              
+              const isCompleted = score >= 100;
+              const statusText = isCompleted ? 'Completed' : 'Pending';
+              const statusColor = isCompleted ? '#10b981' : '#f59e0b';
+              
+              const icon = habit?.icon || 'check_circle';
+              const color = param.color || '#3b82f6';
+              
+              html += `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                  <div style="display: flex; gap: 10px; align-items: center;">
+                    <div style="background: ${color}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">${icon}</span>
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; font-size: 13px; color: #111827; line-height: 1.2;">${seriesName}</div>
+                      <div style="display: flex; align-items: center; gap: 4px; font-size: 9px; color: ${statusColor}; margin-top: 2px; font-weight: 500;">
+                        <div style="width: 5px; height: 5px; border-radius: 50%; background: ${statusColor};"></div>
+                        ${statusText}
+                      </div>
+                    </div>
+                  </div>
+                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; border: 1px solid #d1fae5;">
+                    ${score}%
+                  </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 10px; margin-bottom: 8px;">
+                  <span class="material-symbols-outlined" style="font-size: 12px;">calendar_today</span>
+                  <span>${dateStr}</span>
+                </div>
+                
+                <hr style="margin: 8px 0; border: none; border-top: 1px solid #f3f4f6;" />
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; text-align: center;">
+                  <!-- Actual -->
+                  <div>
+                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Action (Actual)</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #3b82f6; line-height: 1.1;">${actual}</div>
+                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">${unit}</div>
+                  </div>
+                  <!-- Target -->
+                  <div style="border-left: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6;">
+                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Target</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #4b5563; line-height: 1.1;">${target}</div>
+                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">${unit}</div>
+                  </div>
+                  <!-- Achievement -->
+                  <div>
+                    <div style="font-size: 8px; color: #6b7280; margin-bottom: 2px;">Achievement</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #10b981; line-height: 1.1;">${score}%</div>
+                    <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;">of target</div>
+                  </div>
+                </div>
+              `;
+            }
+          });
+          
+          html += `</div>`;
+          return html;
+        }
       },
       legend: {
         show: true,
