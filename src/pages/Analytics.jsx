@@ -648,35 +648,36 @@ export default function Analytics() {
 
         {/* Heatmap */}
         {viewMode === 'heatmap' && (
-        <div className={isZoomedOut ? 'fixed inset-0 z-[9999] bg-black/90 flex flex-col p-4 sm:p-8 overflow-hidden' : 'w-full'}>
+        <div className={isZoomedOut ? 'fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col p-4 sm:p-8 overflow-hidden' : 'w-full'}>
           {isZoomedOut && (
-            <div className="flex justify-end mb-4 shrink-0">
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-[10000]">
               <button 
                 onClick={() => setIsZoomedOut(false)} 
-                className="bg-white text-black px-4 py-2 cursor-pointer font-bold rounded hover:bg-gray-200 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-md transition-colors shadow-lg"
+                title="Close Zoom"
               >
-                Close Zoom
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
           )}
-          <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full' : 'w-full'}>
+          <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
             <div className={`bg-surface flex flex-col ${isZoomedOut ? 'w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full border border-outline-variant shadow-sm rounded-2xl p-6'}`}>
           <div className="flex justify-between items-center mb-6 shrink-0">
             <h2 className="font-headline-md text-headline-md text-on-surface">Consistency Map</h2>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               <button 
                   onClick={() => setShowPercentages(!showPercentages)}
-                  className={`transition-colors flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border ${showPercentages ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface-container-low border-outline-variant text-on-surface-variant hover:text-primary'}`}
+                  className={`transition-colors flex items-center justify-center gap-1 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-full border whitespace-nowrap shadow-sm backdrop-blur-md ${showPercentages ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface-container-low border-outline-variant/50 text-on-surface-variant hover:text-primary'}`}
               >
-                  <span className="material-symbols-outlined text-[16px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[16px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
                   {showPercentages ? 'Hide %' : 'Show %'}
               </button>
               {!isZoomedOut && (
               <button 
                   onClick={() => setIsZoomedOut(true)}
-                  className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 text-xs font-medium"
+                  className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-full border border-outline-variant/50 bg-surface-container-low shadow-sm backdrop-blur-md whitespace-nowrap"
               >
-                  <span className="material-symbols-outlined text-[16px]">fullscreen</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[16px]">fullscreen</span>
                   Zoom Out
               </button>
               )}
@@ -741,7 +742,7 @@ export default function Analytics() {
                           style={isZoomedOut ? { width: '100%', minWidth: '4px', height: 'auto', aspectRatio: '1/1' } : {}}
                         >
                           {!cell.isPad && cell.score !== null && (
-                            <span className={`absolute inset-0 flex items-center justify-center text-[9px] sm:text-[10px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages && !isZoomedOut ? 'opacity-100' : 'opacity-0'}`}>
+                            <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
                               {cell.score}
                             </span>
                           )}
