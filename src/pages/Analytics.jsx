@@ -302,87 +302,25 @@ export default function Analytics() {
               `;
             } else {
               const habit = habits.find(h => h.name === seriesName);
-              const habitId = habit ? habit.id : null;
-              const formatValue = (val, type) => {
-                if (val === null || val === undefined) return '-';
-                if (type === 'binary') return val === 1 ? 'Yes' : 'No';
-                if (type === 'time') {
-                  const h = Math.floor(val / 60) % 24;
-                  const m = Math.floor(val % 60);
-                  const ampm = h >= 12 ? 'PM' : 'AM';
-                  const h12 = h % 12 || 12;
-                  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
-                }
-                return val;
-              };
-
-              let actualRaw = undefined;
-              if (habitId) {
-                const entry = entries.find(e => e.entryDate === pointData.date && e.habitId === habitId);
-                if (entry && entry.value !== undefined) {
-                  actualRaw = entry.value;
-                }
-              }
-
-              let actual = actualRaw !== undefined ? formatValue(actualRaw, habit?.scoringType) : '-';
-              let target = habit && habit.target100 !== undefined ? formatValue(habit.target100, habit?.scoringType) : '-';
-              let unit = habit?.unit || '';
-              
-              if (habit?.scoringType === 'binary' || habit?.scoringType === 'time') {
-                unit = '';
-              } else if (!unit) {
-                unit = 'times';
-              }
-              
-              const isCompleted = score >= 100;
-              const statusText = isCompleted ? 'Completed' : 'Pending';
-              const statusColor = isCompleted ? '#10b981' : '#f59e0b';
               const icon = habit?.icon || 'check_circle';
               const color = param.color || '#3b82f6';
               
               html += `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div style="display: flex; gap: 8px; align-items: center;">
                     <div style="background: ${color}; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;">
                       <span class="material-symbols-outlined" style="font-size: 14px;">${icon}</span>
                     </div>
                     <div>
-                      <div style="font-weight: 600; font-size: 11px; color: #111827; line-height: 1.2;">${seriesName}</div>
-                      <div style="display: flex; align-items: center; gap: 4px; font-size: 8px; color: ${statusColor}; margin-top: 2px; font-weight: 600;">
-                        <div style="width: 4px; height: 4px; border-radius: 50%; background: ${statusColor};"></div>
-                        ${statusText}
+                      <div style="font-weight: 600; font-size: 11px; color: #111827; line-height: 1.2; margin-bottom: 4px;">${seriesName}</div>
+                      <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
+                        <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
+                        <span>${dateStr}</span>
                       </div>
                     </div>
                   </div>
                   <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 9px; border: 1px solid #d1fae5;">
                     ${score}%
-                  </div>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px; margin-bottom: 6px;">
-                  <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
-                  <span>${dateStr}</span>
-                </div>
-                
-                <hr style="margin: 6px 0; border: none; border-top: 1px solid #f3f4f6;" />
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; text-align: center;">
-                  <!-- Actual -->
-                  <div>
-                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Action</div>
-                    <div style="font-size: 13px; font-weight: 700; color: #3b82f6; line-height: 1.1;">${actual}</div>
-                    <div style="font-size: 7px; color: #9ca3af; margin-top: 2px;">${unit}</div>
-                  </div>
-                  <!-- Target -->
-                  <div style="border-left: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6;">
-                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Target</div>
-                    <div style="font-size: 13px; font-weight: 700; color: #4b5563; line-height: 1.1;">${target}</div>
-                    <div style="font-size: 7px; color: #9ca3af; margin-top: 2px;">${unit}</div>
-                  </div>
-                  <!-- Achievement -->
-                  <div>
-                    <div style="font-size: 7px; color: #6b7280; margin-bottom: 2px;">Done</div>
-                    <div style="font-size: 13px; font-weight: 700; color: #10b981; line-height: 1.1;">${score}%</div>
                   </div>
                 </div>
               `;
