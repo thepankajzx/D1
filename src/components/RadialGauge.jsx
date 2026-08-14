@@ -47,25 +47,25 @@ export default function RadialGauge({ habitName, percentage, changeLabel, change
   const showChangeBadge = changeValue !== null && changeValue !== undefined;
 
   return (
-    <div className="bg-surface rounded-[32px] shadow-sm border border-outline-variant/30 p-6 md:p-8 w-full max-w-[340px] flex flex-col items-center relative">
+    <div className="bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-4 w-[160px] flex flex-col items-center relative shrink-0">
       
-      {/* Top Header Row (Decorations) */}
-      <div className="w-full flex justify-between items-center mb-6">
-        <div className="w-16 h-2.5 bg-surface-container rounded-full"></div>
-        <div className="flex gap-1 p-1">
-          <div className="w-1 h-1 bg-on-surface-variant rounded-full"></div>
-          <div className="w-1 h-1 bg-on-surface-variant rounded-full"></div>
-          <div className="w-1 h-1 bg-on-surface-variant rounded-full"></div>
+      {/* Top Header Row (Decorations) - Simplified for small size */}
+      <div className="w-full flex justify-between items-center mb-4 opacity-50">
+        <div className="w-8 h-1.5 bg-surface-container-highest rounded-full"></div>
+        <div className="flex gap-0.5 p-0.5">
+          <div className="w-0.5 h-0.5 bg-on-surface-variant rounded-full"></div>
+          <div className="w-0.5 h-0.5 bg-on-surface-variant rounded-full"></div>
+          <div className="w-0.5 h-0.5 bg-on-surface-variant rounded-full"></div>
         </div>
       </div>
 
       {/* Segmented Radial Chart Area */}
-      <div className="relative w-[240px] h-[240px] mb-8 flex justify-center items-center">
-        <div className="text-center z-10 flex flex-col gap-1 -mt-4">
-          <div className="text-[56px] font-bold tracking-tight text-on-surface leading-none font-headline-display">
+      <div className="relative w-[110px] h-[110px] mb-6 flex justify-center items-center">
+        <div className="text-center z-10 flex flex-col gap-0.5 -mt-2">
+          <div className="text-3xl font-bold tracking-tight text-on-surface leading-none font-headline-display">
             {Math.round(percentage)}%
           </div>
-          <div className="text-lg font-medium text-on-surface-variant uppercase tracking-wider mt-1 truncate max-w-[160px]">
+          <div className="text-[9px] font-semibold text-on-surface-variant uppercase tracking-wider mt-0.5 truncate max-w-[90px]">
             {habitName}
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function RadialGauge({ habitName, percentage, changeLabel, change
           return (
             <div
               key={i}
-              className={`absolute top-1/2 left-1/2 w-3.5 h-8 rounded-[4px] origin-[50%_120px] -ml-[7px] -mt-[120px] transition-colors duration-500 ${isActive ? perfBgClass : 'bg-surface-container-high'}`}
+              className={`absolute top-1/2 left-1/2 w-1.5 h-3.5 rounded-[2px] origin-[50%_55px] -ml-[3px] -mt-[55px] transition-colors duration-500 ${isActive ? perfBgClass : 'bg-surface-container-high'}`}
               style={{
                 transform: `rotate(${currentAngle}deg)`,
                 boxShadow: isActive ? 'inset 0 0 0 1px rgba(0,0,0,0.05)' : 'none'
@@ -87,18 +87,18 @@ export default function RadialGauge({ habitName, percentage, changeLabel, change
       </div>
 
       {/* Footer Pill */}
-      <div className="w-full flex justify-between items-center px-4 py-2.5 border border-outline-variant/50 rounded-full bg-surface-container-lowest">
-        <span className="text-[11px] md:text-xs font-medium text-on-surface-variant">{changeLabel}</span>
+      <div className="w-full flex flex-col justify-center items-center px-2 py-1.5 border border-outline-variant/50 rounded-xl bg-surface-container-lowest gap-1">
+        <span className="text-[9px] font-medium text-on-surface-variant text-center leading-tight truncate w-full">{changeLabel}</span>
         {showChangeBadge ? (
-          <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${isPositive ? 'bg-perf-8/20 text-perf-8' : 'bg-perf-2/20 text-perf-2'}`}>
-            <span className="material-symbols-outlined text-[14px]">
+          <div className={`flex items-center justify-center gap-0.5 w-full py-0.5 rounded-md text-[10px] font-bold ${isPositive ? 'bg-perf-8/20 text-perf-8' : 'bg-perf-2/20 text-perf-2'}`}>
+            <span className="material-symbols-outlined text-[12px]">
               {isPositive ? 'trending_up' : 'trending_down'}
             </span>
             {isPositive ? '+' : ''}{Math.round(changeValue)}%
           </div>
         ) : (
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">
-            <span className="material-symbols-outlined text-[14px]">
+          <div className="flex items-center justify-center gap-0.5 w-full py-0.5 rounded-md text-[10px] font-bold bg-surface-container-high text-on-surface-variant">
+            <span className="material-symbols-outlined text-[12px]">
               stacked_line_chart
             </span>
             AVG
