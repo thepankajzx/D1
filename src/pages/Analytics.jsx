@@ -590,16 +590,19 @@ export default function Analytics() {
           {/* Day Details Modal */}
           {selectedDay && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface-container-highest/80 px-4">
-              <div className="w-full max-w-sm p-6 rounded-2xl bg-surface border border-outline-variant shadow-2xl animate-in fade-in zoom-in duration-200">
-                <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
-                  <h3 className="font-headline-sm text-on-surface">
+              <div className="w-full max-w-sm p-6 rounded-3xl bg-surface border border-outline-variant shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-headline-sm font-bold text-on-surface">
                     {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </h3>
-                  <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center">
+                  <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface p-1 rounded-full transition-colors flex items-center justify-center">
                     <span className="material-symbols-outlined text-lg">close</span>
                   </button>
                 </div>
-                <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                
+                <div className="w-full h-px bg-outline-variant/50 mb-6"></div>
+                
+                <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {(() => {
                     const daySummary = summaries.find(s => s.id === selectedDay);
                     const dayEntries = entries.filter(e => e.entryDate === selectedDay);
@@ -613,37 +616,74 @@ export default function Analytics() {
                       );
                     }
                     
+                    const overallScore = daySummary?.overallScore ?? 0;
+                    const strokeDasharray = `${overallScore}, 100`;
+                    
                     return (
                       <>
-                        {/* Overall Score — vivid full-color bar matching heatmap */}
-                        <div className={`relative overflow-hidden flex justify-between items-center p-4 rounded-xl ${getPerfBandClass(daySummary?.overallScore)}`}>
-                          <span className="relative z-10 font-label-md font-bold uppercase tracking-wide text-white drop-shadow-sm">Overall Score</span>
-                          <span className="relative z-10 font-headline-sm font-bold text-white drop-shadow-sm">{daySummary?.overallScore ?? '--'}%</span>
+                        {/* Overall Score Section */}
+                        <div className="flex justify-between items-center bg-surface p-2 rounded-2xl">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-label-sm font-bold uppercase tracking-wide text-on-surface-variant">Overall Score</span>
+                            <span className="font-display-sm font-bold text-on-surface">{overallScore}%</span>
+                          </div>
+                          
+                          {/* SVG Donut Chart */}
+                          <div className="relative w-16 h-16">
+                            <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                              <path
+                                className="text-outline-variant/40 stroke-current"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeWidth="3.5"
+                              />
+                              <path
+                                className={`stroke-current ${getPerfTextColorClass(overallScore)}`}
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeWidth="3.5"
+                                strokeLinecap="round"
+                                strokeDasharray={strokeDasharray}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="font-label-sm font-bold text-on-surface">{overallScore}%</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-2.5 mt-2">
-                          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Habit Breakdown</h4>
+                        
+                        {/* Habit Breakdown */}
+                        <div className="flex flex-col gap-3">
+                          <h4 className="font-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-2">Habit Breakdown</h4>
                           {habits.map(habit => {
                             const entry = dayEntries.find(e => e.habitId === habit.id);
                             if (!entry) return null;
-                            const score = entry.computedScore;
+                            const score = entry.computedScore ?? 0;
+                            const perfBg = getPerfBandClass(score);
+                            const perfText = getPerfTextColorClass(score);
                             
                             return (
-                              <div key={habit.id} className="relative overflow-hidden flex justify-between items-center p-3 rounded-xl bg-surface-container-low border border-outline-variant/50">
-                                {/* Progress fill bar — same perf color, higher opacity */}
-                                {score !== null && (
-                                  <div 
-                                    className={`absolute top-0 left-0 h-full opacity-70 ${getPerfBandClass(score)} rounded-xl`}
-                                    style={{ width: `${score}%`, transition: 'width 0.4s ease' }}
-                                  ></div>
-                                )}
-                                <div className="relative z-10 flex items-center gap-2">
-                                  <span className="font-body-md font-medium text-on-surface">{habit.name}</span>
+                              <div key={habit.id} className="flex items-center gap-4 bg-surface p-2 rounded-2xl">
+                                {/* Icon Box */}
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${perfBg} shadow-sm`}>
+                                  <span className="font-headline-sm font-bold text-white uppercase">{habit.name.charAt(0)}</span>
                                 </div>
-                                <span className={`relative z-10 font-mono-data text-sm font-bold px-2 py-0.5 rounded-md ${
-                                  score !== null && score > 50 ? 'text-white' : 'text-on-surface'
-                                } ${score !== null ? getPerfBandClass(score) : ''}`}>
-                                  {score !== null ? `${score}%` : 'Logged'}
-                                </span>
+                                
+                                {/* Name and Progress Bar */}
+                                <div className="flex flex-col flex-grow justify-center gap-2">
+                                  <span className="font-label-md font-bold text-on-surface">{habit.name}</span>
+                                  <div className="w-full h-2 bg-outline-variant/40 rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${perfBg}`}
+                                      style={{ width: `${score}%`, transition: 'width 0.4s ease' }}
+                                    ></div>
+                                  </div>
+                                </div>
+                                
+                                {/* Percentage Badge */}
+                                <div className={`px-2 py-1 rounded-md border ${perfText.replace('text-', 'border-')}/30 bg-surface flex items-center justify-center min-w-[3rem]`}>
+                                  <span className={`font-label-md font-bold ${perfText}`}>{score}%</span>
+                                </div>
                               </div>
                             );
                           })}
@@ -652,6 +692,19 @@ export default function Analytics() {
                     );
                   })()}
                 </div>
+                
+                {/* Footer */}
+                <div className="w-full h-px bg-outline-variant/50 mt-6 mb-4"></div>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                    <span className="text-[10px] max-w-[150px] leading-tight">Daily data is calculated based on your habit targets.</span>
+                  </div>
+                  <button onClick={() => setSelectedDay(null)} className="flex items-center gap-1 text-[10px] font-bold text-primary px-3 py-1.5 rounded-lg border border-primary/30 hover:bg-primary/10 transition-colors">
+                    View Full Analytics <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  </button>
+                </div>
+                
               </div>
             </div>
           )}
