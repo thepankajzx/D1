@@ -602,6 +602,7 @@ export default function Analytics() {
                   <RadialGauge 
                     key={`gauge-${habitId}`} 
                     habitName={habit?.name || 'Unknown'} 
+                    habitIcon={habit?.icon || 'check_circle'}
                     percentage={displayPercentage} 
                     changeLabel={changeLabel}
                     changeValue={changeValue}
