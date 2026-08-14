@@ -180,22 +180,42 @@ export default function Analytics() {
           name: 'Overall Score',
           type: 'line',
           data: chartData.map(d => d.overallScore),
-          itemStyle: { color: '#d0bcff' }, // var(--primary) fallback, echarts handles hex better
+          itemStyle: { color: '#d0bcff' },
           lineStyle: { width: 3 },
+          areaStyle: {
+            color: {
+              type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(208,188,255,0.4)' },
+                { offset: 1, color: 'rgba(208,188,255,0.02)' }
+              ]
+            }
+          },
           showSymbol: false,
           smooth: true
         }]
-      : habitIds.map((id, index) => {
+      : habitIds.map((id) => {
           const habit = habits.find(h => h.id === id);
-          // simple color palette for multiple lines
-          const colors = ['#d0bcff', '#4ade80', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6'];
+          // Use global habit index for persistent color assignment
+          const globalIndex = habits.findIndex(h => h.id === id);
+          const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+          const color = colors[globalIndex % colors.length];
           return {
             name: habit?.name || id,
             type: 'line',
             data: chartData.map(d => d[id]),
             connectNulls: true,
-            itemStyle: { color: colors[index % colors.length] },
+            itemStyle: { color },
             lineStyle: { width: 3 },
+            areaStyle: {
+              color: {
+                type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: color + '55' },
+                  { offset: 1, color: color + '05' }
+                ]
+              }
+            },
             showSymbol: false,
             smooth: true
           };
@@ -452,12 +472,20 @@ export default function Analytics() {
             {chartMode === 'combined' || selectedHabits.length <= 1 ? (
               <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
             ) : (
-              selectedHabits.map(habitId => (
-                <div key={habitId} className="flex flex-col">
-                  <h3 className="text-sm font-medium text-on-surface-variant ml-4 mb-2">{habits.find(h=>h.id === habitId)?.name}</h3>
-                  <ReactECharts option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
-                </div>
-              ))
+              selectedHabits.map(habitId => {
+                const globalIndex = habits.findIndex(h => h.id === habitId);
+                const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+                const color = colors[globalIndex % colors.length];
+                return (
+                  <div key={habitId} className="flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/50 p-4">
+                    <div className="flex items-center gap-2 ml-1 mb-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
+                      <h3 className="text-sm font-semibold text-on-surface">{habits.find(h=>h.id === habitId)?.name}</h3>
+                    </div>
+                    <ReactECharts option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
