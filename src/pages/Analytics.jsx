@@ -582,6 +582,36 @@ export default function Analytics() {
 
           
           <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
+          {selectedHabits.length > 0 && viewMode === 'charts' && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {selectedHabits.map(habitId => {
+                const habit = habits.find(h => h.id === habitId);
+                
+                // Calculate current period average
+                const currentPeriodScores = summaries
+                  .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
+                  .map(s => s.habitScores[habitId]);
+                const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
+                
+                let timeframeLabel = 'All-Time';
+                if (rangeOption !== 'all' && rangeOption !== 'custom') {
+                    const days = parseInt(rangeOption) || 30;
+                    timeframeLabel = `${days} Days`;
+                } else if (rangeOption === 'custom') {
+                    timeframeLabel = 'Custom';
+                }
+                
+                return (
+                  <RadialGauge 
+                    key={`gauge-${habitId}`} 
+                    habitName={habit?.name || 'Unknown'} 
+                    percentage={currentAvg} 
+                    timeframeLabel={timeframeLabel}
+                  />
+                );
+              })}
+            </div>
+          )}
             {chartMode === 'combined' || selectedHabits.length <= 1 ? (
               <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
             ) : (
