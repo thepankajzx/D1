@@ -389,16 +389,17 @@ export default function Analytics() {
         </div>
         
         <div className="flex flex-col items-end gap-2" ref={dateSelectorRef}>
-          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit">
+          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit relative z-20">
             {['7', '30', '90', 'custom'].map((val) => {
               const isActive = rangeOption === val;
-              const label = val === 'custom' ? 'Custom' : `${val} Days`;
+              const isCustom = val === 'custom';
+              const label = isCustom ? 'Custom' : `${val} Days`;
               return (
                 <button
                   key={val}
                   onClick={() => {
                     setRangeOption(val);
-                    if (val === 'custom') {
+                    if (isCustom) {
                       setIsCustomDropdownOpen(true);
                     } else {
                       setIsCustomDropdownOpen(false);
@@ -406,59 +407,26 @@ export default function Analytics() {
                   }}
                   className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 w-[76px] sm:w-[104px] rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
                 >
-                  {isActive && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
+                  {isCustom && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
                   {label}
                 </button>
               );
             })}
-            
-            <div className="w-[1px] h-5 bg-outline-variant/50 mx-1 sm:mx-2"></div>
-            
-            <button 
-              onClick={() => {
-                setRangeOption('custom');
-                setIsCustomDropdownOpen(true);
-              }}
-              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors mr-0.5"
-              title="Select Custom Date Range"
-            >
-              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">calendar_today</span>
-            </button>
           </div>
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && (
-            <div className="w-full md:w-auto bg-surface border border-outline-variant/30 rounded-3xl p-5 pt-7 flex flex-col sm:flex-row items-end sm:items-center gap-4 relative shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-top-2 duration-200 z-10 mt-2">
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-outline-variant/40 rounded-full"></div>
-              <button 
-                onClick={() => {
-                  setIsCustomDropdownOpen(false);
-                  setRangeOption('7');
-                }}
-                className="absolute top-3 right-3 h-8 w-8 bg-surface border border-outline-variant/40 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant shadow-sm transition-colors z-20 flex items-center justify-center"
-                aria-label="Close custom date selector"
-              >
-                <span className="material-symbols-outlined text-[16px]">close</span>
-              </button>
-              
-              <div className="flex flex-col gap-1.5 w-full sm:w-[150px]">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant ml-1">From</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">calendar_today</span>
-                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-xl py-2.5 pl-10 pr-3 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary shadow-sm appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
-                </div>
+            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-fit">
+              <div className="relative w-[130px] sm:w-[140px]">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
-              <div className="hidden sm:block w-[1px] h-8 bg-outline-variant/30 mt-5"></div>
+              <div className="w-[1px] h-6 bg-outline-variant/40 mx-1"></div>
               
-              <div className="flex flex-col gap-1.5 w-full sm:w-[150px]">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant ml-1">To</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">calendar_today</span>
-                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-xl py-2.5 pl-10 pr-3 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary shadow-sm appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
-                </div>
+              <div className="relative w-[130px] sm:w-[140px]">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
               <button 
@@ -471,9 +439,9 @@ export default function Analytics() {
                       alert("Please select both start and end dates.");
                    }
                 }}
-                className="mt-2 sm:mt-5 h-11 w-11 shrink-0 rounded-full bg-on-surface text-surface flex items-center justify-center hover:opacity-90 transition-opacity shadow-md self-end sm:self-center"
+                className="h-9 w-9 ml-1 shrink-0 rounded-full bg-on-surface text-surface flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
               >
-                <span className="material-symbols-outlined">arrow_forward</span>
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </div>
           )}
