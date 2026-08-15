@@ -389,7 +389,7 @@ export default function Analytics() {
         </div>
         
         <div className="flex flex-col items-end gap-2" ref={dateSelectorRef}>
-          <div className="flex items-center gap-1 bg-surface-container/40 backdrop-blur-md rounded-full p-1 border border-outline-variant/30 shadow-sm">
+          <div className="flex items-center gap-0.5 bg-surface-container/60 backdrop-blur-md rounded-full p-[3px] border border-outline-variant/40 shadow-sm">
             {['7', '30', '90'].map(val => (
               <button 
                 key={val}
@@ -397,7 +397,7 @@ export default function Analytics() {
                   setRangeOption(val);
                   setIsCustomDropdownOpen(false);
                 }}
-                className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+                className={`px-3.5 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
               >
                 {val} Days
               </button>
@@ -407,9 +407,9 @@ export default function Analytics() {
                 setRangeOption('custom');
                 setIsCustomDropdownOpen(true);
               }}
-              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+              className={`px-3.5 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
             >
-              Custom <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+              Custom <span className="material-symbols-outlined text-[15px]">calendar_today</span>
             </button>
           </div>
           
