@@ -347,19 +347,7 @@ export default function Analytics() {
     };
   };
 
-  if (loadingData) {
-    return (
-      <div className="flex flex-col gap-8 w-full animate-pulse">
-        <div className="h-12 bg-surface-container-high rounded-lg w-48 mb-8"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-surface-container-high rounded-2xl"></div>)}
-        </div>
-        <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-8"></div>
-      </div>
-    );
-  }
-
-  if (habits.length === 0) {
+  if (!loadingData && habits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
         <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
@@ -448,6 +436,16 @@ export default function Analytics() {
         </div>
       </div>
 
+      {/* Dynamic Content */}
+      {loadingData ? (
+        <div className="flex flex-col gap-8 w-full animate-pulse">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-[120px] bg-surface-container-high rounded-2xl"></div>)}
+          </div>
+          <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-4"></div>
+        </div>
+      ) : (
+      <div className="flex flex-col gap-8 w-full animate-in fade-in duration-500">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
@@ -975,6 +973,8 @@ export default function Analytics() {
       </div>
       )}
       </>
+      )}
+      </div>
       )}
     </div>
   );
