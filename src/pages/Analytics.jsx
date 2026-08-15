@@ -389,27 +389,40 @@ export default function Analytics() {
         </div>
         
         <div className="flex flex-col items-end gap-2" ref={dateSelectorRef}>
-          <div className="flex items-center gap-0.5 bg-surface-container/60 backdrop-blur-md rounded-full p-[3px] border border-outline-variant/40 shadow-sm">
-            {['7', '30', '90'].map(val => (
-              <button 
-                key={val}
-                onClick={() => {
-                  setRangeOption(val);
-                  setIsCustomDropdownOpen(false);
-                }}
-                className={`px-3.5 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-              >
-                {val} Days
-              </button>
-            ))}
+          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit">
+            {['7', '30', '90', 'custom'].map((val) => {
+              const isActive = rangeOption === val;
+              const label = val === 'custom' ? 'Custom' : `${val} Days`;
+              return (
+                <button
+                  key={val}
+                  onClick={() => {
+                    setRangeOption(val);
+                    if (val === 'custom') {
+                      setIsCustomDropdownOpen(true);
+                    } else {
+                      setIsCustomDropdownOpen(false);
+                    }
+                  }}
+                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 w-[76px] sm:w-[104px] rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                >
+                  {isActive && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
+                  {label}
+                </button>
+              );
+            })}
+            
+            <div className="w-[1px] h-5 bg-outline-variant/50 mx-1 sm:mx-2"></div>
+            
             <button 
               onClick={() => {
                 setRangeOption('custom');
                 setIsCustomDropdownOpen(true);
               }}
-              className={`px-3.5 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors mr-0.5"
+              title="Select Custom Date Range"
             >
-              Custom <span className="material-symbols-outlined text-[15px]">calendar_today</span>
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">calendar_today</span>
             </button>
           </div>
           
