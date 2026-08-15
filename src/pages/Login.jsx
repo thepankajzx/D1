@@ -29,8 +29,19 @@ export default function Login() {
       try {
         userCred = await login(email, password);
       } catch (loginError) {
-        if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
-          // Fallback to signup if account doesn't exist
+        // Firebase auth now uses auth/invalid-credential for both wrong password and user-not-found
+        if (loginError.code === 'auth/invalid-credential') {
+          // Attempt signup just in case they are a new user. 
+          // If it fails with email-already-in-use, it means they just typed the wrong password.
+          try {
+            userCred = await signup(email, password);
+          } catch (signupError) {
+            if (signupError.code === 'auth/email-already-in-use') {
+              throw new Error("Invalid email or password.");
+            }
+            throw signupError;
+          }
+        } else if (loginError.code === 'auth/user-not-found') {
           userCred = await signup(email, password);
         } else {
           throw loginError;
