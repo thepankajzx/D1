@@ -688,23 +688,26 @@ export default function Analytics() {
           <div className="flex justify-between items-center mb-6 shrink-0 gap-2">
             <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
             
-            <div className="flex items-center bg-surface-container-low border border-outline-variant/50 rounded-full shadow-sm p-0.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button 
                   onClick={() => setShowPercentages(!showPercentages)}
-                  className={`transition-all flex items-center justify-center gap-0.5 w-10 h-8 sm:w-12 sm:h-9 rounded-full ${showPercentages ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'}`}
+                  className={`flex items-center gap-1 h-7 sm:h-8 rounded-[10px] border border-outline-variant/50 p-1 transition-all shadow-sm ${showPercentages ? 'bg-primary-container/50 text-on-primary-container border-primary/30' : 'bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant'}`}
                   title={showPercentages ? 'Hide %' : 'Show %'}
               >
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
-                  <span className="text-[11px] font-bold leading-none">%</span>
+                  <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-sm border border-outline-variant/30 ${showPercentages ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant'}`}>
+                    <span className="material-symbols-outlined text-[12px] sm:text-[14px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
+                  </div>
+                  <div className={`w-[1px] h-3 ${showPercentages ? 'bg-on-primary-container/30' : 'bg-outline-variant/50'}`}></div>
+                  <span className="text-[10px] sm:text-[11px] font-bold pr-1 sm:pr-1.5 leading-none self-center">%</span>
               </button>
               
               {!isZoomedOut && (
               <button 
                   onClick={() => setIsZoomedOut(true)}
-                  className="transition-all flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-on-surface-variant hover:bg-surface-variant hover:text-on-surface"
+                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-[10px] border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm text-on-surface-variant hover:text-on-surface"
                   title="Zoom Out"
               >
-                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">fullscreen</span>
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">fullscreen</span>
               </button>
               )}
             </div>
