@@ -5,6 +5,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { calculateScore } from '../lib/scoring';
+import Icon from '../components/Icon';
 
 export default function OnboardingTargets() {
   const [habits, setHabits] = useState([]);
@@ -103,7 +104,7 @@ export default function OnboardingTargets() {
           aria-label="Go back" 
           className="p-2 -ml-2 rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center text-on-surface-variant"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <Icon name="arrow_back"  />
         </button>
         <div className="flex-1 flex justify-center items-center">
           <div className="flex space-x-2 items-center">
@@ -149,7 +150,7 @@ export default function OnboardingTargets() {
               <div key={habit.id} className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-primary shadow-sm border border-outline-variant/30">
-                    <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>{habit.icon}</span>
+                    <Icon name={habit.icon}  style={{fontVariationSettings: "'FILL' 1"}} />
                   </div>
                   <div>
                     <h2 className="font-label-sm text-label-sm font-bold text-on-surface">{habit.name}</h2>
@@ -172,11 +173,12 @@ export default function OnboardingTargets() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-on-surface-variant flex items-center gap-1 uppercase tracking-wider">
-                          100% Score <span className="material-symbols-outlined text-[14px]">edit</span>
+                          100% Score <Icon name="edit" className=" text-[14px]" />
                         </label>
                         {isTime ? (
                           <input 
                             type="time" 
+                            aria-label={`Optimal time for ${habit.name}`}
                             value={formatTimeString(habit.target100)}
                             onChange={(e) => handleTargetChange(habit.id, 'target100', parseTimeString(e.target.value))}
                             className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
@@ -184,6 +186,7 @@ export default function OnboardingTargets() {
                         ) : (
                           <input 
                             type="number" 
+                            aria-label={`Optimal target for ${habit.name}`}
                             value={habit.target100 || 0}
                             onChange={(e) => handleTargetChange(habit.id, 'target100', Number(e.target.value))}
                             className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
@@ -194,11 +197,12 @@ export default function OnboardingTargets() {
                       
                       <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-on-surface-variant flex items-center gap-1 uppercase tracking-wider">
-                          0% Score <span className="material-symbols-outlined text-[14px]">edit</span>
+                          0% Score <Icon name="edit" className=" text-[14px]" />
                         </label>
                         {isTime ? (
                           <input 
                             type="time" 
+                            aria-label={`Baseline time for ${habit.name}`}
                             value={formatTimeString(habit.target0)}
                             onChange={(e) => handleTargetChange(habit.id, 'target0', parseTimeString(e.target.value))}
                             className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
@@ -206,6 +210,7 @@ export default function OnboardingTargets() {
                         ) : (
                           <input 
                             type="number" 
+                            aria-label={`Baseline target for ${habit.name}`}
                             value={habit.target0 || 0}
                             onChange={(e) => handleTargetChange(habit.id, 'target0', Number(e.target.value))}
                             className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
@@ -243,6 +248,7 @@ export default function OnboardingTargets() {
                           </div>
                           <input 
                             type="range" 
+                            aria-label={`Preview slider for ${habit.name}`}
                             min="0" 
                             max={isTime ? 1440 : Math.max(habit.target100, habit.target0) * 1.5 || 100}
                             step={isTime ? "15" : "1"}

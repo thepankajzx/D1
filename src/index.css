@@ -242,3 +242,83 @@
       @apply w-full border border-outline-variant text-on-surface py-3 rounded font-label-sm flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors;
   }
 }
+
+@layer components {
+    .segment-track {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(30, minmax(0, 1fr));
+        gap: clamp(2px, 0.35vw, 4px);
+    }
+    .segment {
+        width: 100%;
+        height: clamp(19px, 2.2vw, 29px);
+        background: #282828;
+        border-radius: clamp(3px, 0.35vw, 5px);
+    }
+    .segment.active {
+        background: var(--color-primary);
+    }
+    .chart-wrapper {
+        width: 100%;
+        height: clamp(250px, 34vw, 390px);
+        padding-inline: clamp(5px, 0.7vw, 10px);
+    }
+    .chart-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        overflow: visible;
+    }
+    .grid-line {
+        stroke: var(--color-outline-variant);
+        stroke-width: 1;
+        stroke-dasharray: 4 5;
+        opacity: 0.5;
+    }
+    .axis-label {
+        fill: var(--color-on-surface-variant);
+        font-size: 10px;
+        font-family: inherit;
+    }
+    .area {
+        fill: url(#areaFill);
+    }
+    .line {
+        fill: none;
+        stroke: var(--color-primary);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .legend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 2px 0 clamp(12px, 1.4vw, 17px);
+        color: var(--color-on-surface-variant);
+        font-size: clamp(11px, 0.95vw, 13px);
+    }
+    .legend-dot {
+        width: 9px;
+        height: 9px;
+        border: 2px solid var(--color-primary);
+        border-radius: 50%;
+        background: var(--color-surface);
+    }
+
+    @media (max-width: 700px) {
+        .chart-wrapper { height: 310px; }
+    }
+    @media (max-width: 520px) {
+        .segment-track { gap: 2px; }
+        .segment { height: 22px; }
+        .chart-wrapper { height: 285px; }
+        .legend { padding-bottom: 13px; font-size: 11px; }
+    }
+    @media (max-width: 370px) {
+        .chart-wrapper { height: 255px; }
+    }
+}
+

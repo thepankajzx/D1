@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { calculateScore } from '../lib/scoring';
+import Icon from '../components/Icon';
 
 // Helper to format minutes into HH:MM
 function formatTime(minutes) {
@@ -87,12 +88,13 @@ export default function HabitCard({ habit, entry, onUpdate }) {
             <div className="relative flex items-center border border-outline-variant rounded-lg overflow-hidden focus-within:border-primary transition-colors">
               <input 
                 type="time" 
+                aria-label={`Time for ${habit.name}`}
                 value={formatTime(val)}
                 onChange={(e) => handleChange(parseTime(e.target.value))}
                 className="w-full bg-transparent border-none py-3 px-4 font-mono-data text-mono-data text-primary focus:ring-0" 
               />
               <div className="absolute right-4 pointer-events-none text-on-surface-variant">
-                <span className="material-symbols-outlined text-sm">schedule</span>
+                <Icon name="schedule" className=" text-sm" />
               </div>
             </div>
           </div>
@@ -106,6 +108,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
             </div>
             <input 
               type="range" 
+              aria-label={`Subjective score for ${habit.name}`}
               min="1" max="10" step="1" 
               value={val}
               onChange={(e) => setVal(Number(e.target.value))}
@@ -135,6 +138,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
             <div className="flex flex-wrap items-center gap-4">
                 <input 
                   type="range" 
+                  aria-label={`Target slider for ${habit.name}`}
                   min={minSlider} 
                   max={maxSlider} 
                   step={habit.scoringType === 'number' ? '1' : '5'}
@@ -147,6 +151,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
                 <div className="relative flex items-center">
                     <input
                       type="number"
+                      aria-label={`Target value for ${habit.name}`}
                       min="0"
                       value={val === 0 ? '' : val}
                       placeholder="0"

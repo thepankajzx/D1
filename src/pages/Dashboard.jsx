@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -283,7 +284,7 @@ export default function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
         <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-5xl text-primary">rocket_launch</span>
+          <Icon name="rocket_launch" className=" text-5xl text-primary" />
         </div>
         <h1 className="font-headline-lg text-headline-lg text-on-surface">Welcome to Definite!</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
@@ -293,7 +294,7 @@ export default function Dashboard() {
           to="/onboarding/welcome" 
           className="mt-4 bg-primary text-on-primary px-8 py-4 rounded-full font-label-lg text-label-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2"
         >
-          Get Started <span className="material-symbols-outlined">arrow_forward</span>
+          Get Started <Icon name="arrow_forward"  />
         </Link>
       </div>
     );
@@ -319,13 +320,14 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
               <input 
                   type="date" 
+                  aria-label="Select Date"
                   value={selectedDate} 
                   onChange={handleDateChange} 
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   style={{ colorScheme: 'dark' }} 
               />
               <span className="font-body-md text-body-md font-medium">{displayDate}</span>
-              <span className="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+              <Icon name="calendar_today" className=" text-sm text-on-surface-variant" />
             </div>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-primary">Daily Review</h1>
@@ -357,7 +359,7 @@ export default function Dashboard() {
         {/* Placeholder Card to encourage adding more */}
         <button onClick={handleAddHabitClick} className="bg-surface-container-low border border-dashed border-outline-variant rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center min-h-[220px] hover:bg-surface-variant transition-colors cursor-pointer col-span-1 shadow-sm hover:shadow-md w-full">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-2xl">add</span>
+            <Icon name="add" className=" text-2xl" />
           </div>
           <span className="font-label-md text-label-md text-on-surface font-medium">Add Habit</span>
           <span className="font-body-sm text-body-sm text-on-surface-variant">Track something new</span>
@@ -376,16 +378,16 @@ export default function Dashboard() {
               }`}
           >
               {isSaving ? (
-                  <span className="material-symbols-outlined animate-spin text-xl">sync</span>
+                  <Icon name="sync" className=" animate-spin text-xl" />
               ) : (
-                  <span className="material-symbols-outlined text-xl">done_all</span>
+                  <Icon name="done_all" className=" text-xl" />
               )}
               {isSaving ? 'Saving...' : pendingChanges ? 'Save Progress' : 'All Progress Saved'}
           </button>
           
           {!pendingChanges && !isSaving && (
             <Link to="/analytics" className="text-primary hover:underline font-label-md flex items-center gap-1">
-              Check your analytics <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              Check your analytics <Icon name="arrow_forward" className=" text-sm" />
             </Link>
           )}
       </div>
@@ -395,7 +397,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl" style={{fontVariationSettings: "'FILL' 1"}}>workspace_premium</span>
+              <Icon name="workspace_premium" className=" text-3xl" style={{fontVariationSettings: "'FILL' 1"}} />
             </div>
             <h3 className="text-xl font-bold text-on-surface mb-2">Habit Limit Reached</h3>
             <p className="text-on-surface-variant text-sm mb-6">

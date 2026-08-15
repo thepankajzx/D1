@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
+import Icon from '../components/Icon';
 
 export default function OnboardingSelect() {
   const [habits, setHabits] = useState([]);
@@ -96,7 +97,7 @@ export default function OnboardingSelect() {
           aria-label="Go back" 
           className="p-2 -ml-2 rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <Icon name="arrow_back"  />
         </button>
         <div className="flex-1 flex justify-center items-center">
           <div className="flex space-x-2 items-center">
@@ -157,9 +158,7 @@ export default function OnboardingSelect() {
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
                     isSelected ? 'bg-surface-container-low text-primary' : 'bg-surface text-on-surface-variant'
                   }`}>
-                    <span className="material-symbols-outlined" style={isSelected ? {fontVariationSettings: "'FILL' 1"} : {}}>
-                      {habit.icon}
-                    </span>
+                    <Icon name={habit.icon}  style={isSelected ? {fontVariationSettings: "'FILL' 1"} : {}} />
                   </div>
                   <span className={`font-label-sm text-label-sm line-clamp-2 ${isSelected ? 'text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'}`}>
                     {habit.name}
@@ -167,11 +166,11 @@ export default function OnboardingSelect() {
                   
                   {isSelected ? (
                     <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[16px]">check</span>
+                      <Icon name="check" className=" text-[16px]" />
                     </div>
                   ) : (
                     <div className="absolute top-3 right-3 w-6 h-6 rounded-full border border-outline-variant text-on-surface-variant flex items-center justify-center group-hover:border-primary group-hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[16px]">add</span>
+                      <Icon name="add" className=" text-[16px]" />
                     </div>
                   )}
                 </button>
@@ -200,7 +199,7 @@ export default function OnboardingSelect() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl" style={{fontVariationSettings: "'FILL' 1"}}>workspace_premium</span>
+              <Icon name="workspace_premium" className=" text-3xl" style={{fontVariationSettings: "'FILL' 1"}} />
             </div>
             <h3 className="text-xl font-bold text-on-surface mb-2">Habit Limit Reached</h3>
             <p className="text-on-surface-variant text-sm mb-6">

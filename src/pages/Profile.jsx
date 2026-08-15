@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -129,7 +130,7 @@ export default function Profile() {
             onClick={handleLogout}
             className="w-full py-3 bg-error/10 text-error font-semibold rounded-lg hover:bg-error/20 flex items-center justify-center gap-2 transition-colors"
           >
-            <span className="material-symbols-outlined">logout</span>
+            <Icon name="logout"  />
             Log Out
           </button>
         </section>
@@ -141,7 +142,7 @@ export default function Profile() {
           <div className="flex justify-between items-center border-b border-outline-variant pb-4">
             <h2 className="font-headline-md text-headline-md text-on-surface">My Habits</h2>
             <button onClick={handleAddHabitClick} className="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
-              <span className="material-symbols-outlined" style={{fontSize: '18px'}}>add</span>
+              <Icon name="add"  style={{fontSize: '18px'}} />
               Add Habit
             </button>
           </div>
@@ -154,7 +155,7 @@ export default function Profile() {
               </div>
             ) : habits.length === 0 ? (
               <div className="py-12 text-center text-on-surface-variant flex flex-col items-center gap-4">
-                <span className="material-symbols-outlined text-4xl opacity-50">inbox</span>
+                <Icon name="inbox" className=" text-4xl opacity-50" />
                 You have no habits tracked.
               </div>
             ) : (
@@ -162,7 +163,7 @@ export default function Profile() {
                 <div key={habit.id} className="flex items-center justify-between py-4 border-b border-outline-variant/50 last:border-0 group">
                   <div className="flex items-center gap-4 flex-grow">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-2xl">{habit.icon}</span>
+                      <Icon name={habit.icon} className=" text-2xl" />
                     </div>
                     <div className="flex flex-col">
                       <span className="font-body-md text-body-md font-bold text-on-surface flex items-center gap-2">
@@ -180,7 +181,7 @@ export default function Profile() {
                       className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-full transition-colors"
                       title="Delete Habit"
                     >
-                      <span className="material-symbols-outlined" style={{fontSize: '20px'}}>delete</span>
+                      <Icon name="delete"  style={{fontSize: '20px'}} />
                     </button>
                   </div>
                 </div>
@@ -195,7 +196,7 @@ export default function Profile() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl" style={{fontVariationSettings: "'FILL' 1"}}>workspace_premium</span>
+              <Icon name="workspace_premium" className=" text-3xl" style={{fontVariationSettings: "'FILL' 1"}} />
             </div>
             <h3 className="text-xl font-bold text-on-surface mb-2">Habit Limit Reached</h3>
             <p className="text-on-surface-variant text-sm mb-6">

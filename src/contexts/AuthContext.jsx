@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
@@ -64,7 +65,7 @@ export function AuthProvider({ children }) {
   if (authTimeout && loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-surface text-center">
-        <span className="material-symbols-outlined text-4xl text-error mb-4">error</span>
+        <Icon name="error" className=" text-4xl text-error mb-4" />
         <h2 className="font-headline-md text-error mb-2">Authentication Error</h2>
         <p className="font-body-md text-on-surface-variant max-w-md mb-6">
           The app is taking longer than expected to connect to the authentication database. This usually happens on slow networks.
@@ -88,7 +89,7 @@ export function AuthProvider({ children }) {
       {loading ? (
         <div className="min-h-screen flex items-center justify-center bg-surface">
           <div className="flex flex-col items-center gap-4">
-            <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+            <Icon name="sync" className=" animate-spin text-4xl text-primary" />
             <span className="font-label-md text-on-surface-variant">Loading Definite...</span>
           </div>
         </div>
