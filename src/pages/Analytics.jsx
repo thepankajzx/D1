@@ -687,23 +687,26 @@ export default function Analytics() {
           )}
           <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
             <div className={`bg-surface flex flex-col ${isZoomedOut ? 'w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full border border-outline-variant shadow-sm rounded-2xl p-6'}`}>
-          <div className="flex justify-between items-center mb-6 shrink-0">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Consistency Map</h2>
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="flex justify-between items-center mb-6 shrink-0 gap-2">
+            <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
+            
+            <div className="flex items-center bg-surface-container-low border border-outline-variant/50 rounded-full shadow-sm p-0.5 shrink-0">
               <button 
                   onClick={() => setShowPercentages(!showPercentages)}
-                  className={`transition-colors flex items-center justify-center gap-1 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-full border whitespace-nowrap shadow-sm backdrop-blur-md ${showPercentages ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface-container-low border-outline-variant/50 text-on-surface-variant hover:text-primary'}`}
+                  className={`transition-all flex items-center justify-center gap-0.5 w-10 h-8 sm:w-12 sm:h-9 rounded-full ${showPercentages ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'}`}
+                  title={showPercentages ? 'Hide %' : 'Show %'}
               >
-                  <span className="material-symbols-outlined text-[14px] sm:text-[16px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
-                  {showPercentages ? 'Hide %' : 'Show %'}
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
+                  <span className="text-[11px] font-bold leading-none">%</span>
               </button>
+              
               {!isZoomedOut && (
               <button 
                   onClick={() => setIsZoomedOut(true)}
-                  className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1.5 rounded-full border border-outline-variant/50 bg-surface-container-low shadow-sm backdrop-blur-md whitespace-nowrap"
+                  className="transition-all flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-on-surface-variant hover:bg-surface-variant hover:text-on-surface"
+                  title="Zoom Out"
               >
-                  <span className="material-symbols-outlined text-[14px] sm:text-[16px]">fullscreen</span>
-                  Zoom Out
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">fullscreen</span>
               </button>
               )}
             </div>
