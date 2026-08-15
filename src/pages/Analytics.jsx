@@ -408,7 +408,7 @@ export default function Analytics() {
                   setRangeOption(val);
                   setIsCustomDropdownOpen(false);
                 }}
-                className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-surface shadow-sm text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+                className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 ${rangeOption === val ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
               >
                 {val} Days
               </button>
@@ -418,7 +418,7 @@ export default function Analytics() {
                 setRangeOption('custom');
                 setIsCustomDropdownOpen(true);
               }}
-              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-surface shadow-sm text-on-surface' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
+              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-all duration-200 flex items-center gap-1.5 ${rangeOption === 'custom' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant/50'}`}
             >
               Custom <span className="material-symbols-outlined text-[16px]">calendar_today</span>
             </button>
@@ -500,13 +500,13 @@ export default function Analytics() {
         <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'charts' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Charts
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'heatmap' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Heatmap
           </button>
