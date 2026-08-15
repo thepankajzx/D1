@@ -388,8 +388,8 @@ export default function Analytics() {
           <p className="font-body-md text-body-md text-on-surface-variant">Analyze your habit consistency and intensity over time.</p>
         </div>
         
-        <div className="flex flex-col items-end gap-2" ref={dateSelectorRef}>
-          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit relative z-20">
+        <div className="flex flex-col items-end gap-2 relative z-20" ref={dateSelectorRef}>
+          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit">
             {['7', '30', '90', 'custom'].map((val) => {
               const isActive = rangeOption === val;
               const isCustom = val === 'custom';
@@ -405,7 +405,7 @@ export default function Analytics() {
                       setIsCustomDropdownOpen(false);
                     }
                   }}
-                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 flex-1 min-w-[56px] max-w-[104px] rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 px-3 sm:px-5 rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 whitespace-nowrap ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
                 >
                   {isCustom && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
                   {label}

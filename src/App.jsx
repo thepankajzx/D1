@@ -58,10 +58,6 @@ function Layout({ children }) {
           <Link to="/profile" className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-surface-variant transition-colors border border-outline-variant">
             <span className="material-symbols-outlined text-[20px]">person</span>
           </Link>
-          <button onClick={handleLogout} className="hidden md:flex text-on-surface-variant hover:text-error transition-colors text-sm font-medium items-center gap-1 bg-surface-container-low px-4 py-2 rounded-full hover:bg-error/10">
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            Logout
-          </button>
         </div>
       </nav>
 
