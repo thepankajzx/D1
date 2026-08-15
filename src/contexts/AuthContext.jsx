@@ -20,10 +20,10 @@ export function AuthProvider({ children }) {
   const [authTimeout, setAuthTimeout] = useState(false);
 
   useEffect(() => {
-    // If Firebase takes too long, likely an IndexedDB / "Database is closing" issue.
+    // If Firebase takes unusually long to initialize, show the error boundary
     const timer = setTimeout(() => {
       setAuthTimeout(true);
-    }, 5000);
+    }, 15000);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
         <span className="material-symbols-outlined text-4xl text-error mb-4">error</span>
         <h2 className="font-headline-md text-error mb-2">Authentication Error</h2>
         <p className="font-body-md text-on-surface-variant max-w-md mb-6">
-          The app is unable to connect to the authentication database. This usually happens if the browser restricts access (e.g. "Database is closing") or if there are multiple tabs open.
+          The app is taking longer than expected to connect to the authentication database. This usually happens on slow networks.
         </p>
         <button 
           onClick={() => {
