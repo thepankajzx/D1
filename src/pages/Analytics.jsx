@@ -581,7 +581,7 @@ export default function Analytics() {
               // Determine which habits to show in the top grid
               let habitsToShow = [];
               if (selectedHabits.length === 0) {
-                  habitsToShow = habits.map(h => h.id);
+                  habitsToShow = ['overall'];
               } else if (chartMode === 'combined' || selectedHabits.length <= 1) {
                   habitsToShow = selectedHabits;
               }
@@ -591,12 +591,18 @@ export default function Analytics() {
               return (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                   {habitsToShow.map(habitId => {
-                    const habit = habits.find(h => h.id === habitId);
-                    
-                    const currentPeriodScores = summaries
-                      .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
-                      .map(s => s.habitScores[habitId]);
-                    const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
+                    let habitName, currentAvg;
+                    if (habitId === 'overall') {
+                        habitName = 'Overall';
+                        currentAvg = kpis.avgScore;
+                    } else {
+                        const habit = habits.find(h => h.id === habitId);
+                        habitName = habit?.name || 'Unknown';
+                        const currentPeriodScores = summaries
+                          .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
+                          .map(s => s.habitScores[habitId]);
+                        currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
+                    }
                     
                     let timeframeLabel = 'All-Time';
                     if (rangeOption !== 'all' && rangeOption !== 'custom') {
@@ -609,7 +615,7 @@ export default function Analytics() {
                     return (
                       <RadialGauge 
                         key={`gauge-top-${habitId}`} 
-                        habitName={habit?.name || 'Unknown'} 
+                        habitName={habitName} 
                         percentage={currentAvg} 
                         timeframeLabel={timeframeLabel}
                       />
