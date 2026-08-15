@@ -5,15 +5,15 @@ import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-const Login = lazy(() => import('./pages/Login'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Seed = lazy(() => import('./pages/Seed'));
-const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
-const OnboardingSelect = lazy(() => import('./pages/OnboardingSelect'));
-const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Analytics = lazy(() => import('./pages/Analytics'));
-const Subscription = lazy(() => import('./pages/Subscription'));
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import Seed from './pages/Seed';
+import OnboardingWelcome from './pages/OnboardingWelcome';
+import OnboardingSelect from './pages/OnboardingSelect';
+import OnboardingTargets from './pages/OnboardingTargets';
+import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
+import Subscription from './pages/Subscription';
 
 function Layout({ children }) {
 // ... keep layout same ...
