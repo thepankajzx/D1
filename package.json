@@ -12,11 +12,8 @@
   "dependencies": {
     "echarts": "^6.1.0",
     "echarts-for-react": "^3.0.6",
-    "firebase-admin": "^14.2.0",
-    "isomorphic-git": "^1.41.2",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "recharts": "^3.10.1"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

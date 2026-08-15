@@ -6,14 +6,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 import Login from './pages/Login';
-import Profile from './pages/Profile';
-import Seed from './pages/Seed';
-import OnboardingWelcome from './pages/OnboardingWelcome';
-import OnboardingSelect from './pages/OnboardingSelect';
-import OnboardingTargets from './pages/OnboardingTargets';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
-import Subscription from './pages/Subscription';
+
+const Profile = lazy(() => import('./pages/Profile'));
+const Seed = lazy(() => import('./pages/Seed'));
+const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
+const OnboardingSelect = lazy(() => import('./pages/OnboardingSelect'));
+const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
+const Subscription = lazy(() => import('./pages/Subscription'));
 
 function Layout({ children }) {
 // ... keep layout same ...

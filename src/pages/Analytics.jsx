@@ -9,7 +9,13 @@ import {
   computeHabitBreakdown, 
   identifyAreasToImprove 
 } from '../lib/analytics';
-import ReactECharts from 'echarts-for-react';
+import ReactEChartsCore from 'echarts-for-react/lib/core';
+import * as echarts from 'echarts/core';
+import { LineChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 import { Link } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 
@@ -624,7 +630,7 @@ export default function Analytics() {
             })()
           )}
             {chartMode === 'combined' || selectedHabits.length <= 1 ? (
-              <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
+              <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
             ) : (
               selectedHabits.map(habitId => {
                 const habit = habits.find(h => h.id === habitId);
@@ -646,7 +652,7 @@ export default function Analytics() {
                 }
 
                 return (
-                  <div key={habitId} className="flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/50 p-4 sm:p-5">
+                  <div key={`chart-${habitId}`} className="flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/50 p-4 sm:p-5">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                       <div className="flex items-center gap-2 ml-1">
                         <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }}></div>
@@ -660,7 +666,7 @@ export default function Analytics() {
                         />
                       </div>
                     </div>
-                    <ReactECharts option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
+                    <ReactEChartsCore echarts={echarts} option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
                   </div>
                 );
               })
