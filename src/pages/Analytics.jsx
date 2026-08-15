@@ -46,26 +46,15 @@ export default function Analytics() {
   const { habits, allSummaries, userDoc, loadingData } = useData();
   
   // Date Range State
-  const [rangeOption, setRangeOption] = useState('30'); // '7', '30', '90', 'custom'
+  const [rangeOption, setRangeOption] = useState('7'); // '7', '30', '90', 'custom'
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
   const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
   const dateSelectorRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dateSelectorRef.current && !dateSelectorRef.current.contains(event.target)) {
-        setIsCustomDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
   
+
   // Filter States
   const [selectedHabits, setSelectedHabits] = useState([]); // Array of habit IDs
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
@@ -95,7 +84,7 @@ export default function Analytics() {
     
     // Default fallback if custom is selected but not applied yet
     if (rangeOption === 'custom') {
-      let days = 30;
+      let days = 7;
       const startObj = new Date();
       startObj.setDate(startObj.getDate() - days + 1);
       return {
@@ -426,8 +415,18 @@ export default function Analytics() {
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && (
-            <div className="w-full md:w-auto bg-surface-container/60 backdrop-blur-xl border border-outline-variant/40 rounded-[20px] p-3 flex flex-col sm:flex-row gap-3 items-end sm:items-center shadow-md animate-in fade-in slide-in-from-top-2 duration-200 z-10">
-              <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <div className="w-full md:w-auto bg-surface-container/60 backdrop-blur-xl border border-outline-variant/40 rounded-[20px] p-3 flex flex-col sm:flex-row gap-3 items-end sm:items-center shadow-md animate-in fade-in slide-in-from-top-2 duration-200 z-10 relative">
+              <button 
+                onClick={() => {
+                  setIsCustomDropdownOpen(false);
+                  setRangeOption('7');
+                }}
+                className="absolute -top-2 -right-2 bg-surface border border-outline-variant rounded-full p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant shadow-sm transition-colors z-20 flex items-center justify-center"
+                aria-label="Close custom date selector"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+              <div className="flex flex-col gap-1 w-full sm:w-auto mt-2 sm:mt-0">
                 <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant pl-1">From</label>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded-xl p-2.5 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary w-full shadow-sm" />
               </div>
@@ -440,7 +439,6 @@ export default function Analytics() {
                    if(customStart && customEnd) {
                       setAppliedCustomStart(customStart);
                       setAppliedCustomEnd(customEnd);
-                      setIsCustomDropdownOpen(false);
                    } else {
                       alert("Please select both start and end dates.");
                    }
