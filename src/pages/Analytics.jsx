@@ -582,12 +582,58 @@ export default function Analytics() {
 
           
           <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
-          {selectedHabits.length > 0 && viewMode === 'charts' && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {selectedHabits.map(habitId => {
+          {viewMode === 'charts' && (
+            (() => {
+              // Determine which habits to show in the top grid
+              let habitsToShow = [];
+              if (selectedHabits.length === 0) {
+                  habitsToShow = habits.map(h => h.id);
+              } else if (chartMode === 'combined' || selectedHabits.length <= 1) {
+                  habitsToShow = selectedHabits;
+              }
+
+              if (habitsToShow.length === 0) return null;
+
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                  {habitsToShow.map(habitId => {
+                    const habit = habits.find(h => h.id === habitId);
+                    
+                    const currentPeriodScores = summaries
+                      .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
+                      .map(s => s.habitScores[habitId]);
+                    const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
+                    
+                    let timeframeLabel = 'All-Time';
+                    if (rangeOption !== 'all' && rangeOption !== 'custom') {
+                        const days = parseInt(rangeOption) || 30;
+                        timeframeLabel = `${days} Days`;
+                    } else if (rangeOption === 'custom') {
+                        timeframeLabel = 'Custom';
+                    }
+                    
+                    return (
+                      <RadialGauge 
+                        key={`gauge-top-${habitId}`} 
+                        habitName={habit?.name || 'Unknown'} 
+                        percentage={currentAvg} 
+                        timeframeLabel={timeframeLabel}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })()
+          )}
+            {chartMode === 'combined' || selectedHabits.length <= 1 ? (
+              <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
+            ) : (
+              selectedHabits.map(habitId => {
                 const habit = habits.find(h => h.id === habitId);
+                const globalIndex = habits.findIndex(h => h.id === habitId);
+                const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+                const color = colors[globalIndex % colors.length];
                 
-                // Calculate current period average
                 const currentPeriodScores = summaries
                   .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
                   .map(s => s.habitScores[habitId]);
@@ -600,30 +646,21 @@ export default function Analytics() {
                 } else if (rangeOption === 'custom') {
                     timeframeLabel = 'Custom';
                 }
-                
+
                 return (
-                  <RadialGauge 
-                    key={`gauge-${habitId}`} 
-                    habitName={habit?.name || 'Unknown'} 
-                    percentage={currentAvg} 
-                    timeframeLabel={timeframeLabel}
-                  />
-                );
-              })}
-            </div>
-          )}
-            {chartMode === 'combined' || selectedHabits.length <= 1 ? (
-              <ReactECharts option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
-            ) : (
-              selectedHabits.map(habitId => {
-                const globalIndex = habits.findIndex(h => h.id === habitId);
-                const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
-                const color = colors[globalIndex % colors.length];
-                return (
-                  <div key={habitId} className="flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/50 p-4">
-                    <div className="flex items-center gap-2 ml-1 mb-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
-                      <h3 className="text-sm font-semibold text-on-surface">{habits.find(h=>h.id === habitId)?.name}</h3>
+                  <div key={habitId} className="flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/50 p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                      <div className="flex items-center gap-2 ml-1">
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }}></div>
+                        <h3 className="text-base font-semibold text-on-surface">{habit?.name || 'Unknown'}</h3>
+                      </div>
+                      <div className="w-full sm:w-[150px]">
+                        <RadialGauge 
+                          habitName={habit?.name || 'Unknown'} 
+                          percentage={currentAvg} 
+                          timeframeLabel={timeframeLabel}
+                        />
+                      </div>
                     </div>
                     <ReactECharts option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
                   </div>
