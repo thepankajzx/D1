@@ -333,24 +333,7 @@ export default function Dashboard() {
             {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
           </p>
         </div>
-        
-        <div className="flex items-center gap-6 bg-surface p-6 rounded-2xl premium-border shadow-sm">
-          <div className="relative w-24 h-24">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle className="circular-progress-bg" cx="50" cy="50" r="45"></circle>
-              <circle 
-                className="circular-progress-value" 
-                cx="50" cy="50" r="45" 
-                strokeDasharray="282.7" 
-                strokeDashoffset={dashoffset}
-                style={{ stroke: getPerfColor(scorePercentage) }}
-              ></circle>
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center flex-col">
-              <span className="font-mono-data text-mono-data text-2xl font-bold" style={{ color: getPerfColor(scorePercentage) }}>{scorePercentage}%</span>
-            </div>
-          </div>
-        </div>
+
       </section>
 
       {/* Bento Grid Main Content */}
