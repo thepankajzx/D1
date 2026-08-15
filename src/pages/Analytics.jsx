@@ -428,37 +428,52 @@ export default function Analytics() {
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && (
-            <div className="w-full md:w-auto bg-surface-container/60 backdrop-blur-xl border border-outline-variant/40 rounded-[20px] p-3 flex flex-col sm:flex-row gap-3 items-end sm:items-center shadow-md animate-in fade-in slide-in-from-top-2 duration-200 z-10 relative">
+            <div className="w-full md:w-auto bg-surface border border-outline-variant/30 rounded-3xl p-5 pt-7 flex flex-col sm:flex-row items-end sm:items-center gap-4 relative shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-in fade-in slide-in-from-top-2 duration-200 z-10 mt-2">
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-outline-variant/40 rounded-full"></div>
               <button 
                 onClick={() => {
                   setIsCustomDropdownOpen(false);
                   setRangeOption('7');
                 }}
-                className="absolute -top-2 -right-2 bg-surface border border-outline-variant rounded-full p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant shadow-sm transition-colors z-20 flex items-center justify-center"
+                className="absolute top-3 right-3 h-8 w-8 bg-surface border border-outline-variant/40 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant shadow-sm transition-colors z-20 flex items-center justify-center"
                 aria-label="Close custom date selector"
               >
                 <span className="material-symbols-outlined text-[16px]">close</span>
               </button>
-              <div className="flex flex-col gap-1 w-full sm:w-auto mt-2 sm:mt-0">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant pl-1">From</label>
-                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm rounded-xl p-2.5 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary w-full shadow-sm" />
+              
+              <div className="flex flex-col gap-1.5 w-full sm:w-[150px]">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant ml-1">From</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-xl py-2.5 pl-10 pr-3 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary shadow-sm appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+                </div>
               </div>
-              <div className="flex flex-col gap-1 w-full sm:w-auto">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant pl-1">To</label>
-                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm rounded-xl p-2.5 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary w-full shadow-sm" />
+              
+              <div className="hidden sm:block w-[1px] h-8 bg-outline-variant/30 mt-5"></div>
+              
+              <div className="flex flex-col gap-1.5 w-full sm:w-[150px]">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant ml-1">To</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-xl py-2.5 pl-10 pr-3 bg-surface border border-outline-variant/40 text-on-surface focus:outline-none focus:border-primary shadow-sm appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+                </div>
               </div>
+              
               <button 
                 onClick={() => {
                    if(customStart && customEnd) {
                       setAppliedCustomStart(customStart);
                       setAppliedCustomEnd(customEnd);
+                      setIsCustomDropdownOpen(false);
                    } else {
                       alert("Please select both start and end dates.");
                    }
                 }}
-                className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-label-md hover:opacity-90 transition-opacity w-full sm:w-auto whitespace-nowrap shadow-sm"
+                className="mt-2 sm:mt-5 h-11 w-11 shrink-0 rounded-full bg-on-surface text-surface flex items-center justify-center hover:opacity-90 transition-opacity shadow-md self-end sm:self-center"
               >
-                Show Results
+                <span className="material-symbols-outlined">arrow_forward</span>
               </button>
             </div>
           )}
