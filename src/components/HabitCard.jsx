@@ -132,7 +132,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
               <span>0 {habit.unit}</span>
               <span>Target: {habit.target100} {habit.unit}</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
                 <input 
                   type="range" 
                   min={minSlider} 

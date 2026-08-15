@@ -120,7 +120,7 @@ export default function OnboardingSelect() {
         </div>
 
         {/* Category Filters */}
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-4 mb-4 -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+        <div className="flex items-center gap-3 overflow-x-auto custom-scrollbar snap-x snap-mandatory pb-4 mb-4 -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
           {categories.map(cat => (
             <button 
               key={cat}

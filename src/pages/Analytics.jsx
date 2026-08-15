@@ -351,7 +351,7 @@ export default function Analytics() {
     return (
       <div className="flex flex-col gap-8 w-full animate-pulse">
         <div className="h-12 bg-surface-container-high rounded-lg w-48 mb-8"></div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-surface-container-high rounded-2xl"></div>)}
         </div>
         <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-8"></div>
@@ -405,7 +405,7 @@ export default function Analytics() {
                       setIsCustomDropdownOpen(false);
                     }
                   }}
-                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 w-[76px] sm:w-[104px] rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 flex-1 min-w-[56px] max-w-[104px] rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
                 >
                   {isCustom && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
                   {label}
@@ -416,15 +416,15 @@ export default function Analytics() {
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-fit">
-              <div className="relative w-[130px] sm:w-[140px]">
+            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-[max-content] sm:w-fit max-w-[calc(100vw-32px)]">
+              <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
               <div className="w-[1px] h-6 bg-outline-variant/40 mx-1"></div>
               
-              <div className="relative w-[130px] sm:w-[140px]">
+              <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
                 <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
@@ -449,7 +449,7 @@ export default function Analytics() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Score</span>
           <div className="flex items-baseline gap-2">
@@ -480,7 +480,7 @@ export default function Analytics() {
           </div>
           <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
         </div>
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 col-span-2 md:col-span-1 transition-transform hover:-translate-y-1">
+        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 col-span-1 sm:col-span-2 md:col-span-1 transition-transform hover:-translate-y-1">
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracked Days</span>
           <div className="flex items-baseline gap-2">
             <span className="font-headline-lg text-headline-lg text-primary">{kpis.trackedDays}</span>
@@ -915,7 +915,7 @@ export default function Analytics() {
         <div className="p-6 border-b border-outline-variant">
           <h2 className="font-headline-md text-headline-md text-on-surface">Habit Breakdown</h2>
         </div>
-        <div className="w-full overflow-x-auto scrollbar-hide">
+        <div className="w-full overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-full">
             <thead>
               <tr className="font-label-sm text-[10px] md:text-xs text-on-surface-variant bg-surface-container-lowest border-b border-outline-variant uppercase tracking-wider">
