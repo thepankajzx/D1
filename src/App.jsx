@@ -11,7 +11,6 @@ import Dashboard from './pages/Dashboard';
 const Analytics = lazy(() => import('./pages/Analytics'));
 
 const Profile = lazy(() => import('./pages/Profile'));
-const Seed = lazy(() => import('./pages/Seed'));
 const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
 const OnboardingSelect = lazy(() => import('./pages/AdvancedHabitSelector'));
 const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
@@ -116,7 +115,7 @@ function App() {
                   <Route path="/profile" element={<Layout><Profile /></Layout>} />
                   <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
                   
-                  <Route path="/seed" element={<Seed />} />
+                  
                   <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                   <Route path="/onboarding/select" element={<OnboardingSelect />} />
                   <Route path="/onboarding/targets" element={<OnboardingTargets />} />

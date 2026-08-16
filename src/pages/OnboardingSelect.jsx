@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
+import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import Icon from '../components/Icon';
 
 export default function OnboardingSelect() {
-  const [habits, setHabits] = useState([]);
+  // Use static predefined habits
+  const habits = HABITS_SEED_DATA;
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   
@@ -19,22 +21,11 @@ export default function OnboardingSelect() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchHabits() {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'habitLibrary'));
-        const loadedHabits = [];
-        querySnapshot.forEach((doc) => {
-          loadedHabits.push({ id: doc.id, ...doc.data() });
-        });
-        setHabits(loadedHabits);
-      } catch (error) {
-        console.error("Error fetching habit library:", error);
-      } finally {
-        setLoading(false);
-      }
+    if (existingHabits.length > 0) {
+      // If user already has habits, skip onboarding
+      // navigate('/');
     }
-    fetchHabits();
-  }, []);
+  }, [existingHabits, navigate]);
 
   const categories = ['All', ...new Set(habits.map(h => h.category))];
   const displayedHabits = activeCategory === 'All' 

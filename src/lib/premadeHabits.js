@@ -1,8 +1,4 @@
-import { useState } from 'react';
-import { db } from '../lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-
-const HABITS_SEED_DATA = [
+export const HABITS_SEED_DATA = [
   { id: 'wakeup', name: 'Wake Up Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 360, target0: 480, icon: 'alarm' },
   { id: 'sleep', name: 'Sleep Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 1320, target0: 1440, icon: 'bedtime' },
   { id: 'sleep_duration', name: 'Sleep Duration', category: 'Morning', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'hours', target100: 8, target0: 5, icon: 'hourglass_empty' },
@@ -24,36 +20,3 @@ const HABITS_SEED_DATA = [
   { id: 'alcoholfree', name: 'Alcohol Free', category: 'Lifestyle', scoringType: 'binary', direction: 'n/a', defaultUnit: '', target100: null, target0: null, icon: 'no_drinks' },
   { id: 'smokingfree', name: 'Smoking / Nicotine Free', category: 'Lifestyle', scoringType: 'binary', direction: 'n/a', defaultUnit: '', target100: null, target0: null, icon: 'smoke_free' }
 ];
-
-export default function Seed() {
-  const [status, setStatus] = useState('Idle');
-  
-  async function handleSeed() {
-    setStatus('Seeding...');
-    try {
-      for (const habit of HABITS_SEED_DATA) {
-        await setDoc(doc(db, 'habitLibrary', habit.id), habit);
-      }
-      setStatus('Success! 20 habits seeded.');
-    } catch (error) {
-      console.error(error);
-      setStatus(`Error: ${error.message}`);
-    }
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-center p-8 bg-surface rounded-xl border border-outline-variant">
-      <h1 className="text-2xl font-bold text-primary mb-4">Seed Firestore Database</h1>
-      <p className="mb-4 text-on-surface-variant">Clicking this will write the 20 predefined habits into the <code>/habitLibrary</code> collection.</p>
-      
-      <button 
-        onClick={handleSeed}
-        className="bg-primary text-on-primary px-6 py-2 rounded font-medium hover:opacity-90"
-      >
-        Run Seed Script
-      </button>
-      
-      <div className="mt-4 font-mono-data text-sm">{status}</div>
-    </div>
-  );
-}

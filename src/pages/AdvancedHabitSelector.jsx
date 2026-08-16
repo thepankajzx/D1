@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
+import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import ScoringModal from '../components/ScoringModal';
@@ -17,11 +18,13 @@ export default function AdvancedHabitSelector() {
   const { currentUser } = useAuth();
   const { habits: existingHabits = [], refreshData, userDoc } = useData();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('selection'); // 'locked', 'selection', 'summary'
   const [lockDaysRemaining, setLockDaysRemaining] = useState(0);
   
-  const [habitLibrary, setHabitsLibrary] = useState([]);
+  // Use static predefined habits
+  const habitLibrary = HABITS_SEED_DATA;
+  
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [customHabits, setCustomHabits] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -60,20 +63,6 @@ export default function AdvancedHabitSelector() {
             // setViewMode('locked');
           }
         }
-      }
-
-      // 2. Fetch Habit Library
-      try {
-        const querySnapshot = await getDocs(collection(db, 'habitLibrary'));
-        const loadedHabits = [];
-        querySnapshot.forEach((doc) => {
-          loadedHabits.push({ id: doc.id, ...doc.data() });
-        });
-        setHabitsLibrary(loadedHabits);
-      } catch (error) {
-        console.error("Error fetching habit library:", error);
-      } finally {
-        setLoading(false);
       }
     }
     
