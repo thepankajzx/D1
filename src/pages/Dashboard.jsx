@@ -5,7 +5,6 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import HabitCard from '../components/HabitCard';
-import Gauge from '../components/Gauge';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -339,9 +338,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-12 w-full pb-24">
       {/* Header Section */}
-      <section className="flex flex-col md:flex-row items-start justify-between gap-6 pt-8 w-full">
+      <section className="flex flex-col md:flex-row items-start justify-between gap-6 pt-2 w-full">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4 mb-4 relative">
+          <div className="flex items-center gap-4 mb-1 relative">
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
               <input 
                   type="date" 
@@ -361,40 +360,64 @@ export default function Dashboard() {
           </p>
         </div>
         
-        {/* KPI Cards (3 Columns) */}
-        <div className="flex gap-2 w-full shrink-0 h-[110px] sm:h-[120px]">
+        {/* KPI Cards (2 Pills) */}
+        <div className="flex flex-row gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
           
-          {/* Weakest Habit */}
-          <div className="bg-[#151515] rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center relative overflow-hidden">
-             <button onClick={() => setShowKpiHelp(true)} className="absolute top-2 right-2 text-[#b6b9bf] hover:text-white transition-colors" title="How it works">
-               <Icon name="help_outline" className="text-[12px]" />
-             </button>
-             {weakestHabit ? (
-                 <Gauge percentage={weakestHabit.score} color={getPerfColor(weakestHabit.score)} label={weakestHabit.name} subLabel="WEAKEST" />
-             ) : (
-                 <span className="text-[#b6b9bf] text-xs">No Data</span>
-             )}
+          {/* Weakest Habit Pill */}
+          <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
+            <div className="flex items-center justify-between gap-[10px] mb-[8px]">
+              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[70%]">
+                {weakestHabit?.name || 'Weakest'}
+              </span>
+              <span className="text-[14px] sm:text-[16px] font-bold">{weakestHabit?.score || 0}%</span>
+            </div>
+            <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
+                {Array.from({ length: 20 }, (_, i) => {
+                    const score = weakestHabit?.score || 0;
+                    const filledCount = Math.round((score / 100) * 20);
+                    const isFilled = i < filledCount;
+                    let color = '#ef4444'; 
+                    if (score >= 80) color = '#22c55e'; 
+                    else if (score >= 60) color = '#86efac'; 
+                    else if (score >= 40) color = '#facc15'; 
+                    
+                    return (
+                        <span 
+                            key={i}
+                            className="h-[18px] sm:h-[21px] rounded-[4px]"
+                            style={{ backgroundColor: isFilled ? color : '#272727' }}
+                        ></span>
+                    );
+                })}
+            </div>
           </div>
 
-          {/* Strongest Habit */}
-          <div className="bg-[#151515] rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center relative overflow-hidden">
-             {strongestHabit ? (
-                 <Gauge percentage={strongestHabit.score} color={getPerfColor(strongestHabit.score)} label={strongestHabit.name} subLabel="STRONGEST" />
-             ) : (
-                 <span className="text-[#b6b9bf] text-xs">No Data</span>
-             )}
-          </div>
-          
-          {/* Streak Pill */}
-          <div className="bg-[#151515] text-white rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center text-center overflow-hidden">
-            <div className="flex items-center justify-center w-full mb-1">
-              <span className="text-[#b6b9bf] text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider w-full truncate text-center">
-                Total Streak
+          {/* Strongest Habit Pill */}
+          <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
+            <div className="flex items-center justify-between gap-[10px] mb-[8px]">
+              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[70%]">
+                {strongestHabit?.name || 'Strongest'}
               </span>
+              <span className="text-[14px] sm:text-[16px] font-bold">{strongestHabit?.score || 0}%</span>
             </div>
-            <div className="flex flex-col items-center justify-center mt-auto">
-              <span className="text-[28px] sm:text-[32px] font-bold text-white leading-none mb-1">{userDoc?.currentStreak || 0}</span>
-              <span className="text-[#b6b9bf] text-[9px] font-medium uppercase tracking-wider text-center">Days</span>
+            <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
+                {Array.from({ length: 20 }, (_, i) => {
+                    const score = strongestHabit?.score || 0;
+                    const filledCount = Math.round((score / 100) * 20);
+                    const isFilled = i < filledCount;
+                    let color = '#ef4444'; 
+                    if (score >= 80) color = '#22c55e'; 
+                    else if (score >= 60) color = '#86efac'; 
+                    else if (score >= 40) color = '#facc15'; 
+                    
+                    return (
+                        <span 
+                            key={i}
+                            className="h-[18px] sm:h-[21px] rounded-[4px]"
+                            style={{ backgroundColor: isFilled ? color : '#272727' }}
+                        ></span>
+                    );
+                })}
             </div>
           </div>
           
