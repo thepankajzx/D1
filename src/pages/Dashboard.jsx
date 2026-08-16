@@ -328,20 +328,20 @@ export default function Dashboard() {
         
         {/* KPI Cards */}
         <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full md:w-auto shrink-0">
+          <div className="flex flex-row gap-2 md:gap-4 w-full md:w-auto shrink-0">
             
             {/* Consistency Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] w-full md:w-auto shrink-0 relative">
+            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-[3] md:flex-none md:w-auto shrink-0 relative flex flex-col justify-center overflow-hidden">
               <div className="flex items-center justify-between gap-[10px] mb-[8px]">
-                <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
+                <span className="text-[#b6b9bf] text-[13px] sm:text-[14px] font-medium flex items-center gap-1.5 whitespace-nowrap">
                   Consistency
-                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors" title="How it works">
-                    <Icon name="help_outline" className="text-[14px]" />
+                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors shrink-0" title="How it works">
+                    <Icon name="help_outline" className="text-[13px] sm:text-[14px]" />
                   </button>
                 </span>
-                <span className="text-[18px] sm:text-[17px] font-bold">{overallConsistency}%</span>
+                <span className="text-[16px] sm:text-[17px] font-bold">{overallConsistency}%</span>
               </div>
-              <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px] w-full">
+              <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
                   {Array.from({ length: 20 }, (_, i) => {
                       const filledCount = Math.round((overallConsistency / 100) * 20);
                       const isFilled = i < filledCount;
@@ -362,18 +362,18 @@ export default function Dashboard() {
             </div>
             
             {/* Streak Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] w-full md:w-auto shrink-0 flex flex-col justify-between">
-              <div className="flex items-center justify-between gap-[10px] mb-[4px]">
-                <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
-                  Current Streak
-                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors" title="How it works">
-                    <Icon name="help_outline" className="text-[14px]" />
+            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_8px] sm:p-[12px_16px] flex-[1] md:flex-none md:w-auto shrink-0 flex flex-col justify-center items-center text-center overflow-hidden">
+              <div className="flex items-center justify-center w-full mb-[4px]">
+                <span className="text-[#b6b9bf] text-[11px] sm:text-[14px] font-medium flex items-center justify-center gap-1 w-full whitespace-nowrap">
+                  Streak
+                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors shrink-0" title="How it works">
+                    <Icon name="help_outline" className="text-[11px] sm:text-[14px]" />
                   </button>
                 </span>
               </div>
-              <div className="flex items-baseline gap-2 mt-auto">
-                <span className="text-[22px] sm:text-[24px] font-bold text-white">{userDoc?.currentStreak || 0}</span>
-                <span className="text-[#b6b9bf] text-[12px] font-medium uppercase tracking-wider">Days Recorded</span>
+              <div className="flex flex-col sm:flex-row items-center sm:items-baseline justify-center gap-0 sm:gap-2 mt-auto">
+                <span className="text-[18px] sm:text-[24px] font-bold text-white leading-none">{userDoc?.currentStreak || 0}</span>
+                <span className="text-[#b6b9bf] text-[8px] sm:text-[12px] font-medium uppercase tracking-wider mt-0.5 sm:mt-0">Days</span>
               </div>
             </div>
             
