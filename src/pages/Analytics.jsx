@@ -421,7 +421,119 @@ export default function Analytics() {
         </Link>
       </div>
     );
-  }
+  const renderCustomKPIHeader = (habitId) => {
+    const isOverall = habitId === 'overall';
+    const breakdownHabit = isOverall ? {
+      id: 'overall',
+      name: 'Overall',
+      avgScore: kpis.averageScore,
+      consistency: kpis.consistency,
+      bestScore: kpis.bestDayScore,
+      bestDate: kpis.bestDay,
+      lowestScore: kpis.lowestDayScore,
+      lowestDate: kpis.lowestDay,
+      trackedDays: kpis.trackedDays
+    } : breakdown.find(b => b.id === habitId) || {};
+
+    const habitDataPoints = chartData.map(d => ({ date: d.date, score: isOverall ? d.overallScore : (d[habitId] || 0) }));
+    const segments = habitDataPoints.slice(-30);
+    
+    const validScores = habitDataPoints.filter(d => d.score > 0).map(d => d.score);
+    const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
+    const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
+    const diff = latestScore - prevScore;
+    const isUp = diff >= 0;
+    const diffText = `${isUp ? '↑' : '↓'} ${Math.abs(diff)}%`;
+
+    let timeframeLabel = 'All-Time';
+    if (rangeOption !== 'all' && rangeOption !== 'custom') {
+        timeframeLabel = `${parseInt(rangeOption) || 30} Days`;
+    } else if (rangeOption === 'custom') {
+        timeframeLabel = 'Custom';
+    }
+
+    const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+    const globalIndex = habits.findIndex(h => h.id === habitId);
+    const color = isOverall ? '#111827' : colors[globalIndex % colors.length];
+
+    return (
+      <div className="flex flex-col gap-6 w-full">
+        <div className="flex justify-between items-center w-full px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: color }}></div>
+            <h3 className="text-2xl font-bold text-on-surface">{breakdownHabit.name || 'Unknown'}</h3>
+          </div>
+          <div className="flex items-center justify-center bg-surface border border-outline-variant/50 rounded-full px-4 py-1.5 shadow-sm text-sm font-semibold text-on-surface-variant gap-2">
+            {timeframeLabel}
+            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+          </div>
+        </div>
+        <div className="bg-[#1c1c1e] text-white rounded-[24px] p-5 sm:p-6 flex flex-col gap-4 shadow-sm w-full">
+          <div className="flex justify-between items-start">
+            <span className="text-white/60 font-medium text-sm">Target Score</span>
+            <div className="flex flex-col items-end gap-1">
+              <div className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${isUp ? 'bg-[#1c3022] text-[#34d399]' : 'bg-[#3b1a1a] text-[#ef4444]'}`}>
+                {diffText}
+              </div>
+              <span className="text-4xl font-bold">{Math.round(breakdownHabit.avgScore) || 0}%</span>
+            </div>
+          </div>
+          <div className="flex gap-1 w-full mt-2 h-8 items-end justify-between">
+            {segments.map((seg, i) => (
+              <div 
+                key={i}
+                className="flex-1 rounded-sm transition-all duration-300 min-w-[3px]"
+                style={{
+                  height: seg.score > 0 ? '100%' : '50%',
+                  backgroundColor: seg.score > 0 ? '#60a5fa' : '#2c2c2e'
+                }}
+                title={`${seg.date}: ${seg.score}%`}
+              ></div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-5 sm:p-6 flex flex-row items-center justify-between shadow-sm w-full">
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Best Day</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-sm sm:text-xl">star</span>
+              </div>
+              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.bestScore || 0}%</span>
+            </div>
+            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
+              {breakdownHabit.bestDate && breakdownHabit.bestDate !== 'N/A' && breakdownHabit.bestDate !== 'Selected Habit' ? new Date(breakdownHabit.bestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+            </span>
+          </div>
+          <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Worst Day</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#fce8e6] text-[#d93025] flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-sm sm:text-xl">trending_down</span>
+              </div>
+              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.lowestScore || 0}%</span>
+            </div>
+            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
+              {breakdownHabit.lowestDate && breakdownHabit.lowestDate !== 'N/A' && breakdownHabit.lowestDate !== 'Selected Habit' ? new Date(breakdownHabit.lowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+            </span>
+          </div>
+          <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Total Days</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-sm sm:text-xl">calendar_today</span>
+              </div>
+              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.trackedDays || 0}</span>
+            </div>
+            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">Days Tracked</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+    }
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -631,191 +743,13 @@ export default function Analytics() {
           
           <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
           {viewMode === 'charts' && (
-            (() => {
-              // Determine which habits to show in the top grid
-              let habitsToShow = [];
-              if (selectedHabit === 'overall') {
-                  habitsToShow = ['overall'];
-              } else {
-                  habitsToShow = [selectedHabit];
-              }
-
-              if (habitsToShow.length === 0) return null;
-
-              return (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                  {habitsToShow.map(habitId => {
-                    let habitName, currentAvg;
-                    if (habitId === 'overall') {
-                        habitName = 'Overall';
-                        currentAvg = kpis.avgScore;
-                    } else {
-                        const habit = habits.find(h => h.id === habitId);
-                        habitName = habit?.name || 'Unknown';
-                        const currentPeriodScores = summaries
-                          .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
-                          .map(s => s.habitScores[habitId]);
-                        currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
-                    }
-                    
-                    let timeframeLabel = 'All-Time';
-                    if (rangeOption !== 'all' && rangeOption !== 'custom') {
-                        const days = parseInt(rangeOption) || 30;
-                        timeframeLabel = `${days} Days`;
-                    } else if (rangeOption === 'custom') {
-                        timeframeLabel = 'Custom';
-                    }
-                    
-                    return (
-                      <RadialGauge 
-                        key={`gauge-top-${habitId}`} 
-                        habitName={habitName} 
-                        percentage={currentAvg} 
-                        timeframeLabel={timeframeLabel}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })()
+            <div className="flex flex-col gap-6 w-full">
+              {renderCustomKPIHeader(selectedHabit)}
+              <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-4 sm:p-5 shadow-sm mt-2">
+                <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '250px', width: '100%' }} />
+              </div>
+            </div>
           )}
-            {selectedHabit === 'overall' ? (
-              <ReactEChartsCore echarts={echarts} option={getEChartOption('overall')} style={{ height: '350px', width: '100%' }} />
-            ) : (
-              [selectedHabit].map(habitId => {
-                const habit = habits.find(h => h.id === habitId);
-                const globalIndex = habits.findIndex(h => h.id === habitId);
-                const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
-                const color = colors[globalIndex % colors.length];
-                
-                const currentPeriodScores = summaries
-                  .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
-                  .map(s => s.habitScores[habitId]);
-                const currentAvg = currentPeriodScores.length > 0 ? Math.round(currentPeriodScores.reduce((sum, score) => sum + score, 0) / currentPeriodScores.length) : 0;
-                
-                let timeframeLabel = 'All-Time';
-                if (rangeOption !== 'all' && rangeOption !== 'custom') {
-                    const days = parseInt(rangeOption) || 30;
-                    timeframeLabel = `${days} Days`;
-                } else if (rangeOption === 'custom') {
-                    timeframeLabel = 'Custom';
-                }
-
-                const breakdownHabit = breakdown.find(b => b.id === habitId) || {};
-                const habitDataPoints = chartData.map(d => ({ date: d.date, score: d[habitId] || 0 }));
-                
-                // Segment data (last 30 days maximum for the UI bar)
-                const segments = habitDataPoints.slice(-30);
-                
-                // Mock trend calculation for now (or calculate simple diff)
-                const validScores = habitDataPoints.filter(d => d.score > 0).map(d => d.score);
-                const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
-                const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
-                const diff = latestScore - prevScore;
-                const isUp = diff >= 0;
-                const diffText = `${isUp ? '↑' : '↓'} ${Math.abs(diff)}%`;
-
-                return (
-                  <div key={`chart-${habitId}`} className="flex flex-col gap-6 w-full">
-                    
-                    {/* Header: Dot, Name, Date Button */}
-                    <div className="flex justify-between items-center w-full px-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: color }}></div>
-                        <h3 className="text-2xl font-bold text-on-surface">{habit?.name || 'Unknown'}</h3>
-                      </div>
-                      <div className="flex items-center justify-center bg-surface border border-outline-variant/50 rounded-full px-4 py-1.5 shadow-sm text-sm font-semibold text-on-surface-variant gap-2">
-                        {timeframeLabel}
-                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                      </div>
-                    </div>
-
-                    {/* Target Score Black Box */}
-                    <div className="bg-[#1c1c1e] text-white rounded-[24px] p-5 sm:p-6 flex flex-col gap-4 shadow-sm w-full">
-                      <div className="flex justify-between items-start">
-                        <span className="text-white/60 font-medium text-sm">Target Score</span>
-                        <div className="flex flex-col items-end gap-1">
-                          <div className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${isUp ? 'bg-[#1c3022] text-[#34d399]' : 'bg-[#3b1a1a] text-[#ef4444]'}`}>
-                            {diffText}
-                          </div>
-                          <span className="text-4xl font-bold">{Math.round(breakdownHabit.avgScore) || 0}%</span>
-                        </div>
-                      </div>
-                      
-                      {/* Segmented Progress Bar */}
-                      <div className="flex gap-1 w-full mt-2 h-8 items-end justify-between">
-                        {segments.map((seg, i) => (
-                          <div 
-                            key={i}
-                            className={`flex-1 rounded-sm transition-all duration-300 min-w-[3px]`}
-                            style={{
-                              height: seg.score > 0 ? '100%' : '50%',
-                              backgroundColor: seg.score > 0 ? '#60a5fa' : '#2c2c2e'
-                            }}
-                            title={`${seg.date}: ${seg.score}%`}
-                          ></div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 3 KPI Cards Row */}
-                    <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-5 sm:p-6 flex flex-row items-center justify-between shadow-sm w-full">
-                      
-                      {/* Best Day */}
-                      <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-                        <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Best Day</span>
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center shadow-sm">
-                            <span className="material-symbols-outlined text-sm sm:text-xl">star</span>
-                          </div>
-                          <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.bestScore || 0}%</span>
-                        </div>
-                        <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
-                          {breakdownHabit.bestDate ? new Date(breakdownHabit.bestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                        </span>
-                      </div>
-
-                      <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
-
-                      {/* Worst Day */}
-                      <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-                        <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Worst Day</span>
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#fce8e6] text-[#d93025] flex items-center justify-center shadow-sm">
-                            <span className="material-symbols-outlined text-sm sm:text-xl">trending_down</span>
-                          </div>
-                          <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.lowestScore || 0}%</span>
-                        </div>
-                        <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
-                          {breakdownHabit.lowestDate ? new Date(breakdownHabit.lowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                        </span>
-                      </div>
-
-                      <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
-
-                      {/* Total Days */}
-                      <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-                        <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Total Days</span>
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shadow-sm">
-                            <span className="material-symbols-outlined text-sm sm:text-xl">calendar_today</span>
-                          </div>
-                          <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.trackedDays || 0}</span>
-                        </div>
-                        <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">Days Tracked</span>
-                      </div>
-
-                    </div>
-
-                    {/* Chart Container */}
-                    <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-4 sm:p-5 shadow-sm mt-2">
-                      <ReactEChartsCore echarts={echarts} option={getEChartOption(habitId)} style={{ height: '250px', width: '100%' }} />
-                    </div>
-
-                  </div>
-                );
-              })
-            )}
           </div>
         </div>
         )}
@@ -889,29 +823,8 @@ export default function Analytics() {
           </div>
           
           {/* All-Time Average Widget (Single Selection - Heatmap) */}
-          <div className="mb-6 flex shrink-0">
-            <div className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-5">
-              <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">
-                {selectedHabit !== 'overall' ? habits.find(h => h.id === selectedHabit)?.name + " (All-Time Avg)" : "Overall (All-Time Avg)"}
-              </span>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="font-headline-md text-primary">
-                  {(() => {
-                    if (selectedHabit !== 'overall') {
-                      const habitId = selectedHabit;
-                      const habitScores = allSummaries
-                        .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
-                        .map(s => s.habitScores[habitId]);
-                      return habitScores.length > 0 ? Math.round(habitScores.reduce((sum, score) => sum + score, 0) / habitScores.length) : 0;
-                    } else {
-                      const validSummaries = allSummaries.filter(s => s.overallScore !== undefined);
-                      return validSummaries.length > 0 ? Math.round(validSummaries.reduce((sum, s) => sum + s.overallScore, 0) / validSummaries.length) : 0;
-                    }
-                  })()}
-                </span>
-                <span className="text-xs text-on-surface-variant">/100</span>
-              </div>
-            </div>
+          <div className="mb-6 flex shrink-0 w-full">
+            {renderCustomKPIHeader(selectedHabit)}
           </div>
 
           <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
