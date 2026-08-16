@@ -134,6 +134,11 @@ export default function AdvancedHabitSelector() {
 
   const addCustomHabit = (e) => {
     e.stopPropagation();
+
+    if (!cbName.trim()) { alert("Please enter a Habit Name"); return; }
+    if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
+    if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
+
     if (customHabits.length >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
       setShowPaywall(true);
       return;
@@ -143,24 +148,34 @@ export default function AdvancedHabitSelector() {
       return;
     }
 
-    const name = cbName.trim() || "My Custom Habit";
-    const unit = cbUnit === 'custom' ? (cbUnitCustom.trim() || 'units') : cbUnit;
+    const name = cbName.trim();
+    const unit = cbUnit === 'custom' ? cbUnitCustom.trim() : cbUnit;
     
     let scoringType = 'numeric';
     if (cbType === 'yn') scoringType = 'binary';
     else if (cbType === 'time') scoringType = 'time';
-    else if (cbType === 'duration') scoringType = 'numeric'; // Handle as numeric internally
+
+    const CUSTOM_ICONS = ['star', 'bolt', 'local_fire_department', 'favorite', 'emoji_events', 'rocket_launch', 'psychology', 'self_improvement', 'directions_run', 'fitness_center'];
+    const icon = CUSTOM_ICONS[customHabits.length % CUSTOM_ICONS.length];
+
+    const parseTime = (val) => {
+      if (typeof val === 'string' && val.includes(':')) {
+        const [h, m] = val.split(':').map(Number);
+        return h * 60 + m;
+      }
+      return parseFloat(val) || 0;
+    };
 
     const newCustom = {
       id: `custom_${Date.now()}`,
       name,
       category: 'Custom',
-      icon: 'star',
+      icon,
       scoringType,
       direction: cbType === 'yn' ? 'higher_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better'),
-      unit: cbType === 'yn' ? '' : unit,
-      userTarget0: parseFloat(cbFloor) || 0,
-      userTarget100: parseFloat(cbTarget) || 10,
+      unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
+      userTarget0: cbType === 'time' ? parseTime(cbFloor) : (parseFloat(cbFloor) || 0),
+      userTarget100: cbType === 'time' ? parseTime(cbTarget) : (parseFloat(cbTarget) || 0),
       userTolerance: cbTolerance ? 10 : 0,
       isCustom: true
     };
@@ -497,18 +512,32 @@ export default function AdvancedHabitSelector() {
                                         <div className="ahs-form-control"><input type="text" value={cbUnitCustom} onChange={e => setCbUnitCustom(e.target.value)} placeholder="e.g. cups, laps, pushups" /></div>
                                     </div>
                                   )}
+                                </>
+                              )}
+                              
+                              {cbType !== 'yn' && (
+                                <>
                                   <div className="ahs-input-group w-full">
-                                      <label className="ahs-input-label">Scoring Direction</label>
-                                      <div className="ahs-segment-control w-full justify-between">
+                                      <div className="flex justify-between items-center w-full">
+                                        <label className="ahs-input-label">Scoring Direction</label>
+                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                          <Icon name="info" className="text-[14px]" /> How this works
+                                        </button>
+                                      </div>
+                                      <div className="ahs-segment-control w-full justify-between mt-1">
                                           <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
                                           <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
                                       </div>
                                   </div>
                                   <div className="ahs-input-group w-full">
-                                      <label className="ahs-input-label">Baseline (0% Floor)</label>
-                                      <div className="ahs-form-control"><input type="number" value={cbFloor} onChange={e => setCbFloor(e.target.value)} /></div>
-                                      <label className="ahs-input-label mt-2">Target (100% Target)</label>
-                                      <div className="ahs-form-control"><input type="number" value={cbTarget} onChange={e => setCbTarget(e.target.value)} /></div>
+                                      <label className="ahs-input-label">0% Score (Baseline)</label>
+                                      <div className="ahs-form-control">
+                                        <input type={cbType === 'time' ? "time" : "number"} value={cbType === 'time' && typeof cbFloor === 'number' ? '' : cbFloor} onChange={e => setCbFloor(e.target.value)} />
+                                      </div>
+                                      <label className="ahs-input-label mt-2">100% Score (Target)</label>
+                                      <div className="ahs-form-control">
+                                        <input type={cbType === 'time' ? "time" : "number"} value={cbType === 'time' && typeof cbTarget === 'number' ? '' : cbTarget} onChange={e => setCbTarget(e.target.value)} />
+                                      </div>
                                   </div>
                                 </>
                               )}
