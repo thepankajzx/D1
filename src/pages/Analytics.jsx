@@ -9,7 +9,8 @@ import {
   computeHabitBreakdown, 
   identifyAreasToImprove 
 } from '../lib/analytics';
-import ReactEChartsCore from 'echarts-for-react/lib/core';
+import ReactEChartsCoreLib from 'echarts-for-react/lib/core';
+const ReactEChartsCore = ReactEChartsCoreLib.default || ReactEChartsCoreLib;
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
