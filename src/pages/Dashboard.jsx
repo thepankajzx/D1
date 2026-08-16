@@ -364,10 +364,11 @@ export default function Dashboard() {
         <div className="flex flex-row gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
           
           {/* Weakest Habit Pill */}
-          <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
+          <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
             <div className="flex items-center justify-between gap-[10px] mb-[8px]">
-              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[70%]">
-                {weakestHabit?.name || 'Weakest'}
+              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[75%]">
+                <span className="text-red-400/80 text-[9px] uppercase tracking-wider font-bold">Weakest</span>
+                <span className="truncate">{weakestHabit?.name || 'N/A'}</span>
               </span>
               <span className="text-[14px] sm:text-[16px] font-bold">{weakestHabit?.score || 0}%</span>
             </div>
@@ -393,10 +394,11 @@ export default function Dashboard() {
           </div>
 
           {/* Strongest Habit Pill */}
-          <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
+          <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
             <div className="flex items-center justify-between gap-[10px] mb-[8px]">
-              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[70%]">
-                {strongestHabit?.name || 'Strongest'}
+              <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap truncate max-w-[75%]">
+                <span className="text-green-400/80 text-[9px] uppercase tracking-wider font-bold">Strongest</span>
+                <span className="truncate">{strongestHabit?.name || 'N/A'}</span>
               </span>
               <span className="text-[14px] sm:text-[16px] font-bold">{strongestHabit?.score || 0}%</span>
             </div>
