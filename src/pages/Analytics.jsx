@@ -21,6 +21,7 @@ echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, Canvas
 import { Link } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
+import ProCustomDateModal from '../components/ProCustomDateModal';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
@@ -61,6 +62,7 @@ export default function Analytics() {
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
   const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
+  const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
   const dateSelectorRef = useRef(null);
   
 
@@ -643,6 +645,10 @@ export default function Analytics() {
                 <button
                   key={val}
                   onClick={() => {
+                    if (isCustom && !userDoc?.isPro) {
+                      setShowProUpgradeModal(true);
+                      return;
+                    }
                     setRangeOption(val);
                     if (isCustom) {
                       setIsCustomDropdownOpen(true);
@@ -654,6 +660,7 @@ export default function Analytics() {
                 >
                   {isCustom && <Icon name="calendar_today" className=" text-[14px] sm:text-[16px]" />}
                   {label}
+                  {isCustom && !userDoc?.isPro && <span className="pro-badge" style={{ padding: '2px 6px', fontSize: '9px', lineHeight: 1, height: '18px', marginLeft: '2px' }}>PRO</span>}
                 </button>
               );
             })}
@@ -1136,6 +1143,7 @@ export default function Analytics() {
       )}
       </div>
       )}
+      {showProUpgradeModal && <ProCustomDateModal onClose={() => setShowProUpgradeModal(false)} />}
     </div>
   );
 }
