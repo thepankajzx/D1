@@ -84,10 +84,19 @@ export default function AdvancedHabitSelector() {
     return <div className="flex justify-center items-center h-screen bg-surface">Loading...</div>;
   }
 
-  const categories = ['All', ...new Set(habitLibrary.map(h => h.category))];
+  const categories = ['All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
   const displayedHabits = activeCategory === 'All' 
     ? habitLibrary 
     : habitLibrary.filter(h => h.category === activeCategory);
+
+  const openScoringModalForHabit = (habit) => {
+    let type = 'all';
+    if (habit.scoringType === 'time') type = 'target_time';
+    else if (habit.scoringType === 'binary') type = 'yes_no';
+    else if (habit.direction === 'lower_is_better') type = 'lower';
+    else if (habit.direction === 'higher_is_better' || habit.scoringType === 'duration' || habit.scoringType === 'number') type = 'higher';
+    setScoringModal(type);
+  };
 
   const toggleHabit = (habit) => {
     const isSelected = selectedHabits.some(h => h.id === habit.id);
@@ -386,7 +395,7 @@ export default function AdvancedHabitSelector() {
                   <button 
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`ahs-pill ${activeCategory === cat ? 'active' : ''}`}
+                    className={`ahs-pill ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategory === cat ? 'active' : ''}`}
                   >
                     {cat === 'All' ? 'All Habits' : cat}
                   </button>
@@ -403,8 +412,8 @@ export default function AdvancedHabitSelector() {
                 <div className="ahs-category-section">
                   <div className="ahs-habits-grid items-start">
                     
-                    {/* CUSTOM HABIT BUILDER CARD */}
-                    {(() => {
+                    {/* CUSTOM HABIT BUILDER (Only visible in Custom tab) */}
+                    {activeCategory === 'Custom' && (() => {
                       const isFreeUsed = customHabits.length >= 1;
                       const isPro = userDoc?.isPro;
                       const showProLocked = isFreeUsed && !isPro;
@@ -418,12 +427,12 @@ export default function AdvancedHabitSelector() {
                       };
 
                       return (
-                        <div className="ahs-habit-card ahs-custom-builder-card" onClick={e => {
+                        <div className="ahs-habit-card ahs-custom-builder" style={{borderStyle: 'dashed', borderColor: '#CBD5E1', padding: '16px'}} onClick={e => {
                           e.stopPropagation();
                           if (showProLocked) setShowPaywall(true);
                         }}>
-                          <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: 0}}>
-                              <button className="ahs-card-score-btn" onClick={(e) => { e.stopPropagation(); setScoringModal(getInferredScoringType()); }}>
+                          <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: '8px'}}>
+                              <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
                                 <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
                               </button>
                           </div>
@@ -505,12 +514,15 @@ export default function AdvancedHabitSelector() {
                       );
                     })()}
 
-                    {/* EXISTING CUSTOM HABITS */}
-                    {customHabits.map(ch => (
+                    {/* EXISTING CUSTOM HABITS (Only visible in Custom tab) */}
+                    {activeCategory === 'Custom' && customHabits.map(ch => (
                       <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
                         <div className="ahs-hc-top">
                             <div className="ahs-hc-icon bg-gray-100 text-gray-900"><Icon name="star" /></div>
                             <div className="ahs-card-actions">
+                                <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                  <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
+                                </button>
                                 <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>
                             </div>
                         </div>
@@ -520,8 +532,8 @@ export default function AdvancedHabitSelector() {
                       </div>
                     ))}
 
-                    {/* RENDER HABIT LIBRARY */}
-                    {displayedHabits.map(habit => {
+                    {/* RENDER HABIT LIBRARY (Not visible in Custom tab) */}
+                    {activeCategory !== 'Custom' && displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       // Determine background based on category
                       let bgClass = "bg-gray-100 text-gray-900"; // Black and white theme
@@ -535,7 +547,7 @@ export default function AdvancedHabitSelector() {
                             <div className="ahs-hc-top">
                                 <div className={`ahs-hc-icon ${bgClass}`}><Icon name={habit.icon} /></div>
                                 <div className="ahs-card-actions">
-                                    <button className="ahs-card-score-btn" onClick={(e) => { e.stopPropagation(); setScoringModal(habit.scoringType || 'all'); }}>
+                                    <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); openScoringModalForHabit(habit); }}>
                                       <Icon name="help_outline" className="text-[12px]" /> Scoring
                                     </button>
                                     <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>

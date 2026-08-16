@@ -99,12 +99,19 @@
 .ahs-habit-card.exclude-count.selected { border: 2px solid var(--ahs-success); background: #F0FDF4; } 
 
 .ahs-hc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-.ahs-hc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.2rem;}
+.ahs-hc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.2rem;}
 
 .ahs-card-actions { display: flex; gap: 8px; align-items: center; }
 .ahs-card-score-btn { background: var(--ahs-bg-page); border: 1px solid var(--ahs-border-light); color: var(--ahs-text-sub); font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 100px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
 .ahs-card-score-btn:hover { background: var(--ahs-primary-light); color: var(--ahs-primary); border-color: var(--ahs-primary-border); }
 .ahs-habit-card.selected .ahs-card-score-btn { background: white; border-color: var(--ahs-primary-border); }
+
+/* Custom button specifically for Scoring */
+.ahs-btn-custom-scoring { background: #e0e7ff; border: 1px solid #c7d2fe; color: #4338ca; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 100px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
+.ahs-btn-custom-scoring:hover { background: #c7d2fe; color: #312e81; }
+
+.ahs-pill.custom-pill { background: #f0fdf4; color: #166534; border-color: #bbf7d0; font-weight: bold; }
+.ahs-pill.custom-pill.active { background: #166534; color: white; border-color: #166534; }
 
 .ahs-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--ahs-border-light); display: flex; justify-content: center; align-items: center; background: white; transition: 0.2s; flex-shrink: 0; }
 .ahs-habit-card.selected .ahs-checkbox { background: var(--ahs-primary); border-color: var(--ahs-primary); }
