@@ -13,7 +13,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Seed = lazy(() => import('./pages/Seed'));
 const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
-const OnboardingSelect = lazy(() => import('./pages/OnboardingSelect'));
+const OnboardingSelect = lazy(() => import('./pages/AdvancedHabitSelector'));
 const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 
