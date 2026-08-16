@@ -599,7 +599,7 @@ export default function AdvancedHabitSelector() {
             <div className="ahs-summary-list-container max-w-3xl mx-auto">
               {[...selectedHabits, ...customHabits].map(h => (
                 <div key={h.id} className="ahs-summary-item">
-                    <div className="ahs-hc-icon bg-primary"><Icon name={h.icon} /></div>
+                    <div className="ahs-hc-icon bg-gray-100 text-gray-900"><Icon name={h.icon || 'star'} /></div>
                     <div className="ahs-si-details">
                         <div className="ahs-si-title">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
                         <div className="ahs-si-target">
