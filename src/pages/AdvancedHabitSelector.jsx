@@ -551,12 +551,12 @@ export default function AdvancedHabitSelector() {
                     {activeCategory === 'Custom' && customHabits.map(ch => (
                       <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
                         <div className="ahs-hc-top">
-                            <div className="ahs-hc-icon bg-gray-100 text-gray-900"><Icon name="star" /></div>
+                            <div className="ahs-hc-icon bg-surface-container-highest text-on-surface"><Icon name="star" /></div>
                             <div className="ahs-card-actions">
                                 <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
                                   <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
                                 </button>
-                                <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>
+                                <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
                             </div>
                         </div>
                         <div className="ahs-hc-title">{ch.name} <span className="ahs-custom-badge">CUSTOM</span></div>
@@ -569,7 +569,7 @@ export default function AdvancedHabitSelector() {
                     {activeCategory !== 'Custom' && displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       // Determine background based on category
-                      let bgClass = "bg-gray-100 text-gray-900"; // Black and white theme
+                      let bgClass = "bg-surface-container-highest text-on-surface"; // Black and white theme
 
                       return (
                         <div 
@@ -583,7 +583,7 @@ export default function AdvancedHabitSelector() {
                                     <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); openScoringModalForHabit(habit); }}>
                                       <Icon name="help_outline" className="text-[12px]" /> Scoring
                                     </button>
-                                    <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>
+                                    <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
                                 </div>
                             </div>
                             <div className="ahs-hc-title">{habit.name}</div>
@@ -632,7 +632,7 @@ export default function AdvancedHabitSelector() {
             <div className="ahs-summary-list-container max-w-3xl mx-auto">
               {[...selectedHabits, ...customHabits].map(h => (
                 <div key={h.id} className="ahs-summary-item">
-                    <div className="ahs-hc-icon bg-gray-100 text-gray-900"><Icon name={h.icon || 'star'} /></div>
+                    <div className="ahs-hc-icon bg-surface-container-highest text-on-surface"><Icon name={h.icon || 'star'} /></div>
                     <div className="ahs-si-details">
                         <div className="ahs-si-title">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
                         <div className="ahs-si-target">
