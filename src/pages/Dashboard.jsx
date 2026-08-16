@@ -122,35 +122,13 @@ export default function Dashboard() {
         const batch = writeBatch(db);
         
         let finalEntries = [...entries];
-        // Auto-fill any missing entries with defaults so they are "completed"
-        habits.forEach(habit => {
-            if (!finalEntries.some(e => e.habitId === habit.id)) {
-                // Determine default value based on type
-                let defaultVal = habit.scoringType === 'binary' ? 0 : (habit.target0 ?? 0);
-                
-                // For sleep time wraparound logic
-                let adjustedVal = defaultVal;
-                if (habit.scoringType === 'time' && habit.id.includes('sleep') && defaultVal < 12 * 60) {
-                    adjustedVal += 1440;
-                }
-                
-                // Calculate default score, handle subjective
-                let defaultScore = null;
-                if (habit.scoringType !== 'subjective') {
-                    // Quick inline calculation logic or just use 0 if complex. We'll set to 0.
-                    defaultScore = 0; 
-                }
-                
-                finalEntries.push({
-                    id: `${habit.id}_${selectedDate}`,
-                    habitId: habit.id,
-                    rawValue: defaultVal,
-                    computedScore: defaultScore,
-                    entryDate: selectedDate,
-                    updatedAt: new Date().toISOString()
-                });
-            }
-        });
+        // Validate that all habits have been filled
+        const missingHabits = habits.filter(habit => !finalEntries.some(e => e.habitId === habit.id));
+        if (missingHabits.length > 0) {
+            alert(`Please complete the following habits before saving:\n- ${missingHabits.map(h => h.name).join('\n- ')}`);
+            setIsSaving(false);
+            return;
+        }
         
         // Write all final entries
         finalEntries.forEach(entry => {
