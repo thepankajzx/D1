@@ -421,6 +421,8 @@ export default function Analytics() {
         </Link>
       </div>
     );
+  }
+
   const renderCustomKPIHeader = (habitId) => {
     const isOverall = habitId === 'overall';
     const breakdownHabit = isOverall ? {
@@ -454,86 +456,96 @@ export default function Analytics() {
 
     const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
     const globalIndex = habits.findIndex(h => h.id === habitId);
-    const color = isOverall ? '#111827' : colors[globalIndex % colors.length];
+    const color = isOverall ? '#17b8c8' : colors[globalIndex % colors.length];
 
     return (
-      <div className="flex flex-col gap-6 w-full">
-        <div className="flex justify-between items-center w-full px-2">
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: color }}></div>
-            <h3 className="text-2xl font-bold text-on-surface">{breakdownHabit.name || 'Unknown'}</h3>
-          </div>
-          <div className="flex items-center justify-center bg-surface border border-outline-variant/50 rounded-full px-4 py-1.5 shadow-sm text-sm font-semibold text-on-surface-variant gap-2">
-            {timeframeLabel}
-            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-          </div>
-        </div>
-        <div className="bg-[#1c1c1e] text-white rounded-[24px] p-5 sm:p-6 flex flex-col gap-4 shadow-sm w-full">
-          <div className="flex justify-between items-start">
-            <span className="text-white/60 font-medium text-sm">Target Score</span>
-            <div className="flex flex-col items-end gap-1">
-              <div className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${isUp ? 'bg-[#1c3022] text-[#34d399]' : 'bg-[#3b1a1a] text-[#ef4444]'}`}>
-                {diffText}
-              </div>
-              <span className="text-4xl font-bold">{Math.round(breakdownHabit.avgScore) || 0}%</span>
+      <div className="flex flex-col w-full bg-white border border-[#e6e7eb] rounded-[24px] shadow-[0_2px_8px_rgba(20,24,35,0.035),0_12px_28px_rgba(20,24,35,0.045)] overflow-hidden">
+        {/* HEADER */}
+        <section className="px-[15px] sm:px-[18px] pt-[16px] sm:pt-[18px] pb-[14px] sm:pb-[16px]">
+            <div className="flex items-center justify-between gap-[12px]">
+                <div className="flex items-center gap-[10px] min-w-0">
+                    <span className="w-[11px] h-[11px] sm:w-[13px] sm:h-[13px] min-w-[11px] sm:min-w-[13px] rounded-full" style={{ backgroundColor: color }}></span>
+                    <h1 className="text-[21px] sm:text-[23px] leading-[1.1] font-bold tracking-[-0.35px] text-[#15171c] truncate">
+                        {breakdownHabit.name || 'Unknown'}
+                    </h1>
+                </div>
+                <div className="inline-flex items-center justify-center gap-[8px] h-[40px] sm:h-[42px] px-[10px] sm:px-[12px] border border-[#e6e7eb] rounded-full bg-white text-[#15171c] text-[12px] sm:text-[13px] font-semibold whitespace-nowrap shrink-0">
+                    {timeframeLabel}
+                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="17" rx="3"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                </div>
             </div>
-          </div>
-          <div className="flex gap-1 w-full mt-2 h-8 items-end justify-between">
-            {segments.map((seg, i) => (
-              <div 
-                key={i}
-                className="flex-1 rounded-sm transition-all duration-300 min-w-[3px]"
-                style={{
-                  height: seg.score > 0 ? '100%' : '50%',
-                  backgroundColor: seg.score > 0 ? '#60a5fa' : '#2c2c2e'
-                }}
-                title={`${seg.date}: ${seg.score}%`}
-              ></div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-5 sm:p-6 flex flex-row items-center justify-between shadow-sm w-full">
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Best Day</span>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center shadow-sm">
-                <span className="material-symbols-outlined text-sm sm:text-xl">star</span>
-              </div>
-              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.bestScore || 0}%</span>
+            {breakdownHabit.description && (
+              <p className="mt-[8px] ml-[22px] sm:ml-[23px] text-[#747985] text-[12px] sm:text-[13px] leading-[1.35]">
+                  {breakdownHabit.description}
+              </p>
+            )}
+        </section>
+
+        <div className="h-[1px] bg-[#e6e7eb] mx-[15px] sm:mx-[18px]"></div>
+
+        {/* TARGET */}
+        <section className="p-[14px_15px] sm:p-[16px_18px]">
+            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px]">
+                <div className="flex items-center justify-between gap-[10px] mb-[14px]">
+                    <span className="text-[#b6b9bf] text-[14px] font-medium">Target Score</span>
+                    <div className="flex items-center gap-[9px]">
+                        <span 
+                          className="hidden sm:inline-block px-[8px] py-[5px] rounded-full text-[11px] font-bold"
+                          style={{
+                            color: isUp ? '#4adc93' : '#ef4444',
+                            backgroundColor: isUp ? 'rgba(74, 220, 147, 0.09)' : 'rgba(239, 68, 68, 0.09)'
+                          }}
+                        >
+                            {diffText}
+                        </span>
+                        <span className="text-[18px] sm:text-[17px] font-bold">{Math.round(breakdownHabit.avgScore) || 0}%</span>
+                    </div>
+                </div>
+                <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-[3px] w-full">
+                    {segments.map((seg, i) => (
+                        <span 
+                            key={i}
+                            className="h-[21px] sm:h-[23px] rounded-[4px]"
+                            style={{ backgroundColor: seg.score > 0 ? color : '#272727' }}
+                            title={`${seg.date}: ${seg.score}%`}
+                        ></span>
+                    ))}
+                </div>
             </div>
-            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
-              {breakdownHabit.bestDate && breakdownHabit.bestDate !== 'N/A' && breakdownHabit.bestDate !== 'Selected Habit' ? new Date(breakdownHabit.bestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-            </span>
-          </div>
-          <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Worst Day</span>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#fce8e6] text-[#d93025] flex items-center justify-center shadow-sm">
-                <span className="material-symbols-outlined text-sm sm:text-xl">trending_down</span>
-              </div>
-              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.lowestScore || 0}%</span>
+        </section>
+
+        {/* STATS */}
+        <section className="px-[15px] sm:px-[18px] pb-[14px] sm:pb-[16px]">
+            <div className="grid grid-cols-3 border border-[#e6e7eb] rounded-[18px] overflow-hidden">
+                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
+                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Best Day</div>
+                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#18a56c]">{breakdownHabit.bestScore || 0}%</div>
+                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
+                        {breakdownHabit.bestDate && breakdownHabit.bestDate !== 'N/A' && breakdownHabit.bestDate !== 'Selected Habit' ? new Date(breakdownHabit.bestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A'}
+                    </div>
+                </div>
+                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
+                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Worst Day</div>
+                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#ef4444]">{breakdownHabit.lowestScore || 0}%</div>
+                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
+                        {breakdownHabit.lowestDate && breakdownHabit.lowestDate !== 'N/A' && breakdownHabit.lowestDate !== 'Selected Habit' ? new Date(breakdownHabit.lowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A'}
+                    </div>
+                </div>
+                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative">
+                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Total Days</div>
+                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#4f7cff]">{breakdownHabit.trackedDays || 0}</div>
+                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">DAYS TRACKED</div>
+                </div>
             </div>
-            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">
-              {breakdownHabit.lowestDate && breakdownHabit.lowestDate !== 'N/A' && breakdownHabit.lowestDate !== 'Selected Habit' ? new Date(breakdownHabit.lowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-            </span>
-          </div>
-          <div className="w-px h-16 sm:h-20 bg-outline-variant/40 mx-2 sm:mx-4"></div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-3">
-            <span className="text-xs sm:text-sm font-medium text-on-surface-variant">Total Days</span>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shadow-sm">
-                <span className="material-symbols-outlined text-sm sm:text-xl">calendar_today</span>
-              </div>
-              <span className="text-2xl sm:text-[32px] leading-none font-bold text-on-surface">{breakdownHabit.trackedDays || 0}</span>
-            </div>
-            <span className="text-[10px] sm:text-[13px] font-medium text-on-surface-variant mt-1 text-center">Days Tracked</span>
-          </div>
-        </div>
+        </section>
       </div>
     );
   };
-    }
 
   return (
     <div className="flex flex-col gap-8 w-full">
