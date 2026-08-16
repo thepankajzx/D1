@@ -42,13 +42,17 @@ export function DataProvider({ children }) {
       
       if (userDoc.exists()) {
           const data = userDoc.data();
-          if ((user.email === 'dummytest2025@example.com' || user.email === 'test2025@gmail.com')) {
+          const lowerEmail = user.email ? user.email.toLowerCase() : '';
+          if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
               data.isPro = true;
           }
           setUserDocData(data);
           setPriorityModeEnabled(data.priorityModeEnabled || false);
-      } else if ((user.email === 'dummytest2025@example.com' || user.email === 'test2025@gmail.com')) {
-          setUserDocData({ isPro: true });
+      } else {
+          const lowerEmail = user.email ? user.email.toLowerCase() : '';
+          if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+              setUserDocData({ isPro: true });
+          }
       }
       
       const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));

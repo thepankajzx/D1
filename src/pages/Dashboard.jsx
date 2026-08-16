@@ -350,11 +350,11 @@ export default function Dashboard() {
         
         {/* KPI Cards */}
         <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex flex-row gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 shrink-0">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full md:w-auto shrink-0">
             
             {/* Consistency Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px] min-w-[200px] shrink-0 relative">
-              <div className="flex items-center justify-between gap-[10px] mb-[14px]">
+            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] w-full md:w-auto shrink-0 relative">
+              <div className="flex items-center justify-between gap-[10px] mb-[8px]">
                 <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
                   Consistency
                   <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors" title="How it works">
@@ -384,7 +384,7 @@ export default function Dashboard() {
             </div>
             
             {/* Streak Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px] min-w-[180px] shrink-0 flex flex-col justify-between">
+            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] w-full md:w-auto shrink-0 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-[10px] mb-[4px]">
                 <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
                   Current Streak
