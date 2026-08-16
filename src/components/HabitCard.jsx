@@ -193,10 +193,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               
               {/* Background fills */}
               <div 
-                className={`absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-primary/90 to-primary/70 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
+                className={`absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
               />
               <div 
-                className={`absolute inset-y-0 right-0 w-1/2 bg-surface-container-highest transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
+                className={`absolute inset-y-0 right-0 w-1/2 bg-red-500 transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
               />
 
               {/* Clickable halves */}
@@ -222,9 +222,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               {/* Center circle */}
               <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
                 {val === 1 ? (
-                  <span className="text-primary font-bold text-[16px] leading-none mb-[2px]">✓</span>
+                  <span className="text-green-600 font-bold text-[16px] leading-none mb-[2px]">✓</span>
                 ) : (
-                  <span className="text-[#666] font-bold text-[14px] leading-none mb-[2px]">✕</span>
+                  <span className="text-red-600 font-bold text-[14px] leading-none mb-[2px]">✕</span>
                 )}
               </div>
             </div>
