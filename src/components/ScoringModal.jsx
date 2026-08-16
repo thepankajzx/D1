@@ -92,7 +92,7 @@ export default function ScoringModal({ type, onClose }) {
                 )}
 
                 {/* Duration */}
-                {(type === 'all' || type === 'duration' || type === 'numeric' || type === 'higher') && (
+                {(type === 'all' || type === 'duration' || type === 'numeric' || type === 'higher' || type === 'direction_info') && (
                 <div className="engine-row" id="engine-duration">
                     <div className="er-info">
                         <div className="er-title">
@@ -137,7 +137,7 @@ export default function ScoringModal({ type, onClose }) {
                 )}
 
                 {/* Reverse Duration / Lower is Better */}
-                {(type === 'all' || type === 'reverse_duration' || type === 'lower_is_better' || type === 'lower') && (
+                {(type === 'all' || type === 'reverse_duration' || type === 'lower_is_better' || type === 'lower' || type === 'direction_info') && (
                 <div className="engine-row" id="engine-reverse-duration">
                     <div className="er-info">
                         <div className="er-title">

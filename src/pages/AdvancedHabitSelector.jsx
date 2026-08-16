@@ -520,7 +520,7 @@ export default function AdvancedHabitSelector() {
                                   <div className="ahs-input-group w-full">
                                       <div className="flex justify-between items-center w-full">
                                         <label className="ahs-input-label">Scoring Direction</label>
-                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.stopPropagation(); setScoringModal('direction_info'); }}>
                                           <Icon name="info" className="text-[14px]" /> How this works
                                         </button>
                                       </div>
