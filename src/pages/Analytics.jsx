@@ -72,6 +72,7 @@ export default function Analytics() {
   // Heatmap State
   const [isZoomedOut, setIsZoomedOut] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
+  const [heatmapPeriod, setHeatmapPeriod] = useState('day'); // 'day', 'week', 'month'
   
   // Data States
   const [summaries, setSummaries] = useState([]);
