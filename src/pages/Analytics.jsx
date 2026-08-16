@@ -144,11 +144,26 @@ export default function Analytics() {
   }, [user, startDate, endDate, allSummaries, loadingData]);
 
   // Computations
-  const kpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
+  const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
+  const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
+  const kpis = useMemo(() => {
+    if (selectedHabit === 'overall') return baseKpis;
+    const hb = breakdown.find(b => b.id === selectedHabit);
+    if (!hb) return baseKpis;
+    return {
+        ...baseKpis,
+        averageScore: Math.round(hb.avgScore),
+        bestDayScore: hb.bestScore,
+        lowestDayScore: hb.lowestScore,
+        consistency: hb.consistency,
+        bestDay: 'Selected Habit'
+    };
+  }, [baseKpis, breakdown, selectedHabit]);
+
   const heatmapGrid = useMemo(() => {
       return generateHeatmapGrid(summaries, entries, selectedHabit === 'overall' ? 'overall' : 'habit', selectedHabit, startDate, endDate);
   }, [summaries, entries, selectedHabit, startDate, endDate]);
-  const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
+
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
   const effectiveStartDate = useMemo(() => {
