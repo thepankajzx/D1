@@ -18,7 +18,7 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import { CanvasRenderer } from 'echarts/renderers';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
 import ProCustomDateModal from '../components/ProCustomDateModal';
@@ -66,8 +66,9 @@ export default function Analytics() {
   const dateSelectorRef = useRef(null);
   
 
+  const [searchParams] = useSearchParams();
   // Filter States
-  const [selectedHabit, setSelectedHabit] = useState('overall'); // 'overall' or habit ID
+  const [selectedHabit, setSelectedHabit] = useState(() => searchParams.get('habit') || 'overall'); // 'overall' or habit ID
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
   const [viewMode, setViewMode] = useState('charts'); // 'charts' or 'heatmap'
   const [selectedDay, setSelectedDay] = useState(null);

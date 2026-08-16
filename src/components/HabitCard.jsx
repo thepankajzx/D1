@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
+import { useNavigate } from 'react-router-dom';
 
 // Helper to format minutes into HH:MM
 function formatTime(minutes) {
@@ -17,25 +18,148 @@ function parseTime(timeStr) {
   return h * 60 + m;
 }
 
-export default function HabitCard({ habit, entry, onUpdate }) {
-  // Local state for optimistic UI updates
+function HabitDetailSheet({ habit, allSummaries, onClose }) {
+  const navigate = useNavigate();
+
+  const stats = useMemo(() => {
+    if (!allSummaries || allSummaries.length === 0) return null;
+    
+    const scores = allSummaries
+      .filter(s => s.habitScores && s.habitScores[habit.id] !== undefined)
+      .map(s => ({ date: s.id, score: s.habitScores[habit.id] }));
+    
+    if (scores.length === 0) return null;
+
+    const values = scores.map(s => s.score);
+    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+    const best = Math.max(...values);
+    const worst = Math.min(...values);
+    const bestDay = scores.find(s => s.score === best)?.date;
+    const worstDay = scores.find(s => s.score === worst)?.date;
+
+    // Consistency: days logged out of total tracked days
+    const sortedDates = allSummaries.map(s => s.id).sort();
+    const firstDate = new Date(sortedDates[0]);
+    const lastDate = new Date(sortedDates[sortedDates.length - 1]);
+    const totalDays = Math.max(1, Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1);
+    const consistency = Math.round((scores.length / totalDays) * 100);
+
+    return { avg, best, worst, bestDay, worstDay, consistency, trackedDays: scores.length };
+  }, [allSummaries, habit.id]);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+      {/* Bottom Sheet */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-[24px] shadow-2xl p-5 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto">
+        {/* Handle bar */}
+        <div className="w-10 h-1 bg-outline-variant rounded-full mx-auto mb-4" />
+
+        {/* Title */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface">{habit.name}</h2>
+          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors">
+            <Icon name="close" className="text-xl" />
+          </button>
+        </div>
+
+        {stats ? (
+          <>
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {/* Consistency */}
+              <div className="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1">
+                <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Consistency</span>
+                <span className="text-xl font-bold text-primary">{stats.consistency}%</span>
+                <span className="text-[10px] text-on-surface-variant">{stats.trackedDays} days logged</span>
+              </div>
+
+              {/* Best */}
+              <div className="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1">
+                <span className="text-[10px] text-green-500 uppercase tracking-wider font-semibold">Best</span>
+                <span className="text-xl font-bold text-on-surface">{stats.best}%</span>
+                <span className="text-[10px] text-on-surface-variant">{formatDate(stats.bestDay)}</span>
+              </div>
+
+              {/* Worst */}
+              <div className="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1">
+                <span className="text-[10px] text-red-400 uppercase tracking-wider font-semibold">Worst</span>
+                <span className="text-xl font-bold text-on-surface">{stats.worst}%</span>
+                <span className="text-[10px] text-on-surface-variant">{formatDate(stats.worstDay)}</span>
+              </div>
+            </div>
+
+            {/* Average bar */}
+            <div className="bg-surface-container-low rounded-xl p-3 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-on-surface-variant font-medium">All-Time Average</span>
+                <span className="text-sm font-bold text-on-surface">{stats.avg}%</span>
+              </div>
+              <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ 
+                    width: `${stats.avg}%`,
+                    backgroundColor: stats.avg >= 80 ? '#22c55e' : stats.avg >= 50 ? '#facc15' : '#ef4444'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* View Full Analytics */}
+            <button
+              onClick={() => {
+                onClose();
+                navigate(`/analytics?habit=${habit.id}`);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              <Icon name="bar_chart" className="text-base" />
+              View Full Analytics
+            </button>
+          </>
+        ) : (
+          <div className="text-center text-on-surface-variant py-8">
+            <Icon name="bar_chart" className="text-4xl mb-2 opacity-40" />
+            <p className="text-sm">No data logged yet for this habit.</p>
+            <button
+              onClick={() => { onClose(); navigate(`/analytics?habit=${habit.id}`); }}
+              className="mt-4 w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              <Icon name="bar_chart" className="text-base" />
+              View Full Analytics
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const [val, setVal] = useState(entry?.rawValue ?? (habit.scoringType === 'binary' ? 0 : habit.target0 ?? 0));
+  const [showDetail, setShowDetail] = useState(false);
   
-  // Update local state if entry prop changes from outside
   useEffect(() => {
     if (entry && entry.rawValue !== undefined) {
       setVal(entry.rawValue);
     }
   }, [entry]);
 
-  // Handle local change and bubble up
   const handleChange = (newRawVal) => {
     setVal(newRawVal);
     
-    // For sleep time wraparound logic as requested
     let adjustedVal = newRawVal;
     if (habit.scoringType === 'time' && habit.id.includes('sleep') && newRawVal < 12 * 60) {
-      // If it's a sleep habit and logged before noon, add 24 hours (1440) for comparison
       adjustedVal += 1440;
     }
 
@@ -47,9 +171,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
       habit.target0
     );
     
-    // Math.round the score to keep it clean (0-100), handle nulls
     const finalScore = computedScore !== null ? Math.max(0, Math.min(100, Math.round(computedScore))) : null;
-    
     onUpdate(habit.id, newRawVal, finalScore);
   };
 
@@ -124,9 +246,7 @@ export default function HabitCard({ habit, entry, onUpdate }) {
       case 'number':
       case 'duration':
       default:
-        // Use custom slider
-        // Need to figure out min/max based on targets
-        const maxSlider = Math.max(habit.target100 || 0, habit.target0 || 0, val) * 1.2 || 100; // Give a little headroom
+        const maxSlider = Math.max(habit.target100 || 0, habit.target0 || 0, val) * 1.2 || 100;
         const minSlider = 0;
         
         return (
@@ -187,24 +307,44 @@ export default function HabitCard({ habit, entry, onUpdate }) {
   };
 
   return (
-    <div className="bg-surface premium-border rounded-xl p-6 flex flex-col gap-6 w-full">
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">
-            {habit.name}
-          </span>
-          <span className="font-headline-md text-headline-md text-primary">
-            {formatDisplayValue()}
-          </span>
+    <>
+      <div className="bg-surface premium-border rounded-xl p-6 flex flex-col gap-6 w-full">
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">
+              {habit.name}
+            </span>
+            <span className="font-headline-md text-headline-md text-primary">
+              {formatDisplayValue()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Detail button */}
+            <button
+              onClick={() => setShowDetail(true)}
+              className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
+              title="View habit details"
+            >
+              <Icon name="bar_chart" className="text-base" />
+            </button>
+            <div className={`px-3 py-1 rounded-full border ${entry?.computedScore >= 100 ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low border-outline-variant'}`}>
+              <span className="font-mono-data text-mono-data text-xs font-medium">
+                {getScoreDisplay()}
+              </span>
+            </div>
+          </div>
         </div>
-        <div className={`px-3 py-1 rounded-full border ${entry?.computedScore >= 100 ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low border-outline-variant'}`}>
-          <span className="font-mono-data text-mono-data text-xs font-medium">
-            {getScoreDisplay()}
-          </span>
-        </div>
+        
+        {renderInput()}
       </div>
-      
-      {renderInput()}
-    </div>
+
+      {showDetail && (
+        <HabitDetailSheet
+          habit={habit}
+          allSummaries={allSummaries || []}
+          onClose={() => setShowDetail(false)}
+        />
+      )}
+    </>
   );
 }
