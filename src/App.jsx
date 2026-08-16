@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import Icon from './components/Icon';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -46,7 +47,7 @@ function Layout({ children }) {
       <nav className="bg-surface text-primary font-body-md text-body-md docked full-width border-b border-outline-variant/30 flat shadow-sm transition-colors duration-200 ease-in-out fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface/95">
         <div className="flex items-center gap-8">
           <Link to="/" className="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2">
-            <span className="material-symbols-outlined">rocket_launch</span>
+            <Icon name="rocket_launch" className="" />
             Definite
           </Link>
           <div className="hidden md:flex gap-8 items-center h-full">
@@ -57,7 +58,7 @@ function Layout({ children }) {
         </div>
         <div className="flex items-center gap-4">
           <Link to="/profile" className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-surface-variant transition-colors border border-outline-variant">
-            <span className="material-symbols-outlined text-[20px]">person</span>
+            <Icon name="person" className=" text-[20px]" />
           </Link>
         </div>
       </nav>
@@ -72,7 +73,7 @@ function Layout({ children }) {
       {/* Desktop Footer */}
       <footer className="hidden md:flex bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm full-width border-t border-outline-variant/50 transition-colors duration-150 w-full py-8 flex-col md:flex-row justify-between items-center px-8 gap-4 mt-auto">
         <div className="font-label-sm text-label-sm font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]">bolt</span>
+          <Icon name="bolt" className=" text-[16px]" />
           Definite Habit Tracker
         </div>
         <div className="flex gap-6">
@@ -85,11 +86,11 @@ function Layout({ children }) {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant/30 h-16 flex justify-around items-center z-50 pb-safe">
           <Link to="/" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === '/' ? 'text-primary' : 'text-on-surface-variant'}`}>
-            <span className="material-symbols-outlined text-2xl">{location.pathname === '/' ? 'home' : 'home'}</span>
+            <Icon name="home" className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Dashboard</span>
           </Link>
           <Link to="/analytics" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === '/analytics' ? 'text-primary' : 'text-on-surface-variant'}`}>
-            <span className="material-symbols-outlined text-2xl">{location.pathname === '/analytics' ? 'bar_chart' : 'bar_chart'}</span>
+            <Icon name="bar_chart" className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Analytics</span>
           </Link>
       </div>
@@ -105,7 +106,7 @@ function App() {
           <HashRouter>
             <Suspense fallback={
               <div className="flex min-h-screen items-center justify-center text-primary bg-background">
-                <span className="material-symbols-outlined animate-spin text-4xl">sync</span>
+                <Icon name="sync" className=" animate-spin text-4xl" />
               </div>
             }>
               <Routes>

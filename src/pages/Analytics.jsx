@@ -19,6 +19,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 import { Link } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
+import Icon from '../components/Icon';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
@@ -63,7 +64,7 @@ export default function Analytics() {
   
 
   // Filter States
-  const [selectedHabits, setSelectedHabits] = useState([]); // Array of habit IDs
+  const [selectedHabit, setSelectedHabit] = useState('overall'); // 'overall' or habit ID
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
   const [viewMode, setViewMode] = useState('charts'); // 'charts' or 'heatmap'
   const [selectedDay, setSelectedDay] = useState(null);
@@ -144,7 +145,7 @@ export default function Analytics() {
   // Computations
   const kpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
   const heatmapGrid = useMemo(() => {
-      const activeHabitId = selectedHabits.length === 1 ? selectedHabits[0] : 'overall';
+      const activeHabitId = selectedHabit;
       return generateHeatmapGrid(summaries, entries, activeHabitId === 'overall' ? 'overall' : 'habit', activeHabitId, startDate, endDate);
   }, [summaries, entries, selectedHabits, startDate, endDate]);
   const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
@@ -187,9 +188,9 @@ export default function Analytics() {
   }, [startDate, endDate, summaries, entries, habits]);
 
   // ECharts Options Generator
-  const getEChartOption = (habitIds) => {
+  const getEChartOption = (habitId) => {
     // habitIds is an array. If empty, show overall.
-    const isOverall = habitIds.length === 0;
+    const isOverall = habitId === 'overall';
     
     const series = isOverall
       ? [{
@@ -358,7 +359,7 @@ export default function Analytics() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
         <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-5xl text-primary">bar_chart</span>
+          <Icon name="bar_chart" className=" text-5xl text-primary" />
         </div>
         <h1 className="font-headline-lg text-headline-lg text-on-surface">No Data Available</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
@@ -402,7 +403,7 @@ export default function Analytics() {
                   }}
                   className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 px-3 sm:px-5 rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 whitespace-nowrap ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
                 >
-                  {isCustom && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">calendar_today</span>}
+                  {isCustom && <Icon name="calendar_today" className=" text-[14px] sm:text-[16px]" />}
                   {label}
                 </button>
               );
@@ -413,14 +414,14 @@ export default function Analytics() {
           {isCustomDropdownOpen && (
             <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-[max-content] sm:w-fit max-w-[calc(100vw-32px)]">
               <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
               <div className="w-[1px] h-6 bg-outline-variant/40 mx-1"></div>
               
               <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none">calendar_today</span>
+                <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
                 <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
@@ -436,7 +437,7 @@ export default function Analytics() {
                 }}
                 className="h-9 w-9 ml-1 shrink-0 rounded-full bg-on-surface text-surface flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <Icon name="arrow_forward" className=" text-[18px]" />
               </button>
             </div>
           )}
@@ -515,7 +516,7 @@ export default function Analytics() {
       {/* Main Chart & Heatmap */}
       {isFutureOnly ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center mb-8">
-            <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4">event_upcoming</span>
+            <Icon name="event_upcoming" className=" text-5xl text-on-surface-variant mb-4" />
             <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
             <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
               Ye data abhi aana baaki hai. Future ki dates mein koi habit tracking data nahi hai. Please past ya current date select karein.
@@ -558,7 +559,7 @@ export default function Analytics() {
                     Overall
                 </button>
                 {habits.map(h => {
-                    const isSelected = selectedHabits.includes(h.id);
+                    const isSelected = selectedHabit === h.id;
                     return (
                         <button
                             key={h.id}
@@ -667,7 +668,7 @@ export default function Analytics() {
                         />
                       </div>
                     </div>
-                    <ReactEChartsCore echarts={echarts} option={getEChartOption([habitId])} style={{ height: '250px', width: '100%' }} />
+                    <ReactEChartsCore echarts={echarts} option={getEChartOption(habitId)} style={{ height: '250px', width: '100%' }} />
                   </div>
                 );
               })
@@ -686,7 +687,7 @@ export default function Analytics() {
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-md transition-colors shadow-lg"
                 title="Close Zoom"
               >
-                <span className="material-symbols-outlined">close</span>
+                <Icon name="close" className="" />
               </button>
             </div>
           )}
@@ -702,7 +703,7 @@ export default function Analytics() {
                   title={showPercentages ? 'Hide %' : 'Show %'}
               >
                   <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-sm border border-outline-variant/30 ${showPercentages ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant'}`}>
-                    <span className="material-symbols-outlined text-[12px] sm:text-[14px]">{showPercentages ? 'visibility_off' : 'visibility'}</span>
+                    <Icon name={showPercentages ? 'visibility_off' : 'visibility'} className=" text-[12px] sm:text-[14px]" />
                   </div>
                   <div className={`w-[1px] h-3 ${showPercentages ? 'bg-on-primary-container/30' : 'bg-outline-variant/50'}`}></div>
                   <span className="text-[10px] sm:text-[11px] font-bold pr-1 sm:pr-1.5 leading-none self-center">%</span>
@@ -714,7 +715,7 @@ export default function Analytics() {
                   className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-[10px] border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm text-on-surface-variant hover:text-on-surface"
                   title="Zoom Out"
               >
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">fullscreen</span>
+                  <Icon name="fullscreen" className=" text-[16px] sm:text-[18px]" />
               </button>
               )}
             </div>
@@ -724,7 +725,7 @@ export default function Analytics() {
           <div className="mb-6 flex shrink-0">
             <div className="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl p-3 px-5">
               <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">
-                {selectedHabits.length === 1 ? habits.find(h => h.id === selectedHabits[0])?.name + " (All-Time Avg)" : "Overall (All-Time Avg)"}
+                {selectedHabit !== 'overall' ? habits.find(h => h.id === selectedHabit)?.name + " (All-Time Avg)" : "Overall (All-Time Avg)"}
               </span>
               <div className="flex items-baseline gap-1 mt-1">
                 <span className="font-headline-md text-primary">
@@ -801,7 +802,7 @@ export default function Analytics() {
                     {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </h3>
                   <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface p-1 rounded-full transition-colors flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">close</span>
+                    <Icon name="close" className=" text-lg" />
                   </button>
                 </div>
                 
@@ -815,7 +816,7 @@ export default function Analytics() {
                     if (!daySummary && dayEntries.length === 0) {
                       return (
                         <div className="flex flex-col items-center justify-center py-8 text-on-surface-variant">
-                          <span className="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
+                          <Icon name="event_busy" className=" text-4xl mb-2 opacity-50" />
                           <p className="font-body-md text-center">No data recorded for this day.</p>
                         </div>
                       );
@@ -902,11 +903,11 @@ export default function Analytics() {
                 <div className="w-full h-px bg-outline-variant/50 mt-6 mb-4"></div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                    <Icon name="calendar_today" className=" text-[16px]" />
                     <span className="text-[10px] max-w-[150px] leading-tight">Daily data is calculated based on your habit targets.</span>
                   </div>
                   <button onClick={() => setSelectedDay(null)} className="flex items-center gap-1 text-[10px] font-bold text-primary px-3 py-1.5 rounded-lg border border-primary/30 hover:bg-primary/10 transition-colors">
-                    View Full Analytics <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    View Full Analytics <Icon name="arrow_forward" className=" text-[14px]" />
                   </button>
                 </div>
                 
@@ -965,7 +966,7 @@ export default function Analytics() {
         {areasToImprove.length > 0 && (
           <div className="p-6 bg-error-container/20 text-on-surface text-sm border-t border-outline-variant">
             <h3 className="font-bold mb-3 flex items-center gap-2 text-error">
-              <span className="material-symbols-outlined text-lg">trending_down</span>
+              <Icon name="trending_down" className=" text-lg" />
               Areas to Improve
             </h3>
             <ul className="list-disc pl-5 space-y-2 text-on-surface-variant">
