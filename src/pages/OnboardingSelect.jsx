@@ -65,20 +65,25 @@ export default function OnboardingSelect() {
       // Write selected habits to user doc
       for (const habit of selectedHabits) {
         const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-        await setDoc(userHabitRef, {
+        const habitData = {
           habitLibraryId: habit.id,
-          name: habit.name,
-          category: habit.category,
-          icon: habit.icon,
-          scoringType: habit.scoringType,
-          direction: habit.direction,
-          unit: habit.defaultUnit,
-          target100: habit.target100,
-          target0: habit.target0,
+          name: habit.name || 'Unnamed',
+          category: habit.category || 'Other',
+          icon: habit.icon || 'star',
+          scoringType: habit.scoringType || 'number',
+          direction: habit.direction || 'higher_is_better',
+          unit: habit.defaultUnit || '',
+          target100: habit.target100 !== undefined ? habit.target100 : null,
+          target0: habit.target0 !== undefined ? habit.target0 : null,
           isActive: true,
           priority: 'medium',
           createdAt: new Date().toISOString()
-        });
+        };
+        
+        // Remove undefined keys to prevent Firebase errors
+        Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
+
+        await setDoc(userHabitRef, habitData);
       }
       navigate('/onboarding/targets');
     } catch (error) {

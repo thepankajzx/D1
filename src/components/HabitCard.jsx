@@ -315,6 +315,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                       }}
                       className="w-20 bg-surface-container border border-outline-variant rounded-md px-2 py-1.5 text-center font-mono-data text-primary focus:border-primary focus:outline-none transition-colors"
                     />
+                    {habit.unit && <span className="ml-2 text-xs font-bold text-on-surface-variant tracking-wider">{habit.unit}</span>}
                 </div>
             </div>
           </div>

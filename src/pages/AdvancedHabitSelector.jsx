@@ -123,7 +123,8 @@ export default function AdvancedHabitSelector() {
           // Initialize user inputs
           userTarget0: habit.target0 !== undefined ? habit.target0 : 0,
           userTarget100: habit.target100 !== undefined ? habit.target100 : 100,
-          userTolerance: 0
+          userTolerance: 0,
+          unit: habit.defaultUnit || ''
         };
         setSelectedHabits([...selectedHabits, newHabit]);
       }
@@ -216,22 +217,27 @@ export default function AdvancedHabitSelector() {
         const allToSave = [...selectedHabits, ...customHabits];
         for (const habit of allToSave) {
           const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-          await setDoc(userHabitRef, {
+          const habitData = {
             habitLibraryId: habit.isCustom ? 'custom' : habit.id,
-            name: habit.name,
-            category: habit.category,
-            icon: habit.icon,
-            scoringType: habit.scoringType,
-            direction: habit.direction,
-            unit: habit.unit,
-            target100: habit.userTarget100,
-            target0: habit.userTarget0,
-            tolerance: habit.userTolerance || 0,
+            name: habit.name || 'Unnamed',
+            category: habit.category || 'Other',
+            icon: habit.icon || 'star',
+            scoringType: habit.scoringType || 'number',
+            direction: habit.direction || 'higher_is_better',
+            unit: habit.unit || '',
+            target100: habit.userTarget100 !== undefined ? habit.userTarget100 : null,
+            target0: habit.userTarget0 !== undefined ? habit.userTarget0 : null,
+            tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
             isActive: true,
             priority: 'medium',
             createdAt: new Date().toISOString(),
             isCustom: !!habit.isCustom
-          });
+          };
+          
+          // Remove any undefined values just to be absolutely safe
+          Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
+
+          await setDoc(userHabitRef, habitData);
         }
         await refreshData();
         navigate('/');
@@ -286,6 +292,15 @@ export default function AdvancedHabitSelector() {
 
     return (
       <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
+        {h.scoringType === 'duration' && (
+          <div className="mb-4">
+            <label className="ahs-input-label">Duration Unit</label>
+            <div className="ahs-segment-control">
+              <button type="button" className={`ahs-seg-btn flex-1 ${selectedObj.unit === 'minutes' ? 'active' : ''}`} onClick={() => handleHabitInputChange(h.id, 'unit', 'minutes')}>Minutes</button>
+              <button type="button" className={`ahs-seg-btn flex-1 ${selectedObj.unit === 'hours' ? 'active' : ''}`} onClick={() => handleHabitInputChange(h.id, 'unit', 'hours')}>Hours</button>
+            </div>
+          </div>
+        )}
         <label className="ahs-input-label">Target (100% Score)</label>
         <div className="ahs-control-row">
           <div className="ahs-form-control">
@@ -295,7 +310,7 @@ export default function AdvancedHabitSelector() {
               onChange={e => handleHabitInputChange(h.id, 'userTarget100', parseFloat(e.target.value) || 0)}
             />
           </div>
-          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{h.unit}</span>
+          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{selectedObj.unit}</span>
         </div>
         <label className="ahs-input-label mt-2">Baseline (0% Score)</label>
         <div className="ahs-control-row">
@@ -306,7 +321,7 @@ export default function AdvancedHabitSelector() {
               onChange={e => handleHabitInputChange(h.id, 'userTarget0', parseFloat(e.target.value) || 0)}
             />
           </div>
-          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{h.unit}</span>
+          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{selectedObj.unit}</span>
         </div>
       </div>
     );
