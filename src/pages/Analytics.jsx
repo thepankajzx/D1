@@ -846,14 +846,14 @@ export default function Analytics() {
                             key={i} 
                             onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
                             title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
-                            className={`transition-colors relative flex items-center justify-center font-mono-data font-bold heatmap-cell ${
+                            className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${
                               cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
                             } ${
                               !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
                             }`}
                           >
                             {!cell.isPad && cell.score !== null && (
-                              <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
+                              <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] font-medium text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
                                 {cell.score}
                               </span>
                             )}
@@ -876,7 +876,7 @@ export default function Analytics() {
                       <span className="text-[10px] sm:text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest drop-shadow-sm">
                         {period.label}
                       </span>
-                      <span className="text-3xl sm:text-4xl font-black text-white drop-shadow-md">
+                      <span className="text-3xl sm:text-4xl font-bold text-white drop-shadow-md">
                         {period.average}
                       </span>
                       <span className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase mt-1 tracking-widest">
