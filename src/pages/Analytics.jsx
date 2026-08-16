@@ -558,33 +558,9 @@ export default function Analytics() {
       ) : (
         <>
           <div className="flex flex-col gap-6">
-        
-        {/* Trend Line Chart */}
-        {viewMode === 'charts' && (
-        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
-          <div className="flex flex-col mb-6 gap-4">
-            <div className="flex justify-between items-center">
-                <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
-                {false && (
-                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
-                        <button 
-                          onClick={() => setChartMode('combined')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Combined
-                        </button>
-                        <button 
-                          onClick={() => setChartMode('separate')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Separate
-                        </button>
-                    </div>
-                )}
-            </div>
-            
-            {/* Pill Selectors */}
-            <div className="flex flex-wrap gap-2">
+          
+            {/* Pill Selectors - Now visible in both Charts and Heatmap views */}
+            <div className="flex flex-wrap gap-2 mb-2">
                 <button 
                     onClick={() => setSelectedHabit('overall')}
                     className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${selectedHabit === 'overall' ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
@@ -609,6 +585,30 @@ export default function Analytics() {
                         </button>
                     );
                 })}
+            </div>
+        
+        {/* Trend Line Chart */}
+        {viewMode === 'charts' && (
+        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
+          <div className="flex flex-col mb-6 gap-4">
+            <div className="flex justify-between items-center">
+                <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
+                {false && (
+                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
+                        <button 
+                          onClick={() => setChartMode('combined')}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Combined
+                        </button>
+                        <button 
+                          onClick={() => setChartMode('separate')}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                          Separate
+                        </button>
+                    </div>
+                )}
             </div>
           </div>
 
