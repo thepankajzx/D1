@@ -752,17 +752,19 @@ export default function Analytics() {
                  </button>
               </div>
 
-              <button 
-                  onClick={() => setShowPercentages(!showPercentages)}
-                  className={`flex items-center gap-1 h-7 sm:h-8 rounded-[10px] border border-outline-variant/50 p-1 transition-all shadow-sm ${showPercentages ? 'bg-primary-container/50 text-on-primary-container border-primary/30' : 'bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant'}`}
-                  title={showPercentages ? 'Hide %' : 'Show %'}
-              >
-                  <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-sm border border-outline-variant/30 ${showPercentages ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant'}`}>
-                    <Icon name={showPercentages ? 'visibility_off' : 'visibility'} className=" text-[12px] sm:text-[14px]" />
-                  </div>
-                  <div className={`w-[1px] h-3 ${showPercentages ? 'bg-on-primary-container/30' : 'bg-outline-variant/50'}`}></div>
-                  <span className="text-[10px] sm:text-[11px] font-bold pr-1 sm:pr-1.5 leading-none self-center">%</span>
-              </button>
+              {heatmapPeriod === 'day' && (
+                <button 
+                    onClick={() => setShowPercentages(!showPercentages)}
+                    className={`flex items-center gap-1 h-7 sm:h-8 rounded-[10px] border border-outline-variant/50 p-1 transition-all shadow-sm ${showPercentages ? 'bg-primary-container/50 text-on-primary-container border-primary/30' : 'bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant'}`}
+                    title={showPercentages ? 'Hide %' : 'Show %'}
+                >
+                    <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-sm border border-outline-variant/30 ${showPercentages ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant'}`}>
+                      <Icon name={showPercentages ? 'visibility_off' : 'visibility'} className=" text-[12px] sm:text-[14px]" />
+                    </div>
+                    <div className={`w-[1px] h-3 ${showPercentages ? 'bg-on-primary-container/30' : 'bg-outline-variant/50'}`}></div>
+                    <span className="text-[10px] sm:text-[11px] font-bold pr-1 sm:pr-1.5 leading-none self-center">%</span>
+                </button>
+              )}
               
               {!isZoomedOut && (
               <button 
