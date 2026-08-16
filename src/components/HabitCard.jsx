@@ -189,32 +189,44 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const noLabel = 'No';
         return (
           <div className="flex flex-col gap-3 flex-grow justify-end">
-            <div className="text-xs text-on-surface-variant">
-              Did you complete this today?
-            </div>
-            <div className="flex gap-3 mt-auto">
-              {/* YES pill */}
-              <button
-                onClick={() => handleChange(1)}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
-                  val === 1
-                    ? 'bg-primary text-on-primary border-primary shadow-sm'
-                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary/50'
-                }`}
-              >
-                ✓ {yesLabel}
-              </button>
-              {/* NO pill */}
-              <button
-                onClick={() => handleChange(0)}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
-                  val === 0
-                    ? 'bg-red-500 text-white border-red-500 shadow-sm'
-                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-red-400/50'
-                }`}
-              >
-                ✕ {noLabel}
-              </button>
+            <div className="relative flex w-full h-[46px] rounded-full bg-surface-container-low border border-outline-variant/30 overflow-hidden group">
+              
+              {/* Background fills */}
+              <div 
+                className={`absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-primary/90 to-primary/70 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
+              />
+              <div 
+                className={`absolute inset-y-0 right-0 w-1/2 bg-surface-container-highest transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
+              />
+
+              {/* Clickable halves */}
+              <div className="absolute inset-0 flex">
+                <button 
+                  onClick={() => handleChange(1)}
+                  className="flex-1 flex items-center justify-center z-10 cursor-pointer"
+                >
+                  <span className={`font-semibold text-sm transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant'}`}>
+                    Yes
+                  </span>
+                </button>
+                <button 
+                  onClick={() => handleChange(0)}
+                  className="flex-1 flex items-center justify-center z-10 cursor-pointer"
+                >
+                  <span className={`font-semibold text-sm transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant'}`}>
+                    No
+                  </span>
+                </button>
+              </div>
+
+              {/* Center circle */}
+              <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                {val === 1 ? (
+                  <span className="text-primary font-bold text-[16px] leading-none mb-[2px]">✓</span>
+                ) : (
+                  <span className="text-[#666] font-bold text-[14px] leading-none mb-[2px]">✕</span>
+                )}
+              </div>
             </div>
           </div>
         );

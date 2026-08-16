@@ -28,6 +28,18 @@ export default function Profile() {
 
 
   const handleDeleteHabit = async (habitId) => {
+    const habitToDelete = habits.find(h => h.id === habitId);
+    if (habitToDelete && habitToDelete.createdAt) {
+        const createdDate = new Date(habitToDelete.createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - createdDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays <= 30) {
+            alert(`Habits are locked for 30 days to build consistency. You cannot remove it yet. (${30 - diffDays} days remaining)`);
+            return;
+        }
+    }
+
     if (!window.confirm("Are you sure you want to remove this habit?")) return;
     try {
       await deleteDoc(doc(db, 'users', currentUser.uid, 'habits', habitId));

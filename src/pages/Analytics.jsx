@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -118,44 +118,38 @@ export default function Analytics() {
     };
   }, [rangeOption, appliedCustomStart, appliedCustomEnd]);
 
-  // Fetch entries when date range changes
+  // Fetch summaries for the date range
   useEffect(() => {
     if (!user || !startDate || !endDate || loadingData) return;
     
     async function loadRangeData() {
-      setLoadingEntries(true);
       try {
-        // Filter summaries from global context for backwards compat
-        const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
-        setSummaries(rangeSummaries);
-        
-        // Compute previous start date for comparison metrics
+        // Fetch summaries for the date range to cover BOTH current and comparison periods.
+        // We fetch from previousStartDate to endDate to completely eliminate the need for entries fetching!
         const days = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
         const prevStartObj = new Date(startDate);
         prevStartObj.setDate(prevStartObj.getDate() - days);
         const previousStartDate = prevStartObj.toISOString().split('T')[0];
 
-        // Fetch entries from previous start date to current end date to allow comparison
-        const entriesSnap = await getDocs(
+        const summariesSnap = await getDocs(
           query(
-            collection(db, `users/${user.uid}/entries`),
-            where('entryDate', '>=', previousStartDate),
-            where('entryDate', '<=', endDate)
+            collection(db, `users/${user.uid}/dailySummaries`),
+            where(documentId(), '>=', previousStartDate),
+            where(documentId(), '<=', endDate)
           )
         );
-        setEntries(entriesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const rangeSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setSummaries(rangeSummaries);
       } catch (e) {
-        console.error("Failed to load range data", e);
-      } finally {
-        setLoadingEntries(false);
+        console.error("Failed to load analytics summaries:", e);
       }
     }
     loadRangeData();
-  }, [user, startDate, endDate, allSummaries, loadingData]);
+  }, [user, startDate, endDate, loadingData]);
 
   // Computations
   const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
-  const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
+  const breakdown = useMemo(() => computeHabitBreakdown(habits, summaries, startDate, endDate), [habits, summaries, startDate, endDate]);
   const kpis = useMemo(() => {
     if (selectedHabit === 'overall') return baseKpis;
     const hb = breakdown.find(b => b.id === selectedHabit);
@@ -171,8 +165,9 @@ export default function Analytics() {
   }, [baseKpis, breakdown, selectedHabit]);
 
   const heatmapGrid = useMemo(() => {
-      return generateHeatmapGrid(summaries, entries, selectedHabit === 'overall' ? 'overall' : 'habit', selectedHabit, startDate, endDate);
-  }, [summaries, entries, selectedHabit, startDate, endDate]);
+      if (summaries.length === 0) return [];
+      return generateHeatmapGrid(summaries, selectedHabit === 'overall' ? 'overall' : 'habit', selectedHabit, startDate, endDate);
+  }, [summaries, selectedHabit, startDate, endDate]);
 
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
@@ -199,13 +194,12 @@ export default function Analytics() {
       dataPoint.overallScore = summary?.overallScore || 0;
       
       habits.forEach(h => {
-        const entry = entries.find(e => e.entryDate === dateStr && e.habitId === h.id);
-        dataPoint[h.id] = entry?.computedScore !== undefined && entry?.computedScore !== null ? entry.computedScore : null;
+        dataPoint[h.id] = summary?.habitScores?.[h.id] !== undefined ? summary.habitScores[h.id] : null;
       });
       
       return dataPoint;
     });
-  }, [startDate, endDate, summaries, entries, habits]);
+  }, [startDate, endDate, summaries, habits]);
 
   const dailyDataForHeatmap = useMemo(() => {
     return chartData.map(d => ({
@@ -475,10 +469,10 @@ export default function Analytics() {
                 }
             });
         } else {
-            entries.forEach(e => {
-                if (e.habitId === habitId && e.entryDate >= previousStartDate && e.entryDate <= previousEndDate) {
-                    if (e.computedScore !== undefined && e.computedScore !== null) {
-                        prevSum += e.computedScore;
+            summaries.forEach(s => {
+                if (s.id >= previousStartDate && s.id <= previousEndDate) {
+                    if (s.habitScores && s.habitScores[habitId] !== undefined) {
+                        prevSum += s.habitScores[habitId];
                         prevCount++;
                     }
                 }
@@ -971,9 +965,8 @@ export default function Analytics() {
                 <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {(() => {
                     const daySummary = summaries.find(s => s.id === selectedDay);
-                    const dayEntries = entries.filter(e => e.entryDate === selectedDay);
                     
-                    if (!daySummary && dayEntries.length === 0) {
+                    if (!daySummary) {
                       return (
                         <div className="flex flex-col items-center justify-center py-8 text-on-surface-variant">
                           <Icon name="event_busy" className=" text-4xl mb-2 opacity-50" />
@@ -1022,9 +1015,8 @@ export default function Analytics() {
                         <div className="flex flex-col gap-3">
                           <h4 className="font-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-2">Habit Breakdown</h4>
                           {habits.map(habit => {
-                            const entry = dayEntries.find(e => e.habitId === habit.id);
-                            if (!entry) return null;
-                            const score = entry.computedScore ?? 0;
+                            if (!daySummary?.habitScores || daySummary.habitScores[habit.id] === undefined) return null;
+                            const score = daySummary.habitScores[habit.id] ?? 0;
                             const perfBg = getPerfBandClass(score);
                             const perfText = getPerfTextColorClass(score);
                             

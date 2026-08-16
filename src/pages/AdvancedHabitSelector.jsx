@@ -100,14 +100,21 @@ export default function AdvancedHabitSelector() {
 
   const toggleHabit = (habit) => {
     const isSelected = selectedHabits.some(h => h.id === habit.id);
-    if (isSelected) {
-      if (lockDaysRemaining > 0 && existingHabits.some(h => h.id === habit.id)) {
-        alert("Habits are locked for 30 days to build consistency. You cannot remove them yet. You may add new ones if slots are available.");
+    const isExisting = existingHabits.some(h => h.id === habit.id);
+
+    if (isExisting) {
+        alert("You are already tracking this habit. To manage existing habits, go to your Profile.");
         return;
-      }
+    }
+
+    if (isSelected) {
       setSelectedHabits(selectedHabits.filter(h => h.id !== habit.id));
     } else {
-      if (selectedHabits.length + customHabits.length >= MAX_FREE_HABITS) {
+      const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
+      const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
+      
+      if (totalHabitsCount >= 9 && !userDoc?.isPro) {
+        alert("You already have 9 slots filled. You cannot add more habits unless you get the Pro plan.");
         setShowPaywall(true);
       } else {
         // Add default targets to the selected habit based on its config
@@ -139,11 +146,15 @@ export default function AdvancedHabitSelector() {
     if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
     if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
 
+    const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
+    const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
+
     if (customHabits.length >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
       setShowPaywall(true);
       return;
     }
-    if (selectedHabits.length + customHabits.length >= MAX_FREE_HABITS && !userDoc?.isPro) {
+    if (totalHabitsCount >= 9 && !userDoc?.isPro) {
+      alert("You already have 9 slots filled. You cannot add more habits unless you get the Pro plan.");
       setShowPaywall(true);
       return;
     }

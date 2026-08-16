@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 
@@ -37,7 +37,7 @@ export function DataProvider({ children }) {
       const [userDoc, habitsSnap, summariesSnap] = await Promise.all([
           getDoc(doc(db, 'users', user.uid)),
           getDocs(collection(db, `users/${user.uid}/habits`)),
-          getDocs(collection(db, `users/${user.uid}/dailySummaries`))
+          getDocs(query(collection(db, `users/${user.uid}/dailySummaries`), orderBy('__name__', 'desc'), limit(30)))
       ]);
       
       if (userDoc.exists()) {
@@ -61,6 +61,7 @@ export function DataProvider({ children }) {
       localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
       
       const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      fetchedSummaries.reverse();
       setAllSummaries(fetchedSummaries);
       localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(fetchedSummaries));
     } catch (error) {

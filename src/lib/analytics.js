@@ -48,7 +48,7 @@ export function computeKPIs(summaries, startDate, endDate) {
   };
 }
 
-export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabitId, startDate, endDate) {
+export function generateHeatmapGrid(summaries, filterMode, selectedHabitId, startDate, endDate) {
   // A heatmap usually shows columns of weeks, 7 rows per column (Mon - Sun).
   const datesByMonth = new Map();
   let current = new Date(startDate);
@@ -74,11 +74,11 @@ export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabi
     });
   } else {
     // Per-habit filter
-    entries.forEach(e => {
-      if (e.habitId === selectedHabitId) {
-        scoreMap.set(e.entryDate, {
-            score: e.computedScore,
-            meta: e
+    summaries.forEach(s => {
+      if (s.habitScores && s.habitScores[selectedHabitId] !== undefined) {
+        scoreMap.set(s.id, {
+            score: s.habitScores[selectedHabitId],
+            meta: s
         });
       }
     });
@@ -132,15 +132,12 @@ export function generateHeatmapGrid(summaries, entries, filterMode, selectedHabi
   return result;
 }
 
-export function computeHabitBreakdown(habits, entries, startDate, endDate) {
+export function computeHabitBreakdown(habits, summaries, startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
   const totalDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
   
   const breakdown = habits.map(habit => {
-    // exclude subjective entirely from analytics if requested, or just show them with 0% avg
-    // but requirement says "average computedScore"
-    
     let sum = 0;
     let count = 0;
     let max = -1;
@@ -149,15 +146,18 @@ export function computeHabitBreakdown(habits, entries, startDate, endDate) {
     let minDate = null;
     let daysWithEntry = 0;
     
-    entries.forEach(e => {
-      if (e.habitId === habit.id && e.entryDate >= startDate && e.entryDate <= endDate) {
-        if (e.computedScore !== undefined && e.computedScore !== null) {
-          sum += e.computedScore;
-          count++;
-          if (e.computedScore > max) { max = e.computedScore; maxDate = e.entryDate; }
-          if (e.computedScore < min) { min = e.computedScore; minDate = e.entryDate; }
+    summaries.forEach(s => {
+      if (s.id >= startDate && s.id <= endDate) {
+        if (s.habitScores && s.habitScores[habit.id] !== undefined) {
+          const score = s.habitScores[habit.id];
+          if (score !== null && score !== undefined) {
+            sum += score;
+            count++;
+            if (score > max) { max = score; maxDate = s.id; }
+            if (score < min) { min = score; minDate = s.id; }
+          }
+          daysWithEntry++;
         }
-        daysWithEntry++;
       }
     });
     

@@ -1,6 +1,6 @@
 import Icon from '../components/Icon';
 import { useState, useEffect, useMemo } from 'react';
-import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -109,19 +109,11 @@ export default function Dashboard() {
       }
 
       try {
-        const promises = habits.map(habit => {
-          const entryId = `${habit.id}_${selectedDate}`;
-          return getDoc(doc(db, `users/${user.uid}/entries`, entryId));
-        });
+        const entriesRef = collection(db, `users/${user.uid}/entries`);
+        const q = query(entriesRef, where('entryDate', '==', selectedDate));
+        const entriesSnap = await getDocs(q);
         
-        const entryDocs = await Promise.all(promises);
-        
-        const fetchedEntries = [];
-        entryDocs.forEach((entryDoc, index) => {
-          if (entryDoc.exists()) {
-            fetchedEntries.push({ id: entryDoc.id, habitId: habits[index].id, ...entryDoc.data() });
-          }
-        });
+        const fetchedEntries = entriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
         setEntries(fetchedEntries);
         localStorage.setItem(cacheKey, JSON.stringify(fetchedEntries));
@@ -187,9 +179,29 @@ export default function Dashboard() {
             batch.set(summaryRef, summaryData, { merge: true });
         }
         
-        // Write Streaks
-        const { currentStreak, longestStreak } = recalculateStreaks(allSummaries);
+        // Write Streaks - Incremental O(1) approach
         const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        let { currentStreak = 0, longestStreak = 0 } = userSnap.data() || {};
+        
+        const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, selectedDate);
+        const summarySnap = await getDoc(summaryRef);
+        
+        // Only modify streak if we are creating a new day (not editing)
+        if (!summarySnap.exists()) {
+            const yesterdayObj = new Date(selectedDate);
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterdayStr = yesterdayObj.toISOString().split('T')[0];
+            const yesterdaySnap = await getDoc(doc(db, `users/${user.uid}/dailySummaries`, yesterdayStr));
+            
+            if (yesterdaySnap.exists()) {
+                currentStreak += 1;
+            } else {
+                currentStreak = 1;
+            }
+            longestStreak = Math.max(longestStreak, currentStreak);
+        }
+        
         batch.set(userRef, { currentStreak, longestStreak }, { merge: true });
         
         await batch.commit();

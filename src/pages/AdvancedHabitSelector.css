@@ -131,8 +131,8 @@
 .ahs-form-control input[readonly] { color: var(--ahs-text-sub); cursor: not-allowed; }
 
 .ahs-segment-control { display: flex; background: var(--ahs-bg-page); border-radius: 8px; padding: 4px; border: 1px solid var(--ahs-border-light); }
-.ahs-seg-btn { padding: 4px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--ahs-text-sub); cursor: pointer; transition: 0.2s; }
-.ahs-seg-btn.active { background: var(--ahs-bg-card); color: var(--ahs-primary); box-shadow: var(--ahs-shadow-sm); }
+.ahs-seg-btn { padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--ahs-text-sub); cursor: pointer; transition: all 0.2s ease-in-out; }
+.ahs-seg-btn.active { background: var(--ahs-primary); color: #FFFFFF; box-shadow: var(--ahs-shadow-sm); }
 
 .ahs-stepper { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--ahs-border-light); border-radius: var(--ahs-radius-md); height: 40px; padding: 0 8px; background: var(--ahs-bg-card); }
 .ahs-step-btn { border: none; background: var(--ahs-bg-page); border-radius: 6px; cursor: pointer; color: var(--ahs-text-main); display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; transition: 0.2s; font-weight: bold;}
