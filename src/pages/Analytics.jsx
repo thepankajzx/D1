@@ -121,37 +121,34 @@ export default function Analytics() {
       setLoadingEntries(true);
       try {
         // Filter summaries from global context for backwards compat
-        const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
-        setSummaries(rangeSummaries);
-        
-        // Fetch entries ONLY for the selected date range to prevent main-thread freeze
-        const entriesSnap = await getDocs(
-          query(
-            collection(db, `users/${user.uid}/entries`),
-            where('entryDate', '>=', startDate),
-            where('entryDate', '<=', endDate)
-          )
-        );
-        setEntries(entriesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (e) {
-        console.error("Failed to load range data", e);
-      } finally {
-        setLoadingEntries(false);
-      }
-    }
-    loadRangeData();
-  }, [user, startDate, endDate, allSummaries, loadingData]);
+  // Fetch entries for range
+  useEffect(() => {
+      const fetchAnalyticsData = async () => {
+          if (!user || habits.length === 0) return;
+          setLoadingEntries(true);
+          try {
+              const entriesRef = collection(db, `users/${user.uid}/entries`);
+              const qEntries = query(entriesRef, where('entryDate', '>=', startDate), where('entryDate', '<=', endDate));
+              const entryDocs = await getDocs(qEntries);
+              const fetchedEntries = entryDocs.docs.map(d => ({ id: d.id, ...d.data() }));
+              setEntries(fetchedEntries);
+          } catch (e) {
+              console.error("Error fetching analytics entries:", e);
+          } finally {
+              setLoadingEntries(false);
+          }
+      };
+      fetchAnalyticsData();
+  }, [user, startDate, endDate, habits.length]);
 
   // Computations
   const kpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
   const heatmapGrid = useMemo(() => {
-      const activeHabitId = selectedHabit;
-      return generateHeatmapGrid(summaries, entries, activeHabitId === 'overall' ? 'overall' : 'habit', activeHabitId, startDate, endDate);
+      return generateHeatmapGrid(summaries, entries, selectedHabit === 'overall' ? 'overall' : 'habit', selectedHabit, startDate, endDate);
   }, [summaries, entries, selectedHabit, startDate, endDate]);
   const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
-  // Determine effective start date for chart/heatmap visualization based on first logged entry
   const effectiveStartDate = useMemo(() => {
     const firstLogDate = allSummaries.length > 0 
       ? allSummaries.reduce((min, s) => s.id < min ? s.id : min, allSummaries[0].id) 
@@ -161,7 +158,6 @@ export default function Analytics() {
 
   // Chart Data Prep
   const chartData = useMemo(() => {
-    // Generate dates array starting from effectiveStartDate
     const dates = [];
     let current = new Date(effectiveStartDate);
     const end = new Date(endDate);
@@ -172,26 +168,61 @@ export default function Analytics() {
 
     return dates.map(dateStr => {
       const dataPoint = { date: dateStr };
-      
-      // Overall
       const summary = summaries.find(s => s.id === dateStr);
       dataPoint.overallScore = summary?.overallScore || 0;
       
-      // Habits
       habits.forEach(h => {
         const entry = entries.find(e => e.entryDate === dateStr && e.habitId === h.id);
-        dataPoint[h.id] = entry?.computedScore !== undefined && entry?.computedScore !== null ? entry.computedScore : 0;
+        dataPoint[h.id] = entry?.computedScore !== undefined && entry?.computedScore !== null ? entry.computedScore : null;
       });
       
       return dataPoint;
     });
   }, [startDate, endDate, summaries, entries, habits]);
 
+  const dailyDataForHeatmap = useMemo(() => {
+    return chartData.map(d => ({
+        date: d.date,
+        score: selectedHabit === 'overall' ? d.overallScore : (d[selectedHabit] !== undefined ? d[selectedHabit] : null)
+    })).filter(d => d.score !== null);
+  }, [chartData, selectedHabit]);
+
+  const getWeekStart = (dateStr) => {
+    const result = new Date(dateStr);
+    const day = result.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    result.setDate(result.getDate() + diff);
+    return result.toISOString().split('T')[0];
+  };
+
+  const aggregatedHeatmapData = useMemo(() => {
+    if (heatmapPeriod === 'day') return null;
+    const groups = new Map();
+    dailyDataForHeatmap.forEach(item => {
+        const date = new Date(item.date);
+        let key, label;
+        if (heatmapPeriod === 'week') {
+            key = getWeekStart(item.date);
+            const start = new Date(key);
+            const end = new Date(start); end.setDate(end.getDate() + 6);
+            const format = (d) => d.toLocaleDateString("en-US", { day: "numeric", month: "short" }).toUpperCase();
+            label = `${format(start)} – ${format(end)}`;
+        } else if (heatmapPeriod === 'month') {
+            key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
+            label = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase();
+        }
+        if (!groups.has(key)) groups.set(key, { keyDate: new Date(key), label, scores: [] });
+        if (item.score !== null && item.score !== undefined) groups.get(key).scores.push(item.score);
+    });
+    return Array.from(groups.values()).sort((a, b) => a.keyDate - b.keyDate).map(group => ({
+        label: group.label,
+        average: group.scores.length ? Math.round(group.scores.reduce((a, b) => a + b, 0) / group.scores.length) : 0
+    }));
+  }, [dailyDataForHeatmap, heatmapPeriod]);
+
   // ECharts Options Generator
   const getEChartOption = (habitId) => {
-    // habitIds is an array. If empty, show overall.
     const isOverall = habitId === 'overall';
-    
     const series = isOverall
       ? [{
           name: 'Overall Score',
@@ -693,10 +724,32 @@ export default function Analytics() {
           )}
           <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
             <div className={`bg-surface flex flex-col ${isZoomedOut ? 'w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full border border-outline-variant shadow-sm rounded-2xl p-6'}`}>
-          <div className="flex justify-between items-center mb-6 shrink-0 gap-2">
+          <div className="flex justify-between items-center mb-6 shrink-0 gap-2 flex-wrap">
             <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
             
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+              {/* Heatmap Period Toggle */}
+              <div className="flex bg-surface-container-lowest rounded-full p-1 border border-outline-variant/50 shadow-sm mr-2">
+                 <button
+                    onClick={() => setHeatmapPeriod('day')}
+                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                 >
+                    Day
+                 </button>
+                 <button
+                    onClick={() => setHeatmapPeriod('week')}
+                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                 >
+                    Week
+                 </button>
+                 <button
+                    onClick={() => setHeatmapPeriod('month')}
+                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                 >
+                    Month
+                 </button>
+              </div>
+
               <button 
                   onClick={() => setShowPercentages(!showPercentages)}
                   className={`flex items-center gap-1 h-7 sm:h-8 rounded-[10px] border border-outline-variant/50 p-1 transition-all shadow-sm ${showPercentages ? 'bg-primary-container/50 text-on-primary-container border-primary/30' : 'bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant'}`}
@@ -748,49 +801,73 @@ export default function Analytics() {
           </div>
 
           <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
-            <div className={`flex ${isZoomedOut ? 'flex-wrap justify-center items-start gap-x-12 gap-y-12' : 'gap-8'} w-full`}>
-              {heatmapGrid.map((monthData, mIndex) => (
-                <div key={mIndex} className="flex gap-2">
-                  {(isZoomedOut || mIndex === 0) && (
-                    <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
-                      <span className="leading-tight">Mon</span>
-                      <span className="leading-tight">Tue</span>
-                      <span className="leading-tight">Wed</span>
-                      <span className="leading-tight">Thu</span>
-                      <span className="leading-tight">Fri</span>
-                      <span className="leading-tight">Sat</span>
-                      <span className="leading-tight">Sun</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">
-                      {monthData.monthLabel}
-                    </span>
-                    <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
-                      {monthData.cells.map((cell, i) => (
-                        <div 
-                          key={i} 
-                          onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
-                          title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
-                          className={`transition-colors relative flex items-center justify-center font-mono-data font-bold heatmap-cell ${
-                            cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
-                          } ${
-                            !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
-                          }`}
-                        >
-                          {!cell.isPad && cell.score !== null && (
-                            <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
-                              {cell.score}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+            {heatmapPeriod === 'day' ? (
+              <div className={`flex ${isZoomedOut ? 'flex-wrap justify-center items-start gap-x-12 gap-y-12' : 'gap-8'} w-full`}>
+                {heatmapGrid.map((monthData, mIndex) => (
+                  <div key={mIndex} className="flex gap-2">
+                    {(isZoomedOut || mIndex === 0) && (
+                      <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
+                        <span className="leading-tight">Mon</span>
+                        <span className="leading-tight">Tue</span>
+                        <span className="leading-tight">Wed</span>
+                        <span className="leading-tight">Thu</span>
+                        <span className="leading-tight">Fri</span>
+                        <span className="leading-tight">Sat</span>
+                        <span className="leading-tight">Sun</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">
+                        {monthData.monthLabel}
+                      </span>
+                      <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
+                        {monthData.cells.map((cell, i) => (
+                          <div 
+                            key={i} 
+                            onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
+                            title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
+                            className={`transition-colors relative flex items-center justify-center font-mono-data font-bold heatmap-cell ${
+                              cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
+                            } ${
+                              !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
+                            }`}
+                          >
+                            {!cell.isPad && cell.score !== null && (
+                              <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
+                                {cell.score}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-3 sm:gap-4 w-max">
+                {aggregatedHeatmapData.map((period, i) => {
+                  const perfBg = getPerfBandClass(period.average);
+                  return (
+                    <div 
+                      key={i} 
+                      className={`flex flex-col items-center justify-center rounded-2xl p-4 sm:p-5 min-w-[100px] sm:min-w-[120px] ${perfBg} shadow-sm border border-outline-variant/20 transition-transform hover:scale-105`}
+                    >
+                      <span className="text-[10px] sm:text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest drop-shadow-sm">
+                        {period.label}
+                      </span>
+                      <span className="text-3xl sm:text-4xl font-black text-white drop-shadow-md">
+                        {period.average}
+                      </span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase mt-1 tracking-widest">
+                        /100
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           
           {/* Day Details Modal */}
