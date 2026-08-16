@@ -244,7 +244,7 @@ export default function Analytics() {
           showSymbol: false,
           smooth: true
         }]
-      : habitIds.map((id) => {
+      : [habitId].map((id) => {
           const habit = habits.find(h => h.id === id);
           // Use global habit index for persistent color assignment
           const globalIndex = habits.findIndex(h => h.id === id);
