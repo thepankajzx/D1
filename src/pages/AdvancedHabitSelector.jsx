@@ -341,7 +341,7 @@ export default function AdvancedHabitSelector() {
             </header>
 
             {/* LIVE PREVIEWS (Top) */}
-            <div className="ahs-live-preview bg-indigo-50/70 text-indigo-950 shadow-sm border border-indigo-100 p-6 rounded-2xl mb-8">
+            <div id="scoring-preview-section" className="ahs-live-preview bg-indigo-50/70 text-indigo-950 shadow-sm border border-indigo-100 p-6 rounded-2xl mb-8">
                 <div className="mb-4">
                     <h3 className="font-headline-md font-bold flex items-center gap-2 text-indigo-800">
                         <Icon name="science" className="text-indigo-600" /> Live Scoring Preview
@@ -520,7 +520,7 @@ export default function AdvancedHabitSelector() {
                                   <div className="ahs-input-group w-full">
                                       <div className="flex justify-between items-center w-full">
                                         <label className="ahs-input-label">Scoring Direction</label>
-                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.stopPropagation(); setScoringModal('direction_info'); }}>
+                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.preventDefault(); e.stopPropagation(); document.getElementById('scoring-preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
                                           <Icon name="info" className="text-[14px]" /> How this works
                                         </button>
                                       </div>
