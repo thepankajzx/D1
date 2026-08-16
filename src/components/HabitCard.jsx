@@ -146,7 +146,13 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
 }
 
 export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
-  const [val, setVal] = useState(entry?.rawValue ?? (habit.scoringType === 'binary' ? 0 : habit.target0 ?? 0));
+  // For binary habits: null = not answered, 1 = yes/done, 0 = no/not done
+  const getInitialVal = () => {
+    if (entry && entry.rawValue !== undefined) return entry.rawValue;
+    if (habit.scoringType === 'binary') return null; // No default selection for binary
+    return habit.target0 ?? 0;
+  };
+  const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
   
   useEffect(() => {
@@ -177,29 +183,42 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
   const renderInput = () => {
     switch (habit.scoringType) {
-      case 'binary':
+      case 'binary': {
+        // Determine label text based on habit name/context
+        const yesLabel = 'Yes';
+        const noLabel = 'No';
         return (
-          <div className="flex flex-col gap-2 flex-grow justify-end">
-            <div className="text-xs text-on-surface-variant mb-4">
-                Target: Complete
+          <div className="flex flex-col gap-3 flex-grow justify-end">
+            <div className="text-xs text-on-surface-variant">
+              Did you complete this today?
             </div>
-            <div className="relative inline-block w-full align-middle select-none transition duration-200 ease-in mt-auto h-12">
-              <input 
-                type="checkbox" 
-                id={`toggle-${habit.id}`} 
-                checked={val === 1}
-                onChange={(e) => handleChange(e.target.checked ? 1 : 0)}
-                className="toggle-checkbox absolute block w-10 h-10 rounded-full bg-surface border-4 border-surface-container-high appearance-none cursor-pointer top-1 right-1 z-10" 
-              />
-              <label 
-                htmlFor={`toggle-${habit.id}`} 
-                className={`toggle-label block overflow-hidden h-12 rounded-full cursor-pointer w-full text-center flex items-center justify-start pl-6 font-label-sm text-label-sm transition-colors duration-200 ${val === 1 ? 'text-on-primary bg-primary' : 'text-on-surface-variant'}`}
+            <div className="flex gap-3 mt-auto">
+              {/* YES pill */}
+              <button
+                onClick={() => handleChange(1)}
+                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
+                  val === 1
+                    ? 'bg-primary text-on-primary border-primary shadow-sm'
+                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary/50'
+                }`}
               >
-                  {val === 1 ? 'Completed' : 'Not Completed'}
-              </label>
+                ✓ {yesLabel}
+              </button>
+              {/* NO pill */}
+              <button
+                onClick={() => handleChange(0)}
+                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
+                  val === 0
+                    ? 'bg-red-500 text-white border-red-500 shadow-sm'
+                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-red-400/50'
+                }`}
+              >
+                ✕ {noLabel}
+              </button>
             </div>
           </div>
         );
+      }
       case 'time':
         return (
           <div className="flex flex-col gap-2 flex-grow justify-end">
@@ -293,6 +312,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
   const getScoreDisplay = () => {
     if (habit.scoringType === 'subjective') return 'Logged';
+    if (habit.scoringType === 'binary' && val === null) return '--';
     if (entry && entry.computedScore !== undefined && entry.computedScore !== null) {
       return `${entry.computedScore}%`;
     }
@@ -301,7 +321,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
   const formatDisplayValue = () => {
     if (habit.scoringType === 'time') return formatTime(val);
-    if (habit.scoringType === 'binary') return val === 1 ? 'Yes' : 'No';
+    if (habit.scoringType === 'binary') {
+      if (val === null) return '—';
+      return val === 1 ? 'Yes' : 'No';
+    }
     if (habit.scoringType === 'subjective') return `${val}/10`;
     return `${val} ${habit.unit || ''}`.trim();
   };
