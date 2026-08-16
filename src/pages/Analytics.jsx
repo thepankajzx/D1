@@ -9,6 +9,7 @@ import {
   computeHabitBreakdown, 
   identifyAreasToImprove 
 } from '../lib/analytics';
+import { renderToString } from 'react-dom/server';
 import ReactEChartsCoreLib from 'echarts-for-react/lib/core';
 const ReactEChartsCore = ReactEChartsCoreLib.default || ReactEChartsCoreLib;
 import * as echarts from 'echarts/core';
@@ -335,13 +336,14 @@ export default function Analytics() {
             const isOverall = seriesName === 'Overall Score';
             
             if (isOverall) {
+              const calendarIconHtml = renderToString(<Icon name="calendar_today" style={{ fontSize: '10px', width: '10px', height: '10px', fill: 'currentColor' }} />);
               html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <div style="font-weight: 600; font-size: 12px; color: #111827;">Overall Score</div>
                   <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 10px; border: 1px solid #d1fae5;">${score}%</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
-                  <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
+                  ${calendarIconHtml}
                   <span>${dateStr}</span>
                 </div>
               `;
@@ -349,17 +351,19 @@ export default function Analytics() {
               const habit = habits.find(h => h.name === seriesName);
               const icon = habit?.icon || 'check_circle';
               const color = param.color || '#3b82f6';
+              const calendarIconHtml = renderToString(<Icon name="calendar_today" style={{ fontSize: '10px', width: '10px', height: '10px', fill: 'currentColor' }} />);
+              const habitIconHtml = renderToString(<Icon name={icon} style={{ fontSize: '14px', width: '14px', height: '14px', fill: 'currentColor' }} />);
               
               html += `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div style="display: flex; gap: 8px; align-items: center;">
                     <div style="background: ${color}; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">${icon}</span>
+                      ${habitIconHtml}
                     </div>
                     <div>
                       <div style="font-weight: 600; font-size: 11px; color: #111827; line-height: 1.2; margin-bottom: 4px;">${seriesName}</div>
                       <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
-                        <span class="material-symbols-outlined" style="font-size: 10px;">calendar_today</span>
+                        ${calendarIconHtml}
                         <span>${dateStr}</span>
                       </div>
                     </div>
@@ -492,10 +496,10 @@ export default function Analytics() {
         <section className="p-[14px_15px] sm:p-[16px_18px]">
             <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px]">
                 <div className="flex items-center justify-between gap-[10px] mb-[14px]">
-                    <span className="text-[#b6b9bf] text-[14px] font-medium">Target Score</span>
+                    <span className="text-[#b6b9bf] text-[14px] font-medium">Average</span>
                     <div className="flex items-center gap-[9px]">
                         <span 
-                          className="hidden sm:inline-block px-[8px] py-[5px] rounded-full text-[11px] font-bold"
+                          className="inline-block px-[8px] py-[5px] rounded-full text-[11px] font-bold"
                           style={{
                             color: isUp ? '#4adc93' : '#ef4444',
                             backgroundColor: isUp ? 'rgba(74, 220, 147, 0.09)' : 'rgba(239, 68, 68, 0.09)'
@@ -507,14 +511,17 @@ export default function Analytics() {
                     </div>
                 </div>
                 <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-[3px] w-full">
-                    {segments.map((seg, i) => (
-                        <span 
-                            key={i}
-                            className="h-[21px] sm:h-[23px] rounded-[4px]"
-                            style={{ backgroundColor: seg.score > 0 ? color : '#272727' }}
-                            title={`${seg.date}: ${seg.score}%`}
-                        ></span>
-                    ))}
+                    {Array.from({ length: 30 }, (_, i) => {
+                        const filledCount = Math.round(((Math.round(breakdownHabit.avgScore) || 0) / 100) * 30);
+                        const isFilled = i < filledCount;
+                        return (
+                            <span 
+                                key={i}
+                                className="h-[21px] sm:h-[23px] rounded-[4px]"
+                                style={{ backgroundColor: isFilled ? color : '#272727' }}
+                            ></span>
+                        );
+                    })}
                 </div>
             </div>
         </section>
