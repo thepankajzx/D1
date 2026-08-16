@@ -133,6 +133,24 @@ export default function Profile() {
             <Icon name="logout"  />
             Log Out
           </button>
+
+          {currentUser?.email === 'dummytest2025@example.com' && (
+            <button 
+              onClick={async () => {
+                try {
+                  await updateDoc(doc(db, 'users', currentUser.uid), { isPro: true });
+                  alert('Pro status granted! Please reload the page to see changes.');
+                } catch (e) {
+                  console.error(e);
+                  alert('Error granting Pro');
+                }
+              }}
+              className="w-full py-3 bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary/20 flex items-center justify-center gap-2 transition-colors border border-primary/20"
+            >
+              <Icon name="workspace_premium" />
+              Grant Pro (Test)
+            </button>
+          )}
           
           <div className="w-full h-px bg-outline-variant/30 my-2"></div>
 

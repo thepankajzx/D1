@@ -1,5 +1,5 @@
 import Icon from '../components/Icon';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,7 +24,7 @@ const getPerfColor = (score) => {
 
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
-  const { habits, allSummaries, setAllSummaries, priorityModeEnabled, loadingData, refreshData } = useData();
+  const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData } = useData();
   const navigate = useNavigate();
   
   // State
@@ -40,6 +40,17 @@ export default function Dashboard() {
   const [pendingChanges, setPendingChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // Calculate consistency for Dashboard
+  const overallConsistency = useMemo(() => {
+    if (!allSummaries || allSummaries.length === 0) return 0;
+    const sortedDates = allSummaries.map(s => s.id).sort();
+    const firstDate = new Date(sortedDates[0]);
+    const lastDate = new Date(sortedDates[sortedDates.length - 1]);
+    const totalDays = Math.max(1, Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1);
+    const activeDays = allSummaries.length;
+    return Math.round((activeDays / totalDays) * 100) || 0;
+  }, [allSummaries]);
 
   // Fetch entries when selectedDate changes
   useEffect(() => {
@@ -314,7 +325,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-12 w-full pb-24">
       {/* Header Section */}
-      <section className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pt-8">
+      <section className="flex flex-col md:flex-row items-start justify-between gap-6 pt-8 w-full">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4 mb-4 relative">
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
@@ -335,7 +346,29 @@ export default function Dashboard() {
             {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
           </p>
         </div>
-
+        
+        {/* KPI Cards from Analytics */}
+        <div className="flex flex-row gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 shrink-0">
+          <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Consistency</span>
+            <div className="flex items-baseline gap-1">
+              <span className="font-headline-lg text-headline-lg text-primary">{overallConsistency}</span>
+              <span className="font-headline-md text-headline-md text-primary">%</span>
+            </div>
+            <div className="w-full h-1.5 bg-surface-container rounded-full mt-auto overflow-hidden">
+              <div className="h-full bg-primary" style={{ width: `${overallConsistency}%` }}></div>
+            </div>
+          </div>
+          
+          <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Streak</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-headline-lg text-headline-lg text-primary">{userDoc?.currentStreak || 0}</span>
+              <span className="font-body-md text-body-md text-on-surface-variant">days</span>
+            </div>
+            <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
+          </div>
+        </div>
       </section>
 
       {/* Bento Grid Main Content */}

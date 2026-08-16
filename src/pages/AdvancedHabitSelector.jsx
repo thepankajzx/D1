@@ -356,56 +356,65 @@ export default function AdvancedHabitSelector() {
             </header>
 
             {/* LIVE PREVIEWS (Top) */}
-            <div className="ahs-previews-row">
-                <div className="ahs-preview-widget">
-                    <div className="ahs-preview-header">
-                        <div className="ahs-preview-title">
-                            <div className="w-8 h-8 rounded bg-[#EEF2FF] text-[#6366F1] flex items-center justify-center"><Icon name="trending_up" /></div>
-                            Higher is Better
-                        </div>
-                        <div className="ahs-preview-score">
-                            {Math.round(calculateScore('numeric', 'higher', previewHighVal, 100, 0))}% <span>Score</span>
-                        </div>
-                    </div>
-                    <p className="text-xs text-[#64748B] mb-2 font-medium">Drag to simulate daily input (Target: 100, Floor: 0)</p>
-                    <div className="ahs-slider-wrap">
-                        <input 
-                            type="range" min="0" max="150" value={previewHighVal} 
-                            onChange={(e) => setPreviewHighVal(parseInt(e.target.value))}
-                            className="ahs-slider"
-                            style={{ background: `linear-gradient(to right, var(--ahs-primary) ${(previewHighVal/150)*100}%, #E2E8F0 0)` }}
-                        />
-                    </div>
-                    <div className="ahs-preview-labels">
-                        <span>0 input</span>
-                        <span className="text-[#0F172A] font-bold">{previewHighVal} entered</span>
-                        <span>150+ input</span>
-                    </div>
+            <div className="ahs-live-preview bg-surface-container-highest text-on-surface shadow-sm border border-outline-variant p-6 rounded-2xl mb-8">
+                <div className="mb-4">
+                    <h3 className="font-headline-md font-bold flex items-center gap-2">
+                        <Icon name="science" className="text-primary" /> Live Scoring Preview
+                    </h3>
+                    <p className="text-sm opacity-80 mt-1">See how different values affect your daily score.</p>
                 </div>
+                
+                <div className="ahs-previews-row">
+                    <div className="ahs-preview-widget border border-outline-variant/30 mb-4 bg-surface-container-low rounded-xl p-4">
+                        <div className="ahs-preview-header flex justify-between items-center mb-3">
+                            <div className="ahs-preview-title font-bold flex items-center gap-2">
+                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_up" /></div>
+                                Higher is Better
+                            </div>
+                            <div className="ahs-preview-score">
+                                {Math.round(calculateScore('numeric', 'higher', previewHighVal, 100, 0))}% <span>Score</span>
+                            </div>
+                        </div>
+                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 100, Floor: 20)</p>
+                        <div className="ahs-slider-wrap w-full py-2">
+                            <input 
+                                type="range" min="0" max="150" value={previewHighVal} 
+                                onChange={(e) => setPreviewHighVal(parseInt(e.target.value))}
+                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
+                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewHighVal/150)*100}%, transparent 0)` }}
+                            />
+                        </div>
+                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
+                            <span>0 input</span>
+                            <span className="font-bold opacity-100">{previewHighVal} entered</span>
+                            <span>150+ input</span>
+                        </div>
+                    </div>
 
-                <div className="ahs-preview-widget">
-                    <div className="ahs-preview-header">
-                        <div className="ahs-preview-title">
-                            <div className="w-8 h-8 rounded bg-[#FEF2F2] text-[#EF4444] flex items-center justify-center"><Icon name="trending_down" /></div>
-                            Lower is Better
+                    <div className="ahs-preview-widget border border-outline-variant/30 bg-surface-container-low rounded-xl p-4">
+                        <div className="ahs-preview-header flex justify-between items-center mb-3">
+                            <div className="ahs-preview-title font-bold flex items-center gap-2">
+                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_down" /></div>
+                                Lower is Better
+                            </div>
+                            <div className="ahs-preview-score font-mono-data text-xl font-bold">
+                                {Math.round(calculateScore('numeric', 'lower_is_better', previewLowVal, 20, 100))}% <span className="text-sm font-normal opacity-70">Score</span>
+                            </div>
                         </div>
-                        <div className="ahs-preview-score">
-                            {Math.round(calculateScore('numeric', 'lower', previewLowVal, 20, 100))}% <span>Score</span>
+                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 20, Floor: 100)</p>
+                        <div className="ahs-slider-wrap w-full py-2">
+                            <input 
+                                type="range" min="0" max="150" value={previewLowVal} 
+                                onChange={(e) => setPreviewLowVal(parseInt(e.target.value))}
+                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
+                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewLowVal/150)*100}%, transparent 0)` }}
+                            />
                         </div>
-                    </div>
-                    <p className="text-xs text-[#64748B] mb-2 font-medium">Drag to simulate daily input (Target: 20, Floor: 100)</p>
-                    <div className="ahs-slider-wrap">
-                        <input 
-                            type="range" min="0" max="150" value={previewLowVal} 
-                            onChange={(e) => setPreviewLowVal(parseInt(e.target.value))}
-                            className="ahs-slider"
-                            style={{ background: `linear-gradient(to right, var(--ahs-primary) ${(previewLowVal/150)*100}%, #E2E8F0 0)` }}
-                        />
-                    </div>
-                    <div className="ahs-preview-labels">
-                        <span>0 input</span>
-                        <span className="text-[#0F172A] font-bold">{previewLowVal} entered</span>
-                        <span>150+ input</span>
+                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
+                            <span>0 input</span>
+                            <span className="font-bold opacity-100">{previewLowVal} entered</span>
+                            <span>150+ input</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -413,7 +422,7 @@ export default function AdvancedHabitSelector() {
             <div className="ahs-layout-grid">
               <main>
                 <div className="ahs-category-section">
-                  <div className="ahs-habits-grid">
+                  <div className="ahs-habits-grid items-start">
                     
                     {/* CUSTOM HABIT BUILDER CARD */}
                     {customHabits.length < MAX_CUSTOM_HABITS && (

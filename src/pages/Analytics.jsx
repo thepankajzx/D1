@@ -703,59 +703,18 @@ export default function Analytics() {
         </div>
       ) : (
       <div className="flex flex-col gap-8 w-full animate-in fade-in duration-500">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Score</span>
-          <div className="flex items-baseline gap-2">
-            <span className={`font-headline-lg text-headline-lg ${getPerfTextColorClass(kpis.averageScore)}`}>{kpis.averageScore}</span>
-            <span className="font-mono-data text-mono-data text-on-surface-variant">/100</span>
-          </div>
-        </div>
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Best Day</span>
-          <span className="font-headline-lg text-headline-lg text-primary">{kpis.bestDayScore || '--'}</span>
-          <span className="font-body-md text-body-md text-on-surface-variant mt-auto">{kpis.bestDay || 'N/A'}</span>
-        </div>
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Consistency</span>
-          <div className="flex items-baseline gap-1">
-            <span className="font-headline-lg text-headline-lg text-primary">{kpis.consistency}</span>
-            <span className="font-headline-md text-headline-md text-primary">%</span>
-          </div>
-          <div className="w-full h-1.5 bg-surface-container rounded-full mt-auto overflow-hidden">
-            <div className="h-full bg-primary" style={{ width: `${kpis.consistency}%` }}></div>
-          </div>
-        </div>
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 transition-transform hover:-translate-y-1">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Streak</span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-headline-lg text-headline-lg text-primary">{userDoc?.currentStreak || 0}</span>
-            <span className="font-body-md text-body-md text-on-surface-variant">days</span>
-          </div>
-          <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
-        </div>
-        <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col gap-2 col-span-1 sm:col-span-2 md:col-span-1 transition-transform hover:-translate-y-1">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tracked Days</span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-headline-lg text-headline-lg text-primary">{kpis.trackedDays}</span>
-            <span className="font-mono-data text-mono-data text-on-surface-variant">/{kpis.totalDays}</span>
-          </div>
-        </div>
-      </div>
-
       {/* View Toggle */}
-      <div className="flex justify-center mb-6">
-        <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm">
+      <div className="flex justify-center mb-6 w-full mt-2">
+        <div className="flex w-full bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`flex-1 px-8 md:px-0 py-3 md:py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Charts
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`flex-1 px-8 md:px-0 py-3 md:py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Heatmap
           </button>

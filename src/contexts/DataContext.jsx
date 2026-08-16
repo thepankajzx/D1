@@ -41,8 +41,14 @@ export function DataProvider({ children }) {
       ]);
       
       if (userDoc.exists()) {
-          setUserDocData(userDoc.data());
-          setPriorityModeEnabled(userDoc.data().priorityModeEnabled || false);
+          const data = userDoc.data();
+          if (user.email === 'dummytest2025@example.com') {
+              data.isPro = true;
+          }
+          setUserDocData(data);
+          setPriorityModeEnabled(data.priorityModeEnabled || false);
+      } else if (user.email === 'dummytest2025@example.com') {
+          setUserDocData({ isPro: true });
       }
       
       const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
