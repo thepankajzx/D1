@@ -121,25 +121,26 @@ export default function Analytics() {
       setLoadingEntries(true);
       try {
         // Filter summaries from global context for backwards compat
-  // Fetch entries for range
-  useEffect(() => {
-      const fetchAnalyticsData = async () => {
-          if (!user || habits.length === 0) return;
-          setLoadingEntries(true);
-          try {
-              const entriesRef = collection(db, `users/${user.uid}/entries`);
-              const qEntries = query(entriesRef, where('entryDate', '>=', startDate), where('entryDate', '<=', endDate));
-              const entryDocs = await getDocs(qEntries);
-              const fetchedEntries = entryDocs.docs.map(d => ({ id: d.id, ...d.data() }));
-              setEntries(fetchedEntries);
-          } catch (e) {
-              console.error("Error fetching analytics entries:", e);
-          } finally {
-              setLoadingEntries(false);
-          }
-      };
-      fetchAnalyticsData();
-  }, [user, startDate, endDate, habits.length]);
+        const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
+        setSummaries(rangeSummaries);
+        
+        // Fetch entries ONLY for the selected date range to prevent main-thread freeze
+        const entriesSnap = await getDocs(
+          query(
+            collection(db, `users/${user.uid}/entries`),
+            where('entryDate', '>=', startDate),
+            where('entryDate', '<=', endDate)
+          )
+        );
+        setEntries(entriesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error("Failed to load range data", e);
+      } finally {
+        setLoadingEntries(false);
+      }
+    }
+    loadRangeData();
+  }, [user, startDate, endDate, allSummaries, loadingData]);
 
   // Computations
   const kpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
