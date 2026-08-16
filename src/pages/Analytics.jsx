@@ -445,17 +445,17 @@ export default function Analytics() {
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-[max-content] sm:w-fit max-w-[calc(100vw-32px)]">
-              <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
+            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-max max-w-[calc(100vw-32px)] overflow-hidden">
+              <div className="relative flex-1 min-w-0 sm:w-[140px]">
                 <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
-                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs sm:text-sm rounded-full py-2 pl-8 pr-2 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
-              <div className="w-[1px] h-6 bg-outline-variant/40 mx-1"></div>
+              <div className="w-[1px] h-6 bg-outline-variant/40 mx-1 shrink-0"></div>
               
-              <div className="relative flex-1 min-w-[110px] sm:w-[140px]">
+              <div className="relative flex-1 min-w-0 sm:w-[140px]">
                 <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
-                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-sm rounded-full py-2 pl-9 pr-3 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs sm:text-sm rounded-full py-2 pl-8 pr-2 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
               </div>
               
               <button 
