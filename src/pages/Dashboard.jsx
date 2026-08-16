@@ -447,9 +447,9 @@ export default function Dashboard() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => navigate('/subscription')}
-                className="w-full py-3 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90"
+                className="w-full py-3 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 flex justify-center items-center gap-2"
               >
-                Explore Pro
+                Explore <span className="pro-badge">PRO</span>
               </button>
               <button
                 onClick={() => setShowPaywall(false)}

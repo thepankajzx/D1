@@ -426,31 +426,36 @@ export default function AdvancedHabitSelector() {
                           return 'all';
                       };
 
+                      if (showProLocked) {
+                        return (
+                          <div className="flex flex-col items-center justify-center p-8 text-center bg-surface border-2 border-dashed border-outline-variant rounded-2xl hover:bg-surface-variant transition-colors cursor-pointer w-full h-[280px]" onClick={e => {
+                            e.stopPropagation();
+                            setShowPaywall(true);
+                          }}>
+                               <div className="flex items-center gap-2 mb-4">
+                                  <span className="font-bold text-lg text-on-surface flex items-center gap-1"><Icon name="add" className="text-xl"/> Unlimited Habits</span>
+                                  <span className="pro-badge">PRO</span>
+                               </div>
+                               <p className="text-on-surface-variant text-sm max-w-[250px] mb-6">Upgrade to unlock unlimited custom habits and tracking.</p>
+                               <button className="flex items-center gap-2 border border-outline-variant rounded-full px-5 py-2 font-medium text-on-surface hover:bg-surface-variant transition-colors">
+                                  <Icon name="lock" className="text-lg" /> Upgrade to Pro
+                               </button>
+                          </div>
+                        );
+                      }
+
                       return (
-                        <div className="ahs-habit-card ahs-custom-builder" style={{borderStyle: 'dashed', borderColor: '#CBD5E1', padding: '16px'}} onClick={e => {
-                          e.stopPropagation();
-                          if (showProLocked) setShowPaywall(true);
-                        }}>
+                        <div className="ahs-habit-card ahs-custom-builder" style={{borderStyle: 'dashed', borderColor: '#CBD5E1', padding: '16px'}} onClick={e => e.stopPropagation()}>
                           <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: '8px'}}>
                               <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
                                 <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
                               </button>
                           </div>
                           <div className="ahs-hc-title text-primary font-bold flex justify-between items-center">
-                            <span>{showProLocked ? '+ Add New Custom Habit' : '+ Create Custom Habit'}</span>
-                            {showProLocked && <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded">PRO</span>}
+                            <span>+ Create Custom Habit</span>
                           </div>
                           
-                          {showProLocked ? (
-                             <div className="flex flex-col items-center justify-center p-6 text-center h-[200px] gap-2">
-                                <Icon name="lock" className="text-gray-400 text-3xl" />
-                                <div>
-                                  <div className="font-bold text-gray-700">Pro Feature</div>
-                                  <div className="text-xs text-gray-500 mt-1">Upgrade to Pro to add unlimited custom habits.</div>
-                                </div>
-                             </div>
-                          ) : (
-                             <>
+                          <>
                               {!isFreeUsed && <div className="text-xs text-green-600 font-semibold mb-2 bg-green-50 w-fit px-2 py-1 rounded">One custom habit is free</div>}
                               <div className="ahs-input-group w-full">
                                   <label className="ahs-input-label">Habit Name</label>
@@ -508,8 +513,7 @@ export default function AdvancedHabitSelector() {
                                 </>
                               )}
                               <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add Habit</button>
-                             </>
-                          )}
+                          </>
                         </div>
                       );
                     })()}
@@ -642,7 +646,7 @@ export default function AdvancedHabitSelector() {
             <Icon name="workspace_premium" className="text-5xl text-amber-500 mx-auto mb-4" />
             <h3>Upgrade to Pro</h3>
             <p>You have reached the limit of the Free plan. Upgrade to unlock unlimited custom habits and tracking.</p>
-            <button className="ahs-btn ahs-btn-primary" onClick={() => navigate('/subscription')}>View Pro Plans</button>
+            <button className="ahs-btn ahs-btn-primary flex justify-center items-center gap-2" onClick={() => navigate('/subscription')}>View <span className="pro-badge">PRO</span> Plans</button>
             <button className="mt-4 text-sm font-bold text-on-surface-variant hover:text-on-surface" onClick={() => setShowPaywall(false)}>Maybe Later</button>
           </div>
         </div>

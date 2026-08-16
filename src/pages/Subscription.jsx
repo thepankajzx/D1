@@ -123,7 +123,7 @@ export default function Subscription() {
                                             <div className="mc-title">Long-term Trends</div>
                                             <div className="mc-sub">+24% vs last year</div>
                                         </div>
-                                        <div className="mc-badge pro">PRO</div>
+                                        <div className="pro-badge">PRO</div>
                                     </div>
                                     <div style={{height: '50px', position: 'relative'}}>
                                          <svg viewBox="0 0 100 40" preserveAspectRatio="none" style={{position: 'absolute', bottom: 0, left: 0, width: '100%', height: '100%'}}>
@@ -157,7 +157,7 @@ export default function Subscription() {
                                             <div className="mc-title">Pro Insights</div>
                                             <div className="mc-sub">Top 5% Performer</div>
                                         </div>
-                                        <div className="mc-badge pro">PRO</div>
+                                        <div className="pro-badge">PRO</div>
                                     </div>
                                     <div className="bar-chart-mock">
                                         <div className="mock-bar" style={{height: '30%'}}></div>
