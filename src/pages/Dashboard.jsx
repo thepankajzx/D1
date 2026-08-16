@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [pendingChanges, setPendingChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showKpiHelp, setShowKpiHelp] = useState(false);
 
   // Calculate consistency for Dashboard
   const overallConsistency = useMemo(() => {
@@ -348,8 +349,14 @@ export default function Dashboard() {
         </div>
         
         {/* KPI Cards from Analytics */}
-        <div className="flex flex-row gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 shrink-0">
-          <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
+        <div className="flex flex-col gap-2 shrink-0">
+          <div className="flex justify-end w-full">
+            <button onClick={() => setShowKpiHelp(true)} className="flex items-center gap-1 text-xs text-primary font-bold hover:underline cursor-pointer">
+              <Icon name="help_outline" className="text-[14px]" /> How Consistency & Streak work
+            </button>
+          </div>
+          <div className="flex flex-row gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 shrink-0">
+            <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Consistency</span>
             <div className="flex items-baseline gap-1">
               <span className="font-headline-lg text-headline-lg text-primary">{overallConsistency}</span>
@@ -368,6 +375,7 @@ export default function Dashboard() {
             </div>
             <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
           </div>
+        </div>
         </div>
       </section>
 
@@ -450,6 +458,46 @@ export default function Dashboard() {
                 Maybe Later
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* KPI Help Modal */}
+      {showKpiHelp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowKpiHelp(false)}>
+          <div className="bg-surface p-6 rounded-2xl shadow-lg max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-headline-md font-bold text-on-surface flex items-center gap-2">
+                <Icon name="analytics" className="text-primary" /> Consistency & Streak
+              </h3>
+              <button onClick={() => setShowKpiHelp(false)} className="text-on-surface-variant hover:text-on-surface cursor-pointer">
+                <Icon name="close" />
+              </button>
+            </div>
+            
+            <div className="space-y-4 text-on-surface-variant text-sm">
+              <div>
+                <h4 className="font-bold text-on-surface mb-1">Consistency</h4>
+                <p>Consistency measures the percentage of days you have actively tracked your habits since your first entry. A higher percentage means you are regularly showing up to track your progress.</p>
+              </div>
+              
+              <div>
+                <h4 className="font-bold text-on-surface mb-1">Current Streak</h4>
+                <p>Your streak increases for every consecutive day your <span className="font-bold">Overall Daily Score</span> is <span className="text-primary font-bold">60% or higher</span>. If your overall score falls below 60% or you miss a day, your streak resets to 0.</p>
+              </div>
+              
+              <div>
+                <h4 className="font-bold text-on-surface mb-1">Record (Longest Streak)</h4>
+                <p>This is the highest streak you have ever achieved. Try to beat your record!</p>
+              </div>
+            </div>
+            
+            <button 
+              className="mt-6 w-full py-2 bg-primary text-on-primary rounded-xl font-bold cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setShowKpiHelp(false)}
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}

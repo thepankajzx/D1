@@ -533,9 +533,9 @@ export default function Analytics() {
     const color = isOverall ? '#17b8c8' : colors[globalIndex % colors.length];
 
     return (
-      <div className="flex flex-col w-full bg-white border border-[#e6e7eb] rounded-[24px] shadow-[0_2px_8px_rgba(20,24,35,0.035),0_12px_28px_rgba(20,24,35,0.045)] overflow-hidden">
+      <div className="flex flex-col w-full overflow-hidden">
         {/* HEADER */}
-        <section className="px-[15px] sm:px-[18px] pt-[16px] sm:pt-[18px] pb-[14px] sm:pb-[16px]">
+        <section className="px-[5px] sm:px-[5px] pt-[16px] sm:pt-[18px] pb-[14px] sm:pb-[16px]">
             <div className="flex items-center justify-between gap-[12px]">
                 <div className="flex items-center gap-[10px] min-w-0">
                     <span className="w-[11px] h-[11px] sm:w-[13px] sm:h-[13px] min-w-[11px] sm:min-w-[13px] rounded-full" style={{ backgroundColor: color }}></span>
@@ -764,7 +764,7 @@ export default function Analytics() {
         
         {/* Trend Line Chart */}
         {viewMode === 'charts' && (
-        <div className="w-full sm:bg-surface sm:border sm:border-outline-variant sm:shadow-sm sm:rounded-2xl sm:p-6 flex flex-col">
+          <div className="w-full flex flex-col pt-4">
           <div className="flex flex-col mb-6 gap-4">
             <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
@@ -817,7 +817,7 @@ export default function Analytics() {
             </div>
           )}
           <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
-            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full sm:bg-surface sm:border sm:border-outline-variant sm:shadow-sm sm:rounded-2xl sm:p-6'}`}>
+            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full flex flex-col pt-4'}`}>
           <div className="flex justify-between items-center mb-6 shrink-0 gap-2 flex-wrap">
             <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
             

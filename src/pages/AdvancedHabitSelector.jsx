@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
+import ScoringModal from '../components/ScoringModal';
 import './AdvancedHabitSelector.css';
 
 const MAX_FREE_HABITS = 8;
@@ -14,7 +15,7 @@ const MAX_CUSTOM_HABITS = 1;
 export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { habits: existingHabits = [], refreshData } = useData();
+  const { habits: existingHabits = [], refreshData, userDoc } = useData();
 
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('selection'); // 'locked', 'selection', 'summary'
@@ -56,9 +57,7 @@ export default function AdvancedHabitSelector() {
           
           if (diffDays <= 30) {
             setLockDaysRemaining(30 - diffDays);
-            setViewMode('locked');
-            setLoading(false);
-            return;
+            // setViewMode('locked');
           }
         }
       }
@@ -85,30 +84,6 @@ export default function AdvancedHabitSelector() {
     return <div className="flex justify-center items-center h-screen bg-surface">Loading...</div>;
   }
 
-  if (viewMode === 'locked') {
-    return (
-      <div className="ahs-wrap flex items-center justify-center p-6">
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-[#E2E8F0] max-w-md text-center">
-          <Icon name="lock" className="text-4xl text-primary mb-4" style={{fontVariationSettings: "'FILL' 1"}} />
-          <h2 className="text-2xl font-bold text-[#0F172A] mb-2">Habits Locked</h2>
-          <p className="text-[#64748B] font-medium mb-6">
-            It is for your betterment to build consistency. You must track your habits for 30 days before making changes.
-          </p>
-          <div className="inline-flex items-center gap-2 bg-[#EEF2FF] text-primary px-4 py-2 rounded-full font-bold">
-            <Icon name="schedule" className="text-lg" />
-            Unlocks in {lockDaysRemaining} days
-          </div>
-          <button 
-            onClick={() => navigate('/')}
-            className="mt-8 w-full bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Back to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const categories = ['All', ...new Set(habitLibrary.map(h => h.category))];
   const displayedHabits = activeCategory === 'All' 
     ? habitLibrary 
@@ -117,6 +92,10 @@ export default function AdvancedHabitSelector() {
   const toggleHabit = (habit) => {
     const isSelected = selectedHabits.some(h => h.id === habit.id);
     if (isSelected) {
+      if (lockDaysRemaining > 0 && existingHabits.some(h => h.id === habit.id)) {
+        alert("Habits are locked for 30 days to build consistency. You cannot remove them yet. You may add new ones if slots are available.");
+        return;
+      }
       setSelectedHabits(selectedHabits.filter(h => h.id !== habit.id));
     } else {
       if (selectedHabits.length + customHabits.length >= MAX_FREE_HABITS) {
@@ -146,11 +125,11 @@ export default function AdvancedHabitSelector() {
 
   const addCustomHabit = (e) => {
     e.stopPropagation();
-    if (customHabits.length >= MAX_CUSTOM_HABITS) {
+    if (customHabits.length >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
       setShowPaywall(true);
       return;
     }
-    if (selectedHabits.length + customHabits.length >= MAX_FREE_HABITS) {
+    if (selectedHabits.length + customHabits.length >= MAX_FREE_HABITS && !userDoc?.isPro) {
       setShowPaywall(true);
       return;
     }
@@ -169,7 +148,7 @@ export default function AdvancedHabitSelector() {
       category: 'Custom',
       icon: 'star',
       scoringType,
-      direction: cbType === 'yn' ? 'higher' : cbDirection,
+      direction: cbType === 'yn' ? 'higher_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better'),
       unit: cbType === 'yn' ? '' : unit,
       userTarget0: parseFloat(cbFloor) || 0,
       userTarget100: parseFloat(cbTarget) || 10,
@@ -312,29 +291,11 @@ export default function AdvancedHabitSelector() {
             <header className="ahs-header-main">
               <div className="ahs-header-left">
                 <h1>Choose Your Daily Habits</h1>
-                <p>Select the habits you want to track. Habits will be locked for 30 days once saved.</p>
+                <p>Select the habits you want to track. <span className="text-red-500 font-bold">Habits will be locked for 30 days once saved.</span></p>
                 
                 <div className="ahs-badges-row">
                   <span className="ahs-badge"><Icon name="insights" /> Smart Scoring</span>
                   <span className="ahs-badge"><Icon name="analytics" /> Personalized Insights</span>
-                </div>
-                
-                <div className="ahs-filters-container">
-                  <div className="ahs-cat-pills">
-                    {categories.map(cat => (
-                      <button 
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`ahs-pill ${activeCategory === cat ? 'active' : ''}`}
-                      >
-                        {cat === 'All' ? 'All Habits' : cat}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  <button className="ahs-btn-scoring" onClick={() => setScoringModal('all')}>
-                    <Icon name="help_outline" /> How Scoring Works
-                  </button>
                 </div>
               </div>
 
@@ -356,10 +317,10 @@ export default function AdvancedHabitSelector() {
             </header>
 
             {/* LIVE PREVIEWS (Top) */}
-            <div className="ahs-live-preview bg-surface-container-highest text-on-surface shadow-sm border border-outline-variant p-6 rounded-2xl mb-8">
+            <div className="ahs-live-preview bg-indigo-50/70 text-indigo-950 shadow-sm border border-indigo-100 p-6 rounded-2xl mb-8">
                 <div className="mb-4">
-                    <h3 className="font-headline-md font-bold flex items-center gap-2">
-                        <Icon name="science" className="text-primary" /> Live Scoring Preview
+                    <h3 className="font-headline-md font-bold flex items-center gap-2 text-indigo-800">
+                        <Icon name="science" className="text-indigo-600" /> Live Scoring Preview
                     </h3>
                     <p className="text-sm opacity-80 mt-1">See how different values affect your daily score.</p>
                 </div>
@@ -419,84 +380,136 @@ export default function AdvancedHabitSelector() {
                 </div>
             </div>
 
+            <div className="ahs-filters-container" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="ahs-cat-pills">
+                {categories.map(cat => (
+                  <button 
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`ahs-pill ${activeCategory === cat ? 'active' : ''}`}
+                  >
+                    {cat === 'All' ? 'All Habits' : cat}
+                  </button>
+                ))}
+              </div>
+              
+              <button className="ahs-btn-scoring" onClick={() => setScoringModal('all')}>
+                <Icon name="help_outline" /> How Scoring Works
+              </button>
+            </div>
+
             <div className="ahs-layout-grid">
               <main>
                 <div className="ahs-category-section">
                   <div className="ahs-habits-grid items-start">
                     
                     {/* CUSTOM HABIT BUILDER CARD */}
-                    {customHabits.length < MAX_CUSTOM_HABITS && (
-                      <div className="ahs-habit-card ahs-custom-builder-card" onClick={e => e.stopPropagation()}>
-                        <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: 0}}>
-                            <button className="ahs-card-score-btn" onClick={() => setScoringModal('all')}>
-                              <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
-                            </button>
-                        </div>
-                        <div className="ahs-hc-title text-primary font-bold">+ Create Custom Habit</div>
-                        <div className="ahs-input-group w-full">
-                            <label className="ahs-input-label">Habit Name</label>
-                            <div className="ahs-form-control">
-                              <input type="text" value={cbName} onChange={e => setCbName(e.target.value)} placeholder="e.g. Drink 2L Water" />
-                            </div>
-                        </div>
-                        <div className="ahs-input-group w-full">
-                            <label className="ahs-input-label">Type</label>
-                            <div className="ahs-form-control">
-                                <select value={cbType} onChange={e => setCbType(e.target.value)}>
-                                    <option value="yn">Yes / No</option>
-                                    <option value="duration">Duration / Number</option>
-                                    <option value="time">Target Time</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        {cbType === 'duration' && (
-                          <>
-                            <div className="ahs-input-group w-full">
-                                <label className="ahs-input-label">Unit</label>
-                                <div className="ahs-form-control">
-                                    <select value={cbUnit} onChange={e => setCbUnit(e.target.value)}>
-                                        <option value="L">Litres (L)</option>
-                                        <option value="kg">Kilograms (kg)</option>
-                                        <option value="mins">Minutes (mins)</option>
-                                        <option value="hrs">Hours (hrs)</option>
-                                        <option value="steps">Steps</option>
-                                        <option value="pages">Pages</option>
-                                        <option value="reps">Reps</option>
-                                        <option value="custom">Custom...</option>
-                                    </select>
+                    {(() => {
+                      const isFreeUsed = customHabits.length >= 1;
+                      const isPro = userDoc?.isPro;
+                      const showProLocked = isFreeUsed && !isPro;
+
+                      const getInferredScoringType = () => {
+                          if (cbType === 'yn') return 'yes_no';
+                          if (cbType === 'duration' && cbDirection === 'lower') return 'reverse_duration';
+                          if (cbType === 'duration' && cbDirection === 'higher') return 'duration';
+                          if (cbType === 'time') return 'target_time';
+                          return 'all';
+                      };
+
+                      return (
+                        <div className="ahs-habit-card ahs-custom-builder-card" onClick={e => {
+                          e.stopPropagation();
+                          if (showProLocked) setShowPaywall(true);
+                        }}>
+                          <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: 0}}>
+                              <button className="ahs-card-score-btn" onClick={(e) => { e.stopPropagation(); setScoringModal(getInferredScoringType()); }}>
+                                <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
+                              </button>
+                          </div>
+                          <div className="ahs-hc-title text-primary font-bold flex justify-between items-center">
+                            <span>{showProLocked ? '+ Add New Custom Habit' : '+ Create Custom Habit'}</span>
+                            {showProLocked && <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded">PRO</span>}
+                          </div>
+                          
+                          {showProLocked ? (
+                             <div className="flex flex-col items-center justify-center p-6 text-center h-[200px] gap-2">
+                                <Icon name="lock" className="text-gray-400 text-3xl" />
+                                <div>
+                                  <div className="font-bold text-gray-700">Pro Feature</div>
+                                  <div className="text-xs text-gray-500 mt-1">Upgrade to Pro to add unlimited custom habits.</div>
                                 </div>
-                            </div>
-                            {cbUnit === 'custom' && (
+                             </div>
+                          ) : (
+                             <>
+                              {!isFreeUsed && <div className="text-xs text-green-600 font-semibold mb-2 bg-green-50 w-fit px-2 py-1 rounded">One custom habit is free</div>}
                               <div className="ahs-input-group w-full">
-                                  <label className="ahs-input-label">Custom Unit Label</label>
-                                  <div className="ahs-form-control"><input type="text" value={cbUnitCustom} onChange={e => setCbUnitCustom(e.target.value)} placeholder="e.g. cups, laps, pushups" /></div>
+                                  <label className="ahs-input-label">Habit Name</label>
+                                  <div className="ahs-form-control">
+                                    <input type="text" value={cbName} onChange={e => setCbName(e.target.value)} placeholder="e.g. Drink 2L Water" />
+                                  </div>
                               </div>
-                            )}
-                            <div className="ahs-input-group w-full">
-                                <label className="ahs-input-label">Scoring Direction</label>
-                                <div className="ahs-segment-control w-full justify-between">
-                                    <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
-                                    <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
-                                </div>
-                            </div>
-                            <div className="ahs-input-group w-full">
-                                <label className="ahs-input-label">Baseline (0% Floor)</label>
-                                <div className="ahs-form-control"><input type="number" value={cbFloor} onChange={e => setCbFloor(e.target.value)} /></div>
-                                <label className="ahs-input-label mt-2">Target (100% Target)</label>
-                                <div className="ahs-form-control"><input type="number" value={cbTarget} onChange={e => setTarget(e.target.value)} /></div>
-                            </div>
-                          </>
-                        )}
-                        <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add Habit</button>
-                      </div>
-                    )}
+                              <div className="ahs-input-group w-full">
+                                  <label className="ahs-input-label">Type</label>
+                                  <div className="ahs-form-control">
+                                      <select value={cbType} onChange={e => setCbType(e.target.value)}>
+                                          <option value="yn">Yes / No</option>
+                                          <option value="duration">Duration / Number</option>
+                                          <option value="time">Target Time</option>
+                                      </select>
+                                  </div>
+                              </div>
+                              
+                              {cbType === 'duration' && (
+                                <>
+                                  <div className="ahs-input-group w-full">
+                                      <label className="ahs-input-label">Unit</label>
+                                      <div className="ahs-form-control">
+                                          <select value={cbUnit} onChange={e => setCbUnit(e.target.value)}>
+                                              <option value="L">Litres (L)</option>
+                                              <option value="kg">Kilograms (kg)</option>
+                                              <option value="mins">Minutes (mins)</option>
+                                              <option value="hrs">Hours (hrs)</option>
+                                              <option value="steps">Steps</option>
+                                              <option value="pages">Pages</option>
+                                              <option value="reps">Reps</option>
+                                              <option value="custom">Custom...</option>
+                                          </select>
+                                      </div>
+                                  </div>
+                                  {cbUnit === 'custom' && (
+                                    <div className="ahs-input-group w-full">
+                                        <label className="ahs-input-label">Custom Unit Label</label>
+                                        <div className="ahs-form-control"><input type="text" value={cbUnitCustom} onChange={e => setCbUnitCustom(e.target.value)} placeholder="e.g. cups, laps, pushups" /></div>
+                                    </div>
+                                  )}
+                                  <div className="ahs-input-group w-full">
+                                      <label className="ahs-input-label">Scoring Direction</label>
+                                      <div className="ahs-segment-control w-full justify-between">
+                                          <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
+                                          <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
+                                      </div>
+                                  </div>
+                                  <div className="ahs-input-group w-full">
+                                      <label className="ahs-input-label">Baseline (0% Floor)</label>
+                                      <div className="ahs-form-control"><input type="number" value={cbFloor} onChange={e => setCbFloor(e.target.value)} /></div>
+                                      <label className="ahs-input-label mt-2">Target (100% Target)</label>
+                                      <div className="ahs-form-control"><input type="number" value={cbTarget} onChange={e => setCbTarget(e.target.value)} /></div>
+                                  </div>
+                                </>
+                              )}
+                              <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add Habit</button>
+                             </>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* EXISTING CUSTOM HABITS */}
                     {customHabits.map(ch => (
-                      <div key={ch.id} className="ahs-habit-card selected bg-gold/10 border-gold" onClick={(e) => deleteCustomHabit(ch.id, e)}>
+                      <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
                         <div className="ahs-hc-top">
-                            <div className="ahs-hc-icon bg-gold"><Icon name="star" /></div>
+                            <div className="ahs-hc-icon bg-gray-100 text-gray-900"><Icon name="star" /></div>
                             <div className="ahs-card-actions">
                                 <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>
                             </div>
@@ -511,10 +524,7 @@ export default function AdvancedHabitSelector() {
                     {displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       // Determine background based on category
-                      let bgClass = "bg-blue";
-                      if(habit.category === "Morning Routine") bgClass = "bg-indigo";
-                      if(habit.category === "Health & Lifestyle") bgClass = "bg-green";
-                      if(habit.category === "Personal Control") bgClass = "bg-pink";
+                      let bgClass = "bg-gray-100 text-gray-900"; // Black and white theme
 
                       return (
                         <div 
@@ -525,7 +535,7 @@ export default function AdvancedHabitSelector() {
                             <div className="ahs-hc-top">
                                 <div className={`ahs-hc-icon ${bgClass}`}><Icon name={habit.icon} /></div>
                                 <div className="ahs-card-actions">
-                                    <button className="ahs-card-score-btn" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                    <button className="ahs-card-score-btn" onClick={(e) => { e.stopPropagation(); setScoringModal(habit.scoringType || 'all'); }}>
                                       <Icon name="help_outline" className="text-[12px]" /> Scoring
                                     </button>
                                     <div className="ahs-checkbox"><Icon name="check" className="text-sm stroke-white stroke-2" /></div>
@@ -626,19 +636,8 @@ export default function AdvancedHabitSelector() {
         </div>
       )}
 
-      {/* SCORING MODAL (Placeholder for HTML Modal) */}
-      {scoringModal && (
-        <div className="ahs-modal-overlay" onClick={() => setScoringModal(null)}>
-          <div className="ahs-modal !max-w-2xl" onClick={e => e.stopPropagation()}>
-            <h3>How Scoring Works</h3>
-            <p>
-              Every habit has a target you set. You get a full score when you reach your target. 
-              The score adjusts gradually between your 0% baseline and 100% target.
-            </p>
-            <button className="ahs-btn ahs-btn-primary mt-6" onClick={() => setScoringModal(null)}>Got it</button>
-          </div>
-        </div>
-      )}
+      {/* SCORING MODAL */}
+      <ScoringModal type={scoringModal} onClose={() => setScoringModal(null)} />
     </div>
   );
 }
