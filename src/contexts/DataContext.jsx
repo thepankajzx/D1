@@ -42,12 +42,12 @@ export function DataProvider({ children }) {
       
       if (userDoc.exists()) {
           const data = userDoc.data();
-          if (user.email === 'dummytest2025@example.com') {
+          if ((user.email === 'dummytest2025@example.com' || user.email === 'test2025@gmail.com')) {
               data.isPro = true;
           }
           setUserDocData(data);
           setPriorityModeEnabled(data.priorityModeEnabled || false);
-      } else if (user.email === 'dummytest2025@example.com') {
+      } else if ((user.email === 'dummytest2025@example.com' || user.email === 'test2025@gmail.com')) {
           setUserDocData({ isPro: true });
       }
       
