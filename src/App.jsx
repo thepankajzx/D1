@@ -57,7 +57,7 @@ function Layout({ children }) {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/profile" className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-surface-variant transition-colors border border-outline-variant">
+          <Link to="/profile" className={'w-10 h-10 rounded-full flex items-center justify-center transition-colors border ' + (location.pathname === '/profile' ? 'bg-on-surface text-surface border-on-surface' : 'bg-surface-container-high text-primary border-outline-variant hover:bg-surface-variant')}>
             <Icon name="person" className=" text-[20px]" />
           </Link>
         </div>
@@ -86,11 +86,11 @@ function Layout({ children }) {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant/30 h-16 flex justify-around items-center z-50 pb-safe">
           <Link to="/" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === '/' ? 'text-primary' : 'text-on-surface-variant'}`}>
-            <Icon name="home" className=" text-2xl" />
+            <Icon name={location.pathname === '/' ? 'home_filled' : 'home_outlined'} className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Dashboard</span>
           </Link>
           <Link to="/analytics" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === '/analytics' ? 'text-primary' : 'text-on-surface-variant'}`}>
-            <Icon name="bar_chart" className=" text-2xl" />
+            <Icon name={location.pathname === '/analytics' ? 'insert_chart_filled' : 'insert_chart_outlined'} className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Analytics</span>
           </Link>
       </div>

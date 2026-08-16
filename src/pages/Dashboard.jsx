@@ -348,34 +348,58 @@ export default function Dashboard() {
           </p>
         </div>
         
-        {/* KPI Cards from Analytics */}
+        {/* KPI Cards */}
         <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex justify-end w-full">
-            <button onClick={() => setShowKpiHelp(true)} className="flex items-center gap-1 text-xs text-primary font-bold hover:underline cursor-pointer">
-              <Icon name="help_outline" className="text-[14px]" /> How Consistency & Streak work
-            </button>
-          </div>
           <div className="flex flex-row gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 shrink-0">
-            <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Consistency</span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-headline-lg text-headline-lg text-primary">{overallConsistency}</span>
-              <span className="font-headline-md text-headline-md text-primary">%</span>
+            
+            {/* Consistency Pill */}
+            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px] min-w-[200px] shrink-0 relative">
+              <div className="flex items-center justify-between gap-[10px] mb-[14px]">
+                <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
+                  Consistency
+                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors" title="How it works">
+                    <Icon name="help_outline" className="text-[14px]" />
+                  </button>
+                </span>
+                <span className="text-[18px] sm:text-[17px] font-bold">{overallConsistency}%</span>
+              </div>
+              <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px] w-full">
+                  {Array.from({ length: 20 }, (_, i) => {
+                      const filledCount = Math.round((overallConsistency / 100) * 20);
+                      const isFilled = i < filledCount;
+                      let color = '#ef4444'; 
+                      if (overallConsistency >= 80) color = '#22c55e'; 
+                      else if (overallConsistency >= 60) color = '#86efac'; 
+                      else if (overallConsistency >= 40) color = '#facc15'; 
+                      
+                      return (
+                          <span 
+                              key={i}
+                              className="h-[21px] sm:h-[23px] rounded-[4px]"
+                              style={{ backgroundColor: isFilled ? color : '#272727' }}
+                          ></span>
+                      );
+                  })}
+              </div>
             </div>
-            <div className="w-full h-1.5 bg-surface-container rounded-full mt-auto overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${overallConsistency}%` }}></div>
+            
+            {/* Streak Pill */}
+            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px] min-w-[180px] shrink-0 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-[10px] mb-[4px]">
+                <span className="text-[#b6b9bf] text-[14px] font-medium flex items-center gap-1.5">
+                  Current Streak
+                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors" title="How it works">
+                    <Icon name="help_outline" className="text-[14px]" />
+                  </button>
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-auto">
+                <span className="text-[22px] sm:text-[24px] font-bold text-white">{userDoc?.currentStreak || 0}</span>
+                <span className="text-[#b6b9bf] text-[12px] font-medium uppercase tracking-wider">Days Recorded</span>
+              </div>
             </div>
+            
           </div>
-          
-          <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl p-4 flex flex-col gap-2 min-w-[140px] shrink-0">
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Streak</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-lg text-primary">{userDoc?.currentStreak || 0}</span>
-              <span className="font-body-md text-body-md text-on-surface-variant">days</span>
-            </div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant mt-auto">Record: {userDoc?.longestStreak || 0} days</span>
-          </div>
-        </div>
         </div>
       </section>
 
