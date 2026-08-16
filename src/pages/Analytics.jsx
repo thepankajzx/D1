@@ -147,7 +147,7 @@ export default function Analytics() {
   const heatmapGrid = useMemo(() => {
       const activeHabitId = selectedHabit;
       return generateHeatmapGrid(summaries, entries, activeHabitId === 'overall' ? 'overall' : 'habit', activeHabitId, startDate, endDate);
-  }, [summaries, entries, selectedHabits, startDate, endDate]);
+  }, [summaries, entries, selectedHabit, startDate, endDate]);
   const breakdown = useMemo(() => computeHabitBreakdown(habits, entries, startDate, endDate), [habits, entries, startDate, endDate]);
   const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
 
@@ -532,7 +532,7 @@ export default function Analytics() {
           <div className="flex flex-col mb-6 gap-4">
             <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
-                {selectedHabits.length > 1 && (
+                {false && (
                     <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
                         <button 
                           onClick={() => setChartMode('combined')}
@@ -553,8 +553,8 @@ export default function Analytics() {
             {/* Pill Selectors */}
             <div className="flex flex-wrap gap-2">
                 <button 
-                    onClick={() => setSelectedHabits([])}
-                    className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${selectedHabits.length === 0 ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
+                    onClick={() => setSelectedHabit('overall')}
+                    className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${selectedHabit === 'overall' ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
                 >
                     Overall
                 </button>
@@ -565,9 +565,9 @@ export default function Analytics() {
                             key={h.id}
                             onClick={() => {
                                 if (isSelected) {
-                                    setSelectedHabits(selectedHabits.filter(id => id !== h.id));
+                                    setSelectedHabit('overall');
                                 } else {
-                                    setSelectedHabits([...selectedHabits, h.id]);
+                                    setSelectedHabit(h.id);
                                 }
                             }}
                             className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${isSelected ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
@@ -586,10 +586,10 @@ export default function Analytics() {
             (() => {
               // Determine which habits to show in the top grid
               let habitsToShow = [];
-              if (selectedHabits.length === 0) {
+              if (selectedHabit === 'overall') {
                   habitsToShow = ['overall'];
-              } else if (chartMode === 'combined' || selectedHabits.length <= 1) {
-                  habitsToShow = selectedHabits;
+              } else {
+                  habitsToShow = [selectedHabit];
               }
 
               if (habitsToShow.length === 0) return null;
@@ -631,10 +631,10 @@ export default function Analytics() {
               );
             })()
           )}
-            {chartMode === 'combined' || selectedHabits.length <= 1 ? (
-              <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabits)} style={{ height: '350px', width: '100%' }} />
+            {selectedHabit === 'overall' ? (
+              <ReactEChartsCore echarts={echarts} option={getEChartOption('overall')} style={{ height: '350px', width: '100%' }} />
             ) : (
-              selectedHabits.map(habitId => {
+              [selectedHabit].map(habitId => {
                 const habit = habits.find(h => h.id === habitId);
                 const globalIndex = habits.findIndex(h => h.id === habitId);
                 const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
@@ -730,8 +730,8 @@ export default function Analytics() {
               <div className="flex items-baseline gap-1 mt-1">
                 <span className="font-headline-md text-primary">
                   {(() => {
-                    if (selectedHabits.length === 1) {
-                      const habitId = selectedHabits[0];
+                    if (selectedHabit !== 'overall') {
+                      const habitId = selectedHabit;
                       const habitScores = allSummaries
                         .filter(s => s.habitScores && s.habitScores[habitId] !== undefined)
                         .map(s => s.habitScores[habitId]);
