@@ -96,10 +96,10 @@ export function recalculateStreaks(dailySummaries) {
   // Calculate Current Streak
   let checkDate = new Date();
   
-  // If today has no summary yet or today's score is < 60, we might still have a streak ending yesterday.
-  // We'll see if today's score is >= 60.
+  // If today has no summary yet, we might still have a streak ending yesterday.
+  // We'll see if today's summary exists.
   const todaySummary = summaryMap.get(todayStr);
-  if (todaySummary && todaySummary.overallScore >= 60) {
+  if (todaySummary) {
       currentStreak++;
   }
   
@@ -110,7 +110,7 @@ export function recalculateStreaks(dailySummaries) {
       const dateStr = checkDate.toISOString().split('T')[0];
       const summary = summaryMap.get(dateStr);
       
-      if (summary && summary.overallScore >= 60) {
+      if (summary) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -128,7 +128,7 @@ export function recalculateStreaks(dailySummaries) {
   let previousDate = null;
   
   for (const sum of sortedSummaries) {
-      if (sum.overallScore >= 60) {
+      if (sum) {
           if (!previousDate) {
               currentHistoricalStreak = 1;
           } else {

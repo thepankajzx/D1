@@ -5,6 +5,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import HabitCard from '../components/HabitCard';
+import Gauge from '../components/Gauge';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -42,16 +43,50 @@ export default function Dashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showKpiHelp, setShowKpiHelp] = useState(false);
 
-  // Calculate consistency for Dashboard
-  const overallConsistency = useMemo(() => {
-    if (!allSummaries || allSummaries.length === 0) return 0;
-    const sortedDates = allSummaries.map(s => s.id).sort();
-    const firstDate = new Date(sortedDates[0]);
-    const lastDate = new Date(sortedDates[sortedDates.length - 1]);
-    const totalDays = Math.max(1, Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1);
-    const activeDays = allSummaries.length;
-    return Math.round((activeDays / totalDays) * 100) || 0;
-  }, [allSummaries]);
+  // Calculate all-time weakest and strongest habits
+  const { weakestHabit, strongestHabit } = useMemo(() => {
+    if (!allSummaries || allSummaries.length === 0 || !habits || habits.length === 0) return { weakestHabit: null, strongestHabit: null };
+    
+    const habitStats = {};
+    habits.forEach(h => {
+        habitStats[h.id] = { total: 0, count: 0, name: h.name };
+    });
+
+    allSummaries.forEach(summary => {
+        if (summary.habitScores) {
+            Object.entries(summary.habitScores).forEach(([habitId, score]) => {
+                if (habitStats[habitId] !== undefined) {
+                    habitStats[habitId].total += score;
+                    habitStats[habitId].count += 1;
+                }
+            });
+        }
+    });
+
+    let weakest = null;
+    let strongest = null;
+    let minAvg = Infinity;
+    let maxAvg = -1;
+
+    Object.values(habitStats).forEach(stat => {
+        if (stat.count > 0) {
+            const avg = Math.round(stat.total / stat.count);
+            if (avg < minAvg) {
+                minAvg = avg;
+                weakest = { name: stat.name, score: avg };
+            }
+            if (avg > maxAvg) {
+                maxAvg = avg;
+                strongest = { name: stat.name, score: avg };
+            }
+        }
+    });
+
+    return { 
+        weakestHabit: weakest || { name: 'N/A', score: 0 }, 
+        strongestHabit: strongest || { name: 'N/A', score: 0 } 
+    };
+  }, [allSummaries, habits]);
 
   // Fetch entries when selectedDate changes
   useEffect(() => {
@@ -326,58 +361,43 @@ export default function Dashboard() {
           </p>
         </div>
         
-        {/* KPI Cards */}
-        <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex flex-row gap-2 md:gap-4 w-full md:w-auto shrink-0">
-            
-            {/* Consistency Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_14px] sm:p-[12px_16px] flex-[3] md:flex-none md:w-auto shrink-0 relative flex flex-col justify-center overflow-hidden">
-              <div className="flex items-center justify-between gap-[10px] mb-[8px]">
-                <span className="text-[#b6b9bf] text-[13px] sm:text-[14px] font-medium flex items-center gap-1.5 whitespace-nowrap">
-                  Consistency
-                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors shrink-0" title="How it works">
-                    <Icon name="help_outline" className="text-[13px] sm:text-[14px]" />
-                  </button>
-                </span>
-                <span className="text-[16px] sm:text-[17px] font-bold">{overallConsistency}%</span>
-              </div>
-              <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
-                  {Array.from({ length: 20 }, (_, i) => {
-                      const filledCount = Math.round((overallConsistency / 100) * 20);
-                      const isFilled = i < filledCount;
-                      let color = '#ef4444'; 
-                      if (overallConsistency >= 80) color = '#22c55e'; 
-                      else if (overallConsistency >= 60) color = '#86efac'; 
-                      else if (overallConsistency >= 40) color = '#facc15'; 
-                      
-                      return (
-                          <span 
-                              key={i}
-                              className="h-[21px] sm:h-[23px] rounded-[4px]"
-                              style={{ backgroundColor: isFilled ? color : '#272727' }}
-                          ></span>
-                      );
-                  })}
-              </div>
-            </div>
-            
-            {/* Streak Pill */}
-            <div className="bg-[#151515] text-white rounded-[18px] p-[10px_8px] sm:p-[12px_16px] flex-[1] md:flex-none md:w-auto shrink-0 flex flex-col justify-center items-center text-center overflow-hidden">
-              <div className="flex items-center justify-center w-full mb-[4px]">
-                <span className="text-[#b6b9bf] text-[11px] sm:text-[14px] font-medium flex items-center justify-center gap-1 w-full whitespace-nowrap">
-                  Streak
-                  <button onClick={() => setShowKpiHelp(true)} className="hover:text-white transition-colors shrink-0" title="How it works">
-                    <Icon name="help_outline" className="text-[11px] sm:text-[14px]" />
-                  </button>
-                </span>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center sm:items-baseline justify-center gap-0 sm:gap-2 mt-auto">
-                <span className="text-[18px] sm:text-[24px] font-bold text-white leading-none">{userDoc?.currentStreak || 0}</span>
-                <span className="text-[#b6b9bf] text-[8px] sm:text-[12px] font-medium uppercase tracking-wider mt-0.5 sm:mt-0">Days</span>
-              </div>
-            </div>
-            
+        {/* KPI Cards (3 Columns) */}
+        <div className="flex gap-2 w-full shrink-0 h-[110px] sm:h-[120px]">
+          
+          {/* Weakest Habit */}
+          <div className="bg-[#151515] rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center relative overflow-hidden">
+             <button onClick={() => setShowKpiHelp(true)} className="absolute top-2 right-2 text-[#b6b9bf] hover:text-white transition-colors" title="How it works">
+               <Icon name="help_outline" className="text-[12px]" />
+             </button>
+             {weakestHabit ? (
+                 <Gauge percentage={weakestHabit.score} color={getPerfColor(weakestHabit.score)} label={weakestHabit.name} subLabel="WEAKEST" />
+             ) : (
+                 <span className="text-[#b6b9bf] text-xs">No Data</span>
+             )}
           </div>
+
+          {/* Strongest Habit */}
+          <div className="bg-[#151515] rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center relative overflow-hidden">
+             {strongestHabit ? (
+                 <Gauge percentage={strongestHabit.score} color={getPerfColor(strongestHabit.score)} label={strongestHabit.name} subLabel="STRONGEST" />
+             ) : (
+                 <span className="text-[#b6b9bf] text-xs">No Data</span>
+             )}
+          </div>
+          
+          {/* Streak Pill */}
+          <div className="bg-[#151515] text-white rounded-[18px] p-2 flex-1 flex flex-col justify-center items-center text-center overflow-hidden">
+            <div className="flex items-center justify-center w-full mb-1">
+              <span className="text-[#b6b9bf] text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider w-full truncate text-center">
+                Total Streak
+              </span>
+            </div>
+            <div className="flex flex-col items-center justify-center mt-auto">
+              <span className="text-[28px] sm:text-[32px] font-bold text-white leading-none mb-1">{userDoc?.currentStreak || 0}</span>
+              <span className="text-[#b6b9bf] text-[9px] font-medium uppercase tracking-wider text-center">Days</span>
+            </div>
+          </div>
+          
         </div>
       </section>
 
