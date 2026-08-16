@@ -99,7 +99,7 @@
 .ahs-habit-card.exclude-count.selected { border: 2px solid var(--ahs-success); background: #F0FDF4; } 
 
 .ahs-hc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-.ahs-hc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1.2rem;}
+.ahs-hc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;  font-size: 1.2rem;}
 
 .ahs-card-actions { display: flex; gap: 8px; align-items: center; }
 .ahs-card-score-btn { background: var(--ahs-bg-page); border: 1px solid var(--ahs-border-light); color: var(--ahs-text-sub); font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 100px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
