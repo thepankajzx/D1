@@ -387,7 +387,7 @@ export default function Analytics() {
       },
       legend: {
         show: true,
-        textStyle: { color: 'var(--on-surface-variant)' },
+        textStyle: { color: '#747985' },
         bottom: 0
       },
       grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
