@@ -144,7 +144,9 @@ export function computeHabitBreakdown(habits, entries, startDate, endDate) {
     let sum = 0;
     let count = 0;
     let max = -1;
+    let maxDate = null;
     let min = 101;
+    let minDate = null;
     let daysWithEntry = 0;
     
     entries.forEach(e => {
@@ -152,8 +154,8 @@ export function computeHabitBreakdown(habits, entries, startDate, endDate) {
         if (e.computedScore !== undefined && e.computedScore !== null) {
           sum += e.computedScore;
           count++;
-          if (e.computedScore > max) max = e.computedScore;
-          if (e.computedScore < min) min = e.computedScore;
+          if (e.computedScore > max) { max = e.computedScore; maxDate = e.entryDate; }
+          if (e.computedScore < min) { min = e.computedScore; minDate = e.entryDate; }
         }
         daysWithEntry++;
       }
@@ -167,7 +169,11 @@ export function computeHabitBreakdown(habits, entries, startDate, endDate) {
       avgScore,
       consistency,
       bestScore: max === -1 ? null : max,
-      lowestScore: min === 101 ? null : min
+      bestDate: maxDate,
+      lowestScore: min === 101 ? null : min,
+      lowestDate: minDate,
+      trackedDays: daysWithEntry,
+      totalDays
     };
   });
   
