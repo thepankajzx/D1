@@ -8,7 +8,7 @@ import Icon from './components/Icon';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
+const Analytics = lazy(() => import('./pages/Analytics'));
 
 const Profile = lazy(() => import('./pages/Profile'));
 const Seed = lazy(() => import('./pages/Seed'));
@@ -105,9 +105,7 @@ function App() {
         <DataProvider>
           <HashRouter>
             <Suspense fallback={
-              <div className="flex min-h-screen items-center justify-center text-primary bg-background">
-                <Icon name="sync" className=" animate-spin text-4xl" />
-              </div>
+              <div className="min-h-screen bg-background"></div>
             }>
               <Routes>
                 <Route path="/login" element={<Login />} />

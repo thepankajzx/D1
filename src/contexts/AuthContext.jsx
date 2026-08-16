@@ -87,12 +87,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={value}>
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-surface">
-          <div className="flex flex-col items-center gap-4">
-            <Icon name="sync" className=" animate-spin text-4xl text-primary" />
-            <span className="font-label-md text-on-surface-variant">Loading Definite...</span>
-          </div>
-        </div>
+        <div className="min-h-screen bg-background"></div>
       ) : (
         children
       )}
