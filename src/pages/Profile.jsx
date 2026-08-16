@@ -125,14 +125,49 @@ export default function Profile() {
         </section>
 
         {/* Account Actions */}
-        <section className="bg-surface border border-error/30 rounded-2xl p-6 flex flex-col gap-6 shadow-sm mt-4 md:mt-0">
+        <section className="bg-surface border border-error/30 rounded-2xl p-6 flex flex-col gap-4 shadow-sm mt-4 md:mt-0">
           <button 
             onClick={handleLogout}
-            className="w-full py-3 bg-error/10 text-error font-semibold rounded-lg hover:bg-error/20 flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-3 bg-surface-container-low text-on-surface font-semibold rounded-lg hover:bg-surface-variant flex items-center justify-center gap-2 transition-colors border border-outline-variant"
           >
             <Icon name="logout"  />
             Log Out
           </button>
+          
+          <div className="w-full h-px bg-outline-variant/30 my-2"></div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="text-error font-bold text-sm">Danger Zone</h3>
+            <p className="text-xs text-on-surface-variant mb-2">
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <button 
+              onClick={async () => {
+                if (window.confirm("WARNING: Are you sure you want to PERMANENTLY delete your account? ALL your data will be lost immediately and you will have to sign up again.")) {
+                  try {
+                    const habitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'habits'));
+                    const entriesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'entries'));
+                    
+                    const batch = writeBatch(db);
+                    habitsSnap.forEach(d => batch.delete(d.ref));
+                    entriesSnap.forEach(d => batch.delete(d.ref));
+                    batch.delete(doc(db, 'users', currentUser.uid));
+                    await batch.commit();
+
+                    await currentUser.delete();
+                    navigate('/login');
+                  } catch (error) {
+                    console.error("Error deleting account:", error);
+                    alert("Failed to delete account. For security, please log out, log back in, and try again.");
+                  }
+                }
+              }}
+              className="w-full py-3 bg-error/10 text-error font-semibold rounded-lg hover:bg-error/20 flex items-center justify-center gap-2 transition-colors border border-error/20"
+            >
+              <Icon name="delete_forever"  />
+              Delete Account
+            </button>
+          </div>
         </section>
       </div>
 
