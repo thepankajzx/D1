@@ -48,6 +48,8 @@ export default function Dashboard() {
     
     const habitStats = {};
     habits.forEach(h => {
+        // Skip subjective habits — they don't have a meaningful percentage score
+        if (h.scoringType === 'subjective') return;
         habitStats[h.id] = { total: 0, count: 0, name: h.name };
     });
 
