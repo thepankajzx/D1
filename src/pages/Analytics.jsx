@@ -126,11 +126,17 @@ export default function Analytics() {
         const rangeSummaries = allSummaries.filter(s => s.id >= startDate && s.id <= endDate);
         setSummaries(rangeSummaries);
         
-        // Fetch entries ONLY for the selected date range to prevent main-thread freeze
+        // Compute previous start date for comparison metrics
+        const days = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+        const prevStartObj = new Date(startDate);
+        prevStartObj.setDate(prevStartObj.getDate() - days);
+        const previousStartDate = prevStartObj.toISOString().split('T')[0];
+
+        // Fetch entries from previous start date to current end date to allow comparison
         const entriesSnap = await getDocs(
           query(
             collection(db, `users/${user.uid}/entries`),
-            where('entryDate', '>=', startDate),
+            where('entryDate', '>=', previousStartDate),
             where('entryDate', '<=', endDate)
           )
         );
@@ -444,12 +450,76 @@ export default function Analytics() {
     const habitDataPoints = chartData.map(d => ({ date: d.date, score: isOverall ? d.overallScore : (d[habitId] || 0) }));
     const segments = habitDataPoints.slice(-30);
     
-    const validScores = habitDataPoints.filter(d => d.score > 0).map(d => d.score);
-    const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
-    const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
-    const diff = latestScore - prevScore;
+    let diff = 0;
+    
+    if (rangeOption !== 'all' && rangeOption !== 'custom') {
+        const days = parseInt(rangeOption) || 30;
+        const prevStartObj = new Date(startDate);
+        prevStartObj.setDate(prevStartObj.getDate() - days);
+        const previousStartDate = prevStartObj.toISOString().split('T')[0];
+        const previousEndDateObj = new Date(startDate);
+        previousEndDateObj.setDate(previousEndDateObj.getDate() - 1);
+        const previousEndDate = previousEndDateObj.toISOString().split('T')[0];
+        
+        let prevSum = 0;
+        let prevCount = 0;
+        
+        if (isOverall) {
+            allSummaries.forEach(s => {
+                if (s.id >= previousStartDate && s.id <= previousEndDate) {
+                    prevSum += s.overallScore;
+                    prevCount++;
+                }
+            });
+        } else {
+            entries.forEach(e => {
+                if (e.habitId === habitId && e.entryDate >= previousStartDate && e.entryDate <= previousEndDate) {
+                    if (e.computedScore !== undefined && e.computedScore !== null) {
+                        prevSum += e.computedScore;
+                        prevCount++;
+                    }
+                }
+            });
+        }
+        
+        const prevAvg = prevCount > 0 ? prevSum / prevCount : 0;
+        const currentAvg = breakdownHabit.avgScore || 0;
+        
+        diff = Math.round(currentAvg) - Math.round(prevAvg);
+    } else {
+        const validScores = habitDataPoints.filter(d => d.score > 0).map(d => d.score);
+        const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
+        const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
+        diff = latestScore - prevScore;
+    }
+    
     const isUp = diff >= 0;
     const diffText = `${isUp ? '↑' : '↓'} ${Math.abs(diff)}%`;
+
+    let displayBestScore = breakdownHabit.bestScore;
+    let displayLowestScore = breakdownHabit.lowestScore;
+    let displayBestDate = breakdownHabit.bestDate;
+    let displayLowestDate = breakdownHabit.lowestDate;
+    let bestLabel = 'Best Day';
+    let worstLabel = 'Worst Day';
+
+    if (viewMode === 'heatmap' && heatmapPeriod !== 'day' && aggregatedHeatmapData && aggregatedHeatmapData.length > 0) {
+        bestLabel = heatmapPeriod === 'week' ? 'Best Week' : 'Best Month';
+        worstLabel = heatmapPeriod === 'week' ? 'Worst Week' : 'Worst Month';
+        
+        let best = aggregatedHeatmapData[0];
+        let worst = aggregatedHeatmapData[0];
+        
+        aggregatedHeatmapData.forEach(d => {
+            if (d.average > best.average) best = d;
+            if (d.average < worst.average) worst = d;
+        });
+        
+        displayBestScore = best.average;
+        displayBestDate = best.label;
+        displayLowestScore = worst.average;
+        displayLowestDate = worst.label;
+    }
 
     let timeframeLabel = 'All-Time';
     if (rangeOption !== 'all' && rangeOption !== 'custom') {
@@ -530,17 +600,17 @@ export default function Analytics() {
         <section className="px-[15px] sm:px-[18px] pb-[14px] sm:pb-[16px]">
             <div className="grid grid-cols-3 border border-[#e6e7eb] rounded-[18px] overflow-hidden">
                 <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
-                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Best Day</div>
-                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#18a56c]">{breakdownHabit.bestScore || 0}%</div>
+                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">{bestLabel}</div>
+                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#18a56c]">{displayBestScore || 0}%</div>
                     <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
-                        {breakdownHabit.bestDate && breakdownHabit.bestDate !== 'N/A' && breakdownHabit.bestDate !== 'Selected Habit' ? new Date(breakdownHabit.bestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A'}
+                        {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
                     </div>
                 </div>
                 <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
-                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Worst Day</div>
-                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#ef4444]">{breakdownHabit.lowestScore || 0}%</div>
+                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">{worstLabel}</div>
+                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#ef4444]">{displayLowestScore || 0}%</div>
                     <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
-                        {breakdownHabit.lowestDate && breakdownHabit.lowestDate !== 'N/A' && breakdownHabit.lowestDate !== 'Selected Habit' ? new Date(breakdownHabit.lowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A'}
+                        {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
                     </div>
                 </div>
                 <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative">
@@ -735,7 +805,7 @@ export default function Analytics() {
         
         {/* Trend Line Chart */}
         {viewMode === 'charts' && (
-        <div className="w-full bg-surface border border-outline-variant shadow-sm rounded-2xl p-6 flex flex-col">
+        <div className="w-full sm:bg-surface sm:border sm:border-outline-variant sm:shadow-sm sm:rounded-2xl sm:p-6 flex flex-col">
           <div className="flex flex-col mb-6 gap-4">
             <div className="flex justify-between items-center">
                 <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
@@ -764,7 +834,7 @@ export default function Analytics() {
           {viewMode === 'charts' && (
             <div className="flex flex-col gap-6 w-full">
               {renderCustomKPIHeader(selectedHabit)}
-              <div className="bg-surface border border-outline-variant/50 rounded-[24px] p-4 sm:p-5 shadow-sm mt-2">
+              <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm mt-2">
                 <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '250px', width: '100%' }} />
               </div>
             </div>
@@ -788,7 +858,7 @@ export default function Analytics() {
             </div>
           )}
           <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
-            <div className={`bg-surface flex flex-col ${isZoomedOut ? 'w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full border border-outline-variant shadow-sm rounded-2xl p-6'}`}>
+            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full sm:bg-surface sm:border sm:border-outline-variant sm:shadow-sm sm:rounded-2xl sm:p-6'}`}>
           <div className="flex justify-between items-center mb-6 shrink-0 gap-2 flex-wrap">
             <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
             
