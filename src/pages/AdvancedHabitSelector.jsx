@@ -466,6 +466,19 @@ export default function AdvancedHabitSelector() {
       );
     }
 
+    if (h.scoringType === 'subjective') {
+      return (
+        <div className="ahs-input-group mt-4">
+          <label className="ahs-input-label">Type</label>
+          <div className="ahs-form-control cursor-not-allowed bg-surface-variant/30">
+            <input type="text" value="Subjective Score (1-10)" readOnly />
+          </div>
+          <p className="text-xs text-on-surface-variant mt-2 font-medium">
+            You will rate this daily from 1 to 10. It is excluded from the overall daily percentage, but tracked for your insights.
+          </p>
+        </div>
+      );
+    }
 
     return (
       <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
@@ -651,7 +664,7 @@ export default function AdvancedHabitSelector() {
                             }}
                             className={`ahs-pill ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategories.includes(cat) ? 'active' : ''}`}
                         >
-                            {cat === 'All' ? 'All Habits' : cat}
+                            {cat === 'All' ? 'All Habits' : cat === 'Custom' ? 'Custom Habit' : cat}
                         </button>
                     ))}
                 </div>

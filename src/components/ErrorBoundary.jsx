@@ -54,7 +54,7 @@ export class ErrorBoundary extends React.Component {
               <Icon name="refresh" /> Reload Page
             </button>
             <button 
-              onClick={() => window.location.href = '/'} 
+              onClick={() => window.location.href = import.meta.env.BASE_URL || '/'} 
               className="bg-surface-container text-on-surface px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors"
             >
               <Icon name="home" /> Go to Home
