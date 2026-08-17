@@ -16,6 +16,8 @@ export default function Profile() {
     document.documentElement.classList.contains('dark') ? 'Dark' : 'Light'
   );
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -172,26 +174,7 @@ export default function Profile() {
               Permanently delete your account and all associated data. This action cannot be undone.
             </p>
             <button 
-              onClick={async () => {
-                if (window.confirm("WARNING: Are you sure you want to PERMANENTLY delete your account? ALL your data will be lost immediately and you will have to sign up again.")) {
-                  try {
-                    const habitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'habits'));
-                    const entriesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'entries'));
-                    
-                    const batch = writeBatch(db);
-                    habitsSnap.forEach(d => batch.delete(d.ref));
-                    entriesSnap.forEach(d => batch.delete(d.ref));
-                    batch.delete(doc(db, 'users', currentUser.uid));
-                    await batch.commit();
-
-                    await currentUser.delete();
-                    navigate('/login');
-                  } catch (error) {
-                    console.error("Error deleting account:", error);
-                    alert("Failed to delete account. For security, please log out, log back in, and try again.");
-                  }
-                }
-              }}
+              onClick={() => setShowDeleteModal(true)}
               className="w-full py-3 bg-error/10 text-error font-semibold rounded-lg hover:bg-error/20 flex items-center justify-center gap-2 transition-colors border border-error/20"
             >
               <Icon name="delete_forever"  />
@@ -279,6 +262,75 @@ export default function Profile() {
                 className="w-full py-3 border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-variant"
               >
                 Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account Deletion Warning Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mb-4 mx-auto">
+              <Icon name="warning" className="text-2xl" />
+            </div>
+            <h2 className="text-headline-sm font-headline-sm text-on-surface text-center mb-2">Delete Account?</h2>
+            <p className="text-body-md font-body-md text-on-surface-variant text-center mb-6">
+              This action is <span className="font-bold text-error">permanent</span>. All your tracked habits, daily summaries, and streaks will be erased immediately. You cannot undo this.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                disabled={isDeletingAccount}
+                onClick={async () => {
+                  setIsDeletingAccount(true);
+                  try {
+                    // Fetch all subcollections to delete
+                    const habitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'habits'));
+                    const entriesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'entries'));
+                    const summariesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'dailySummaries'));
+                    
+                    const batch = writeBatch(db);
+                    
+                    // Batch delete all documents
+                    habitsSnap.forEach(d => batch.delete(d.ref));
+                    entriesSnap.forEach(d => batch.delete(d.ref));
+                    summariesSnap.forEach(d => batch.delete(d.ref));
+                    batch.delete(doc(db, 'users', currentUser.uid));
+                    
+                    await batch.commit();
+
+                    try {
+                      await currentUser.delete();
+                    } catch (authError) {
+                      console.warn("Auth deletion failed (likely requires recent login), but data is deleted.", authError);
+                      await logout();
+                    }
+                    
+                    navigate('/login');
+                  } catch (error) {
+                    console.error("Error deleting account data:", error);
+                    alert("A critical error occurred while deleting your data. Please try again later.");
+                    setIsDeletingAccount(false);
+                  }
+                }}
+                className="w-full py-3 bg-error text-on-error font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {isDeletingAccount ? (
+                  <div className="w-5 h-5 border-2 border-on-error border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Icon name="delete_forever" />
+                    Yes, Delete My Account
+                  </>
+                )}
+              </button>
+              <button 
+                disabled={isDeletingAccount}
+                onClick={() => setShowDeleteModal(false)}
+                className="w-full py-3 bg-transparent text-on-surface font-medium rounded-lg hover:bg-on-surface/5 transition-colors disabled:opacity-50"
+              >
+                Cancel
               </button>
             </div>
           </div>
