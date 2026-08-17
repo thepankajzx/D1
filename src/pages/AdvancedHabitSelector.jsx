@@ -213,7 +213,7 @@ export default function AdvancedHabitSelector() {
   
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [customHabits, setCustomHabits] = useState([]);
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategories, setActiveCategories] = useState(['All']);
   
   const [showPaywall, setShowPaywall] = useState(false);
   const [scoringModal, setScoringModal] = useState(null);
@@ -260,9 +260,9 @@ export default function AdvancedHabitSelector() {
   }
 
   const categories = ['All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
-  const displayedHabits = activeCategory === 'All' 
+  const displayedHabits = activeCategories.includes('All') 
     ? habitLibrary 
-    : habitLibrary.filter(h => h.category === activeCategory);
+    : habitLibrary.filter(h => activeCategories.includes(h.category));
 
   const openScoringModalForHabit = (habit) => {
     let type = 'all';
@@ -618,13 +618,26 @@ export default function AdvancedHabitSelector() {
                 </div>
             </div>
 
-            <div className="ahs-filters-container w-full max-w-[100vw] overflow-hidden">
-                <div className="ahs-cat-pills w-full overflow-x-auto pb-2 scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="ahs-filters-container w-full overflow-hidden">
+                <div className="flex flex-wrap gap-2 w-full pb-2 justify-start sm:justify-center">
                     {categories.map(cat => (
                         <button 
                             key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`ahs-pill whitespace-nowrap ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategory === cat ? 'active' : ''}`}
+                            onClick={() => {
+                                if (cat === 'All') {
+                                    setActiveCategories(['All']);
+                                } else {
+                                    let newSelection = activeCategories.filter(c => c !== 'All');
+                                    if (newSelection.includes(cat)) {
+                                        newSelection = newSelection.filter(c => c !== cat);
+                                        if (newSelection.length === 0) newSelection = ['All'];
+                                    } else {
+                                        newSelection.push(cat);
+                                    }
+                                    setActiveCategories(newSelection);
+                                }
+                            }}
+                            className={`ahs-pill ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategories.includes(cat) ? 'active' : ''}`}
                         >
                             {cat === 'All' ? 'All Habits' : cat}
                         </button>
@@ -644,7 +657,7 @@ export default function AdvancedHabitSelector() {
                   <div className="ahs-habits-grid items-start">
                     
                     {/* CUSTOM HABIT BUILDER (Only visible in Custom tab) */}
-                    {activeCategory === 'Custom' && (() => {
+                    {activeCategories.includes('Custom') && (() => {
                       const existingCustomsCount = existingHabits.filter(h => h.category === 'custom_' || h.category === 'Custom').length;
                       const isFreeUsed = (customHabits.length + existingCustomsCount) >= 1;
                       const isPro = userDoc?.isPro;
