@@ -591,7 +591,7 @@ export default function Analytics() {
               <option value="overall">Overall</option>
               {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
-            <Icon name="keyboard_arrow_down" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
+            <Icon name="keyboard_arrow_down" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#15171c] font-black pointer-events-none text-[20px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24" }} />
           </div>
         </div>
 
