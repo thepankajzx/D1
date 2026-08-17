@@ -482,14 +482,14 @@ export default function AdvancedHabitSelector() {
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${selectedObj.direction === 'higher_is_better' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                 onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'higher_is_better'); }}
               >
-                <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
+                <Icon name="trending_up" className="text-[16px]" /> Higher is better
               </button>
               <button 
                 type="button" 
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${selectedObj.direction === 'lower_is_better' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                 onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'lower_is_better'); }}
               >
-                <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
+                <Icon name="trending_down" className="text-[16px]" /> Lower is better
               </button>
             </div>
           </div>
@@ -498,7 +498,7 @@ export default function AdvancedHabitSelector() {
           <DualRangeSlider 
             target0={selectedObj.userTarget0}
             target100={selectedObj.userTarget100}
-            direction={h.direction}
+            direction={selectedObj.direction}
             unit={selectedObj.unit}
             isTime={h.scoringType === 'time'}
             onChange={(field, value) => {
@@ -739,14 +739,14 @@ export default function AdvancedHabitSelector() {
                                               className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'higher' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                                               onClick={() => setCbDirection('higher')}
                                             >
-                                              <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
+                                              <Icon name="trending_up" className="text-[16px]" /> Higher is better
                                             </button>
                                             <button 
                                               type="button" 
                                               className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'lower' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                                               onClick={() => setCbDirection('lower')}
                                             >
-                                              <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
+                                              <Icon name="trending_down" className="text-[16px]" /> Lower is better
                                             </button>
                                         </div>
                                     </div>
