@@ -37,7 +37,7 @@ export function DataProvider({ children }) {
       const [userDoc, habitsSnap, summariesSnap] = await Promise.all([
           getDoc(doc(db, 'users', user.uid)),
           getDocs(collection(db, `users/${user.uid}/habits`)),
-          getDocs(query(collection(db, `users/${user.uid}/dailySummaries`), orderBy('__name__', 'desc'), limit(30)))
+          getDocs(collection(db, `users/${user.uid}/dailySummaries`))
       ]);
       
       if (userDoc.exists()) {
@@ -61,9 +61,12 @@ export function DataProvider({ children }) {
       localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
       
       const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      fetchedSummaries.reverse();
-      setAllSummaries(fetchedSummaries);
-      localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(fetchedSummaries));
+      // Sort by date (id) descending in memory to avoid Firebase index requirement
+      fetchedSummaries.sort((a, b) => b.id.localeCompare(a.id));
+      const recentSummaries = fetchedSummaries.slice(0, 30);
+      
+      setAllSummaries(recentSummaries);
+      localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
     } catch (error) {
       console.error("Error loading global data:", error);
     } finally {
