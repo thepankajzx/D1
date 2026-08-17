@@ -386,9 +386,8 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               <span>0 {currentDisplayUnit}</span>
               <span>Target: {Number.isInteger(dTarget100) ? dTarget100 : dTarget100.toFixed(2)} {currentDisplayUnit}</span>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
-                <div className="relative flex-grow h-4 flex items-center">
-                  <div className="absolute inset-y-0 left-0 right-0 rounded-sm pointer-events-none" style={{ background: generateGradient(), height: '4px', top: '6px' }} />
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+                <div className="flex-grow flex items-center">
                   <input 
                     type="range" 
                     aria-label={`Target slider for ${habit.name}`}
@@ -396,10 +395,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     max={maxSlider} 
                     step={sliderStep}
                     value={dVal}
+                    style={{ background: generateGradient() }}
                     onChange={(e) => setVal(Number(e.target.value) / mult)}
                     onPointerUp={(e) => handleChange(Number(e.target.value) / mult)}
                     onTouchEnd={(e) => handleChange(Number(e.target.value) / mult)}
-                    className="custom-slider w-full !bg-transparent absolute inset-0 z-10 m-0" 
+                    className="custom-slider w-full m-0" 
                   />
                 </div>
                 <div className="relative flex items-center">
