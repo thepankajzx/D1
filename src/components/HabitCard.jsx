@@ -324,7 +324,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const dTarget100 = (habit.target100 || 0) * mult;
         const dTarget0 = (habit.target0 || 0) * mult;
         
-        const maxSlider = Math.max(dTarget100, dTarget0, dVal) * 1.2 || 100;
+        const maxSlider = Math.max(dTarget100, dTarget0) > 0 
+          ? Math.max(dTarget100, dTarget0) * 1.5 
+          : 100;
         const minSlider = 0;
         
         const sliderStep = '0.01'; // Ultra-smooth dragging
@@ -387,7 +389,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             <div className="flex flex-wrap items-center gap-4">
                 <div className="relative flex-grow h-4 flex items-center">
                   <div className="absolute inset-y-0 left-0 right-0 rounded-sm pointer-events-none" style={{ background: generateGradient(), height: '4px', top: '6px' }} />
-                  <div className="absolute inset-y-0 left-0 rounded-sm pointer-events-none" style={{ background: 'var(--color-primary)', width: `${Math.min(100, Math.max(0, (dVal / maxSlider) * 100))}%`, height: '4px', top: '6px' }} />
                   <input 
                     type="range" 
                     aria-label={`Target slider for ${habit.name}`}
