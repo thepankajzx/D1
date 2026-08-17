@@ -11,14 +11,17 @@ import ScoringModal from '../components/ScoringModal';
 import './AdvancedHabitSelector.css';
 
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime }) => {
-  // Determine dynamic max for the slider
-  const [localMax, setLocalMax] = useState(10);
+  const [localMax, setLocalMax] = useState(() => {
+    let base = 10;
+    if (unit === 'minutes' || unit === 'hours' || unit === 'hrs' || unit === 'mins') base = 720;
+    else if (unit === '%') base = 100;
+    return Math.max(base, target0 * 1.5, target100 * 1.5);
+  });
   const [glowTarget, setGlowTarget] = useState(null);
   
   useEffect(() => {
-    // Only expand the slider's maximum range if a target EXCEEDS the current bounds (via manual input)
     if (target0 > localMax || target100 > localMax) {
-      setLocalMax(Math.max(10, target0 * 1.5, target100 * 1.5));
+      setLocalMax(Math.max(localMax, target0 * 1.5, target100 * 1.5));
     }
   }, [target0, target100]);
 
@@ -114,26 +117,27 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
               />
             </div>
           ) : showHM ? (
-            <div className="flex items-center gap-1 sm:gap-2 w-full justify-center">
-              <div className="relative w-full max-w-[60px]">
+            <div className="flex items-center justify-center w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-1 max-w-[140px]">
+              <div className="relative flex-1 flex items-center justify-center">
                 <input 
                   type="number" min="0" max="23"
-                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-1 sm:px-2 py-2 sm:py-3 w-full text-center font-bold text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
+                  className="bg-transparent w-full text-center font-bold text-base sm:text-lg focus:outline-none focus:text-primary transition-colors py-1 sm:py-2" 
                   value={getH(value) || ''} 
                   placeholder="00"
                   onChange={e => updateHM(field, value, 'h', e.target.value)} 
                 />
-                <span className="absolute top-1 right-1 text-[10px] sm:text-xs text-on-surface-variant font-medium">h</span>
+                <span className="text-[10px] sm:text-xs text-on-surface-variant font-medium ml-1">h</span>
               </div>
-              <div className="relative w-full max-w-[60px]">
+              <div className="text-outline-variant/50 font-bold mx-1">:</div>
+              <div className="relative flex-1 flex items-center justify-center">
                 <input 
                   type="number" min="0" max="59"
-                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-1 sm:px-2 py-2 sm:py-3 w-full text-center font-bold text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
+                  className="bg-transparent w-full text-center font-bold text-base sm:text-lg focus:outline-none focus:text-primary transition-colors py-1 sm:py-2" 
                   value={getM(value) || ''} 
                   placeholder="00"
                   onChange={e => updateHM(field, value, 'm', e.target.value)} 
                 />
-                <span className="absolute top-1 right-1 text-[10px] sm:text-xs text-on-surface-variant font-medium">m</span>
+                <span className="text-[10px] sm:text-xs text-on-surface-variant font-medium ml-1">m</span>
               </div>
             </div>
           ) : (
