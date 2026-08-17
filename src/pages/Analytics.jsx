@@ -38,6 +38,20 @@ const getPerfBandClass = (score) => {
   return 'bg-perf-10';
 };
 
+const getPerformanceBand = (score) => {
+  if (score === null || score === undefined) return { id: 0, label: 'None' };
+  if (score <= 10) return { id: 1, label: 'Poor' };
+  if (score <= 20) return { id: 2, label: 'Poor' };
+  if (score <= 30) return { id: 3, label: 'Poor' };
+  if (score <= 40) return { id: 4, label: 'Poor' };
+  if (score <= 50) return { id: 5, label: 'Average' };
+  if (score <= 60) return { id: 6, label: 'Average' };
+  if (score <= 70) return { id: 7, label: 'Good' };
+  if (score <= 80) return { id: 8, label: 'Good' };
+  if (score <= 90) return { id: 9, label: 'Excellent' };
+  return { id: 10, label: 'Excellent' };
+};
+
 const getPerfTextColorClass = (score) => {
   if (score === null || score === undefined) return 'text-on-surface-variant';
   if (score <= 10) return 'text-perf-1';
@@ -688,10 +702,19 @@ export default function Analytics() {
                       <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
                       <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
                     </div>
+                    {heatmapPeriod === 'day' && (
+                      <button 
+                        onClick={() => setShowPercentages(!showPercentages)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
+                        title="Toggle Percentages"
+                      >
+                        <Icon name="percent" className="text-[14px]" />
+                      </button>
+                    )}
                   </div>
                   <div className="flex-grow flex flex-col overflow-x-auto pb-2 custom-scrollbar">
                     {heatmapPeriod === 'day' ? (
-                      <div className="flex gap-4 w-full">
+                      <div className="flex gap-4 w-max min-w-full">
                         {heatmapGrid.map((monthData, mIndex) => (
                           <div key={mIndex} className="flex gap-2">
                             {(mIndex === 0) && (
@@ -707,7 +730,11 @@ export default function Analytics() {
                                     key={i} 
                                     onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
                                     className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
-                                  ></div>
+                                  >
+                                    {(!cell.isPad && cell.score !== null && showPercentages) && (
+                                      <span className="text-[9px] font-bold z-10 opacity-90 text-white mix-blend-difference">{Math.round(cell.score)}</span>
+                                    )}
+                                  </div>
                                 ))}
                               </div>
                             </div>
