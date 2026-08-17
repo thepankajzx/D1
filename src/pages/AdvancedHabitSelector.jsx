@@ -12,11 +12,28 @@ import './AdvancedHabitSelector.css';
 
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime }) => {
   // Determine dynamic max for the slider
-  const [localMax, setLocalMax] = useState(100);
+  const [localMax, setLocalMax] = useState(10);
+  const [glowTarget, setGlowTarget] = useState(null);
   
   useEffect(() => {
-    setLocalMax(Math.max(10, target0 * 1.5, target100 * 1.5));
+    // Only expand the slider's maximum range if a target EXCEEDS the current bounds (via manual input)
+    if (target0 > localMax || target100 > localMax) {
+      setLocalMax(Math.max(10, target0 * 1.5, target100 * 1.5));
+    }
   }, [target0, target100]);
+
+  const handleSliderChange = (field, value) => {
+    onChange(field, value);
+    if (value >= localMax) {
+      if (navigator.vibrate) navigator.vibrate(50);
+      setGlowTarget(field);
+      setTimeout(() => setGlowTarget(null), 1000);
+    } else {
+      if (navigator.vibrate && Number.isInteger(value) && value % 5 === 0) {
+        navigator.vibrate(10);
+      }
+    }
+  };
 
   // Calculate percentages for visual track
   const p0 = Math.min(100, Math.max(0, (target0 / localMax) * 100));
@@ -66,20 +83,34 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
     return parseFloat(val) || 0;
   };
 
+  const inputBaseClass = "bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none transition-all duration-300";
+
   return (
     <div className="w-full mt-4 mb-2">
       <div className="flex justify-between text-xs text-on-surface-variant font-bold mb-4">
         <div className="flex flex-col items-center gap-1.5">
           <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded">0% Score</span> 
           <div className="flex items-center gap-1">
-             <input type={isTime ? "time" : "number"} step="any" className="bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none" value={isTime ? formatTime(target0) : (Number.isInteger(target0) ? target0 : parseFloat(target0.toFixed(2)))} onChange={e => onChange('target0', isTime ? parseTime(e.target.value) : Number(e.target.value))} />
+             <input 
+               type={isTime ? "time" : "number"} 
+               step="any" 
+               className={`${inputBaseClass} ${glowTarget === 'target0' ? 'ring-2 ring-primary border-primary shadow-lg shadow-primary/30' : ''}`} 
+               value={isTime ? formatTime(target0) : (Number.isInteger(target0) ? target0 : parseFloat(target0.toFixed(2)))} 
+               onChange={e => onChange('target0', isTime ? parseTime(e.target.value) : Number(e.target.value))} 
+             />
              <span>{unit}</span>
           </div>
         </div>
         <div className="flex flex-col items-center gap-1.5">
           <span className="text-green-500 bg-green-500/10 px-2 py-0.5 rounded">100% Score</span> 
           <div className="flex items-center gap-1">
-             <input type={isTime ? "time" : "number"} step="any" className="bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none" value={isTime ? formatTime(target100) : (Number.isInteger(target100) ? target100 : parseFloat(target100.toFixed(2)))} onChange={e => onChange('target100', isTime ? parseTime(e.target.value) : Number(e.target.value))} />
+             <input 
+               type={isTime ? "time" : "number"} 
+               step="any" 
+               className={`${inputBaseClass} ${glowTarget === 'target100' ? 'ring-2 ring-primary border-primary shadow-lg shadow-primary/30' : ''}`} 
+               value={isTime ? formatTime(target100) : (Number.isInteger(target100) ? target100 : parseFloat(target100.toFixed(2)))} 
+               onChange={e => onChange('target100', isTime ? parseTime(e.target.value) : Number(e.target.value))} 
+             />
              <span>{unit}</span>
           </div>
         </div>
@@ -91,7 +122,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           type="range"
           min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
           value={target0}
-          onChange={e => onChange('target0', Number(e.target.value))}
+          onChange={e => handleSliderChange('target0', Number(e.target.value))}
           className="dual-slider-input"
           style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
         />
@@ -99,13 +130,13 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           type="range"
           min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
           value={target100}
-          onChange={e => onChange('target100', Number(e.target.value))}
+          onChange={e => handleSliderChange('target100', Number(e.target.value))}
           className="dual-slider-input"
           style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
         />
       </div>
-      <div className="text-[10px] text-center text-on-surface-variant mt-2 opacity-70">
-        Drag dots to set your scoring zone.
+      <div className="text-[10px] text-center text-on-surface-variant mt-3 opacity-80 font-medium">
+        Target score is calculated within this range
       </div>
     </div>
   );
@@ -412,6 +443,26 @@ export default function AdvancedHabitSelector() {
             </div>
           </div>
         )}
+        {h.scoringType !== 'binary' && (
+          <div className="mb-4">
+            <div className="ahs-seg-control flex">
+              <button 
+                type="button" 
+                className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${selectedObj.direction === 'higher_is_better' ? 'active' : ''}`} 
+                onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'higher_is_better'); }}
+              >
+                Higher is Better
+              </button>
+              <button 
+                type="button" 
+                className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${selectedObj.direction === 'lower_is_better' ? 'active' : ''}`} 
+                onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'lower_is_better'); }}
+              >
+                Lower is Better
+              </button>
+            </div>
+          </div>
+        )}
         <div className="w-full">
           <DualRangeSlider 
             target0={selectedObj.userTarget0}
@@ -532,22 +583,24 @@ export default function AdvancedHabitSelector() {
                 </div>
             </div>
 
-            <div className="ahs-filters-container" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="ahs-cat-pills">
-                {categories.map(cat => (
-                  <button 
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`ahs-pill ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategory === cat ? 'active' : ''}`}
-                  >
-                    {cat === 'All' ? 'All Habits' : cat}
-                  </button>
-                ))}
-              </div>
-              
-              <button className="ahs-btn-scoring" onClick={() => setScoringModal('all')}>
-                <Icon name="help_outline" /> How Scoring Works
-              </button>
+            <div className="ahs-filters-container w-full max-w-[100vw] overflow-hidden">
+                <div className="ahs-cat-pills w-full overflow-x-auto pb-2 scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    {categories.map(cat => (
+                        <button 
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`ahs-pill whitespace-nowrap ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategory === cat ? 'active' : ''}`}
+                        >
+                            {cat === 'All' ? 'All Habits' : cat}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            
+            <div className="mt-4 mb-6">
+                <button className="ahs-btn-scoring w-full flex justify-center py-3 border-none bg-surface-container rounded-xl font-bold" onClick={() => setScoringModal('all')}>
+                    <Icon name="help_outline" /> How Scoring Works
+                </button>
             </div>
 
             <div className="ahs-layout-grid">
@@ -560,14 +613,6 @@ export default function AdvancedHabitSelector() {
                       const isFreeUsed = customHabits.length >= 1;
                       const isPro = userDoc?.isPro;
                       const showProLocked = isFreeUsed && !isPro;
-
-                      const getInferredScoringType = () => {
-                          if (cbType === 'yn') return 'yes_no';
-                          if (cbType === 'duration' && cbDirection === 'lower') return 'reverse_duration';
-                          if (cbType === 'duration' && cbDirection === 'higher') return 'duration';
-                          if (cbType === 'time') return 'target_time';
-                          return 'all';
-                      };
 
                       if (showProLocked) {
                         return (
@@ -645,16 +690,11 @@ export default function AdvancedHabitSelector() {
                               
                               {cbType !== 'yn' && (
                                 <>
-                                  <div className="ahs-input-group w-full">
-                                      <div className="flex justify-between items-center w-full">
-                                        <label className="ahs-input-label">Scoring Direction</label>
-                                        <button className="text-xs text-primary flex items-center gap-1 font-bold hover:underline" onClick={(e) => { e.preventDefault(); e.stopPropagation(); document.getElementById('scoring-preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
-                                          <Icon name="info" className="text-[14px]" /> How this works
-                                        </button>
-                                      </div>
-                                      <div className="ahs-segment-control w-full justify-between mt-1">
-                                          <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
-                                          <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
+                                  <div className="mb-4 w-full">
+                                      <label className="ahs-input-label">Direction</label>
+                                      <div className="ahs-seg-control flex">
+                                          <button type="button" className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
+                                          <button type="button" className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
                                       </div>
                                   </div>
                                       <div className="w-full mt-4">

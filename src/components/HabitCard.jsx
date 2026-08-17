@@ -371,13 +371,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
                     onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); }}
                   >
-                    HOURS
+                    HR
                   </button>
                   <button 
                     className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
                     onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); }}
                   >
-                    MINS
+                    MIN
                   </button>
                 </div>
               </div>
