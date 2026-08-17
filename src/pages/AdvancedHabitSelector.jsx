@@ -52,17 +52,37 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   }
 
   const formatTime = (mins) => {
-    if (typeof mins !== 'number') return mins;
+    if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
     let h = Math.floor(mins / 60);
     let m = Math.floor(mins % 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
+  const parseTime = (val) => {
+    if (typeof val === 'string' && val.includes(':')) {
+      const [h, m] = val.split(':').map(Number);
+      return h * 60 + m;
+    }
+    return parseFloat(val) || 0;
+  };
+
   return (
     <div className="w-full mt-4 mb-2">
-      <div className="flex justify-between text-xs text-on-surface-variant font-bold mb-2">
-        <span className="flex flex-col items-center"><span className="text-red-500">0% Score</span> {isTime ? formatTime(target0) : Number.isInteger(target0) ? target0 : target0.toFixed(1)} {unit}</span>
-        <span className="flex flex-col items-center"><span className="text-green-500">100% Score</span> {isTime ? formatTime(target100) : Number.isInteger(target100) ? target100 : target100.toFixed(1)} {unit}</span>
+      <div className="flex justify-between text-xs text-on-surface-variant font-bold mb-4">
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded">0% Score</span> 
+          <div className="flex items-center gap-1">
+             <input type={isTime ? "time" : "number"} step="any" className="bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none" value={isTime ? formatTime(target0) : (Number.isInteger(target0) ? target0 : parseFloat(target0.toFixed(2)))} onChange={e => onChange('target0', isTime ? parseTime(e.target.value) : Number(e.target.value))} />
+             <span>{unit}</span>
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="text-green-500 bg-green-500/10 px-2 py-0.5 rounded">100% Score</span> 
+          <div className="flex items-center gap-1">
+             <input type={isTime ? "time" : "number"} step="any" className="bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none" value={isTime ? formatTime(target100) : (Number.isInteger(target100) ? target100 : parseFloat(target100.toFixed(2)))} onChange={e => onChange('target100', isTime ? parseTime(e.target.value) : Number(e.target.value))} />
+             <span>{unit}</span>
+          </div>
+        </div>
       </div>
       
       <div className="dual-slider-container">
@@ -118,7 +138,7 @@ export default function AdvancedHabitSelector() {
   const [cbType, setCbType] = useState('yn');
   const [cbUnit, setCbUnit] = useState('L');
   const [cbUnitCustom, setCbUnitCustom] = useState('');
-  const [cbDirection, setCbDirection] = useState('higher');
+  const [cbDirection, setCbDirection] = useState('');
   const [cbFloor, setCbFloor] = useState(0);
   const [cbTarget, setCbTarget] = useState(10);
   const [cbTolerance, setCbTolerance] = useState(false);
@@ -215,12 +235,14 @@ export default function AdvancedHabitSelector() {
 
     if (!cbName.trim()) { alert("Please enter a Habit Name"); return; }
     if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
+    if (cbType !== 'yn' && !cbDirection) { alert("Please select whether Higher or Lower is better"); return; }
     if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
 
     const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
     const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
 
-    if (customHabits.length >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
+    const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
+    if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
       setShowPaywall(true);
       return;
     }
