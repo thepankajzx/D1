@@ -217,7 +217,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               {/* Clickable halves */}
               <div className="absolute inset-0 flex">
                 <button 
-                  onClick={() => handleChange(1)}
+                  onClick={() => {
+                     handleChange(1);
+                     if (navigator.vibrate) navigator.vibrate(20);
+                  }}
                   className="flex-1 flex items-center justify-center z-10 cursor-pointer"
                 >
                   <span className={`font-semibold text-sm transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant'}`}>
@@ -225,7 +228,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   </span>
                 </button>
                 <button 
-                  onClick={() => handleChange(0)}
+                  onClick={() => {
+                     handleChange(0);
+                     if (navigator.vibrate) navigator.vibrate(20);
+                  }}
                   className="flex-1 flex items-center justify-center z-10 cursor-pointer"
                 >
                   <span className={`font-semibold text-sm transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant'}`}>
@@ -306,7 +312,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               aria-label={`Subjective score for ${habit.name}`}
               min="1" max="10" step="1" 
               value={val}
-              onChange={(e) => setVal(Number(e.target.value))}
+              onChange={(e) => {
+                 setVal(Number(e.target.value));
+                 if (navigator.vibrate) navigator.vibrate(10);
+              }}
               onPointerUp={(e) => handleChange(Number(e.target.value))}
               onTouchEnd={(e) => handleChange(Number(e.target.value))}
               className="subjective-slider" 
@@ -397,7 +406,30 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     step={sliderStep}
                     value={dVal}
                     style={{ background: generateGradient() }}
-                    onChange={(e) => setVal(Number(e.target.value) / mult)}
+                    onChange={(e) => {
+                        const newValue = Number(e.target.value);
+                        const prevValue = val * mult;
+                        setVal(newValue / mult);
+
+                        if (navigator.vibrate) {
+                            // Calculate percentage of maxSlider
+                            const prevPct = (prevValue / maxSlider) * 100;
+                            const newPct = (newValue / maxSlider) * 100;
+                            
+                            // Vibrate every 5%
+                            if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
+                                navigator.vibrate(10);
+                            }
+                            
+                            // Vibrate stronger if crossing target
+                            if (
+                              (prevValue < dTarget100 && newValue >= dTarget100) ||
+                              (prevValue > dTarget100 && newValue <= dTarget100)
+                            ) {
+                                navigator.vibrate(30);
+                            }
+                        }
+                    }}
                     onPointerUp={(e) => handleChange(Number(e.target.value) / mult)}
                     onTouchEnd={(e) => handleChange(Number(e.target.value) / mult)}
                     className="custom-slider w-full m-0" 
