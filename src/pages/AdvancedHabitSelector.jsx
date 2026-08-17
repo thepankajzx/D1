@@ -208,6 +208,7 @@ export default function AdvancedHabitSelector() {
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('selection'); // 'locked', 'selection', 'summary'
   const [lockDaysRemaining, setLockDaysRemaining] = useState(0);
+  const [expandedSelectedHabits, setExpandedSelectedHabits] = useState([]);
   
   // Use static predefined habits
   const habitLibrary = HABITS_SEED_DATA;
@@ -840,28 +841,94 @@ export default function AdvancedHabitSelector() {
                     })()}
 
                     {/* EXISTING CUSTOM HABITS */}
-                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && customHabits.map(ch => (
-                      <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
-                        <div className="ahs-hc-top">
-                            <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name="star" /></div>
-                            <div className="ahs-card-actions">
-                                <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
-                                  <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
-                                </button>
-                                <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
+                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && customHabits.map(ch => {
+                      const isSelectedView = activeCategories.includes('Selected');
+                      const isExpanded = expandedSelectedHabits.includes(ch.id);
+
+                      if (isSelectedView) {
+                        return (
+                          <div key={ch.id} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 flex flex-col gap-3 shadow-sm mb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                 <div className="w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center"><Icon name="star" className="text-sm" /></div>
+                                 <div className="flex flex-col">
+                                   <span className="font-bold text-on-surface text-sm sm:text-base">{ch.name}</span>
+                                   <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Custom</span>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]) }} className="w-8 h-8 rounded-full bg-surface hover:bg-surface-variant flex items-center justify-center text-on-surface border border-outline-variant/50 transition-colors">
+                                    <Icon name="edit" className="text-[16px]" />
+                                 </button>
+                                 <button onClick={(e) => deleteCustomHabit(ch.id, e)} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
+                                    <Icon name="close" className="text-[16px]" />
+                                 </button>
+                              </div>
                             </div>
+                            {isExpanded && (
+                               <div className="pt-3 border-t border-outline-variant/30 mt-1 flex flex-col gap-3">
+                                  <div className="text-xs text-on-surface-variant font-medium">Type: {ch.scoringType} • {ch.unit} • {ch.direction}</div>
+                                  <button className="text-xs font-bold flex items-center gap-1 text-primary hover:underline w-fit" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                    <Icon name="help_outline" className="text-[12px]"/> Scoring Rules
+                                  </button>
+                               </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
+                          <div className="ahs-hc-top">
+                              <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name="star" /></div>
+                              <div className="ahs-card-actions">
+                                  <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                                    <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
+                                  </button>
+                                  <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
+                              </div>
+                          </div>
+                          <div className="ahs-hc-title">{ch.name} <span className="ahs-custom-badge">CUSTOM</span></div>
+                          <div className="text-xs text-on-surface-variant font-medium mb-2">Type: {ch.scoringType} • {ch.unit} • {ch.direction}</div>
+                          <div className="text-xs font-bold text-red-500 mt-4 underline text-right cursor-pointer">Remove</div>
                         </div>
-                        <div className="ahs-hc-title">{ch.name} <span className="ahs-custom-badge">CUSTOM</span></div>
-                        <div className="text-xs text-on-surface-variant font-medium mb-2">Type: {ch.scoringType} • {ch.unit} • {ch.direction}</div>
-                        <div className="text-xs font-bold text-red-500 mt-4 underline text-right cursor-pointer">Remove</div>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {/* RENDER HABIT LIBRARY (Not visible in Custom tab) */}
                     {displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       // Determine background based on category
                       let bgClass = "bg-gray-900 text-white"; // Black and white theme
+                      
+                      const isSelectedView = activeCategories.includes('Selected');
+                      const isExpanded = expandedSelectedHabits.includes(habit.id);
+
+                      if (isSelectedView) {
+                         return (
+                          <div key={habit.id} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 flex flex-col gap-3 shadow-sm mb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                 <div className={`w-8 h-8 rounded flex items-center justify-center ${bgClass}`}><Icon name={habit.icon} className="text-sm" /></div>
+                                 <span className="font-bold text-on-surface text-sm sm:text-base">{habit.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(habit.id) ? prev.filter(id => id !== habit.id) : [...prev, habit.id]) }} className="w-8 h-8 rounded-full bg-surface hover:bg-surface-variant flex items-center justify-center text-on-surface border border-outline-variant/50 transition-colors">
+                                    <Icon name="edit" className="text-[16px]" />
+                                 </button>
+                                 <button onClick={(e) => { e.stopPropagation(); toggleHabit(habit); }} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
+                                    <Icon name="close" className="text-[16px]" />
+                                 </button>
+                              </div>
+                            </div>
+                            {isExpanded && (
+                               <div className="pt-3 border-t border-outline-variant/30 mt-1 ahs-habit-card-expanded">
+                                  {renderHabitInputs(habit)}
+                               </div>
+                            )}
+                          </div>
+                         );
+                      }
 
                       return (
                         <div 
@@ -951,7 +1018,7 @@ export default function AdvancedHabitSelector() {
                 {viewMode === 'summary' ? "Edit Selection" : "Cancel"}
               </button>
               <button className="ahs-btn ahs-btn-primary ahs-btn-save" onClick={handleSaveFlow}>
-                {viewMode === 'summary' ? "Confirm & Start Tracking" : "Review Plan"}
+                {viewMode === 'summary' ? "Start Tracking" : "Review Plan"}
               </button>
           </div>
       </footer>
@@ -967,7 +1034,7 @@ export default function AdvancedHabitSelector() {
         <div className="ahs-modal-overlay" onClick={() => setShowConfirmSaveModal(false)}>
           <div className="ahs-modal" onClick={e => e.stopPropagation()}>
             <Icon name="lock" className="text-5xl text-primary mx-auto mb-4" />
-            <h3>Lock Habits for 30 Days</h3>
+            <h3 className="text-red-500 font-bold">Lock Habits for 30 Days</h3>
             <p className="mb-6 mt-2 text-on-surface-variant">
               Your habits will be locked for 30 days to build consistency. You can add new habits later, but you cannot remove them during this time.
             </p>
@@ -975,7 +1042,7 @@ export default function AdvancedHabitSelector() {
                 setShowConfirmSaveModal(false);
                 executeSave();
             }}>
-              Confirm & Start Tracking
+              Start Tracking
             </button>
             <button className="mt-4 text-sm font-bold text-on-surface-variant hover:text-on-surface w-full" onClick={() => setShowConfirmSaveModal(false)}>
               Cancel
