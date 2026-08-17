@@ -68,52 +68,75 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
       ${trackColor} 100%)`;
   }
 
-  const formatTime = (mins) => {
-    if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
-    let h = Math.floor(mins / 60);
-    let m = Math.floor(mins % 60);
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  const showHM = isTime || unit === 'minutes' || unit === 'hours' || unit === 'hrs' || unit === 'mins';
+
+  const getH = (val) => Math.floor(val / 60) || 0;
+  const getM = (val) => Math.floor(val % 60) || 0;
+
+  const updateHM = (field, currentTotal, type, newValue) => {
+      const val = parseInt(newValue) || 0;
+      const h = type === 'h' ? val : getH(currentTotal);
+      const m = type === 'm' ? val : getM(currentTotal);
+      onChange(field, h * 60 + m);
   };
 
-  const parseTime = (val) => {
-    if (typeof val === 'string' && val.includes(':')) {
-      const [h, m] = val.split(':').map(Number);
-      return h * 60 + m;
-    }
-    return parseFloat(val) || 0;
-  };
+  const InputCard = ({ field, label, value, isRed }) => {
+    const badgeBg = isRed ? 'bg-red-500/10 text-red-600' : 'bg-green-500/10 text-green-600';
+    const borderColor = glowTarget === field ? 'border-primary shadow-lg shadow-primary/20' : 'border-outline-variant/40';
 
-  const inputBaseClass = "bg-surface-container border border-outline-variant rounded px-1.5 py-1 w-20 text-center font-mono-data focus:border-primary focus:outline-none transition-all duration-300";
+    return (
+      <div className="flex flex-col items-center">
+        <div className={`border ${borderColor} rounded-2xl p-4 bg-surface flex flex-col items-center min-w-[140px] transition-all duration-300`}>
+          <span className={`px-3 py-1 rounded-md text-xs font-bold mb-4 ${badgeBg}`}>
+            {label}
+          </span>
+          {showHM ? (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <input 
+                  type="number" min="0" max="23"
+                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-3 w-14 text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                  value={getH(value) || ''} 
+                  placeholder="00"
+                  onChange={e => updateHM(field, value, 'h', e.target.value)} 
+                />
+                <span className="absolute top-1 right-1 text-xs text-on-surface-variant font-medium">h</span>
+              </div>
+              <div className="relative">
+                <input 
+                  type="number" min="0" max="59"
+                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-3 w-14 text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                  value={getM(value) || ''} 
+                  placeholder="00"
+                  onChange={e => updateHM(field, value, 'm', e.target.value)} 
+                />
+                <span className="absolute top-1 right-1 text-xs text-on-surface-variant font-medium">m</span>
+              </div>
+            </div>
+          ) : (
+            <div className="relative w-full">
+              <input 
+                type="number" step="any"
+                className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-3 py-3 w-full text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                value={Number.isInteger(value) ? value : parseFloat(value.toFixed(2))} 
+                onChange={e => onChange(field, parseFloat(e.target.value) || 0)} 
+              />
+              <div className="text-center text-xs text-on-surface-variant font-medium mt-2">{unit}</div>
+            </div>
+          )}
+        </div>
+        <div className="text-[11px] text-on-surface-variant mt-3 font-medium">
+          {isRed ? 'Start Range (0%)' : 'Target Range (100%)'}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="w-full mt-4 mb-2">
-      <div className="flex justify-between text-xs text-on-surface-variant font-bold mb-4">
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded">0% Score</span> 
-          <div className="flex items-center gap-1">
-             <input 
-               type={isTime ? "time" : "number"} 
-               step="any" 
-               className={`${inputBaseClass} ${glowTarget === 'target0' ? 'ring-2 ring-primary border-primary shadow-lg shadow-primary/30' : ''}`} 
-               value={isTime ? formatTime(target0) : (Number.isInteger(target0) ? target0 : parseFloat(target0.toFixed(2)))} 
-               onChange={e => onChange('target0', isTime ? parseTime(e.target.value) : Number(e.target.value))} 
-             />
-             <span>{unit}</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="text-green-500 bg-green-500/10 px-2 py-0.5 rounded">100% Score</span> 
-          <div className="flex items-center gap-1">
-             <input 
-               type={isTime ? "time" : "number"} 
-               step="any" 
-               className={`${inputBaseClass} ${glowTarget === 'target100' ? 'ring-2 ring-primary border-primary shadow-lg shadow-primary/30' : ''}`} 
-               value={isTime ? formatTime(target100) : (Number.isInteger(target100) ? target100 : parseFloat(target100.toFixed(2)))} 
-               onChange={e => onChange('target100', isTime ? parseTime(e.target.value) : Number(e.target.value))} 
-             />
-             <span>{unit}</span>
-          </div>
-        </div>
+      <div className="flex justify-between items-start gap-4 mb-8">
+        <InputCard field="target0" label="0% Score" value={target0} isRed={true} />
+        <InputCard field="target100" label="100% Score" value={target100} isRed={false} />
       </div>
       
       <div className="dual-slider-container">
@@ -245,7 +268,7 @@ export default function AdvancedHabitSelector() {
           userTarget0: habit.target0 !== undefined ? habit.target0 : 0,
           userTarget100: habit.target100 !== undefined ? habit.target100 : 100,
           userTolerance: 0,
-          unit: habit.defaultUnit || ''
+          unit: habit.scoringType === 'duration' ? 'minutes' : (habit.defaultUnit || '')
         };
         setSelectedHabits([...selectedHabits, newHabit]);
       }
@@ -284,7 +307,10 @@ export default function AdvancedHabitSelector() {
     }
 
     const name = cbName.trim();
-    const unit = cbUnit === 'custom' ? cbUnitCustom.trim() : cbUnit;
+    let unit = cbUnit === 'custom' ? cbUnitCustom.trim() : cbUnit;
+    if (cbType === 'duration' && (unit === 'hrs' || unit === 'mins')) {
+      unit = 'minutes';
+    }
     
     let scoringType = 'numeric';
     if (cbType === 'yn') scoringType = 'binary';
@@ -435,31 +461,23 @@ export default function AdvancedHabitSelector() {
 
     return (
       <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
-        {h.scoringType === 'duration' && (
-          <div className="mb-4">
-            <label className="ahs-input-label">Duration Unit</label>
-            <div className="ahs-segment-control">
-              <button type="button" className={`ahs-seg-btn flex-1 ${selectedObj.unit === 'minutes' ? 'active' : ''}`} onClick={() => handleHabitInputChange(h.id, 'unit', 'minutes')}>Minutes</button>
-              <button type="button" className={`ahs-seg-btn flex-1 ${selectedObj.unit === 'hours' ? 'active' : ''}`} onClick={() => handleHabitInputChange(h.id, 'unit', 'hours')}>Hours</button>
-            </div>
-          </div>
-        )}
         {h.scoringType !== 'binary' && selectedObj.direction && (
-          <div className="mb-4">
-            <div className="ahs-seg-control flex">
+          <div className="mb-6 w-full">
+            <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+            <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
               <button 
                 type="button" 
-                className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${selectedObj.direction === 'higher_is_better' ? 'active' : ''}`} 
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${selectedObj.direction === 'higher_is_better' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                 onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'higher_is_better'); }}
               >
-                Higher is Better
+                <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
               </button>
               <button 
                 type="button" 
-                className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${selectedObj.direction === 'lower_is_better' ? 'active' : ''}`} 
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${selectedObj.direction === 'lower_is_better' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
                 onClick={(e) => { e.stopPropagation(); handleHabitInputChange(h.id, 'direction', 'lower_is_better'); }}
               >
-                Lower is Better
+                <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
               </button>
             </div>
           </div>
@@ -692,11 +710,23 @@ export default function AdvancedHabitSelector() {
                               
                               {cbType !== 'yn' && (
                                 <>
-                                  <div className="mb-4 w-full">
-                                      <label className="ahs-input-label">Direction</label>
-                                      <div className="ahs-seg-control flex">
-                                          <button type="button" className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${cbDirection === 'higher' ? 'active' : ''}`} onClick={() => setCbDirection('higher')}>Higher is Better</button>
-                                          <button type="button" className={`ahs-seg-btn flex-1 whitespace-nowrap text-[11px] px-2 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
+                                  <div className="mb-6 w-full">
+                                      <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+                                      <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
+                                          <button 
+                                            type="button" 
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'higher' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
+                                            onClick={() => setCbDirection('higher')}
+                                          >
+                                            <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
+                                          </button>
+                                          <button 
+                                            type="button" 
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'lower' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
+                                            onClick={() => setCbDirection('lower')}
+                                          >
+                                            <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
+                                          </button>
                                       </div>
                                   </div>
                                       <div className="w-full mt-4">
