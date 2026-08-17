@@ -5,7 +5,7 @@ import { logErrorToDb } from '../lib/logger';
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, isReloading: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -17,10 +17,10 @@ export class ErrorBoundary extends React.Component {
       if (!isReloaded) {
         sessionStorage.setItem('chunk_load_error_reloaded', 'true');
         window.location.reload();
-        return { hasError: false };
+        return { hasError: true, isReloading: true };
       }
     }
-    return { hasError: true };
+    return { hasError: true, isReloading: false };
   }
 
   componentDidCatch(error, errorInfo) {
@@ -37,6 +37,13 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      if (this.state.isReloading) {
+        return (
+          <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
+             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        );
+      }
       return (
         <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 text-center">
           <div className="w-16 h-16 bg-error-container text-on-error-container rounded-full flex items-center justify-center mb-6">
