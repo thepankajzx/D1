@@ -827,6 +827,84 @@ export default function Analytics() {
 
               </div>
       )}
+      
+      {/* Day Details Modal */}
+      {selectedDay && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-[#f0f0f0] flex justify-between items-center bg-[#f9fafb]">
+              <div>
+                <h3 className="text-[20px] font-bold text-[#15171c] leading-tight">
+                  {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </h3>
+                <p className="text-[#747985] text-[13px] font-medium mt-1">Daily Performance</p>
+              </div>
+              <button 
+                onClick={() => setSelectedDay(null)}
+                className="w-10 h-10 rounded-full bg-[#f0f0f0] text-[#747985] flex items-center justify-center hover:bg-[#e6e7eb] hover:text-[#15171c] transition-colors"
+              >
+                <Icon name="close" className="text-[22px]" />
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto custom-scrollbar flex-grow bg-white">
+              {(() => {
+                const daySummary = summaries.find(s => s.id === selectedDay);
+                if (!daySummary) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <div className="w-16 h-16 rounded-full bg-[#f9fafb] flex items-center justify-center mb-4">
+                        <Icon name="block" className="text-[28px] text-[#d1d5db]" />
+                      </div>
+                      <p className="text-[#15171c] font-semibold text-[16px]">No Activity Tracked</p>
+                      <p className="text-[#747985] text-[14px] mt-1">You didn't track any habits on this day.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between p-4 bg-[#f4f7ff] rounded-[16px] border border-[#e0e7ff]">
+                      <span className="text-[15px] font-bold text-[#15171c]">Overall Score</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[24px] font-black text-perf-${getPerformanceBand(daySummary.overallScore).id}`}>
+                          {daySummary.overallScore}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-[12px] font-bold text-[#747985] uppercase tracking-wider mb-3 ml-1">Habit Breakdown</h4>
+                      <div className="flex flex-col gap-2">
+                        {habits.map(h => {
+                          const score = daySummary.habitScores?.[h.id];
+                          if (score === undefined) return null;
+                          const band = getPerformanceBand(score).id;
+                          return (
+                            <div key={h.id} className="flex items-center justify-between p-3.5 bg-white border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
+                              <div className="flex items-center gap-3">
+                                <span className="text-[18px]">{h.icon}</span>
+                                <span className="text-[14px] font-semibold text-[#15171c]">{h.name}</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="w-16 h-2 rounded-full bg-[#f0f0f0] overflow-hidden">
+                                  <div className={`h-full bg-perf-${band} rounded-full`} style={{ width: `${score}%` }}></div>
+                                </div>
+                                <span className={`text-[14px] font-bold text-perf-${band} w-10 text-right`}>{score}%</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       <ProModal 
         isOpen={showProUpgradeModal} 
         onClose={() => setShowProUpgradeModal(false)} 
