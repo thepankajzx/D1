@@ -530,33 +530,72 @@ export default function Analytics() {
     const globalIndex = habits.findIndex(h => h.id === habitId);
     const color = isOverall ? '#17b8c8' : colors[globalIndex % colors.length];
 
+    let totalPeriodDays = 30;
+    if (rangeOption === 'custom' && appliedCustomStart && appliedCustomEnd) {
+        const s = new Date(appliedCustomStart);
+        const e = new Date(appliedCustomEnd);
+        totalPeriodDays = Math.max(1, Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1);
+    } else if (rangeOption !== 'all' && rangeOption !== 'custom') {
+        totalPeriodDays = parseInt(rangeOption) || 30;
+    }
+    const trackedRatio = Math.min(100, Math.round((breakdownHabit.trackedDays / totalPeriodDays) * 100)) || 0;
+
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full shrink-0">
-        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Average Score</span>
-          <div className="flex items-end gap-2">
-            <span className="text-3xl font-display-sm font-bold text-on-surface leading-none">{Math.round(breakdownHabit.avgScore) || 0}%</span>
-            <span className={`text-[11px] font-bold mb-1 ${isUp ? 'text-perf-10' : 'text-error'}`}>{diffText}</span>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full shrink-0">
+        <div className="flex flex-col p-2 sm:p-4 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
+          <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 sm:mb-2 truncate">Average</span>
+          <div className="flex items-end justify-between gap-1 mb-1 sm:mb-2">
+            <span className="text-xl sm:text-3xl font-display-sm font-bold text-on-surface leading-none">{Math.round(breakdownHabit.avgScore) || 0}%</span>
+            <span className={`text-[8px] sm:text-[11px] font-bold mb-0.5 sm:mb-1 ${isUp ? 'text-perf-10' : 'text-error'} shrink-0`}>{diffText}</span>
+          </div>
+          <div className="flex gap-[1px] sm:gap-[2px] w-full mt-auto pt-1">
+            {Array.from({ length: 30 }, (_, i) => {
+                const filledCount = Math.round(((Math.round(breakdownHabit.avgScore) || 0) / 100) * 30);
+                const isFilled = i < filledCount;
+                return (
+                    <span 
+                        key={i}
+                        className="flex-1 h-[4px] sm:h-[6px] rounded-[1px]"
+                        style={{ backgroundColor: isFilled ? color : 'var(--color-surface-container-high)' }}
+                    ></span>
+                );
+            })}
           </div>
         </div>
-        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">{bestLabel}</span>
-          <span className="text-3xl font-display-sm font-bold text-perf-10 leading-none">{displayBestScore || 0}%</span>
-          <span className="text-[11px] text-on-surface-variant mt-1 truncate">
-            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-          </span>
+
+        <div className="flex flex-row p-0 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm divide-x divide-outline-variant/50">
+          <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0">
+            <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 truncate">Best</span>
+            <span className="text-xl sm:text-3xl font-display-sm font-bold text-perf-10 leading-none mb-1">{displayBestScore || 0}%</span>
+            <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-auto truncate">
+              {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0">
+            <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 truncate">Worst</span>
+            <span className="text-xl sm:text-3xl font-display-sm font-bold text-error leading-none mb-1">{displayLowestScore || 0}%</span>
+            <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-auto truncate">
+              {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">{worstLabel}</span>
-          <span className="text-3xl font-display-sm font-bold text-error leading-none">{displayLowestScore || 0}%</span>
-          <span className="text-[11px] text-on-surface-variant mt-1 truncate">
-            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-          </span>
-        </div>
-        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Total Tracked</span>
-          <span className="text-3xl font-display-sm font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
-          <span className="text-[11px] text-on-surface-variant mt-1 uppercase">Days</span>
+
+        <div className="flex flex-col sm:flex-row p-2 sm:p-4 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm items-center sm:justify-between hover:border-outline-variant/80 transition-colors">
+          <div className="flex flex-col items-center sm:items-start text-center sm:text-left mb-1 sm:mb-0 min-w-0 w-full sm:w-auto">
+             <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5 sm:mb-1 truncate w-full">Tracked</span>
+             <span className="text-lg sm:text-3xl font-display-sm font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
+             <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-0.5 sm:mt-1 uppercase truncate w-full">of {totalPeriodDays} Days</span>
+          </div>
+          
+          <div className="relative w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path className="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
+              <path className="text-primary" strokeDasharray={`${trackedRatio}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[7px] sm:text-[9px] font-bold">{trackedRatio}%</span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -648,40 +687,42 @@ export default function Analytics() {
       <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
         
         {/* ROW 2: Sleek Horizontal Habit Selector Tab Bar + View Toggle */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-2 mb-2">
-          {/* Horizontal Scrollable Tabs */}
-          <div className="flex w-full md:w-auto overflow-x-auto custom-scrollbar pb-1 md:pb-0 items-center gap-2">
-             <button 
-                onClick={() => setSelectedHabit('overall')}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
-             >
-                Overall
-             </button>
-             {habits.map(h => (
-                <button
-                    key={h.id}
-                    onClick={() => setSelectedHabit(h.id)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
-                >
-                    {h.name}
-                </button>
-             ))}
-          </div>
+        <div className="flex flex-col gap-4 mt-2 mb-2 sticky top-[0px] z-30 bg-surface/95 backdrop-blur-md py-2 border-b border-outline-variant/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              {/* Wrapped Pills instead of horizontally scrolling */}
+              <div className="flex w-full sm:w-auto flex-wrap items-center gap-1.5 sm:gap-2">
+                 <button 
+                    onClick={() => setSelectedHabit('overall')}
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+                 >
+                    Overall
+                 </button>
+                 {habits.map(h => (
+                    <button
+                        key={h.id}
+                        onClick={() => setSelectedHabit(h.id)}
+                        className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+                    >
+                        {h.name}
+                    </button>
+                 ))}
+              </div>
 
-          {/* View Toggle Icon Buttons */}
-          <div className="flex shrink-0 bg-surface border border-outline-variant rounded-full p-1 shadow-sm">
-             <button
-                onClick={() => setViewMode('charts')}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'charts' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-             >
-                <Icon name="show_chart" className="text-sm" /> Chart
-             </button>
-             <button
-                onClick={() => setViewMode('heatmap')}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'heatmap' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
-             >
-                <Icon name="grid_view" className="text-sm" /> Heatmap
-             </button>
+              {/* View Toggle Icon Buttons */}
+              <div className="flex shrink-0 bg-surface border border-outline-variant rounded-full p-1 shadow-sm w-full sm:w-auto justify-center">
+                 <button
+                    onClick={() => setViewMode('charts')}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'charts' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                 >
+                    <Icon name="show_chart" className="text-sm" /> Chart
+                 </button>
+                 <button
+                    onClick={() => setViewMode('heatmap')}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'heatmap' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                 >
+                    <Icon name="grid_view" className="text-sm" /> Heatmap
+                 </button>
+              </div>
           </div>
         </div>
 
