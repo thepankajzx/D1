@@ -279,3 +279,10 @@
 .axis-line { stroke: var(--color-outline-variant); stroke-width: 1; stroke-dasharray: 4; }
 @media (max-width: 1024px) { .engine-row { grid-template-columns: 1fr; gap: 24px; } .sm-overview { grid-template-columns: 1fr 1fr; } .er-visual { min-height: 180px; } }
 @media (max-width: 768px) { .sm-overview { grid-template-columns: 1fr; } .sm-header { padding: 20px; } .sm-body { padding: 20px; gap: 24px;} .engine-row { padding: 16px; } }
+
+/* DUAL SLIDER CUSTOM STYLES */
+.dual-slider-container { position: relative; width: 100%; height: 24px; display: flex; align-items: center; }
+.dual-slider-track { position: absolute; width: 100%; height: 6px; border-radius: 4px; pointer-events: none; }
+.dual-slider-input { position: absolute; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; margin: 0; }
+.dual-slider-input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--thumb-color, #111827); cursor: pointer; pointer-events: auto; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+

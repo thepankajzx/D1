@@ -10,6 +10,87 @@ import Icon from '../components/Icon';
 import ScoringModal from '../components/ScoringModal';
 import './AdvancedHabitSelector.css';
 
+const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime }) => {
+  // Determine dynamic max for the slider
+  const [localMax, setLocalMax] = useState(100);
+  
+  useEffect(() => {
+    setLocalMax(Math.max(10, target0 * 1.5, target100 * 1.5));
+  }, [target0, target100]);
+
+  // Calculate percentages for visual track
+  const p0 = Math.min(100, Math.max(0, (target0 / localMax) * 100));
+  const p100 = Math.min(100, Math.max(0, (target100 / localMax) * 100));
+  
+  const minP = Math.min(p0, p100);
+  const maxP = Math.max(p0, p100);
+
+  const trackColor = 'var(--color-surface-container-high)';
+  const greenHex = 'rgba(34, 197, 94, 0.3)';
+  const redHex = 'rgba(239, 68, 68, 0.3)';
+  
+  // Track gradient represents the scoring zone
+  let bg = '';
+  if (direction === 'higher_is_better' || direction === 'higher') {
+    // Score increases from target0 (red side) to target100 (green side)
+    bg = `linear-gradient(to right, 
+      ${trackColor} 0%, 
+      ${trackColor} ${minP}%, 
+      ${redHex} ${minP}%, 
+      ${greenHex} ${maxP}%, 
+      ${trackColor} ${maxP}%, 
+      ${trackColor} 100%)`;
+  } else {
+    // Lower is better: score decreases from target100 (green side) to target0 (red side)
+    bg = `linear-gradient(to right, 
+      ${trackColor} 0%, 
+      ${trackColor} ${minP}%, 
+      ${greenHex} ${minP}%, 
+      ${redHex} ${maxP}%, 
+      ${trackColor} ${maxP}%, 
+      ${trackColor} 100%)`;
+  }
+
+  const formatTime = (mins) => {
+    if (typeof mins !== 'number') return mins;
+    let h = Math.floor(mins / 60);
+    let m = Math.floor(mins % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="w-full mt-4 mb-2">
+      <div className="flex justify-between text-xs text-on-surface-variant font-bold mb-2">
+        <span className="flex flex-col items-center"><span className="text-red-500">0% Score</span> {isTime ? formatTime(target0) : Number.isInteger(target0) ? target0 : target0.toFixed(1)} {unit}</span>
+        <span className="flex flex-col items-center"><span className="text-green-500">100% Score</span> {isTime ? formatTime(target100) : Number.isInteger(target100) ? target100 : target100.toFixed(1)} {unit}</span>
+      </div>
+      
+      <div className="dual-slider-container">
+        <div className="dual-slider-track" style={{ background: bg }} />
+        <input 
+          type="range"
+          min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
+          value={target0}
+          onChange={e => onChange('target0', Number(e.target.value))}
+          className="dual-slider-input"
+          style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
+        />
+        <input 
+          type="range"
+          min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
+          value={target100}
+          onChange={e => onChange('target100', Number(e.target.value))}
+          className="dual-slider-input"
+          style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
+        />
+      </div>
+      <div className="text-[10px] text-center text-on-surface-variant mt-2 opacity-70">
+        Drag dots to set your scoring zone.
+      </div>
+    </div>
+  );
+};
+
 const MAX_FREE_HABITS = 8;
 const MAX_CUSTOM_HABITS = 1;
 
@@ -309,27 +390,18 @@ export default function AdvancedHabitSelector() {
             </div>
           </div>
         )}
-        <label className="ahs-input-label">Target (100% Score)</label>
-        <div className="ahs-control-row">
-          <div className="ahs-form-control">
-            <input 
-              type="number" 
-              value={selectedObj.userTarget100} 
-              onChange={e => handleHabitInputChange(h.id, 'userTarget100', parseFloat(e.target.value) || 0)}
-            />
-          </div>
-          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{selectedObj.unit}</span>
-        </div>
-        <label className="ahs-input-label mt-2">Baseline (0% Score)</label>
-        <div className="ahs-control-row">
-          <div className="ahs-form-control">
-            <input 
-              type="number" 
-              value={selectedObj.userTarget0} 
-              onChange={e => handleHabitInputChange(h.id, 'userTarget0', parseFloat(e.target.value) || 0)}
-            />
-          </div>
-          <span className="text-[0.85rem] text-on-surface-variant font-bold self-center">{selectedObj.unit}</span>
+        <div className="w-full">
+          <DualRangeSlider 
+            target0={selectedObj.userTarget0}
+            target100={selectedObj.userTarget100}
+            direction={h.direction}
+            unit={selectedObj.unit}
+            isTime={h.scoringType === 'time'}
+            onChange={(field, value) => {
+              if (field === 'target0') handleHabitInputChange(h.id, 'userTarget0', value);
+              if (field === 'target100') handleHabitInputChange(h.id, 'userTarget100', value);
+            }}
+          />
         </div>
       </div>
     );
@@ -563,16 +635,19 @@ export default function AdvancedHabitSelector() {
                                           <button type="button" className={`ahs-seg-btn flex-1 ${cbDirection === 'lower' ? 'active' : ''}`} onClick={() => setCbDirection('lower')}>Lower is Better</button>
                                       </div>
                                   </div>
-                                  <div className="ahs-input-group w-full">
-                                      <label className="ahs-input-label">0% Score (Baseline)</label>
-                                      <div className="ahs-form-control">
-                                        <input type={cbType === 'time' ? "time" : "number"} value={cbType === 'time' && typeof cbFloor === 'number' ? '' : cbFloor} onChange={e => setCbFloor(e.target.value)} />
+                                      <div className="w-full mt-4">
+                                        <DualRangeSlider 
+                                          target0={cbFloor}
+                                          target100={cbTarget}
+                                          direction={cbDirection}
+                                          unit={cbType === 'time' ? 'mins' : cbUnitCustom || cbUnit}
+                                          isTime={cbType === 'time'}
+                                          onChange={(field, value) => {
+                                            if (field === 'target0') setCbFloor(value);
+                                            if (field === 'target100') setCbTarget(value);
+                                          }}
+                                        />
                                       </div>
-                                      <label className="ahs-input-label mt-2">100% Score (Target)</label>
-                                      <div className="ahs-form-control">
-                                        <input type={cbType === 'time' ? "time" : "number"} value={cbType === 'time' && typeof cbTarget === 'number' ? '' : cbTarget} onChange={e => setCbTarget(e.target.value)} />
-                                      </div>
-                                  </div>
                                 </>
                               )}
                               <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add to Plan</button>

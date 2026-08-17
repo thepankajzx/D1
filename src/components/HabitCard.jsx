@@ -155,6 +155,21 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
   
+  // Toggle state for duration habits
+  const [displayMode, setDisplayMode] = useState(
+    habit.scoringType === 'duration' 
+      ? (habit.unit?.toLowerCase().startsWith('h') ? 'hours' : 'minutes') 
+      : 'default'
+  );
+
+  const getMultiplier = () => {
+    if (habit.scoringType !== 'duration') return 1;
+    const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
+    if (isBaseHours && displayMode === 'minutes') return 60;
+    if (!isBaseHours && displayMode === 'hours') return 1/60;
+    return 1;
+  };
+  
   useEffect(() => {
     if (entry && entry.rawValue !== undefined) {
       setVal(entry.rawValue);
@@ -304,50 +319,98 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
       case 'number':
       case 'duration':
       default:
-        const maxSlider = Math.max(habit.target100 || 0, habit.target0 || 0, val) * 1.2 || 100;
+        const mult = getMultiplier();
+        const dVal = val * mult;
+        const dTarget100 = (habit.target100 || 0) * mult;
+        const dTarget0 = (habit.target0 || 0) * mult;
+        
+        const maxSlider = Math.max(dTarget100, dTarget0, dVal) * 1.2 || 100;
         const minSlider = 0;
         
-        let sliderStep = '1';
-        if (habit.scoringType === 'number') {
-          if (maxSlider <= 10) sliderStep = '0.5';
-          else if (maxSlider <= 50) sliderStep = '1';
-          else sliderStep = '5';
-        } else {
-          // Duration
-          if (maxSlider <= 24) sliderStep = '0.5'; // Good for hours
-          else if (maxSlider <= 120) sliderStep = '5'; // Good for minutes
-          else sliderStep = '15';
-        }
+        const sliderStep = '0.01'; // Ultra-smooth dragging
+        
+        // Generate Dynamic Slider Track Background
+        const generateGradient = () => {
+          const t100_pct = Math.min(100, Math.max(0, (dTarget100 / maxSlider) * 100));
+          const t0_pct = Math.min(100, Math.max(0, (dTarget0 / maxSlider) * 100));
+          const val_pct = Math.min(100, Math.max(0, (dVal / maxSlider) * 100));
+          
+          const greenHex = '#22c55e40'; // Green with opacity
+          const redHex = '#ef444440'; // Red with opacity
+          const trackColor = 'var(--color-surface-container-high)';
+          const fillHex = 'var(--color-primary)';
+          
+          if (habit.direction === 'higher_is_better') {
+            return `linear-gradient(to right, 
+              ${trackColor} 0%, 
+              ${trackColor} ${val_pct}%, 
+              ${trackColor} ${t100_pct}%, 
+              ${greenHex} ${t100_pct}%, 
+              ${greenHex} 100%)`;
+          } else {
+            return `linear-gradient(to right, 
+              ${greenHex} 0%, 
+              ${greenHex} ${t100_pct}%, 
+              ${trackColor} ${t100_pct}%, 
+              ${trackColor} ${t0_pct}%, 
+              ${redHex} ${t0_pct}%, 
+              ${redHex} 100%)`;
+          }
+        };
+
+        const currentDisplayUnit = habit.scoringType === 'duration' ? (displayMode === 'hours' ? 'hrs' : 'mins') : habit.unit;
         
         return (
           <div className="flex flex-col gap-4 flex-grow justify-end">
+            {habit.scoringType === 'duration' && (
+              <div className="flex justify-center mb-[-8px]">
+                <div className="flex bg-surface-container-high rounded-full p-1 border border-outline-variant/20">
+                  <button 
+                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+                    onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); }}
+                  >
+                    HOURS
+                  </button>
+                  <button 
+                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+                    onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); }}
+                  >
+                    MINS
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between items-center text-xs text-on-surface-variant">
-              <span>0 {habit.unit}</span>
-              <span>Target: {habit.target100} {habit.unit}</span>
+              <span>0 {currentDisplayUnit}</span>
+              <span>Target: {Number.isInteger(dTarget100) ? dTarget100 : dTarget100.toFixed(2)} {currentDisplayUnit}</span>
             </div>
             <div className="flex flex-wrap items-center gap-4">
-                <input 
-                  type="range" 
-                  aria-label={`Target slider for ${habit.name}`}
-                  min={minSlider} 
-                  max={maxSlider} 
-                  step={sliderStep}
-                  value={val}
-                  onChange={(e) => setVal(Number(e.target.value))}
-                  onPointerUp={(e) => handleChange(Number(e.target.value))}
-                  onTouchEnd={(e) => handleChange(Number(e.target.value))}
-                  className="custom-slider flex-grow" 
-                />
+                <div className="relative flex-grow h-4 flex items-center">
+                  <div className="absolute inset-y-0 left-0 right-0 rounded-sm pointer-events-none" style={{ background: generateGradient(), height: '4px', top: '6px' }} />
+                  <div className="absolute inset-y-0 left-0 rounded-sm pointer-events-none" style={{ background: 'var(--color-primary)', width: `${Math.min(100, Math.max(0, (dVal / maxSlider) * 100))}%`, height: '4px', top: '6px' }} />
+                  <input 
+                    type="range" 
+                    aria-label={`Target slider for ${habit.name}`}
+                    min={minSlider} 
+                    max={maxSlider} 
+                    step={sliderStep}
+                    value={dVal}
+                    onChange={(e) => setVal(Number(e.target.value) / mult)}
+                    onPointerUp={(e) => handleChange(Number(e.target.value) / mult)}
+                    onTouchEnd={(e) => handleChange(Number(e.target.value) / mult)}
+                    className="custom-slider w-full !bg-transparent absolute inset-0 z-10 m-0" 
+                  />
+                </div>
                 <div className="relative flex items-center">
                     <input
                       type="number"
                       aria-label={`Target value for ${habit.name}`}
                       min="0"
                       step="any"
-                      value={val === 0 ? '' : val}
+                      value={val === 0 ? '' : (Number.isInteger(dVal) ? dVal : parseFloat(dVal.toFixed(2)))}
                       placeholder="0"
-                      onChange={(e) => setVal(Number(e.target.value))}
-                      onBlur={(e) => handleChange(Number(e.target.value))}
+                      onChange={(e) => setVal(Number(e.target.value) / mult)}
+                      onBlur={(e) => handleChange(Number(e.target.value) / mult)}
                       onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                               e.currentTarget.blur();
@@ -355,7 +418,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                       }}
                       className="w-20 bg-surface-container border border-outline-variant rounded-md px-2 py-1.5 text-center font-mono-data text-primary focus:border-primary focus:outline-none transition-colors"
                     />
-                    {habit.unit && <span className="ml-2 text-xs font-bold text-on-surface-variant tracking-wider">{habit.unit}</span>}
+                    {currentDisplayUnit && <span className="ml-2 text-xs font-bold text-on-surface-variant tracking-wider">{currentDisplayUnit}</span>}
                 </div>
             </div>
           </div>
