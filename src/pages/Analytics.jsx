@@ -564,46 +564,26 @@ export default function Analytics() {
           <span className={`text-[9px] sm:text-[10px] font-bold shrink-0 ${isUp ? 'text-perf-10' : 'text-error'}`}>{diffText}</span>
         </div>
 
-        {/* 2. Best & Worst Day - Slim Split Row */}
-        <div className="flex items-stretch justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm gap-0 hover:border-outline-variant/80 transition-colors divide-x divide-outline-variant/50">
-          <div className="flex-1 flex justify-between items-center pr-3 sm:pr-4">
-             <div className="flex flex-col">
-               <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Best</span>
-               <span className="text-[9px] sm:text-[10px] text-on-surface-variant truncate">
-                 {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
-               </span>
-             </div>
-             <span className="text-lg sm:text-xl font-bold text-perf-10 leading-none">{displayBestScore || 0}%</span>
+        {/* 2. Best, Worst & Tracked - Combined Slim Row */}
+        <div className="flex items-stretch justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm hover:border-outline-variant/80 transition-colors divide-x divide-outline-variant/50">
+          <div className="flex-1 flex flex-col items-start pr-2 min-w-0">
+             <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Best</span>
+             <span className="text-base sm:text-lg font-bold text-perf-10 leading-none my-0.5">{displayBestScore || 0}%</span>
+             <span className="text-[8px] sm:text-[9px] text-on-surface-variant truncate w-full">
+               {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
+             </span>
           </div>
-          <div className="flex-1 flex justify-between items-center pl-3 sm:pl-4">
-             <div className="flex flex-col">
-               <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Worst</span>
-               <span className="text-[9px] sm:text-[10px] text-on-surface-variant truncate">
-                 {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
-               </span>
-             </div>
-             <span className="text-lg sm:text-xl font-bold text-error leading-none">{displayLowestScore || 0}%</span>
+          <div className="flex-1 flex flex-col items-start px-2 min-w-0">
+             <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Worst</span>
+             <span className="text-base sm:text-lg font-bold text-error leading-none my-0.5">{displayLowestScore || 0}%</span>
+             <span className="text-[8px] sm:text-[9px] text-on-surface-variant truncate w-full">
+               {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
+             </span>
           </div>
-        </div>
-
-        {/* 3. Tracked Days - Slim Row */}
-        <div className="flex items-center justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm gap-2 hover:border-outline-variant/80 transition-colors">
-          <div className="flex items-center gap-3">
-             <span className="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tracked</span>
-             <div className="flex items-baseline gap-1">
-                 <span className="text-lg sm:text-xl font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
-                 <span className="text-[9px] sm:text-[10px] text-on-surface-variant uppercase">/ {totalPeriodDays} Days</span>
-             </div>
-          </div>
-          
-          <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <path className="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
-              <path className="text-primary" strokeDasharray={`${trackedRatio}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[8px] font-bold">{trackedRatio}%</span>
-            </div>
+          <div className="flex-1 flex flex-col items-start pl-2 min-w-0">
+             <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Tracked</span>
+             <span className="text-base sm:text-lg font-bold text-primary leading-none my-0.5">{breakdownHabit.trackedDays || 0}</span>
+             <span className="text-[8px] sm:text-[9px] text-on-surface-variant truncate w-full">/ {totalPeriodDays} Days</span>
           </div>
         </div>
       </div>
@@ -611,12 +591,12 @@ export default function Analytics() {
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full">
+    <div className="flex flex-col gap-4 w-full">
       {/* Header & Date Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 sm:gap-4">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Performance Analytics</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">Analyze your habit consistency and intensity over time.</p>
+          <h1 className="font-headline-sm sm:font-headline-lg text-headline-sm sm:text-headline-lg text-on-surface mb-1">Performance Analytics</h1>
+          <p className="text-[11px] sm:font-body-md sm:text-body-md text-on-surface-variant">Analyze your habit consistency and intensity over time.</p>
         </div>
         
         <div className="flex flex-col items-end gap-2 relative z-20" ref={dateSelectorRef}>
@@ -698,23 +678,19 @@ export default function Analytics() {
         {/* ROW 2: Sleek Horizontal Habit Selector Tab Bar + View Toggle */}
         <div className="flex flex-col gap-2.5 mt-0 mb-2 sticky top-[0px] z-30 bg-surface/95 backdrop-blur-md py-2 border-b border-outline-variant/30">
           <div className="flex flex-col items-center justify-between gap-2.5">
-              {/* Wrapped Pills instead of horizontally scrolling */}
-              <div className="flex w-full flex-wrap justify-center items-center gap-1.5">
-                 <button 
-                    onClick={() => setSelectedHabit('overall')}
-                    className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
-                 >
-                    Overall
-                 </button>
-                 {habits.map(h => (
-                    <button
-                        key={h.id}
-                        onClick={() => setSelectedHabit(h.id)}
-                        className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
-                    >
-                        {h.name}
-                    </button>
-                 ))}
+              {/* Native Dropdown instead of Wrapped Pills */}
+              <div className="relative flex-1 w-full sm:max-w-[250px]">
+                <select
+                   value={selectedHabit}
+                   onChange={(e) => setSelectedHabit(e.target.value)}
+                   className="w-full appearance-none bg-surface border border-outline-variant text-on-surface font-bold text-xs rounded-full py-1.5 pl-4 pr-8 outline-none focus:border-primary shadow-sm"
+                >
+                   <option value="overall">Overall Performance</option>
+                   {habits.map(h => (
+                     <option key={h.id} value={h.id}>{h.name}</option>
+                   ))}
+                </select>
+                <Icon name="expand_more" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
               </div>
 
               {/* View Toggle Icon Buttons */}
