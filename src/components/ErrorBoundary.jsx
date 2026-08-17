@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from './Icon';
+import { logErrorToDb } from '../lib/logger';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -30,6 +31,7 @@ export class ErrorBoundary extends React.Component {
       sessionStorage.removeItem('chunk_load_error_reloaded');
       this.setState({ error, errorInfo });
       console.error("ErrorBoundary caught an error", error, errorInfo);
+      logErrorToDb(error, errorInfo);
     }
   }
 

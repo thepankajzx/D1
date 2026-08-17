@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { logErrorToDb } from '../lib/logger';
 import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
@@ -53,6 +54,7 @@ export function DataProvider({ children }) {
         }
       } catch (err) {
         console.error("Error loading user doc:", err);
+        logErrorToDb(err);
       }
 
       // Fetch habits
@@ -64,6 +66,7 @@ export function DataProvider({ children }) {
         localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
       } catch (err) {
         console.error("Error loading habits:", err);
+        logErrorToDb(err);
       }
 
       // Fetch summaries
@@ -78,10 +81,12 @@ export function DataProvider({ children }) {
         localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
       } catch (err) {
         console.error("Error loading summaries:", err);
+        logErrorToDb(err);
       }
       
     } catch (error) {
       console.error("Critical error in loadGlobalData:", error);
+      logErrorToDb(error);
     } finally {
       setLoadingData(false);
     }
