@@ -694,8 +694,21 @@ export default function AdvancedHabitSelector() {
                 <div className="ahs-category-section">
                   <div className="ahs-habits-grid items-start">
                     
-                    {/* CUSTOM HABIT BUILDER (Only visible in Custom tab) */}
-                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && (() => {
+                    {/* CUSTOM HABIT BUILDER */}
+                    {activeCategories.includes('Selected') && !activeCategories.includes('Custom') && (
+                      <button 
+                        onClick={() => setActiveCategories(['Custom'])}
+                        className="w-full bg-black text-white rounded-xl py-4 px-5 font-bold flex justify-between items-center mb-6 shadow-md hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon name="add_circle" className="text-2xl" />
+                          <span className="text-base">Create Custom Habit</span>
+                        </div>
+                        <Icon name="chevron_right" />
+                      </button>
+                    )}
+
+                    {activeCategories.includes('Custom') && (() => {
                       const existingCustomsCount = existingHabits.filter(h => h.category === 'custom_' || h.category === 'Custom').length;
                       const isFreeUsed = (customHabits.length + existingCustomsCount) >= 1;
                       const isPro = userDoc?.isPro;
@@ -857,7 +870,7 @@ export default function AdvancedHabitSelector() {
                                  </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]) }} className="w-8 h-8 rounded-full bg-surface hover:bg-surface-variant flex items-center justify-center text-on-surface border border-outline-variant/50 transition-colors">
+                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]) }} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-800 transition-colors">
                                     <Icon name="edit" className="text-[16px]" />
                                  </button>
                                  <button onClick={(e) => deleteCustomHabit(ch.id, e)} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
@@ -913,7 +926,7 @@ export default function AdvancedHabitSelector() {
                                  <span className="font-bold text-on-surface text-sm sm:text-base">{habit.name}</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(habit.id) ? prev.filter(id => id !== habit.id) : [...prev, habit.id]) }} className="w-8 h-8 rounded-full bg-surface hover:bg-surface-variant flex items-center justify-center text-on-surface border border-outline-variant/50 transition-colors">
+                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(habit.id) ? prev.filter(id => id !== habit.id) : [...prev, habit.id]) }} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-800 transition-colors">
                                     <Icon name="edit" className="text-[16px]" />
                                  </button>
                                  <button onClick={(e) => { e.stopPropagation(); toggleHabit(habit); }} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
@@ -985,18 +998,25 @@ export default function AdvancedHabitSelector() {
             </div>
             
             <div className="ahs-summary-list-container max-w-3xl mx-auto">
-              {[...selectedHabits, ...customHabits].map(h => (
+              {[...selectedHabits, ...customHabits].map(h => {
+                const formatReviewTime = (mins) => {
+                    if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
+                    let hStr = Math.floor(mins / 60);
+                    let mStr = Math.floor(mins % 60);
+                    return `${hStr.toString().padStart(2, '0')}:${mStr.toString().padStart(2, '0')}`;
+                };
+                return (
                 <div key={h.id} className="ahs-summary-item">
                     <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name={h.icon || 'star'} /></div>
                     <div className="ahs-si-details">
                         <div className="ahs-si-title">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
                         <div className="ahs-si-target">
-                            {h.scoringType === 'binary' ? 'Type: Yes / No' : `Target: ${h.userTarget100} ${h.unit || ''} (0%: ${h.userTarget0})`}
+                            {h.scoringType === 'binary' ? 'Type: Yes / No' : h.scoringType === 'time' ? `Target: ${formatReviewTime(h.userTarget100)} (0%: ${formatReviewTime(h.userTarget0)})` : `Target: ${h.userTarget100} ${h.unit || ''} (0%: ${h.userTarget0})`}
                         </div>
                     </div>
                     <div className="ahs-si-check"><Icon name="check_circle" className="text-green-500 text-2xl" /></div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}
