@@ -531,93 +531,33 @@ export default function Analytics() {
     const color = isOverall ? '#17b8c8' : colors[globalIndex % colors.length];
 
     return (
-      <div className="flex flex-col w-full overflow-hidden">
-        {/* HEADER */}
-        <section className="px-[5px] sm:px-[5px] pt-[16px] sm:pt-[18px] pb-[14px] sm:pb-[16px]">
-            <div className="flex items-center justify-between gap-[12px]">
-                <div className="flex items-center gap-[10px] min-w-0">
-                    <span className="w-[11px] h-[11px] sm:w-[13px] sm:h-[13px] min-w-[11px] sm:min-w-[13px] rounded-full" style={{ backgroundColor: color }}></span>
-                    <h1 className="text-[21px] sm:text-[23px] leading-[1.1] font-bold tracking-[-0.35px] text-[#15171c] truncate">
-                        {breakdownHabit.name || 'Unknown'}
-                    </h1>
-                </div>
-                <div className="inline-flex items-center justify-center gap-[8px] h-[40px] sm:h-[42px] px-[10px] sm:px-[12px] border border-[#e6e7eb] rounded-full bg-white text-[#15171c] text-[12px] sm:text-[13px] font-semibold whitespace-nowrap shrink-0">
-                    {timeframeLabel}
-                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="17" rx="3"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                </div>
-            </div>
-            {breakdownHabit.description && (
-              <p className="mt-[8px] ml-[22px] sm:ml-[23px] text-[#747985] text-[12px] sm:text-[13px] leading-[1.35]">
-                  {breakdownHabit.description}
-              </p>
-            )}
-        </section>
-
-        <div className="h-[1px] bg-[#e6e7eb] mx-[15px] sm:mx-[18px]"></div>
-
-        {/* TARGET */}
-        <section className="p-[14px_15px] sm:p-[16px_18px]">
-            <div className="bg-[#151515] text-white rounded-[18px] p-[14px] sm:p-[16px]">
-                <div className="flex items-center justify-between gap-[10px] mb-[14px]">
-                    <span className="text-[#b6b9bf] text-[14px] font-medium">Average</span>
-                    <div className="flex items-center gap-[9px]">
-                        <span 
-                          className="inline-block px-[8px] py-[5px] rounded-full text-[11px] font-bold"
-                          style={{
-                            color: isUp ? '#4adc93' : '#ef4444',
-                            backgroundColor: isUp ? 'rgba(74, 220, 147, 0.09)' : 'rgba(239, 68, 68, 0.09)'
-                          }}
-                        >
-                            {diffText}
-                        </span>
-                        <span className="text-[18px] sm:text-[17px] font-bold">{Math.round(breakdownHabit.avgScore) || 0}%</span>
-                    </div>
-                </div>
-                <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-[3px] w-full">
-                    {Array.from({ length: 30 }, (_, i) => {
-                        const filledCount = Math.round(((Math.round(breakdownHabit.avgScore) || 0) / 100) * 30);
-                        const isFilled = i < filledCount;
-                        return (
-                            <span 
-                                key={i}
-                                className="h-[21px] sm:h-[23px] rounded-[4px]"
-                                style={{ backgroundColor: isFilled ? color : '#272727' }}
-                            ></span>
-                        );
-                    })}
-                </div>
-            </div>
-        </section>
-
-        {/* STATS */}
-        <section className="px-[15px] sm:px-[18px] pb-[14px] sm:pb-[16px]">
-            <div className="grid grid-cols-3 border border-[#e6e7eb] rounded-[18px] overflow-hidden">
-                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
-                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">{bestLabel}</div>
-                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#18a56c]">{displayBestScore || 0}%</div>
-                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
-                        {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-                    </div>
-                </div>
-                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative border-r border-[#e6e7eb]">
-                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">{worstLabel}</div>
-                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#ef4444]">{displayLowestScore || 0}%</div>
-                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">
-                        {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-                    </div>
-                </div>
-                <div className="min-w-0 p-[14px_6px] sm:p-[15px_8px] text-center relative">
-                    <div className="text-[#747985] text-[10px] font-bold tracking-[0.25px] uppercase mb-[7px]">Total Days</div>
-                    <div className="text-[19px] sm:text-[21px] leading-none font-[750] text-[#4f7cff]">{breakdownHabit.trackedDays || 0}</div>
-                    <div className="text-[#747985] text-[9px] sm:text-[9.5px] mt-[7px] leading-[1.25] whitespace-nowrap">DAYS TRACKED</div>
-                </div>
-            </div>
-        </section>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full shrink-0">
+        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
+          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Average Score</span>
+          <div className="flex items-end gap-2">
+            <span className="text-3xl font-display-sm font-bold text-on-surface leading-none">{Math.round(breakdownHabit.avgScore) || 0}%</span>
+            <span className={`text-[11px] font-bold mb-1 ${isUp ? 'text-perf-10' : 'text-error'}`}>{diffText}</span>
+          </div>
+        </div>
+        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
+          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">{bestLabel}</span>
+          <span className="text-3xl font-display-sm font-bold text-perf-10 leading-none">{displayBestScore || 0}%</span>
+          <span className="text-[11px] text-on-surface-variant mt-1 truncate">
+            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
+          </span>
+        </div>
+        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
+          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">{worstLabel}</span>
+          <span className="text-3xl font-display-sm font-bold text-error leading-none">{displayLowestScore || 0}%</span>
+          <span className="text-[11px] text-on-surface-variant mt-1 truncate">
+            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
+          </span>
+        </div>
+        <div className="flex flex-col p-4 bg-surface border border-outline-variant rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
+          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Total Tracked</span>
+          <span className="text-3xl font-display-sm font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
+          <span className="text-[11px] text-on-surface-variant mt-1 uppercase">Days</span>
+        </div>
       </div>
     );
   };
@@ -705,105 +645,72 @@ export default function Analytics() {
           <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-4"></div>
         </div>
       ) : (
-      <div className="flex flex-col gap-8 w-full animate-in fade-in duration-500">
-      {/* View Toggle */}
-      <div className="flex justify-center mb-6 w-full mt-2">
-        <div className="flex w-full bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm">
-          <button 
-            onClick={() => setViewMode('charts')}
-            className={`flex-1 px-8 md:px-0 py-3 md:py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
-          >
-            Charts
-          </button>
-          <button 
-            onClick={() => setViewMode('heatmap')}
-            className={`flex-1 px-8 md:px-0 py-3 md:py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
-          >
-            Heatmap
-          </button>
-        </div>
-      </div>
-
-      {/* Main Chart & Heatmap */}
-      {isFutureOnly ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center">
-            <Icon name="event_upcoming" className=" text-5xl text-on-surface-variant mb-4" />
-            <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
-            <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
-              Ye data abhi aana baaki hai. Future ki dates mein koi habit tracking data nahi hai. Please past ya current date select karein.
-            </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-6">
-          
-            {/* Pill Selectors - Now visible in both Charts and Heatmap views */}
-            <div className="flex flex-wrap gap-2 mb-2">
-                <button 
-                    onClick={() => setSelectedHabit('overall')}
-                    className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${selectedHabit === 'overall' ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
-                >
-                    Overall
-                </button>
-                {habits.map(h => {
-                    const isSelected = selectedHabit === h.id;
-                    return (
-                        <button
-                            key={h.id}
-                            onClick={() => {
-                                if (isSelected) {
-                                    setSelectedHabit('overall');
-                                } else {
-                                    setSelectedHabit(h.id);
-                                }
-                            }}
-                            className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${isSelected ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-variant'}`}
-                        >
-                            {h.name}
-                        </button>
-                    );
-                })}
-            </div>
+      <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
         
-        {/* Trend Line Chart */}
-        {viewMode === 'charts' && (
-          <div className="w-full flex flex-col pt-4">
-          <div className="flex flex-col mb-6 gap-4">
-            <div className="flex justify-between items-center">
-                <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
-                {false && (
-                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
-                        <button 
-                          onClick={() => setChartMode('combined')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Combined
-                        </button>
-                        <button 
-                          onClick={() => setChartMode('separate')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Separate
-                        </button>
-                    </div>
-                )}
-            </div>
+        {/* ROW 2: Sleek Horizontal Habit Selector Tab Bar + View Toggle */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-2 mb-2">
+          {/* Horizontal Scrollable Tabs */}
+          <div className="flex w-full md:w-auto overflow-x-auto custom-scrollbar pb-1 md:pb-0 items-center gap-2">
+             <button 
+                onClick={() => setSelectedHabit('overall')}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+             >
+                Overall
+             </button>
+             {habits.map(h => (
+                <button
+                    key={h.id}
+                    onClick={() => setSelectedHabit(h.id)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+                >
+                    {h.name}
+                </button>
+             ))}
           </div>
 
-
-          
-          <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
-          {viewMode === 'charts' && (
-            <div className="flex flex-col gap-6 w-full">
-              {renderCustomKPIHeader(selectedHabit)}
-              <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm mt-2">
-                <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '250px', width: '100%' }} />
-              </div>
-            </div>
-          )}
+          {/* View Toggle Icon Buttons */}
+          <div className="flex shrink-0 bg-surface border border-outline-variant rounded-full p-1 shadow-sm">
+             <button
+                onClick={() => setViewMode('charts')}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'charts' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+             >
+                <Icon name="show_chart" className="text-sm" /> Chart
+             </button>
+             <button
+                onClick={() => setViewMode('heatmap')}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'heatmap' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+             >
+                <Icon name="grid_view" className="text-sm" /> Heatmap
+             </button>
           </div>
         </div>
-        )}
+
+        {/* Main Chart & Heatmap */}
+        {isFutureOnly ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center">
+              <Icon name="event_upcoming" className=" text-5xl text-on-surface-variant mb-4" />
+              <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
+              <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
+                Ye data abhi aana baaki hai. Future ki dates mein koi habit tracking data nahi hai. Please past ya current date select karein.
+              </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4">
+            
+              {/* ROW 3: KPIs */}
+              {renderCustomKPIHeader(selectedHabit)}
+          
+              {/* Trend Line Chart */}
+              {viewMode === 'charts' && (
+                <div className="w-full flex flex-col pt-2">
+                  <div className="flex-grow w-full flex flex-col min-h-[300px]">
+                    <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm">
+                      <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '350px', width: '100%' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
         {/* Heatmap */}
         {viewMode === 'heatmap' && (
@@ -873,10 +780,7 @@ export default function Analytics() {
             </div>
           </div>
           
-          {/* All-Time Average Widget (Single Selection - Heatmap) */}
-          <div className="mb-6 flex shrink-0 w-full">
-            {renderCustomKPIHeader(selectedHabit)}
-          </div>
+
 
           <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
             {heatmapPeriod === 'day' ? (
