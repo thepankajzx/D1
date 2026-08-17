@@ -492,54 +492,47 @@ export default function Analytics() {
   }, [rangeOption, startDate, allSummaries, selectedHabit, kpis, chartData]);
 
   return (
-    <div className="flex flex-col gap-6 w-full -mt-2">
-      {/* Header & Date Controls */}
-      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
-        <h1 className="text-[22px] sm:text-[28px] font-bold text-on-surface truncate tracking-tight">Performance Analytics</h1>
+    <div className="flex flex-col gap-4 w-full -mt-2">
+      {/* 1. Header & Date Controls */}
+      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1">
+        <h1 className="text-[22px] sm:text-[28px] font-bold text-[#15171c] truncate tracking-tight">Performance Analytics</h1>
         
-        <div className="relative shrink-0 z-20" ref={dateSelectorRef}>
-          <div className="relative">
-            <select 
-              value={rangeOption}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === 'custom' && !userDoc?.isPro) {
-                  setShowProUpgradeModal(true);
-                  // Reset select to previous value (this is a bit tricky with just state, but setting state works)
-                  return;
-                }
-                setRangeOption(val);
-                if (val === 'custom') {
-                  setIsCustomDropdownOpen(true);
-                } else {
-                  setIsCustomDropdownOpen(false);
-                }
-              }}
-              className="appearance-none bg-surface-container-lowest border border-outline-variant/50 text-on-surface font-semibold text-[12px] sm:text-[13px] rounded-full pl-3 sm:pl-4 pr-8 sm:pr-9 py-1.5 sm:py-2 shadow-sm focus:outline-none hover:bg-surface-variant/30 transition-colors cursor-pointer"
-            >
-              <option value="7">7 Days</option>
-              <option value="30">30 Days</option>
-              <option value="90">90 Days</option>
-              <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
-            </select>
-            <Icon name="calendar_today" className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[14px] sm:text-[16px]" />
-          </div>
+        {/* Timeframe Selector Dropdown */}
+        <div className="relative shrink-0 z-20">
+          <select 
+            value={rangeOption}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === 'custom' && !userDoc?.isPro) {
+                setShowProUpgradeModal(true);
+                return;
+              }
+              setRangeOption(val);
+              if (val === 'custom') {
+                setIsCustomDropdownOpen(true);
+              } else {
+                setIsCustomDropdownOpen(false);
+              }
+            }}
+            className="appearance-none bg-white border border-[#e6e7eb] text-[#15171c] font-semibold text-[13px] rounded-full pl-3 pr-8 py-1.5 shadow-sm focus:outline-none hover:bg-[#f9fafb] transition-colors cursor-pointer"
+          >
+            <option value="7">7 Days</option>
+            <option value="30">30 Days</option>
+            <option value="90">90 Days</option>
+            <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
+          </select>
+          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#747985] pointer-events-none text-[18px]" />
           
           {/* Inline custom date panel */}
-          {isCustomDropdownOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-full p-1.5 flex flex-row items-center shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-max max-w-[calc(100vw-32px)] overflow-hidden">
-              <div className="relative flex-1 min-w-0 sm:w-[140px]">
-                <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
-                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs sm:text-sm rounded-full py-2 pl-8 pr-2 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+          {isCustomDropdownOpen && rangeOption === 'custom' && (
+            <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-[16px] p-2 flex flex-col sm:flex-row items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-max max-w-[calc(100vw-32px)]">
+              <div className="relative flex-1 min-w-0 sm:w-[130px] border border-outline-variant/40 rounded-full px-2 bg-surface-container-lowest">
+                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs py-1.5 bg-transparent border-none text-on-surface focus:outline-none appearance-none" />
               </div>
-              
-              <div className="w-[1px] h-6 bg-outline-variant/40 mx-1 shrink-0"></div>
-              
-              <div className="relative flex-1 min-w-0 sm:w-[140px]">
-                <Icon name="calendar_today" className=" absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant pointer-events-none" />
-                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs sm:text-sm rounded-full py-2 pl-8 pr-2 bg-transparent border-none text-on-surface focus:outline-none focus:bg-surface-variant/30 transition-colors appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
+              <span className="text-on-surface-variant text-xs font-bold">TO</span>
+              <div className="relative flex-1 min-w-0 sm:w-[130px] border border-outline-variant/40 rounded-full px-2 bg-surface-container-lowest">
+                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs py-1.5 bg-transparent border-none text-on-surface focus:outline-none appearance-none" />
               </div>
-              
               <button 
                 onClick={() => {
                    if(customStart && customEnd) {
@@ -550,9 +543,9 @@ export default function Analytics() {
                       alert("Please select both start and end dates.");
                    }
                 }}
-                className="h-9 w-9 ml-1 shrink-0 rounded-full bg-on-surface text-surface flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
+                className="h-7 px-3 rounded-full bg-[#151515] text-white text-xs font-bold hover:bg-[#2a2a2a] transition-colors shadow-sm"
               >
-                <Icon name="arrow_forward" className=" text-[18px]" />
+                Apply
               </button>
             </div>
           )}
@@ -561,406 +554,249 @@ export default function Analytics() {
 
       {/* Dynamic Content */}
       {loadingData ? (
-        <div className="flex flex-col gap-8 w-full animate-pulse">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-[120px] bg-surface-container-high rounded-2xl"></div>)}
+        <div className="flex flex-col gap-8 w-full animate-pulse mt-4">
+          <div className="h-64 bg-surface-container-high rounded-2xl w-full"></div>
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-[120px] bg-surface-container-high rounded-2xl"></div>)}
           </div>
-          <div className="h-64 bg-surface-container-high rounded-2xl w-full mt-4"></div>
         </div>
       ) : (
-      <div className="flex flex-col gap-8 w-full animate-in fade-in duration-500">
-      {/* View Toggle & Habit Selector Row */}
-      <div className="flex items-center justify-between gap-4 w-full mt-2">
-        {/* Chart/Heatmap Toggle */}
-        <div className="flex bg-surface-container rounded-full p-[3px] sm:p-1 border border-outline-variant shadow-sm shrink-0">
-          <button 
-            onClick={() => setViewMode('charts')}
-            className={`px-4 sm:px-6 py-[5px] sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
-          >
-            Chart
-          </button>
-          <button 
-            onClick={() => setViewMode('heatmap')}
-            className={`px-4 sm:px-6 py-[5px] sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
-          >
-            Heatmap
-          </button>
-        </div>
-        
-        {/* Habit Selector Dropdown */}
-        <div className="relative shrink-0 max-w-[170px] sm:max-w-[200px]">
-          <select 
-            value={selectedHabit} 
-            onChange={e => setSelectedHabit(e.target.value)}
-            className="w-full bg-[#151515] text-white border border-outline-variant/30 font-semibold text-[12px] sm:text-[13px] rounded-full pl-4 pr-[28px] py-[6px] sm:py-[8px] appearance-none focus:outline-none shadow-sm truncate"
-          >
-            <option value="overall">Overall Performance</option>
-            {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-          </select>
-          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none text-[18px]" />
-        </div>
-      </div>
-
-      {/* Main Chart & Heatmap */}
-      {isFutureOnly ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center">
-            <Icon name="event_upcoming" className=" text-5xl text-on-surface-variant mb-4" />
-            <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
-            <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
-              Ye data abhi aana baaki hai. Future ki dates mein koi habit tracking data nahi hai. Please past ya current date select karein.
-            </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5 w-full animate-in fade-in duration-500 mt-2">
+      
+        {/* Chart/Heatmap Toggle & Habit Selector Row */}
+        <div className="flex items-center justify-between gap-4 w-full">
+          {/* Chart/Heatmap Toggle */}
+          <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0">
+            <button 
+              onClick={() => setViewMode('charts')}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-white text-[#15171c] shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            >
+              Chart
+            </button>
+            <button 
+              onClick={() => setViewMode('heatmap')}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-white text-[#15171c] shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            >
+              Heatmap
+            </button>
+          </div>
           
-            {/* Pill Selectors have been moved to the dropdown alongside Chart/Heatmap toggle */}
-        
-        {/* Trend Line Chart */}
-        {viewMode === 'charts' && (
-          <div className="w-full flex flex-col pt-2 sm:pt-4">
-          <div className="flex-grow w-full flex flex-col min-h-[300px]">
-          {viewMode === 'charts' && (
-            <div className="flex flex-col gap-4 w-full">
-              {renderCustomKPIHeader(selectedHabit)}
-              <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm">
-                <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '250px', width: '100%' }} />
-              </div>
-            </div>
-          )}
+          {/* Habit Selector Dropdown */}
+          <div className="relative shrink-0 flex-1 max-w-[150px]">
+            <select 
+              value={selectedHabit} 
+              onChange={e => setSelectedHabit(e.target.value)}
+              className="w-full bg-white text-[#15171c] border border-outline-variant/50 font-semibold text-[13px] rounded-full pl-4 pr-8 py-2 appearance-none focus:outline-none shadow-sm truncate"
+            >
+              <option value="overall">Overall</option>
+              {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+            <Icon name="keyboard_arrow_down" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
           </div>
         </div>
-        )}
 
-        {/* Heatmap */}
-        {viewMode === 'heatmap' && (
-        <div className={isZoomedOut ? 'fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col p-4 sm:p-8 overflow-hidden' : 'w-full'}>
-          {isZoomedOut && (
-            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-[10000]">
-              <button 
-                onClick={() => setIsZoomedOut(false)} 
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-md transition-colors shadow-lg"
-                title="Close Zoom"
-              >
-                <Icon name="close" className="" />
-              </button>
-            </div>
-          )}
-          <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
-            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full flex flex-col pt-2 sm:pt-4'}`}>
-          <div className="flex justify-start items-center mb-4 shrink-0 gap-2 flex-wrap">
-            
-            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-              {/* Heatmap Period Toggle */}
-              <div className="flex bg-surface-container-lowest rounded-full p-1 border border-outline-variant/50 shadow-sm mr-2">
-                 <button
-                    onClick={() => setHeatmapPeriod('day')}
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-                 >
-                    Day
-                 </button>
-                 <button
-                    onClick={() => setHeatmapPeriod('week')}
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-                 >
-                    Week
-                 </button>
-                 <button
-                    onClick={() => setHeatmapPeriod('month')}
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-                 >
-                    Month
-                 </button>
+        {/* Hero Performance Card */}
+        {isFutureOnly ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-white border border-[#e6e7eb] rounded-[18px] shadow-sm text-center">
+              <Icon name="event_upcoming" className="text-5xl text-on-surface-variant mb-4" />
+              <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
+              <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
+                No data available for future dates. Please select a valid past or current date range.
+              </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-[18px] border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col pt-5 pb-2 overflow-hidden relative">
+            <div className="px-5 flex justify-between items-start mb-2">
+              <div className="flex flex-col">
+                <span className="text-[#15171c] font-bold text-[14px]">Overall Performance</span>
+                <span className="text-[44px] font-black text-[#4f7cff] leading-[1.1] tracking-tight">{Math.round(kpis.averageScore || 0)}%</span>
               </div>
-
-              {heatmapPeriod === 'day' && (
-                <button 
-                    onClick={() => setShowPercentages(!showPercentages)}
-                    className="flex items-center gap-1 h-7 sm:h-8 rounded-[10px] border border-outline-variant/50 p-1 transition-all shadow-sm bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant"
-                    title={showPercentages ? 'Hide %' : 'Show %'}
-                >
-                    <div className={`flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-sm border border-outline-variant/30 transition-colors ${showPercentages ? 'bg-[#151515] text-white' : 'bg-surface text-on-surface-variant'}`}>
-                      <Icon name={showPercentages ? 'visibility_off' : 'visibility'} className=" text-[12px] sm:text-[14px]" />
-                    </div>
-                    <div className="w-[1px] h-3 bg-outline-variant/50"></div>
-                    <span className="text-[10px] sm:text-[11px] font-bold pr-1 sm:pr-1.5 leading-none self-center">%</span>
-                </button>
-              )}
               
-              {!isZoomedOut && (
-              <button 
-                  onClick={() => setIsZoomedOut(true)}
-                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-[10px] border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm text-on-surface-variant hover:text-on-surface"
-                  title="Zoom Out"
-              >
-                  <Icon name="fullscreen" className=" text-[16px] sm:text-[18px]" />
-              </button>
+              <div className="flex flex-col items-end">
+                <span 
+                  className="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-bold leading-none mb-1 gap-0.5"
+                  style={{
+                    color: trendData.isUp ? '#18a56c' : '#ef4444',
+                    backgroundColor: trendData.isUp ? 'rgba(24, 165, 108, 0.1)' : 'rgba(239, 68, 68, 0.1)'
+                  }}
+                >
+                  {trendData.text}
+                </span>
+                <span className="text-[#a0a5b1] text-[11px] font-medium">{trendData.label}</span>
+              </div>
+            </div>
+
+            {/* ECharts Instance or Heatmap */}
+            <div className="w-full flex-grow min-h-[180px] -mb-2">
+              {viewMode === 'charts' ? (
+                <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '180px', width: '100%' }} />
+              ) : (
+                <div className="px-4 pb-4 h-[200px] flex items-center justify-center">
+                  <span className="text-on-surface-variant text-sm font-medium bg-surface-container p-3 rounded-xl border border-outline-variant/50">Switch to Chart view for Hero line graph.</span>
+                </div>
               )}
             </div>
           </div>
-          
-          {/* All-Time Average Widget (Single Selection - Heatmap) */}
-          <div className="mb-6 flex shrink-0 w-full">
-            {renderCustomKPIHeader(selectedHabit)}
-          </div>
+        )}
 
-          <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
-            {heatmapPeriod === 'day' ? (
-              <div className={`flex ${isZoomedOut ? 'flex-wrap justify-center items-start gap-x-12 gap-y-12' : 'gap-8'} w-full`}>
-                {heatmapGrid.map((monthData, mIndex) => (
-                  <div key={mIndex} className="flex gap-2">
-                    {(isZoomedOut || mIndex === 0) && (
-                      <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
-                        <span className="leading-tight">Mon</span>
-                        <span className="leading-tight">Tue</span>
-                        <span className="leading-tight">Wed</span>
-                        <span className="leading-tight">Thu</span>
-                        <span className="leading-tight">Fri</span>
-                        <span className="leading-tight">Sat</span>
-                        <span className="leading-tight">Sun</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">
-                        {monthData.monthLabel}
-                      </span>
-                      <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
-                        {monthData.cells.map((cell, i) => (
-                          <div 
-                            key={i} 
-                            onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
-                            title={!cell.isPad && cell.score !== null ? `${cell.date}: ${cell.score}%` : ''}
-                            className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${
-                              cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'
-                            } ${
-                              !cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''
-                            }`}
-                          >
-                            {!cell.isPad && cell.score !== null && (
-                              <span className={`absolute inset-0 flex items-center justify-center text-[7px] sm:text-[9px] font-medium text-white drop-shadow-md pointer-events-none transition-opacity duration-200 ${showPercentages ? 'opacity-100' : 'opacity-0'}`}>
-                                {cell.score}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        {/* Compact KPI Grid (2x2) */}
+        {!isFutureOnly && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+            {/* KPI 1: Average */}
+            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#f0f4ff] text-[#4f7cff] flex items-center justify-center mb-2">
+                <Icon name="monitoring" className="text-[20px]" />
               </div>
-            ) : (
-              <div className="flex gap-3 sm:gap-4 w-max">
-                {aggregatedHeatmapData.map((period, i) => {
-                  const perfBg = getPerfBandClass(period.average);
-                  return (
-                    <div 
-                      key={i} 
-                      className={`flex flex-col items-center justify-center rounded-2xl p-4 sm:p-5 min-w-[100px] sm:min-w-[120px] ${perfBg} shadow-sm border border-outline-variant/20 transition-transform hover:scale-105`}
-                    >
-                      <span className="text-[10px] sm:text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest drop-shadow-sm">
-                        {period.label}
-                      </span>
-                      <span className="text-3xl sm:text-4xl font-bold text-white drop-shadow-md">
-                        {period.average}
-                      </span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase mt-1 tracking-widest">
-                        /100
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          
-          {/* Day Details Modal */}
-          {selectedDay && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface-container-highest/80 px-4">
-              <div className="w-full max-w-sm p-6 rounded-3xl bg-surface border border-outline-variant shadow-2xl animate-in fade-in zoom-in duration-200">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-headline-sm font-bold text-on-surface">
-                    {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                  </h3>
-                  <button onClick={() => setSelectedDay(null)} className="text-on-surface-variant hover:text-on-surface p-1 rounded-full transition-colors flex items-center justify-center">
-                    <Icon name="close" className=" text-lg" />
-                  </button>
-                </div>
-                
-                <div className="w-full h-px bg-outline-variant/50 mb-6"></div>
-                
-                <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                  {(() => {
-                    const daySummary = summaries.find(s => s.id === selectedDay);
-                    
-                    if (!daySummary) {
-                      return (
-                        <div className="flex flex-col items-center justify-center py-8 text-on-surface-variant">
-                          <Icon name="event_busy" className=" text-4xl mb-2 opacity-50" />
-                          <p className="font-body-md text-center">No data recorded for this day.</p>
-                        </div>
-                      );
-                    }
-                    
-                    const overallScore = daySummary?.overallScore ?? 0;
-                    const strokeDasharray = `${overallScore}, 100`;
-                    
-                    return (
-                      <>
-                        {/* Overall Score Section */}
-                        <div className="flex justify-between items-center bg-surface p-2 rounded-2xl">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-label-sm font-bold uppercase tracking-wide text-on-surface-variant">Overall Score</span>
-                            <span className="font-display-sm font-bold text-on-surface">{overallScore}%</span>
-                          </div>
-                          
-                          {/* SVG Donut Chart */}
-                          <div className="relative w-16 h-16">
-                            <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                              <path
-                                className="text-outline-variant/40 stroke-current"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none"
-                                strokeWidth="3.5"
-                              />
-                              <path
-                                className={`stroke-current ${getPerfTextColorClass(overallScore)}`}
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none"
-                                strokeWidth="3.5"
-                                strokeLinecap="round"
-                                strokeDasharray={strokeDasharray}
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="font-label-sm font-bold text-on-surface">{overallScore}%</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Habit Breakdown */}
-                        <div className="flex flex-col gap-3">
-                          <h4 className="font-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-2">Habit Breakdown</h4>
-                          {habits.map(habit => {
-                            if (!daySummary?.habitScores || daySummary.habitScores[habit.id] === undefined) return null;
-                            const score = daySummary.habitScores[habit.id] ?? 0;
-                            const perfBg = getPerfBandClass(score);
-                            const perfText = getPerfTextColorClass(score);
-                            
-                            return (
-                              <div key={habit.id} className="flex items-center gap-4 bg-surface p-2 rounded-2xl">
-                                {/* Icon Box */}
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${perfBg} shadow-sm`}>
-                                  <span className="font-headline-sm font-bold text-white uppercase">{habit.name.charAt(0)}</span>
-                                </div>
-                                
-                                {/* Name and Progress Bar */}
-                                <div className="flex flex-col flex-grow justify-center gap-2">
-                                  <span className="font-label-md font-bold text-on-surface">{habit.name}</span>
-                                  <div className="w-full h-2 bg-outline-variant/40 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full ${perfBg}`}
-                                      style={{ width: `${score}%`, transition: 'width 0.4s ease' }}
-                                    ></div>
-                                  </div>
-                                </div>
-                                
-                                {/* Percentage Badge */}
-                                <div className={`px-2 py-1 rounded-md border ${perfText.replace('text-', 'border-')}/30 bg-surface flex items-center justify-center min-w-[3rem]`}>
-                                  <span className={`font-label-md font-bold ${perfText}`}>{score}%</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-                
-                {/* Footer */}
-                <div className="w-full h-px bg-outline-variant/50 mt-6 mb-4"></div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2 text-on-surface-variant">
-                    <Icon name="calendar_today" className=" text-[16px]" />
-                    <span className="text-[10px] max-w-[150px] leading-tight">Daily data is calculated based on your habit targets.</span>
-                  </div>
-                  <button onClick={() => setSelectedDay(null)} className="flex items-center gap-1 text-[10px] font-bold text-primary px-3 py-1.5 rounded-lg border border-primary/30 hover:bg-primary/10 transition-colors">
-                    View Full Analytics <Icon name="arrow_forward" className=" text-[14px]" />
-                  </button>
-                </div>
-                
-              </div>
+              <span className="text-[24px] font-black text-[#4f7cff] leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
+              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
             </div>
-          )}
-          
+            
+            {/* KPI 2: Consistency */}
+            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center mb-2">
+                <Icon name="track_changes" className="text-[20px]" />
+              </div>
+              <span className="text-[24px] font-black text-[#10b981] leading-none mb-1">{kpis.consistency || 0}%</span>
+              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
+            </div>
+
+            {/* KPI 3: Current Streak */}
+            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#fffbeb] text-[#f59e0b] flex items-center justify-center mb-2">
+                <Icon name="local_fire_department" className="text-[20px]" />
+              </div>
+              <span className="text-[24px] font-black text-[#f59e0b] leading-none mb-1">{kpis.currentStreak || 0}</span>
+              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
+            </div>
+
+            {/* KPI 4: Best Streak */}
+            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#fdf4ff] text-[#d946ef] flex items-center justify-center mb-2">
+                <Icon name="stars" className="text-[20px]" />
+              </div>
+              <span className="text-[24px] font-black text-[#d946ef] leading-none mb-1">{kpis.bestStreak || 0}</span>
+              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
             </div>
           </div>
-        </div>
         )}
-      </div>
 
-      {/* Habit Performance Table */}
-      {viewMode === 'charts' && (
-      <div className="bg-surface border border-outline-variant shadow-sm rounded-2xl overflow-hidden mb-8">
-        <div className="p-6 border-b border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-on-surface">Habit Breakdown</h2>
-        </div>
-        <div className="w-full overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-full">
-            <thead>
-              <tr className="font-label-sm text-[10px] md:text-xs text-on-surface-variant bg-surface-container-lowest border-b border-outline-variant uppercase tracking-wider">
-                <th className="px-3 py-4 font-medium rounded-tl-lg">Habit</th>
-                <th className="px-3 py-4 font-medium text-right whitespace-nowrap">Avg Score</th>
-                <th className="px-3 py-4 font-medium text-right hidden sm:table-cell">Consistency</th>
-                <th className="px-3 py-4 font-medium text-right rounded-tr-lg whitespace-nowrap">Best/Worst</th>
-              </tr>
-            </thead>
-            <tbody className="font-body-md text-xs md:text-sm text-on-surface">
-              {breakdown.map((b) => (
-                <tr key={b.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
-                  <td className="px-3 py-4 flex items-center gap-2">
-                     <div className={`w-2 h-2 rounded-full ${getPerfBandClass(b.avgScore)} opacity-80 group-hover:scale-125 transition-transform shrink-0`}></div>
-                    <span className="font-medium truncate max-w-[100px] md:max-w-[200px]">{b.name}</span>
-                  </td>
-                  <td className={`px-3 py-4 text-right font-mono-data font-semibold ${getPerfTextColorClass(b.avgScore)}`}>{Math.round(b.avgScore)}</td>
-                  <td className="px-3 py-4 text-right hidden sm:table-cell">
-                    <div className="flex items-center justify-end gap-2">
-                      <span className="font-mono-data text-xs">{b.consistency}%</span>
-                      <div className="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden inline-block shrink-0">
-                        <div className="h-full bg-primary" style={{ width: `${b.consistency}%` }}></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 text-right font-mono-data text-on-surface-variant whitespace-nowrap text-[10px] md:text-xs">
-                    {b.bestScore ?? '--'} / {b.lowestScore ?? '--'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Areas to Improve */}
-        {areasToImprove.length > 0 && (
-          <div className="p-6 bg-error-container/20 text-on-surface text-sm border-t border-outline-variant">
-            <h3 className="font-bold mb-3 flex items-center gap-2 text-error">
-              <Icon name="trending_down" className=" text-lg" />
-              Areas to Improve
-            </h3>
-            <ul className="list-disc pl-5 space-y-2 text-on-surface-variant">
-              {areasToImprove.map(h => (
-                <li key={h.id}>
-                  <strong className="text-on-surface">{h.name}</strong> has averaged <strong className={getPerfTextColorClass(h.avgScore)}>{Math.round(h.avgScore)}%</strong> this {rangeOption === 'custom' ? 'period' : `${rangeOption} days`}.
-                </li>
-              ))}
-            </ul>
+        {/* Performance Insights */}
+        {!isFutureOnly && (
+          <div className="flex flex-col gap-3 mt-2 mb-8">
+            <h2 className="text-[15px] font-bold text-[#15171c] ml-1">Performance Insights</h2>
+            
+            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+              {/* Insight 1: Best Day */}
+              <div className="flex items-center justify-between p-4 border-b border-[#f0f0f0] hover:bg-[#f9fafb] transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center shrink-0">
+                    <Icon name="emoji_events" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Best Day</span>
+                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                      {kpis.bestDay && kpis.bestDay !== 'N/A' ? new Date(kpis.bestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-[#10b981]">{kpis.bestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                </div>
+              </div>
+
+              {/* Insight 2: Needs Attention */}
+              <div className="flex items-center justify-between p-4 border-b border-[#f0f0f0] hover:bg-[#f9fafb] transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center shrink-0">
+                    <Icon name="warning" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Needs Attention</span>
+                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                      {kpis.lowestDay && kpis.lowestDay !== 'N/A' ? new Date(kpis.lowestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-[#ef4444]">{kpis.lowestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                </div>
+              </div>
+
+              {/* Insight 3: Tracked Days */}
+              <div className="flex items-center justify-between p-4 hover:bg-[#f9fafb] transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#eff6ff] text-[#3b82f6] flex items-center justify-center shrink-0">
+                    <Icon name="calendar_month" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Tracked Days</span>
+                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                      out of {kpis.totalDays || 0} days
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-[#3b82f6]">{kpis.trackedDays || 0}/{kpis.totalDays || 0}</span>
+                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                </div>
+              </div>
+            </div>
           </div>
         )}
-      </div>
-      )}
-      </>
-      )}
+
+        {/* Keeping Heatmap Full-Screen Modal Logic Below */}
+        {viewMode === 'heatmap' && (
+           <div className="bg-white rounded-[18px] border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col p-5">
+              <h2 className="text-[15px] font-bold text-[#15171c] mb-4">Heatmap View</h2>
+              <div className="flex items-center gap-2 mb-4 shrink-0 flex-wrap">
+                 <div className="flex bg-surface-container-lowest rounded-full p-1 border border-outline-variant/50 shadow-sm">
+                   <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Day</button>
+                   <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Week</button>
+                   <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Month</button>
+                 </div>
+              </div>
+              <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
+                {heatmapPeriod === 'day' ? (
+                  <div className={`flex gap-4 w-full`}>
+                    {heatmapGrid.map((monthData, mIndex) => (
+                      <div key={mIndex} className="flex gap-2">
+                        {(mIndex === 0) && (
+                          <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
+                            <span className="leading-tight">Mon</span><span className="leading-tight">Tue</span><span className="leading-tight">Wed</span><span className="leading-tight">Thu</span><span className="leading-tight">Fri</span><span className="leading-tight">Sat</span><span className="leading-tight">Sun</span>
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
+                          <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
+                            {monthData.cells.map((cell, i) => (
+                              <div 
+                                key={i} 
+                                onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
+                                className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                              ></div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex gap-3 w-max">
+                    {aggregatedHeatmapData.map((period, i) => (
+                      <div key={i} className={`flex flex-col items-center justify-center rounded-2xl p-4 min-w-[100px] ${getPerfBandClass(period.average)} shadow-sm border border-outline-variant/20`}>
+                        <span className="text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
+                        <span className="text-3xl font-bold text-white">{period.average}</span>
+                        <span className="text-[10px] font-bold text-white/70 uppercase mt-1">/100</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+           </div>
+        )}
+
       </div>
       )}
       <ProModal 
@@ -970,4 +806,5 @@ export default function Analytics() {
       />
     </div>
   );
+
 }
