@@ -569,45 +569,24 @@ export default function AdvancedHabitSelector() {
                         <Icon name="help_outline" /> How habit scoring logics works
                     </button>
                 </div>
-                <hr className="border-t border-dotted border-outline-variant/50 w-full mb-6" />
-              </div>
-
-              <div className="ahs-progress-widget">
-                <div className="ahs-progress-top">
-                  <div className="ahs-progress-text">
-                    <h3>Habits Tracker</h3>
-                    <div className="ahs-count"><span>{existingHabits.length + selectedHabits.length + customHabits.length}</span><span> / {MAX_FREE_HABITS}</span></div>
-                  </div>
-                  <div 
-                    className="ahs-progress-circle" 
-                    style={{ background: `conic-gradient(var(--ahs-primary) ${Math.min(100, ((existingHabits.length + selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%, #E2E8F0 0)`}}
-                  >
-                    <div className="ahs-progress-inner">{Math.round(((existingHabits.length + selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%</div>
-                  </div>
-                </div>
-                <p>You can track up to {MAX_FREE_HABITS} habits on the Free plan.</p>
+                <hr className="border-t-2 border-dashed border-gray-400 w-full mb-6" />
               </div>
             </header>
 
-            <div className="ahs-filters-container w-full overflow-visible mb-6">
-                <div className="relative max-w-[200px]">
-                    <select 
-                        value={activeCategories[0] || 'All'}
-                        onChange={(e) => {
-                            const cat = e.target.value;
-                            setActiveCategories([cat]);
-                        }}
-                        className="w-full appearance-none bg-surface-container border border-outline-variant rounded-full py-3 px-5 pr-10 font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
-                    >
-                        {categories.map(cat => (
-                            <option key={cat} value={cat}>
-                                {cat === 'All' ? 'All Habits' : cat === 'Custom' ? 'Custom Habit' : cat === 'Selected' ? `Selected (${selectedHabits.length + customHabits.length})` : cat}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
-                        <Icon name="expand_more" />
-                    </div>
+            <div className="ahs-filters-container w-full overflow-hidden mb-6">
+                <div className="flex flex-wrap gap-2 w-full pb-2 justify-start sm:justify-center">
+                    {['Selected', 'Habits by Category', 'Custom'].map(cat => (
+                        <button 
+                            key={cat}
+                            onClick={() => {
+                                const mappedCat = cat === 'Habits by Category' ? 'All' : cat;
+                                setActiveCategories([mappedCat]);
+                            }}
+                            className={`ahs-pill ${cat === 'Selected' ? 'bg-primary/10 text-primary border-primary/30' : ''} ${cat === 'Custom' ? 'custom-pill' : ''} ${(activeCategories.includes(cat) || (cat === 'Habits by Category' && activeCategories.includes('All'))) ? 'active' : ''}`}
+                        >
+                            {cat === 'Selected' ? `Selected (${selectedHabits.length + customHabits.length})` : cat}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -998,14 +977,8 @@ export default function AdvancedHabitSelector() {
                 <div key={i} className={`flex-1 h-full transition-colors duration-300 ${i < (existingHabits.length + selectedHabits.length + customHabits.length) ? 'bg-primary' : 'bg-transparent'}`} />
              ))}
           </div>
-          <div className="flex justify-between items-center w-full px-4 py-3 sm:px-6">
-            <div className="ahs-sf-left flex-1 min-w-0 pr-4">
-                <div className="ahs-sf-warning-icon shrink-0"><Icon name="info" className="text-sm" /></div>
-                <span className="ahs-sf-text-line truncate text-xs sm:text-sm font-semibold">
-                  {viewMode === 'selection' ? `${existingHabits.length + selectedHabits.length + customHabits.length} of ${MAX_FREE_HABITS} selected` : "Review your targets before confirming"}
-                </span>
-            </div>
-            <div className="ahs-sf-actions shrink-0">
+          <div className="flex justify-center items-center w-full px-4 py-2 sm:px-6">
+            <div className="ahs-sf-actions flex justify-center gap-4 w-full max-w-[400px]">
                 <button 
                   className="ahs-btn ahs-btn-cancel text-xs sm:text-sm" 
                   onClick={() => viewMode === 'summary' ? setViewMode('selection') : navigate(-1)}
