@@ -610,7 +610,8 @@ export default function AdvancedHabitSelector() {
                     
                     {/* CUSTOM HABIT BUILDER (Only visible in Custom tab) */}
                     {activeCategory === 'Custom' && (() => {
-                      const isFreeUsed = customHabits.length >= 1;
+                      const existingCustomsCount = existingHabits.filter(h => h.category === 'custom_' || h.category === 'Custom').length;
+                      const isFreeUsed = (customHabits.length + existingCustomsCount) >= 1;
                       const isPro = userDoc?.isPro;
                       const showProLocked = isFreeUsed && !isPro;
 
