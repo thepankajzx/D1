@@ -341,7 +341,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           : 100;
         const minSlider = 0;
         
-        const sliderStep = '0.01'; // Ultra-smooth dragging
+        const sliderStep = '1'; // Snap to whole numbers
         
         // Generate Dynamic Slider Track Background
         const generateGradient = () => {
@@ -397,7 +397,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             )}
             <div className="flex justify-between items-center text-xs text-on-surface-variant">
               <span>0 {currentDisplayUnit}</span>
-              <span>Target: {Number.isInteger(dTarget100) ? dTarget100 : dTarget100.toFixed(2)} {currentDisplayUnit}</span>
+              <span>Target: {Math.round(dTarget100)} {currentDisplayUnit}</span>
             </div>
             <div className="flex flex-wrap items-center gap-4 mt-2">
                 <div className="flex-grow flex items-center">
@@ -410,8 +410,8 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     value={dVal}
                     style={{ background: generateGradient() }}
                     onChange={(e) => {
-                        const newValue = Number(e.target.value);
-                        const prevValue = val * mult;
+                        const newValue = Math.round(Number(e.target.value));
+                        const prevValue = Math.round(val * mult);
                         setVal(newValue / mult);
 
                         if (navigator.vibrate) {
@@ -433,8 +433,8 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                             }
                         }
                     }}
-                    onPointerUp={(e) => handleChange(Number(e.target.value) / mult)}
-                    onTouchEnd={(e) => handleChange(Number(e.target.value) / mult)}
+                    onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
+                    onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
                     className="custom-slider w-full m-0" 
                   />
                 </div>
@@ -443,11 +443,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                       type="number"
                       aria-label={`Target value for ${habit.name}`}
                       min="0"
-                      step="any"
-                      value={val === 0 ? '' : (Number.isInteger(dVal) ? dVal : parseFloat(dVal.toFixed(2)))}
+                      step="1"
+                      value={val === 0 ? '' : Math.round(dVal)}
                       placeholder="0"
-                      onChange={(e) => setVal(Number(e.target.value) / mult)}
-                      onBlur={(e) => handleChange(Number(e.target.value) / mult)}
+                      onChange={(e) => setVal(Math.round(Number(e.target.value)) / mult)}
+                      onBlur={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
                       onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                               e.currentTarget.blur();

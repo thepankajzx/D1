@@ -394,7 +394,7 @@ export default function Dashboard() {
           <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
             <div className="flex items-center justify-between gap-[6px] mb-[8px]">
               <div className="flex flex-col min-w-0">
-                <span className="text-red-400/80 text-[8px] uppercase tracking-widest font-bold leading-none mb-0.5">Weakest</span>
+                <span className="text-red-400/80 text-[8px] uppercase tracking-widest font-bold leading-none mb-0.5">Lowest</span>
                 <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium truncate">{weakestHabit?.name || 'N/A'}</span>
               </div>
               <span className="text-[14px] sm:text-[16px] font-bold shrink-0">{weakestHabit?.score || 0}%</span>

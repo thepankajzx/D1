@@ -144,10 +144,10 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           ) : (
             <div className="relative w-full">
               <input 
-                type="number" step="any"
+                type="number" step="1"
                 className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-3 py-3 w-full text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
-                value={Number.isInteger(value) ? value : parseFloat(value.toFixed(2))} 
-                onChange={e => onChange(field, parseFloat(e.target.value) || 0)} 
+                value={value ? Math.round(value) : ''} 
+                onChange={e => onChange(field, Math.round(parseFloat(e.target.value)) || 0)} 
               />
               <div className="text-center text-xs text-on-surface-variant font-medium mt-2">{unit}</div>
             </div>
@@ -373,8 +373,8 @@ export default function AdvancedHabitSelector() {
       scoringType,
       direction: cbType === 'yn' ? 'higher_is_better' : (cbType === 'time' ? 'lower_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better')),
       unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
-      userTarget0: cbType === 'time' ? parseTime(cbFloor) : (parseFloat(cbFloor) || 0),
-      userTarget100: cbType === 'time' ? parseTime(cbTarget) : (parseFloat(cbTarget) || 0),
+      userTarget0: cbType === 'time' ? parseTime(cbFloor) : Math.round(parseFloat(cbFloor) || 0),
+      userTarget100: cbType === 'time' ? parseTime(cbTarget) : Math.round(parseFloat(cbTarget) || 0),
       userTolerance: cbTolerance ? 10 : 0,
       isCustom: true
     };

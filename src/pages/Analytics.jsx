@@ -843,7 +843,7 @@ export default function Analytics() {
                     <Icon name="error" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-on-surface text-[14px] font-bold leading-tight">Worst Day</span>
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Lowest Day</span>
                     <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
                       {kpis.lowestDay && kpis.lowestDay !== 'N/A' ? new Date(kpis.lowestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                     </span>
