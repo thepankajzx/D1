@@ -541,59 +541,68 @@ export default function Analytics() {
     const trackedRatio = Math.min(100, Math.round((breakdownHabit.trackedDays / totalPeriodDays) * 100)) || 0;
 
     return (
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full shrink-0">
-        <div className="flex flex-col p-2 sm:p-4 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm hover:border-outline-variant/80 transition-colors">
-          <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 sm:mb-2 truncate">Average</span>
-          <div className="flex items-end justify-between gap-1 mb-1 sm:mb-2">
-            <span className="text-xl sm:text-3xl font-display-sm font-bold text-on-surface leading-none">{Math.round(breakdownHabit.avgScore) || 0}%</span>
-            <span className={`text-[8px] sm:text-[11px] font-bold mb-0.5 sm:mb-1 ${isUp ? 'text-perf-10' : 'text-error'} shrink-0`}>{diffText}</span>
+      <div className="flex flex-col gap-1.5 sm:gap-2 w-full shrink-0">
+        {/* 1. Average Score - Slim Row */}
+        <div className="flex items-center justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm gap-2 sm:gap-4 hover:border-outline-variant/80 transition-colors">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Avg</span>
+            <span className="text-lg sm:text-xl font-bold text-on-surface leading-none">{Math.round(breakdownHabit.avgScore) || 0}%</span>
           </div>
-          <div className="flex gap-[1px] sm:gap-[2px] w-full mt-auto pt-1">
+          <div className="flex flex-1 gap-[1px] sm:gap-[2px] w-full max-w-[200px] shrink h-[6px] sm:h-[8px]">
             {Array.from({ length: 30 }, (_, i) => {
                 const filledCount = Math.round(((Math.round(breakdownHabit.avgScore) || 0) / 100) * 30);
                 const isFilled = i < filledCount;
                 return (
                     <span 
                         key={i}
-                        className="flex-1 h-[4px] sm:h-[6px] rounded-[1px]"
+                        className="flex-1 rounded-[1px] h-full"
                         style={{ backgroundColor: isFilled ? color : 'var(--color-surface-container-high)' }}
                     ></span>
                 );
             })}
           </div>
+          <span className={`text-[9px] sm:text-[10px] font-bold shrink-0 ${isUp ? 'text-perf-10' : 'text-error'}`}>{diffText}</span>
         </div>
 
-        <div className="flex flex-row p-0 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm divide-x divide-outline-variant/50">
-          <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0">
-            <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 truncate">Best</span>
-            <span className="text-xl sm:text-3xl font-display-sm font-bold text-perf-10 leading-none mb-1">{displayBestScore || 0}%</span>
-            <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-auto truncate">
-              {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-            </span>
+        {/* 2. Best & Worst Day - Slim Split Row */}
+        <div className="flex items-stretch justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm gap-0 hover:border-outline-variant/80 transition-colors divide-x divide-outline-variant/50">
+          <div className="flex-1 flex justify-between items-center pr-3 sm:pr-4">
+             <div className="flex flex-col">
+               <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Best</span>
+               <span className="text-[9px] sm:text-[10px] text-on-surface-variant truncate">
+                 {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
+               </span>
+             </div>
+             <span className="text-lg sm:text-xl font-bold text-perf-10 leading-none">{displayBestScore || 0}%</span>
           </div>
-          <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0">
-            <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 truncate">Worst</span>
-            <span className="text-xl sm:text-3xl font-display-sm font-bold text-error leading-none mb-1">{displayLowestScore || 0}%</span>
-            <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-auto truncate">
-              {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase() : 'N/A')}
-            </span>
+          <div className="flex-1 flex justify-between items-center pl-3 sm:pl-4">
+             <div className="flex flex-col">
+               <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant uppercase">Worst</span>
+               <span className="text-[9px] sm:text-[10px] text-on-surface-variant truncate">
+                 {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
+               </span>
+             </div>
+             <span className="text-lg sm:text-xl font-bold text-error leading-none">{displayLowestScore || 0}%</span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row p-2 sm:p-4 bg-surface border border-outline-variant rounded-[14px] sm:rounded-2xl shadow-sm items-center sm:justify-between hover:border-outline-variant/80 transition-colors">
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left mb-1 sm:mb-0 min-w-0 w-full sm:w-auto">
-             <span className="text-[9px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5 sm:mb-1 truncate w-full">Tracked</span>
-             <span className="text-lg sm:text-3xl font-display-sm font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
-             <span className="text-[8px] sm:text-[10px] text-on-surface-variant mt-0.5 sm:mt-1 uppercase truncate w-full">of {totalPeriodDays} Days</span>
+        {/* 3. Tracked Days - Slim Row */}
+        <div className="flex items-center justify-between p-2 sm:p-3 bg-surface border border-outline-variant rounded-xl shadow-sm gap-2 hover:border-outline-variant/80 transition-colors">
+          <div className="flex items-center gap-3">
+             <span className="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tracked</span>
+             <div className="flex items-baseline gap-1">
+                 <span className="text-lg sm:text-xl font-bold text-primary leading-none">{breakdownHabit.trackedDays || 0}</span>
+                 <span className="text-[9px] sm:text-[10px] text-on-surface-variant uppercase">/ {totalPeriodDays} Days</span>
+             </div>
           </div>
           
-          <div className="relative w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
+          <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <path className="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-              <path className="text-primary" strokeDasharray={`${trackedRatio}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+              <path className="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+              <path className="text-primary" strokeDasharray={`${trackedRatio}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[7px] sm:text-[9px] font-bold">{trackedRatio}%</span>
+                <span className="text-[8px] font-bold">{trackedRatio}%</span>
             </div>
           </div>
         </div>
@@ -687,13 +696,13 @@ export default function Analytics() {
       <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
         
         {/* ROW 2: Sleek Horizontal Habit Selector Tab Bar + View Toggle */}
-        <div className="flex flex-col gap-4 mt-2 mb-2 sticky top-[0px] z-30 bg-surface/95 backdrop-blur-md py-2 border-b border-outline-variant/30">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex flex-col gap-2.5 mt-0 mb-2 sticky top-[0px] z-30 bg-surface/95 backdrop-blur-md py-2 border-b border-outline-variant/30">
+          <div className="flex flex-col items-center justify-between gap-2.5">
               {/* Wrapped Pills instead of horizontally scrolling */}
-              <div className="flex w-full sm:w-auto flex-wrap items-center gap-1.5 sm:gap-2">
+              <div className="flex w-full flex-wrap justify-center items-center gap-1.5">
                  <button 
                     onClick={() => setSelectedHabit('overall')}
-                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+                    className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === 'overall' ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
                  >
                     Overall
                  </button>
@@ -701,7 +710,7 @@ export default function Analytics() {
                     <button
                         key={h.id}
                         onClick={() => setSelectedHabit(h.id)}
-                        className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
+                        className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all ${selectedHabit === h.id ? 'bg-on-surface text-surface shadow-md' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
                     >
                         {h.name}
                     </button>
@@ -709,18 +718,18 @@ export default function Analytics() {
               </div>
 
               {/* View Toggle Icon Buttons */}
-              <div className="flex shrink-0 bg-surface border border-outline-variant rounded-full p-1 shadow-sm w-full sm:w-auto justify-center">
+              <div className="flex shrink-0 bg-surface border border-outline-variant rounded-full p-0.5 shadow-sm w-fit justify-center">
                  <button
                     onClick={() => setViewMode('charts')}
-                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'charts' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    className={`flex items-center justify-center gap-1.5 px-6 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'charts' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
                  >
-                    <Icon name="show_chart" className="text-sm" /> Chart
+                    Chart
                  </button>
                  <button
                     onClick={() => setViewMode('heatmap')}
-                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'heatmap' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    className={`flex items-center justify-center gap-1.5 px-6 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${viewMode === 'heatmap' ? 'bg-on-surface text-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
                  >
-                    <Icon name="grid_view" className="text-sm" /> Heatmap
+                    Heatmap
                  </button>
               </div>
           </div>
