@@ -19,6 +19,7 @@ export default function Profile() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [showHabitsList, setShowHabitsList] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -187,56 +188,69 @@ export default function Profile() {
 
       {/* Right Column: My Habits */}
       <div className="md:col-span-8 flex flex-col gap-6">
-        <section className="bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col gap-6 shadow-sm">
-          <div className="flex justify-between items-center border-b border-outline-variant pb-4">
+        <section className="bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col gap-4 shadow-sm">
+          <div className="flex justify-between items-center">
             <h2 className="font-headline-md text-headline-md text-on-surface">My Habits</h2>
-            <button onClick={handleAddHabitClick} className="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
-              <Icon name="add"  style={{fontSize: '18px'}} />
-              Add Habit
-            </button>
-          </div>
-
-          <div className="flex flex-col">
-            {loadingData ? (
-              <div className="py-12 text-center text-on-surface-variant flex flex-col items-center gap-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                Loading habits...
-              </div>
-            ) : habits.length === 0 ? (
-              <div className="py-12 text-center text-on-surface-variant flex flex-col items-center gap-4">
-                <Icon name="inbox" className=" text-4xl opacity-50" />
-                You have no habits tracked.
-              </div>
-            ) : (
-              habits.map(habit => (
-                <div key={habit.id} className="flex items-center justify-between py-4 border-b border-outline-variant/50 last:border-0 group">
-                  <div className="flex items-center gap-4 flex-grow">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                      <Icon name={habit.icon} className=" text-2xl" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-body-md text-body-md font-bold text-on-surface flex items-center gap-2">
-                        {habit.name}
-                      </span>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant capitalize mt-0.5">
-                        {habit.category} • {habit.scoringType}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleDeleteHabit(habit.id)}
-                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-full transition-colors"
-                      title="Delete Habit"
-                    >
-                      <Icon name="delete"  style={{fontSize: '20px'}} />
-                    </button>
-                  </div>
-                </div>
-              ))
+            {showHabitsList && (
+              <button onClick={handleAddHabitClick} className="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
+                <Icon name="add" style={{fontSize: '18px'}} />
+                Add Habit
+              </button>
             )}
           </div>
+
+          <button 
+            onClick={() => setShowHabitsList(!showHabitsList)}
+            className="w-full py-3 bg-surface-container-low text-on-surface font-semibold rounded-lg hover:bg-surface-variant flex items-center justify-center gap-2 transition-colors border border-outline-variant"
+          >
+            <Icon name="list_alt" />
+            {showHabitsList ? "Hide My Habits" : "View My Habits"}
+            <Icon name={showHabitsList ? "expand_less" : "expand_more"} className="ml-auto mr-2" />
+          </button>
+
+          {showHabitsList && (
+            <div className="flex flex-col mt-2 border-t border-outline-variant/30 pt-2">
+              {loadingData ? (
+                <div className="py-12 text-center text-on-surface-variant flex flex-col items-center gap-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                  Loading habits...
+                </div>
+              ) : habits.length === 0 ? (
+                <div className="py-12 text-center text-on-surface-variant flex flex-col items-center gap-4">
+                  <Icon name="inbox" className=" text-4xl opacity-50" />
+                  You have no habits tracked.
+                </div>
+              ) : (
+                habits.map(habit => (
+                  <div key={habit.id} className="flex items-center justify-between py-4 border-b border-outline-variant/50 last:border-0 group">
+                    <div className="flex items-center gap-4 flex-grow">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                        <Icon name={habit.icon} className=" text-2xl" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-body-md text-body-md font-bold text-on-surface flex items-center gap-2">
+                          {habit.name}
+                        </span>
+                        <span className="font-label-sm text-label-sm text-on-surface-variant capitalize mt-0.5">
+                          {habit.category} • {habit.scoringType}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleDeleteHabit(habit.id)}
+                        className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-full transition-colors"
+                        title="Delete Habit"
+                      >
+                        <Icon name="delete"  style={{fontSize: '20px'}} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </section>
       </div>
       
