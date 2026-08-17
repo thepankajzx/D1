@@ -530,7 +530,7 @@ export default function Analytics() {
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header & Date Controls */}
       <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1">
-        <h1 className="text-[22px] sm:text-[28px] font-bold text-[#15171c] truncate tracking-tight">Performance Analytics</h1>
+        <h1 className="text-[22px] sm:text-[28px] font-bold text-[#15171c] truncate tracking-tight">Analytics</h1>
         
         {/* Timeframe Selector Dropdown */}
         <div className="relative shrink-0 z-20">
@@ -724,7 +724,7 @@ export default function Analytics() {
             {/* KPI 1: Average */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#f0f4ff] text-[#4f7cff] flex items-center justify-center mb-2">
-                <Icon name="bar_chart" className="text-[20px]" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-4"/></svg>
               </div>
               <span className="text-[24px] font-black text-[#4f7cff] leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
@@ -733,7 +733,7 @@ export default function Analytics() {
             {/* KPI 2: Consistency */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center mb-2">
-                <Icon name="check_circle" className="text-[20px]" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               </div>
               <span className="text-[24px] font-black text-[#10b981] leading-none mb-1">{kpis.consistency || 0}%</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
@@ -742,7 +742,7 @@ export default function Analytics() {
             {/* KPI 3: Current Streak */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#fffbeb] text-[#f59e0b] flex items-center justify-center mb-2">
-                <Icon name="local_fire_department" className="text-[20px]" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               </div>
               <span className="text-[24px] font-black text-[#f59e0b] leading-none mb-1">{kpis.currentStreak || 0}</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
@@ -751,7 +751,7 @@ export default function Analytics() {
             {/* KPI 4: Best Streak */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#fdf4ff] text-[#d946ef] flex items-center justify-center mb-2">
-                <Icon name="star" className="text-[20px]" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
               </div>
               <span className="text-[24px] font-black text-[#d946ef] leading-none mb-1">{kpis.bestStreak || 0}</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
