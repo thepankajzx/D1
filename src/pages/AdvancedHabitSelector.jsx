@@ -68,8 +68,22 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
       ${trackColor} 100%)`;
   }
 
-  const showHM = isTime || unit === 'minutes' || unit === 'hours' || unit === 'hrs' || unit === 'mins';
+  const showHM = !isTime && (unit === 'minutes' || unit === 'hours' || unit === 'hrs' || unit === 'mins');
 
+  const formatTimeStr = (mins) => {
+    if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
+    let h = Math.floor(mins / 60);
+    let m = Math.floor(mins % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  };
+
+  const parseTimeStr = (val) => {
+    if (typeof val === 'string' && val.includes(':')) {
+      const [h, m] = val.split(':').map(Number);
+      return h * 60 + m;
+    }
+    return parseFloat(val) || 0;
+  };
   const getH = (val) => Math.floor(val / 60) || 0;
   const getM = (val) => Math.floor(val % 60) || 0;
 
@@ -90,7 +104,16 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           <span className={`px-2 sm:px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold mb-3 sm:mb-4 ${badgeBg}`}>
             {label}
           </span>
-          {showHM ? (
+          {isTime ? (
+            <div className="relative w-full">
+              <input 
+                type="time"
+                className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-3 w-full text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                value={formatTimeStr(value)} 
+                onChange={e => onChange(field, parseTimeStr(e.target.value))} 
+              />
+            </div>
+          ) : showHM ? (
             <div className="flex items-center gap-1 sm:gap-2 w-full justify-center">
               <div className="relative w-full max-w-[60px]">
                 <input 
@@ -126,7 +149,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           )}
         </div>
         <div className="text-[11px] text-on-surface-variant mt-3 font-medium">
-          {isRed ? 'Start Range (0%)' : 'Target Range (100%)'}
+          {isTime ? (isRed ? 'Late Limit (0%)' : 'Ideal Time (100%)') : (isRed ? 'Start Range (0%)' : 'Target Range (100%)')}
         </div>
       </div>
     );
@@ -139,28 +162,32 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
         <InputCard field="target100" label="100% Score" value={target100} isRed={false} />
       </div>
       
-      <div className="dual-slider-container">
-        <div className="dual-slider-track" style={{ background: bg }} />
-        <input 
-          type="range"
-          min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
-          value={target0}
-          onChange={e => handleSliderChange('target0', Number(e.target.value))}
-          className="dual-slider-input"
-          style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
-        />
-        <input 
-          type="range"
-          min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
-          value={target100}
-          onChange={e => handleSliderChange('target100', Number(e.target.value))}
-          className="dual-slider-input"
-          style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
-        />
-      </div>
-      <div className="text-[10px] text-center text-on-surface-variant mt-3 opacity-80 font-medium">
-        Target score is calculated within this range
-      </div>
+      {!isTime && (
+        <>
+          <div className="dual-slider-container">
+            <div className="dual-slider-track" style={{ background: bg }} />
+            <input 
+              type="range"
+              min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
+              value={target0}
+              onChange={e => handleSliderChange('target0', Number(e.target.value))}
+              className="dual-slider-input"
+              style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
+            />
+            <input 
+              type="range"
+              min={0} max={localMax} step={localMax > 50 ? 1 : 0.5}
+              value={target100}
+              onChange={e => handleSliderChange('target100', Number(e.target.value))}
+              className="dual-slider-input"
+              style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
+            />
+          </div>
+          <div className="text-[10px] text-center text-on-surface-variant mt-3 opacity-80 font-medium">
+            Target score is calculated within this range
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -289,7 +316,7 @@ export default function AdvancedHabitSelector() {
 
     if (!cbName.trim()) { alert("Please enter a Habit Name"); return; }
     if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
-    if (cbType !== 'yn' && !cbDirection) { alert("Please select whether Higher or Lower is better"); return; }
+    if (cbType !== 'yn' && cbType !== 'time' && !cbDirection) { alert("Please select whether Higher or Lower is better"); return; }
     if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
 
     const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
@@ -333,7 +360,7 @@ export default function AdvancedHabitSelector() {
       category: 'Custom',
       icon,
       scoringType,
-      direction: cbType === 'yn' ? 'higher_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better'),
+      direction: cbType === 'yn' ? 'higher_is_better' : (cbType === 'time' ? 'lower_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better')),
       unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
       userTarget0: cbType === 'time' ? parseTime(cbFloor) : (parseFloat(cbFloor) || 0),
       userTarget100: cbType === 'time' ? parseTime(cbTarget) : (parseFloat(cbTarget) || 0),
@@ -434,34 +461,19 @@ export default function AdvancedHabitSelector() {
         </div>
       );
     }
-    
-    if (h.scoringType === 'time') {
-      // Simplistic handling for time: 0 = 00:00, target in minutes
-      const formatTime = (mins) => {
-        const h = Math.floor(mins / 60).toString().padStart(2, '0');
-        const m = (mins % 60).toString().padStart(2, '0');
-        return `${h}:${m}`;
-      };
-      return (
-        <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
-          <label className="ahs-input-label">Target Time (100% Score)</label>
-          <div className="ahs-form-control">
-            <input 
-              type="time" 
-              value={formatTime(selectedObj.userTarget100)} 
-              onChange={e => {
-                const [hh, mm] = e.target.value.split(':');
-                handleHabitInputChange(h.id, 'userTarget100', parseInt(hh)*60 + parseInt(mm));
-              }}
-            />
-          </div>
-        </div>
-      );
-    }
+
 
     return (
       <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
-        {h.scoringType !== 'binary' && selectedObj.direction && (
+        {h.scoringType === 'time' ? (
+          <div className="mb-6 w-full">
+            <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+            <div className="bg-[#0B1120] text-white rounded-xl p-3 text-[13px] font-bold flex items-center gap-2 shadow-sm">
+              <Icon name="trending_down" className="text-[16px]" /> 
+              Early is Better (Before Target = 100%)
+            </div>
+          </div>
+        ) : h.scoringType !== 'binary' && selectedObj.direction && (
           <div className="mb-6 w-full">
             <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
             <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
@@ -710,30 +722,40 @@ export default function AdvancedHabitSelector() {
                               
                               {cbType !== 'yn' && (
                                 <>
-                                  <div className="mb-6 w-full">
-                                      <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
-                                      <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
-                                          <button 
-                                            type="button" 
-                                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'higher' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
-                                            onClick={() => setCbDirection('higher')}
-                                          >
-                                            <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
-                                          </button>
-                                          <button 
-                                            type="button" 
-                                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'lower' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
-                                            onClick={() => setCbDirection('lower')}
-                                          >
-                                            <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
-                                          </button>
-                                      </div>
-                                  </div>
+                                  {cbType === 'time' ? (
+                                    <div className="mb-6 w-full">
+                                        <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+                                        <div className="bg-[#0B1120] text-white rounded-xl p-3 text-[13px] font-bold flex items-center gap-2 shadow-sm">
+                                          <Icon name="trending_down" className="text-[16px]" /> 
+                                          Early is Better (Before Target = 100%)
+                                        </div>
+                                    </div>
+                                  ) : (
+                                    <div className="mb-6 w-full">
+                                        <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+                                        <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
+                                            <button 
+                                              type="button" 
+                                              className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'higher' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
+                                              onClick={() => setCbDirection('higher')}
+                                            >
+                                              <Icon name="trending_up" className="text-[16px]" /> Standard (Higher Better)
+                                            </button>
+                                            <button 
+                                              type="button" 
+                                              className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'lower' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
+                                              onClick={() => setCbDirection('lower')}
+                                            >
+                                              <Icon name="trending_down" className="text-[16px]" /> Reverse (Lower Better)
+                                            </button>
+                                        </div>
+                                    </div>
+                                  )}
                                       <div className="w-full mt-4">
                                         <DualRangeSlider 
                                           target0={cbFloor}
                                           target100={cbTarget}
-                                          direction={cbDirection}
+                                          direction={cbType === 'time' ? 'lower' : cbDirection}
                                           unit={cbType === 'time' ? 'mins' : cbUnitCustom || cbUnit}
                                           isTime={cbType === 'time'}
                                           onChange={(field, value) => {
