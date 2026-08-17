@@ -27,6 +27,12 @@ export default function Dashboard() {
   const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData } = useData();
   const navigate = useNavigate();
   
+  // Debug log
+  useEffect(() => {
+    console.log("Dashboard rendered. Habits count:", habits?.length);
+    console.log("Habits array:", habits);
+  }, [habits]);
+  
   // State
   const [selectedDate, setSelectedDate] = useState(() => {
     // Local time YYYY-MM-DD
@@ -321,13 +327,23 @@ export default function Dashboard() {
   if (habits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
+        <div className="mt-4 md:mt-8 flex justify-between items-end mb-8 relative">
+          <div className="flex flex-col z-10">
+            <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 flex items-center gap-2">
+              Dashboard
+              {/* DEBUG INFO */}
+              <span className="text-[10px] bg-red-100 text-red-800 px-2 py-1 rounded-full border border-red-200 uppercase tracking-widest">
+                Debug: {habits ? habits.length : 'null'} habits
+              </span>
+            </h1>
+            <p className="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-2">
+              You don't have any habits tracked yet. Start your journey by setting up your first daily habits.
+            </p>
+          </div>
+        </div>
         <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
           <Icon name="rocket_launch" className=" text-5xl text-primary" />
         </div>
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Welcome to Definite!</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
-          You don't have any habits tracked yet. Start your journey by setting up your first daily habits.
-        </p>
         <Link 
           to="/onboarding/welcome" 
           className="mt-4 bg-primary text-on-primary px-8 py-4 rounded-full font-label-lg text-label-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2"
