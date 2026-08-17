@@ -214,10 +214,11 @@ export default function AdvancedHabitSelector() {
   
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [customHabits, setCustomHabits] = useState([]);
-  const [activeCategories, setActiveCategories] = useState(['All']);
+  const [activeCategories, setActiveCategories] = useState(['Selected']);
   
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallSource, setPaywallSource] = useState("");
+  const [showConfirmSaveModal, setShowConfirmSaveModal] = useState(false);
   const [scoringModal, setScoringModal] = useState(null);
 
   // Custom Habit Builder State
@@ -261,10 +262,12 @@ export default function AdvancedHabitSelector() {
     return <div className="flex justify-center items-center h-screen bg-surface">Loading...</div>;
   }
 
-  const categories = ['All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
-  const displayedHabits = activeCategories.includes('All') 
-    ? habitLibrary 
-    : habitLibrary.filter(h => activeCategories.includes(h.category));
+  const categories = ['Selected', 'All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
+  const displayedHabits = activeCategories.includes('Selected')
+    ? habitLibrary.filter(h => selectedHabits.some(sh => sh.id === h.id))
+    : activeCategories.includes('All') 
+      ? habitLibrary 
+      : habitLibrary.filter(h => activeCategories.includes(h.category));
 
   const openScoringModalForHabit = (habit) => {
     let type = 'all';
@@ -409,44 +412,46 @@ export default function AdvancedHabitSelector() {
         alert("Please select at least 1 habit to save your plan.");
         return;
       }
-      if (window.confirm("Your habits will be locked for 30 days. You cannot remove them during this time.\n\nProceed to review?")) {
-        setViewMode('summary');
-        window.scrollTo(0, 0);
-      }
+      setViewMode('summary');
+      window.scrollTo(0, 0);
     } else if (viewMode === 'summary') {
-      try {
-        const allToSave = [...selectedHabits, ...customHabits];
-        for (const habit of allToSave) {
-          const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-          const habitData = {
-            habitLibraryId: habit.isCustom ? 'custom' : habit.id,
-            name: habit.name || 'Unnamed',
-            category: habit.category || 'Other',
-            icon: habit.icon || 'star',
-            scoringType: habit.scoringType || 'number',
-            direction: habit.direction || 'higher_is_better',
-            unit: habit.unit || '',
-            target100: habit.userTarget100 !== undefined ? habit.userTarget100 : null,
-            target0: habit.userTarget0 !== undefined ? habit.userTarget0 : null,
-            tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
-            isActive: true,
-            priority: 'medium',
-            createdAt: new Date().toISOString(),
-            isCustom: !!habit.isCustom
-          };
-          
-          // Remove any undefined values just to be absolutely safe
-          Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
+      setShowConfirmSaveModal(true);
+    }
+  };
 
-          await setDoc(userHabitRef, habitData);
-        }
-        await refreshData();
-        alert("Your plan has been saved successfully!");
-        navigate('/');
-      } catch (error) {
-        console.error("Error saving habits:", error);
-        alert("Failed to save habits.");
+  const executeSave = async () => {
+    try {
+      const allToSave = [...selectedHabits, ...customHabits];
+      for (const habit of allToSave) {
+        const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
+        const habitData = {
+          habitLibraryId: habit.isCustom ? 'custom' : habit.id,
+          name: habit.name || 'Unnamed',
+          category: habit.category || 'Other',
+          icon: habit.icon || 'star',
+          scoringType: habit.scoringType || 'number',
+          direction: habit.direction || 'higher_is_better',
+          unit: habit.unit || '',
+          target100: habit.userTarget100 !== undefined ? habit.userTarget100 : null,
+          target0: habit.userTarget0 !== undefined ? habit.userTarget0 : null,
+          tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
+          isActive: true,
+          priority: 'medium',
+          createdAt: new Date().toISOString(),
+          isCustom: !!habit.isCustom
+        };
+        
+        // Remove any undefined values just to be absolutely safe
+        Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
+
+        await setDoc(userHabitRef, habitData);
       }
+      await refreshData();
+      alert("Your plan has been saved successfully!");
+      navigate('/');
+    } catch (error) {
+      console.error("Error saving habits:", error);
+      alert("Failed to save habits.");
     }
   };
 
@@ -649,26 +654,30 @@ export default function AdvancedHabitSelector() {
             <div className="ahs-filters-container w-full overflow-hidden">
                 <div className="flex flex-wrap gap-2 w-full pb-2 justify-start sm:justify-center">
                     {categories.map(cat => (
-                        <button 
-                            key={cat}
-                            onClick={() => {
-                                if (cat === 'All') {
-                                    setActiveCategories(['All']);
-                                } else {
-                                    let newSelection = activeCategories.filter(c => c !== 'All');
-                                    if (newSelection.includes(cat)) {
-                                        newSelection = newSelection.filter(c => c !== cat);
-                                        if (newSelection.length === 0) newSelection = ['All'];
+                        <React.Fragment key={cat}>
+                            {cat === 'All' && <div className="h-6 w-[1px] bg-outline-variant/30 mx-1 hidden sm:block"></div>}
+                            <button 
+                                onClick={() => {
+                                    if (cat === 'All') {
+                                        setActiveCategories(['All']);
+                                    } else if (cat === 'Selected') {
+                                        setActiveCategories(['Selected']);
                                     } else {
-                                        newSelection.push(cat);
+                                        let newSelection = activeCategories.filter(c => c !== 'All' && c !== 'Selected');
+                                        if (newSelection.includes(cat)) {
+                                            newSelection = newSelection.filter(c => c !== cat);
+                                            if (newSelection.length === 0) newSelection = ['All'];
+                                        } else {
+                                            newSelection.push(cat);
+                                        }
+                                        setActiveCategories(newSelection);
                                     }
-                                    setActiveCategories(newSelection);
-                                }
-                            }}
-                            className={`ahs-pill ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategories.includes(cat) ? 'active' : ''}`}
-                        >
-                            {cat === 'All' ? 'All Habits' : cat === 'Custom' ? 'Custom Habit' : cat}
-                        </button>
+                                }}
+                                className={`ahs-pill ${cat === 'Selected' ? 'bg-primary/10 text-primary border-primary/30' : ''} ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategories.includes(cat) ? 'active' : ''}`}
+                            >
+                                {cat === 'All' ? 'All Habits' : cat === 'Custom' ? 'Custom Habit' : cat === 'Selected' ? `Selected (${selectedHabits.length + customHabits.length})` : cat}
+                            </button>
+                        </React.Fragment>
                     ))}
                 </div>
             </div>
@@ -685,7 +694,7 @@ export default function AdvancedHabitSelector() {
                   <div className="ahs-habits-grid items-start">
                     
                     {/* CUSTOM HABIT BUILDER (Only visible in Custom tab) */}
-                    {activeCategories.includes('Custom') && (() => {
+                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && (() => {
                       const existingCustomsCount = existingHabits.filter(h => h.category === 'custom_' || h.category === 'Custom').length;
                       const isFreeUsed = (customHabits.length + existingCustomsCount) >= 1;
                       const isPro = userDoc?.isPro;
@@ -830,8 +839,8 @@ export default function AdvancedHabitSelector() {
                       );
                     })()}
 
-                    {/* EXISTING CUSTOM HABITS (Only visible in Custom tab) */}
-                    {activeCategories.includes('Custom') && customHabits.map(ch => (
+                    {/* EXISTING CUSTOM HABITS */}
+                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && customHabits.map(ch => (
                       <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
                         <div className="ahs-hc-top">
                             <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name="star" /></div>
@@ -893,12 +902,8 @@ export default function AdvancedHabitSelector() {
                       <ul className="text-sm text-on-surface-variant font-medium flex flex-col gap-3">
                           <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Be realistic with your targets.</li>
                           <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Consistency beats perfection.</li>
-                          <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> You can change habits after 30 days.</li>
+                          <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Track your progress daily.</li>
                       </ul>
-                  </div>
-                  <div className="ahs-side-card ahs-warning-card">
-                      <div className="ahs-sc-title"><Icon name="warning" /> 30 Days Warning</div>
-                      <div className="ahs-sc-desc">You can only add or remove habits within 30 days of creating your plan.</div>
                   </div>
               </aside>
             </div>
@@ -933,9 +938,9 @@ export default function AdvancedHabitSelector() {
       {/* STICKY FOOTER */}
       <footer className="ahs-sticky-footer">
           <div className="ahs-sf-left">
-              <div className="ahs-sf-warning-icon"><Icon name="lock" className="text-sm" /></div>
+              <div className="ahs-sf-warning-icon"><Icon name="info" className="text-sm" /></div>
               <span className="ahs-sf-text-line">
-                {viewMode === 'selection' ? "Habits will be locked for 30 days once saved" : "Review your targets before confirming"}
+                {viewMode === 'selection' ? "Select habits to build your plan" : "Review your targets before confirming"}
               </span>
           </div>
           <div className="ahs-sf-actions">
@@ -956,6 +961,28 @@ export default function AdvancedHabitSelector() {
         onClose={() => setShowPaywall(false)} 
         source={paywallSource} 
       />
+
+      {/* CONFIRM SAVE MODAL */}
+      {showConfirmSaveModal && (
+        <div className="ahs-modal-overlay" onClick={() => setShowConfirmSaveModal(false)}>
+          <div className="ahs-modal" onClick={e => e.stopPropagation()}>
+            <Icon name="lock" className="text-5xl text-primary mx-auto mb-4" />
+            <h3>Lock Habits for 30 Days</h3>
+            <p className="mb-6 mt-2 text-on-surface-variant">
+              Your habits will be locked for 30 days to build consistency. You can add new habits later, but you cannot remove them during this time.
+            </p>
+            <button className="ahs-btn ahs-btn-primary flex justify-center items-center gap-2 w-full" onClick={() => {
+                setShowConfirmSaveModal(false);
+                executeSave();
+            }}>
+              Confirm & Start Tracking
+            </button>
+            <button className="mt-4 text-sm font-bold text-on-surface-variant hover:text-on-surface w-full" onClick={() => setShowConfirmSaveModal(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* SCORING MODAL */}
       <ScoringModal type={scoringModal} onClose={() => setScoringModal(null)} />
