@@ -560,9 +560,9 @@ export default function Analytics() {
 
         <div className="h-[1px] bg-[#e6e7eb] mx-[15px] sm:mx-[18px]"></div>
 
-        {/* TARGET */}
-        <section className="p-[14px_15px] sm:p-[16px_18px] pb-0 sm:pb-0">
-            <div className="bg-[#151515] text-white rounded-[18px] p-[16px] sm:p-[20px] flex flex-col gap-[14px]">
+        {/* TARGET & STATS MERGED */}
+        <section className="p-[14px_15px] sm:p-[16px_18px] pb-[14px] sm:pb-[16px] flex flex-col shadow-sm">
+            <div className="bg-[#151515] text-white rounded-t-[18px] p-[16px] sm:p-[20px] flex flex-col gap-[14px]">
                 <div className="flex items-center justify-between w-full">
                     <span className="text-white/80 text-[12px] uppercase tracking-widest font-bold leading-none">Average</span>
                     <div className="flex items-center gap-[10px]">
@@ -593,12 +593,10 @@ export default function Analytics() {
                     })}
                 </div>
             </div>
-        </section>
 
-        {/* STATS */}
-        <section className="px-[15px] sm:px-[18px] pb-[14px] sm:pb-[16px]">
-            <div className="grid grid-cols-3 border border-[#e6e7eb] rounded-[18px] overflow-hidden">
+            <div className="grid grid-cols-3 border border-[#e6e7eb] border-t-0 rounded-b-[18px] bg-white overflow-hidden shadow-sm">
                 <div className="min-w-0 p-[12px_10px] relative border-r border-[#e6e7eb] flex justify-between items-center bg-white">
+
                     <div className="flex flex-col items-start gap-[4px]">
                         <span className="text-[#747985] text-[10px] sm:text-[11px] font-bold tracking-[0.5px] uppercase leading-none">{bestLabel}</span>
                         <span className="text-[#15171c] text-[11px] sm:text-[12px] font-semibold leading-none">
@@ -717,32 +715,32 @@ export default function Analytics() {
       {/* View Toggle & Habit Selector Row */}
       <div className="flex items-center justify-between gap-4 w-full mt-2">
         {/* Chart/Heatmap Toggle */}
-        <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant shadow-sm shrink-0">
+        <div className="flex bg-surface-container rounded-full p-[3px] sm:p-1 border border-outline-variant shadow-sm shrink-0">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`px-4 sm:px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`px-4 sm:px-6 py-[5px] sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Chart
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`px-4 sm:px-6 py-2 rounded-full font-label-md text-label-md transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`px-4 sm:px-6 py-[5px] sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Heatmap
           </button>
         </div>
         
         {/* Habit Selector Dropdown */}
-        <div className="relative shrink-0 max-w-[150px] sm:max-w-[200px]">
+        <div className="relative shrink-0 max-w-[170px] sm:max-w-[200px]">
           <select 
             value={selectedHabit} 
             onChange={e => setSelectedHabit(e.target.value)}
-            className="w-full bg-[#151515] text-white border border-outline-variant/30 font-semibold text-[13px] sm:text-sm rounded-full pl-4 pr-8 py-[10px] appearance-none focus:outline-none shadow-sm truncate"
+            className="w-full bg-[#151515] text-white border border-outline-variant/30 font-semibold text-[12px] sm:text-[13px] rounded-full pl-4 pr-[28px] py-[6px] sm:py-[8px] appearance-none focus:outline-none shadow-sm truncate"
           >
             <option value="overall">Overall Performance</option>
             {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
-          <Icon name="expand_more" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none text-[18px]" />
+          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none text-[18px]" />
         </div>
       </div>
 
@@ -763,36 +761,12 @@ export default function Analytics() {
         
         {/* Trend Line Chart */}
         {viewMode === 'charts' && (
-          <div className="w-full flex flex-col pt-4">
-          <div className="flex flex-col mb-6 gap-4">
-            <div className="flex justify-between items-center">
-                <h2 className="font-headline-md text-headline-md text-on-surface">Score Trend</h2>
-                {false && (
-                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant">
-                        <button 
-                          onClick={() => setChartMode('combined')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'combined' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Combined
-                        </button>
-                        <button 
-                          onClick={() => setChartMode('separate')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${chartMode === 'separate' ? 'bg-black text-white shadow' : 'text-on-surface-variant hover:text-on-surface'}`}
-                        >
-                          Separate
-                        </button>
-                    </div>
-                )}
-            </div>
-          </div>
-
-
-          
-          <div className="flex-grow w-full flex flex-col gap-8 min-h-[300px]">
+          <div className="w-full flex flex-col pt-2 sm:pt-4">
+          <div className="flex-grow w-full flex flex-col min-h-[300px]">
           {viewMode === 'charts' && (
-            <div className="flex flex-col gap-6 w-full">
+            <div className="flex flex-col gap-4 w-full">
               {renderCustomKPIHeader(selectedHabit)}
-              <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm mt-2">
+              <div className="sm:bg-surface sm:border sm:border-outline-variant/50 sm:rounded-[24px] sm:p-5 sm:shadow-sm">
                 <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '250px', width: '100%' }} />
               </div>
             </div>
@@ -816,9 +790,8 @@ export default function Analytics() {
             </div>
           )}
           <div className={isZoomedOut ? 'flex-1 flex flex-col items-center justify-center overflow-hidden w-full relative' : 'w-full'}>
-            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full flex flex-col pt-4'}`}>
-          <div className="flex justify-between items-center mb-6 shrink-0 gap-2 flex-wrap">
-            <h2 className="font-headline-md text-headline-md text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">Consistency Map</h2>
+            <div className={`flex flex-col ${isZoomedOut ? 'bg-surface w-full max-w-7xl max-h-full overflow-auto border border-outline-variant shadow-sm rounded-2xl p-6' : 'w-full flex flex-col pt-2 sm:pt-4'}`}>
+          <div className="flex justify-start items-center mb-4 shrink-0 gap-2 flex-wrap">
             
             <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
               {/* Heatmap Period Toggle */}
