@@ -34,41 +34,54 @@ export function DataProvider({ children }) {
     if (habits.length === 0) setLoadingData(true);
     
     try {
-      const [userDoc, habitsSnap, summariesSnap] = await Promise.all([
-          getDoc(doc(db, 'users', user.uid)),
-          getDocs(collection(db, `users/${user.uid}/habits`)),
-          getDocs(collection(db, `users/${user.uid}/dailySummaries`))
-      ]);
-      
-      if (userDoc.exists()) {
-          const data = userDoc.data();
-          const lowerEmail = user.email ? user.email.toLowerCase() : '';
-          if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
-              data.isPro = true;
-          }
-          setUserDocData(data);
-          setPriorityModeEnabled(data.priorityModeEnabled || false);
-      } else {
-          const lowerEmail = user.email ? user.email.toLowerCase() : '';
-          if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
-              setUserDocData({ isPro: true });
-          }
+      // Fetch user doc
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            const lowerEmail = user.email ? user.email.toLowerCase() : '';
+            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+                data.isPro = true;
+            }
+            setUserDocData(data);
+            setPriorityModeEnabled(data.priorityModeEnabled || false);
+        } else {
+            const lowerEmail = user.email ? user.email.toLowerCase() : '';
+            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+                setUserDocData({ isPro: true });
+            }
+        }
+      } catch (err) {
+        console.error("Error loading user doc:", err);
+      }
+
+      // Fetch habits
+      try {
+        const habitsSnap = await getDocs(collection(db, `users/${user.uid}/habits`));
+        const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        fetchedHabits.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+        setHabits(fetchedHabits);
+        localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
+      } catch (err) {
+        console.error("Error loading habits:", err);
+      }
+
+      // Fetch summaries
+      try {
+        const summariesSnap = await getDocs(collection(db, `users/${user.uid}/dailySummaries`));
+        const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Sort by date (id) descending in memory
+        fetchedSummaries.sort((a, b) => b.id.localeCompare(a.id));
+        const recentSummaries = fetchedSummaries.slice(0, 30);
+        
+        setAllSummaries(recentSummaries);
+        localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
+      } catch (err) {
+        console.error("Error loading summaries:", err);
       }
       
-      const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      fetchedHabits.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-      setHabits(fetchedHabits);
-      localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
-      
-      const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Sort by date (id) descending in memory to avoid Firebase index requirement
-      fetchedSummaries.sort((a, b) => b.id.localeCompare(a.id));
-      const recentSummaries = fetchedSummaries.slice(0, 30);
-      
-      setAllSummaries(recentSummaries);
-      localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
     } catch (error) {
-      console.error("Error loading global data:", error);
+      console.error("Critical error in loadGlobalData:", error);
     } finally {
       setLoadingData(false);
     }
