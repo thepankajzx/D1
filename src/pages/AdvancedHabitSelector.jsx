@@ -589,7 +589,7 @@ export default function AdvancedHabitSelector() {
             </header>
 
             {/* LIVE PREVIEWS (Top) */}
-            <div id="scoring-preview-section" className="ahs-live-preview bg-indigo-50/70 text-indigo-950 shadow-sm border border-indigo-100 p-6 rounded-2xl mb-8">
+            <div id="scoring-preview-section" className="ahs-live-preview mb-8 mt-4">
                 <div className="mb-4">
                     <h3 className="font-headline-md font-bold flex items-center gap-2 text-indigo-800">
                         <Icon name="science" className="text-indigo-600" /> Live Scoring Preview
@@ -598,7 +598,7 @@ export default function AdvancedHabitSelector() {
                 </div>
                 
                 <div className="ahs-previews-row">
-                    <div className="ahs-preview-widget border border-outline-variant/30 mb-4 bg-surface-container-low rounded-xl p-4">
+                    <div className="ahs-preview-widget mb-6">
                         <div className="ahs-preview-header flex justify-between items-center mb-3">
                             <div className="ahs-preview-title font-bold flex items-center gap-2">
                                 <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_up" /></div>
@@ -624,7 +624,7 @@ export default function AdvancedHabitSelector() {
                         </div>
                     </div>
 
-                    <div className="ahs-preview-widget border border-outline-variant/30 bg-surface-container-low rounded-xl p-4">
+                    <div className="ahs-preview-widget mb-6">
                         <div className="ahs-preview-header flex justify-between items-center mb-3">
                             <div className="ahs-preview-title font-bold flex items-center gap-2">
                                 <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_down" /></div>
@@ -1023,23 +1023,31 @@ export default function AdvancedHabitSelector() {
       </div>
 
       {/* STICKY FOOTER */}
-      <footer className="ahs-sticky-footer">
-          <div className="ahs-sf-left">
-              <div className="ahs-sf-warning-icon"><Icon name="info" className="text-sm" /></div>
-              <span className="ahs-sf-text-line">
-                {viewMode === 'selection' ? "Select habits to build your plan" : "Review your targets before confirming"}
-              </span>
+            {/* STICKY FOOTER */}
+      <footer className="ahs-sticky-footer" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div className="flex w-full h-[4px] gap-[2px] bg-surface-variant/30">
+             {[...Array(MAX_FREE_HABITS)].map((_, i) => (
+                <div key={i} className={`flex-1 h-full transition-colors duration-300 ${i < (existingHabits.length + selectedHabits.length + customHabits.length) ? 'bg-primary' : 'bg-transparent'}`} />
+             ))}
           </div>
-          <div className="ahs-sf-actions">
-              <button 
-                className="ahs-btn ahs-btn-cancel" 
-                onClick={() => viewMode === 'summary' ? setViewMode('selection') : navigate(-1)}
-              >
-                {viewMode === 'summary' ? "Edit Selection" : "Cancel"}
-              </button>
-              <button className="ahs-btn ahs-btn-primary ahs-btn-save" onClick={handleSaveFlow}>
-                {viewMode === 'summary' ? "Start Tracking" : "Review Plan"}
-              </button>
+          <div className="flex justify-between items-center w-full px-4 py-3 sm:px-6">
+            <div className="ahs-sf-left flex-1 min-w-0 pr-4">
+                <div className="ahs-sf-warning-icon shrink-0"><Icon name="info" className="text-sm" /></div>
+                <span className="ahs-sf-text-line truncate text-xs sm:text-sm font-semibold">
+                  {viewMode === 'selection' ? `${existingHabits.length + selectedHabits.length + customHabits.length} of ${MAX_FREE_HABITS} selected` : "Review your targets before confirming"}
+                </span>
+            </div>
+            <div className="ahs-sf-actions shrink-0">
+                <button 
+                  className="ahs-btn ahs-btn-cancel text-xs sm:text-sm" 
+                  onClick={() => viewMode === 'summary' ? setViewMode('selection') : navigate(-1)}
+                >
+                  {viewMode === 'summary' ? "Edit Selection" : "Cancel"}
+                </button>
+                <button className="ahs-btn ahs-btn-primary ahs-btn-save text-xs sm:text-sm" onClick={handleSaveFlow}>
+                  {viewMode === 'summary' ? "Start Tracking" : "Review Plan"}
+                </button>
+            </div>
           </div>
       </footer>
 
