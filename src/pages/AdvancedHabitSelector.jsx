@@ -193,6 +193,10 @@ export default function AdvancedHabitSelector() {
 
   const handleSaveFlow = async () => {
     if (viewMode === 'selection') {
+      if (activeCategory === 'Custom' && cbName.trim() !== '') {
+        alert("You have an unsaved custom habit. Please click 'Add Habit' first, or clear the Habit Name field.");
+        return;
+      }
       if (selectedHabits.length + customHabits.length === 0) {
         alert("Please select at least 1 habit to save your plan.");
         return;
@@ -341,17 +345,17 @@ export default function AdvancedHabitSelector() {
               <div className="ahs-progress-widget">
                 <div className="ahs-progress-top">
                   <div className="ahs-progress-text">
-                    <h3>Selected Habits</h3>
-                    <div className="ahs-count"><span>{selectedHabits.length + customHabits.length}</span><span> / 8</span></div>
+                    <h3>Habits Tracker</h3>
+                    <div className="ahs-count"><span>{existingHabits.length + selectedHabits.length + customHabits.length}</span><span> / {MAX_FREE_HABITS}</span></div>
                   </div>
                   <div 
                     className="ahs-progress-circle" 
-                    style={{ background: `conic-gradient(var(--ahs-primary) ${Math.min(100, ((selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%, #E2E8F0 0)`}}
+                    style={{ background: `conic-gradient(var(--ahs-primary) ${Math.min(100, ((existingHabits.length + selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%, #E2E8F0 0)`}}
                   >
-                    <div className="ahs-progress-inner">{Math.round(((selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%</div>
+                    <div className="ahs-progress-inner">{Math.round(((existingHabits.length + selectedHabits.length + customHabits.length)/MAX_FREE_HABITS)*100)}%</div>
                   </div>
                 </div>
-                <p>You can select up to 8 habits on Free plan.</p>
+                <p>You can track up to {MAX_FREE_HABITS} habits on the Free plan.</p>
               </div>
             </header>
 
@@ -616,8 +620,8 @@ export default function AdvancedHabitSelector() {
                   <div className="ahs-side-card">
                       <div className="ahs-sc-title">Selection Summary</div>
                       <ul className="ahs-summary-list">
-                          <li><Icon name="check_circle" className="ahs-text-success" /> <span>{selectedHabits.length + customHabits.length} Habits Selected</span></li>
-                          <li><Icon name="inventory_2" /> <span className="ahs-text-primary">{Math.max(0, MAX_FREE_HABITS - (selectedHabits.length + customHabits.length))} Slots Remaining</span></li>
+                          <li><Icon name="check_circle" className="ahs-text-success" /> <span>{selectedHabits.length + customHabits.length} New Habits Selected</span></li>
+                          <li><Icon name="inventory_2" /> <span className="ahs-text-primary">{Math.max(0, MAX_FREE_HABITS - (existingHabits.length + selectedHabits.length + customHabits.length))} Slots Remaining</span></li>
                       </ul>
                   </div>
                   <div className="ahs-side-card">
