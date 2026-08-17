@@ -191,10 +191,24 @@ export default function AdvancedHabitSelector() {
     setCustomHabits(customHabits.filter(h => h.id !== id));
   };
 
+  const handleBack = () => {
+    if (viewMode === 'summary') {
+      setViewMode('selection');
+    } else {
+      if (selectedHabits.length > 0 || customHabits.length > 0) {
+        if (window.confirm("You have selected habits that haven't been saved yet. If you leave now, they will be lost. Are you sure you want to go back?")) {
+          navigate(-1);
+        }
+      } else {
+        navigate(-1);
+      }
+    }
+  };
+
   const handleSaveFlow = async () => {
     if (viewMode === 'selection') {
       if (activeCategory === 'Custom' && cbName.trim() !== '') {
-        alert("You have an unsaved custom habit. Please click 'Add Habit' first, or clear the Habit Name field.");
+        alert("You have an unsaved custom habit. Please click 'Add to Plan' first, or clear the Habit Name field.");
         return;
       }
       if (selectedHabits.length + customHabits.length === 0) {
@@ -233,6 +247,7 @@ export default function AdvancedHabitSelector() {
           await setDoc(userHabitRef, habitData);
         }
         await refreshData();
+        alert("Your plan has been saved successfully!");
         navigate('/');
       } catch (error) {
         console.error("Error saving habits:", error);
@@ -325,7 +340,7 @@ export default function AdvancedHabitSelector() {
       <div className="ahs-container">
         
         {/* Back Button */}
-        <div className="ahs-header-top" onClick={() => viewMode === 'summary' ? setViewMode('selection') : navigate(-1)}>
+        <div className="ahs-header-top" onClick={handleBack}>
           <Icon name="arrow_back" /> Back
         </div>
 
@@ -560,7 +575,7 @@ export default function AdvancedHabitSelector() {
                                   </div>
                                 </>
                               )}
-                              <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add Habit</button>
+                              <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add to Plan</button>
                           </>
                         </div>
                       );
