@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from '../components/Icon';
 
 export default function OnboardingWelcome() {
   const navigate = useNavigate();
@@ -22,56 +23,62 @@ export default function OnboardingWelcome() {
         </header>
 
         {/* Core Content Area */}
-        <section className="flex-1 flex flex-col justify-center items-center text-center space-y-12 w-full">
-          {/* Abstract Progress Art */}
-          <div className="relative w-64 h-64 flex items-center justify-center">
-            {/* Ambient Glow */}
-            <div className="absolute inset-0 rounded-full bg-surface opacity-5 blur-3xl"></div>
-            
-            {/* SVG Line Art */}
-            <svg className="w-48 h-48 text-surface opacity-90" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 100 100">
-              {/* Background Track */}
-              <circle cx="50" cy="50" r="40" strokeOpacity="0.1"></circle>
-              
-              {/* Progress Arc */}
-              <path 
-                className="origin-center" 
-                d="M 50 10 A 40 40 0 0 1 88.5 38.5" 
-                strokeLinecap="round" 
-                style={{ 
-                  transform: rotated ? 'rotate(0deg)' : 'rotate(-10deg)', 
-                  transition: 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)' 
-                }}
-              ></path>
-              
-              {/* Indicator Dot */}
-              <circle 
-                className="origin-center" 
-                cx="88.5" cy="38.5" r="2" fill="currentColor" stroke="none" 
-                style={{ 
-                  transform: rotated ? 'rotate(0deg)' : 'rotate(-10deg)', 
-                  transition: 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)' 
-                }}
-              ></circle>
-              
-              {/* Precision Lines */}
-              <line strokeLinecap="round" strokeOpacity="0.2" x1="50" x2="50" y1="10" y2="18"></line>
-              <line strokeLinecap="round" strokeOpacity="0.2" x1="90" x2="82" y1="50" y2="50"></line>
-              <line strokeLinecap="round" strokeOpacity="0.2" x1="10" x2="18" y1="50" y2="50"></line>
-              
-              {/* Inner Ring */}
-              <circle cx="50" cy="50" r="28" strokeDasharray="2 4" strokeOpacity="0.15"></circle>
-            </svg>
-          </div>
-
-          {/* Value Proposition */}
-          <div className="space-y-4 px-4">
+        <section className="flex-1 flex flex-col justify-center items-center text-center space-y-8 w-full mt-4">
+          
+          {/* Header text */}
+          <div className="space-y-2 px-4 mb-4">
             <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-surface">
-              Track what matters.
+              How it works
             </h1>
             <p className="font-body-lg text-body-lg text-surface opacity-70 max-w-xs mx-auto">
-              See your progress clearly. Reduce noise and focus on consistent execution.
+              Three simple steps to build bulletproof consistency.
             </p>
+          </div>
+
+          {/* How it Works - Vertical Steps */}
+          <div className="w-full max-w-[320px] flex flex-col gap-2 items-start text-left mx-auto">
+            
+            {/* Step 1 */}
+            <div className="flex gap-5 items-start w-full group">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-2xl bg-surface/10 border border-surface/20 flex items-center justify-center text-surface transition-all duration-300 group-hover:bg-surface/20 group-hover:scale-105">
+                  <Icon name="fact_check" className="text-[24px]" />
+                </div>
+                <div className="w-[2px] h-8 bg-gradient-to-b from-surface/30 to-surface/5 mt-2 rounded-full"></div>
+              </div>
+              <div className="pt-2">
+                <h3 className="font-bold text-[17px] text-surface tracking-wide">1. Select Habits</h3>
+                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Choose from our library or build your custom habits.</p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex gap-5 items-start w-full group">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-2xl bg-surface/10 border border-surface/20 flex items-center justify-center text-surface transition-all duration-300 group-hover:bg-surface/20 group-hover:scale-105">
+                  <Icon name="tune" className="text-[24px]" />
+                </div>
+                <div className="w-[2px] h-8 bg-gradient-to-b from-surface/30 to-surface/5 mt-2 rounded-full"></div>
+              </div>
+              <div className="pt-2">
+                <h3 className="font-bold text-[17px] text-surface tracking-wide">2. Choose Scoring</h3>
+                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Set target numbers, timers, or simple Yes/No tracking.</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex gap-5 items-start w-full group">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-2xl bg-surface text-tertiary-container flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300 group-hover:scale-105">
+                  <Icon name="trending_up" className="text-[24px]" />
+                </div>
+              </div>
+              <div className="pt-2">
+                <h3 className="font-bold text-[17px] text-surface tracking-wide">3. Track Consistency</h3>
+                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Build your streak and analyze your progress over time.</p>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -87,9 +94,9 @@ export default function OnboardingWelcome() {
           {/* Primary Action */}
           <button 
             onClick={() => navigate('/onboarding/select')}
-            className="w-full py-4 rounded-lg bg-surface text-tertiary-container font-label-sm text-label-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex justify-center items-center border border-surface shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
+            className="w-full py-4 rounded-lg bg-surface text-tertiary-container font-label-sm text-label-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 border border-surface shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
           >
-            Get Started
+            Start Tracking <Icon name="arrow_forward" className="text-lg" />
           </button>
         </footer>
       </main>
