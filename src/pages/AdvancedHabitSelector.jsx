@@ -398,7 +398,7 @@ export default function AdvancedHabitSelector() {
 
   const handleSaveFlow = async () => {
     if (viewMode === 'selection') {
-      if (activeCategory === 'Custom' && cbName.trim() !== '') {
+      if (activeCategories.includes('Custom') && cbName.trim() !== '') {
         alert("You have an unsaved custom habit. Please click 'Add to Plan' first, or clear the Habit Name field.");
         return;
       }
@@ -814,7 +814,7 @@ export default function AdvancedHabitSelector() {
                     })()}
 
                     {/* EXISTING CUSTOM HABITS (Only visible in Custom tab) */}
-                    {activeCategory === 'Custom' && customHabits.map(ch => (
+                    {activeCategories.includes('Custom') && customHabits.map(ch => (
                       <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
                         <div className="ahs-hc-top">
                             <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name="star" /></div>
@@ -832,7 +832,7 @@ export default function AdvancedHabitSelector() {
                     ))}
 
                     {/* RENDER HABIT LIBRARY (Not visible in Custom tab) */}
-                    {activeCategory !== 'Custom' && displayedHabits.map(habit => {
+                    {displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       // Determine background based on category
                       let bgClass = "bg-gray-900 text-white"; // Black and white theme
