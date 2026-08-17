@@ -85,32 +85,32 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
     const borderColor = glowTarget === field ? 'border-primary shadow-lg shadow-primary/20' : 'border-outline-variant/40';
 
     return (
-      <div className="flex flex-col items-center">
-        <div className={`border ${borderColor} rounded-2xl p-4 bg-surface flex flex-col items-center min-w-[140px] transition-all duration-300`}>
-          <span className={`px-3 py-1 rounded-md text-xs font-bold mb-4 ${badgeBg}`}>
+      <div className="flex flex-col items-center w-full">
+        <div className={`border ${borderColor} rounded-2xl p-2 sm:p-3 bg-surface flex flex-col items-center w-full transition-all duration-300`}>
+          <span className={`px-2 sm:px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold mb-3 sm:mb-4 ${badgeBg}`}>
             {label}
           </span>
           {showHM ? (
-            <div className="flex items-center gap-2">
-              <div className="relative">
+            <div className="flex items-center gap-1 sm:gap-2 w-full justify-center">
+              <div className="relative w-full max-w-[60px]">
                 <input 
                   type="number" min="0" max="23"
-                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-3 w-14 text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-1 sm:px-2 py-2 sm:py-3 w-full text-center font-bold text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
                   value={getH(value) || ''} 
                   placeholder="00"
                   onChange={e => updateHM(field, value, 'h', e.target.value)} 
                 />
-                <span className="absolute top-1 right-1 text-xs text-on-surface-variant font-medium">h</span>
+                <span className="absolute top-1 right-1 text-[10px] sm:text-xs text-on-surface-variant font-medium">h</span>
               </div>
-              <div className="relative">
+              <div className="relative w-full max-w-[60px]">
                 <input 
                   type="number" min="0" max="59"
-                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-3 w-14 text-center font-bold text-lg focus:border-primary focus:outline-none transition-colors" 
+                  className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-1 sm:px-2 py-2 sm:py-3 w-full text-center font-bold text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
                   value={getM(value) || ''} 
                   placeholder="00"
                   onChange={e => updateHM(field, value, 'm', e.target.value)} 
                 />
-                <span className="absolute top-1 right-1 text-xs text-on-surface-variant font-medium">m</span>
+                <span className="absolute top-1 right-1 text-[10px] sm:text-xs text-on-surface-variant font-medium">m</span>
               </div>
             </div>
           ) : (

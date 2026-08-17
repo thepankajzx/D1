@@ -90,7 +90,7 @@
 .ahs-cat-title { font-weight: 800; font-size: 1.1rem; color: var(--ahs-text-main); }
 .ahs-cat-sub { font-size: 0.85rem; color: var(--ahs-text-sub); font-weight: 500;}
 
-.ahs-habits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.ahs-habits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; }
 
 /* Habit Card */
 .ahs-habit-card { background: var(--ahs-bg-card); border: 2px solid var(--ahs-border-light); border-radius: var(--ahs-radius-xl); padding: 18px; cursor: pointer; transition: 0.2s ease; position: relative; user-select: none; box-shadow: var(--ahs-shadow-sm); }
