@@ -1,4 +1,5 @@
 import Icon from '../components/Icon';
+import ProModal from '../components/ProModal';
 import { useState, useEffect, useMemo } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -507,34 +508,11 @@ export default function Dashboard() {
           )}
       </div>
 
-      {/* Paywall Modal */}
-      {showPaywall && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
-            <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="workspace_premium" className=" text-3xl" style={{fontVariationSettings: "'FILL' 1"}} />
-            </div>
-            <h3 className="text-xl font-bold text-on-surface mb-2">Habit Limit Reached</h3>
-            <p className="text-on-surface-variant text-sm mb-6">
-              You can only track up to 8 habits on the free plan. Upgrade to Pro to unlock unlimited habits and advanced analytics.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => navigate('/subscription')}
-                className="w-full py-3 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 flex justify-center items-center gap-2"
-              >
-                Explore <span className="pro-badge">PRO</span>
-              </button>
-              <button
-                onClick={() => setShowPaywall(false)}
-                className="w-full py-3 border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-variant"
-              >
-                Maybe Later
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProModal 
+        isOpen={showPaywall} 
+        onClose={() => setShowPaywall(false)} 
+        source="total_habits_limit" 
+      />
 
       {/* KPI Help Modal */}
       {showKpiHelp && (

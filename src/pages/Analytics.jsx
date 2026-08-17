@@ -21,6 +21,7 @@ echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, Canvas
 import { Link, useSearchParams } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
+import ProModal from '../components/ProModal';
 import ProCustomDateModal from '../components/ProCustomDateModal';
 
 const getPerfBandClass = (score) => {
@@ -725,7 +726,7 @@ export default function Analytics() {
 
       {/* Main Chart & Heatmap */}
       {isFutureOnly ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center mb-8">
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface border border-outline-variant rounded-2xl shadow-sm text-center">
             <Icon name="event_upcoming" className=" text-5xl text-on-surface-variant mb-4" />
             <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
             <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
@@ -1136,7 +1137,11 @@ export default function Analytics() {
       )}
       </div>
       )}
-      {showProUpgradeModal && <ProCustomDateModal onClose={() => setShowProUpgradeModal(false)} />}
+      <ProModal 
+        isOpen={showProUpgradeModal} 
+        onClose={() => setShowProUpgradeModal(false)} 
+        source="custom_analytics" 
+      />
     </div>
   );
 }

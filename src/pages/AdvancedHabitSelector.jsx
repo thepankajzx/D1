@@ -8,6 +8,7 @@ import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import ScoringModal from '../components/ScoringModal';
+import ProModal from '../components/ProModal';
 import './AdvancedHabitSelector.css';
 
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime }) => {
@@ -216,6 +217,7 @@ export default function AdvancedHabitSelector() {
   const [activeCategories, setActiveCategories] = useState(['All']);
   
   const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallSource, setPaywallSource] = useState("");
   const [scoringModal, setScoringModal] = useState(null);
 
   // Custom Habit Builder State
@@ -289,7 +291,7 @@ export default function AdvancedHabitSelector() {
       const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
       
       if (totalHabitsCount >= 9 && !userDoc?.isPro) {
-        alert("You already have 9 slots filled. You cannot add more habits unless you get the Pro plan.");
+        setPaywallSource("total_habits_limit");
         setShowPaywall(true);
       } else {
         // Add default targets to the selected habit based on its config
@@ -328,11 +330,12 @@ export default function AdvancedHabitSelector() {
 
     const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
     if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
+      setPaywallSource("custom_habit_creation");
       setShowPaywall(true);
       return;
     }
     if (totalHabitsCount >= 9 && !userDoc?.isPro) {
-      alert("You already have 9 slots filled. You cannot add more habits unless you get the Pro plan.");
+      setPaywallSource("total_habits_limit");
       setShowPaywall(true);
       return;
     }
@@ -690,8 +693,9 @@ export default function AdvancedHabitSelector() {
 
                       if (showProLocked) {
                         return (
-                          <div className="flex flex-col items-center justify-center p-8 text-center bg-surface border-2 border-dashed border-outline-variant rounded-2xl hover:bg-surface-variant transition-colors cursor-pointer w-full h-[280px]" onClick={e => {
+                          <div className="flex flex-col items-center justify-center p-8 text-center bg-surface border-2 border-dashed border-outline-variant rounded-2xl hover:bg-surface-variant transition-colors cursor-pointer w-full h-[280px]" onClick={(e) => {
                             e.stopPropagation();
+                            setPaywallSource("custom_habit_creation");
                             setShowPaywall(true);
                           }}>
                                <div className="flex items-center gap-2 mb-4">
@@ -947,18 +951,11 @@ export default function AdvancedHabitSelector() {
           </div>
       </footer>
 
-      {/* PAYWALL MODAL */}
-      {showPaywall && (
-        <div className="ahs-modal-overlay" onClick={() => setShowPaywall(false)}>
-          <div className="ahs-modal" onClick={e => e.stopPropagation()}>
-            <Icon name="workspace_premium" className="text-5xl text-amber-500 mx-auto mb-4" />
-            <h3>Upgrade to Pro</h3>
-            <p>You have reached the limit of the Free plan. Upgrade to unlock unlimited custom habits and tracking.</p>
-            <button className="ahs-btn ahs-btn-primary flex justify-center items-center gap-2" onClick={() => navigate('/subscription')}>View <span className="pro-badge">PRO</span> Plans</button>
-            <button className="mt-4 text-sm font-bold text-on-surface-variant hover:text-on-surface" onClick={() => setShowPaywall(false)}>Maybe Later</button>
-          </div>
-        </div>
-      )}
+      <ProModal 
+        isOpen={showPaywall} 
+        onClose={() => setShowPaywall(false)} 
+        source={paywallSource} 
+      />
 
       {/* SCORING MODAL */}
       <ScoringModal type={scoringModal} onClose={() => setScoringModal(null)} />
