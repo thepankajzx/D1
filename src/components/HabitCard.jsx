@@ -307,6 +307,18 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const maxSlider = Math.max(habit.target100 || 0, habit.target0 || 0, val) * 1.2 || 100;
         const minSlider = 0;
         
+        let sliderStep = '1';
+        if (habit.scoringType === 'number') {
+          if (maxSlider <= 10) sliderStep = '0.5';
+          else if (maxSlider <= 50) sliderStep = '1';
+          else sliderStep = '5';
+        } else {
+          // Duration
+          if (maxSlider <= 24) sliderStep = '0.5'; // Good for hours
+          else if (maxSlider <= 120) sliderStep = '5'; // Good for minutes
+          else sliderStep = '15';
+        }
+        
         return (
           <div className="flex flex-col gap-4 flex-grow justify-end">
             <div className="flex justify-between items-center text-xs text-on-surface-variant">
@@ -319,7 +331,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   aria-label={`Target slider for ${habit.name}`}
                   min={minSlider} 
                   max={maxSlider} 
-                  step={habit.scoringType === 'number' ? '1' : '5'}
+                  step={sliderStep}
                   value={val}
                   onChange={(e) => setVal(Number(e.target.value))}
                   onPointerUp={(e) => handleChange(Number(e.target.value))}
@@ -331,6 +343,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                       type="number"
                       aria-label={`Target value for ${habit.name}`}
                       min="0"
+                      step="any"
                       value={val === 0 ? '' : val}
                       placeholder="0"
                       onChange={(e) => setVal(Number(e.target.value))}
