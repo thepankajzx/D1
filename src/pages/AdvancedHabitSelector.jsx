@@ -479,7 +479,19 @@ export default function AdvancedHabitSelector() {
           </div>
         ) : h.scoringType !== 'binary' && selectedObj.direction && (
           <div className="mb-6 w-full">
-            <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-sm font-bold text-on-surface-variant">Scoring Logic</label>
+              <button 
+                type="button"
+                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  document.getElementById('scoring-preview-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                <Icon name="help_outline" className="text-[12px]" /> How this works
+              </button>
+            </div>
             <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
               <button 
                 type="button" 
@@ -749,7 +761,19 @@ export default function AdvancedHabitSelector() {
                                     </div>
                                   ) : (
                                     <div className="mb-6 w-full">
-                                        <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
+                                        <div className="flex justify-between items-center mb-3">
+                                          <label className="text-sm font-bold text-on-surface-variant">Scoring Logic</label>
+                                          <button 
+                                            type="button"
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                                            onClick={(e) => { 
+                                              e.stopPropagation(); 
+                                              document.getElementById('scoring-preview-section')?.scrollIntoView({ behavior: 'smooth' });
+                                            }}
+                                          >
+                                            <Icon name="help_outline" className="text-[12px]" /> How this works
+                                          </button>
+                                        </div>
                                         <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
                                             <button 
                                               type="button" 
