@@ -705,10 +705,11 @@ export default function Analytics() {
                     {heatmapPeriod === 'day' && (
                       <button 
                         onClick={() => setShowPercentages(!showPercentages)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
+                        className={`px-3 h-8 rounded-full flex items-center justify-center gap-1 transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
                         title="Toggle Percentages"
                       >
-                        <Icon name="percent" className="text-[14px]" />
+                        <Icon name={showPercentages ? 'visibility' : 'visibility_off'} className="text-[16px]" />
+                        <span className="text-[12px] font-bold leading-none">%</span>
                       </button>
                     )}
                   </div>
@@ -732,7 +733,7 @@ export default function Analytics() {
                                     className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
                                   >
                                     {(!cell.isPad && cell.score !== null && showPercentages) && (
-                                      <span className="text-[9px] font-bold z-10 opacity-90 text-white mix-blend-difference">{Math.round(cell.score)}</span>
+                                      <span className={`text-[9.5px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
                                     )}
                                   </div>
                                 ))}
