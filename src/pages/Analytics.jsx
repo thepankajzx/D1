@@ -346,8 +346,8 @@ export default function Analytics() {
           
           if (params.length > 1) {
             // Combined Chart - Compact List View
-            let html = `<div style="background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 8px 12px; min-width: 140px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
-            html += `<div style="font-size: 10px; color: #6b7280; margin-bottom: 8px; font-weight: 500; border-bottom: 1px solid #f3f4f6; padding-bottom: 4px;">${dateStr}</div>`;
+            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 8px 12px; min-width: 140px; font-family: 'Inter', sans-serif; border: 1px solid var(--outline-variant, #e5e7eb);">`;
+            html += `<div style="font-size: 10px; color: var(--on-surface-variant, #6b7280); margin-bottom: 8px; font-weight: 500; border-bottom: 1px solid var(--outline-variant, #f3f4f6); padding-bottom: 4px;">${dateStr}</div>`;
             
             params.forEach(param => {
               const seriesName = param.seriesName;
@@ -359,9 +359,9 @@ export default function Analytics() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                   <div style="display: flex; align-items: center; gap: 6px;">
                     <div style="width: 6px; height: 6px; border-radius: 50%; background: ${finalColor};"></div>
-                    <div style="font-size: 11px; font-weight: 500; color: #374151;">${seriesName}</div>
+                    <div style="font-size: 11px; font-weight: 500; color: var(--on-surface-variant, #374151);">${seriesName}</div>
                   </div>
-                  <div style="font-size: 11px; font-weight: 700; color: #111827;">${score}%</div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--on-surface, #111827);">${score}%</div>
                 </div>
               `;
             });
@@ -369,7 +369,7 @@ export default function Analytics() {
             return html;
           } else {
             // Individual Chart - Detailed View (Compact for Mobile)
-            let html = `<div style="background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 10px; min-width: 160px; max-width: 200px; font-family: 'Inter', sans-serif; border: 1px solid #e5e7eb;">`;
+            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 10px; min-width: 160px; max-width: 200px; font-family: 'Inter', sans-serif; border: 1px solid var(--outline-variant, #e5e7eb);">`;
             
             const param = params[0];
             const seriesName = param.seriesName;
@@ -380,10 +380,10 @@ export default function Analytics() {
               const calendarIconHtml = renderToString(<Icon name="calendar_today" style={{ fontSize: '10px', width: '10px', height: '10px', fill: 'currentColor' }} />);
               html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <div style="font-weight: 600; font-size: 12px; color: #111827;">Overall Score</div>
-                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 10px; border: 1px solid #d1fae5;">${score}%</div>
+                  <div style="font-weight: 600; font-size: 12px; color: var(--on-surface, #111827);">Overall Score</div>
+                  <div style="background: var(--perf-high-bg, rgba(16, 185, 129, 0.1)); color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 10px; border: 1px solid var(--perf-high-border, rgba(16, 185, 129, 0.2));">${score}%</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
+                <div style="display: flex; align-items: center; gap: 4px; color: var(--on-surface-variant, #4b5563); font-size: 9px;">
                   ${calendarIconHtml}
                   <span>${dateStr}</span>
                 </div>
@@ -402,14 +402,14 @@ export default function Analytics() {
                       ${habitIconHtml}
                     </div>
                     <div>
-                      <div style="font-weight: 600; font-size: 11px; color: #111827; line-height: 1.2; margin-bottom: 4px;">${seriesName}</div>
-                      <div style="display: flex; align-items: center; gap: 4px; color: #4b5563; font-size: 9px;">
+                      <div style="font-weight: 600; font-size: 11px; color: var(--on-surface, #111827); line-height: 1.2; margin-bottom: 4px;">${seriesName}</div>
+                      <div style="display: flex; align-items: center; gap: 4px; color: var(--on-surface-variant, #4b5563); font-size: 9px;">
                         ${calendarIconHtml}
                         <span>${dateStr}</span>
                       </div>
                     </div>
                   </div>
-                  <div style="background: #ecfdf5; color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 9px; border: 1px solid #d1fae5;">
+                  <div style="background: var(--perf-high-bg, rgba(16, 185, 129, 0.1)); color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 9px; border: 1px solid var(--perf-high-border, rgba(16, 185, 129, 0.2));">
                     ${score}%
                   </div>
                 </div>
@@ -422,7 +422,7 @@ export default function Analytics() {
       },
       legend: {
         show: true,
-        textStyle: { color: '#747985' },
+        textStyle: { color: 'var(--on-surface-variant, #747985)' },
         bottom: 0
       },
       grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
@@ -433,7 +433,7 @@ export default function Analytics() {
             const date = new Date(d.date);
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }),
-        axisLabel: { color: '#868381', fontSize: 10 },
+        axisLabel: { color: 'var(--on-surface-variant, #868381)', fontSize: 10 },
         axisLine: { show: false },
         axisTick: { show: false }
       },
@@ -441,8 +441,8 @@ export default function Analytics() {
         type: 'value',
         min: 0,
         max: 100,
-        axisLabel: { color: '#868381', fontSize: 10 },
-        splitLine: { lineStyle: { type: 'dashed', color: '#eeedf3' } }
+        axisLabel: { color: 'var(--on-surface-variant, #868381)', fontSize: 10 },
+        splitLine: { lineStyle: { type: 'dashed', color: 'rgba(150, 150, 150, 0.15)' } }
       },
       series: series
     };
@@ -530,7 +530,7 @@ export default function Analytics() {
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header & Date Controls */}
       <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1">
-        <h1 className="text-[22px] sm:text-[28px] font-bold text-[#15171c] truncate tracking-tight">Analytics</h1>
+        <h1 className="text-[22px] sm:text-[28px] font-bold text-on-surface truncate tracking-tight">Analytics</h1>
         
         {/* Timeframe Selector Dropdown */}
         <div className="relative shrink-0 z-20">
@@ -549,14 +549,14 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none bg-white border border-[#e6e7eb] text-[#15171c] font-semibold text-[13px] rounded-full pl-3 pr-8 py-1.5 shadow-sm focus:outline-none hover:bg-[#f9fafb] transition-colors cursor-pointer"
+            className="appearance-none bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-3 pr-8 py-1.5 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
           >
             <option value="7">7 Days</option>
             <option value="30">30 Days</option>
             <option value="90">90 Days</option>
             <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
           </select>
-          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#747985] pointer-events-none text-[18px]" />
+          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && rangeOption === 'custom' && (
@@ -578,7 +578,7 @@ export default function Analytics() {
                       alert("Please select both start and end dates.");
                    }
                 }}
-                className="h-7 px-3 rounded-full bg-[#151515] text-white text-xs font-bold hover:bg-[#2a2a2a] transition-colors shadow-sm"
+                className="h-7 px-3 rounded-full bg-on-surface text-surface-container-lowest text-xs font-bold hover:bg-on-surface/90 transition-colors shadow-sm"
               >
                 Apply
               </button>
@@ -604,13 +604,13 @@ export default function Analytics() {
           <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0">
             <button 
               onClick={() => setViewMode('charts')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-white text-[#15171c] shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
             >
               Chart
             </button>
             <button 
               onClick={() => setViewMode('heatmap')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-white text-[#15171c] shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
             >
               Heatmap
             </button>
@@ -620,7 +620,7 @@ export default function Analytics() {
           <div className="relative shrink-0 flex-1 max-w-[160px] group">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
               {selectedHabit === 'overall' ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#747985] group-hover:text-[#15171c] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant group-hover:text-on-surface transition-colors">
                   <rect width="7" height="7" x="3" y="3" rx="1"/>
                   <rect width="7" height="7" x="14" y="3" rx="1"/>
                   <rect width="7" height="7" x="14" y="14" rx="1"/>
@@ -633,12 +633,12 @@ export default function Analytics() {
             <select 
               value={selectedHabit} 
               onChange={e => setSelectedHabit(e.target.value)}
-              className="w-full bg-white text-[#15171c] border border-[#e6e7eb] hover:bg-[#f9fafb] font-semibold text-[13px] rounded-[10px] pl-9 pr-8 py-[7px] appearance-none focus:outline-none shadow-[0_2px_8px_rgba(0,0,0,0.02)] truncate cursor-pointer transition-colors"
+              className="w-full bg-surface-container-lowest text-on-surface border border-outline-variant/40 hover:bg-surface-container font-semibold text-[13px] rounded-[10px] pl-9 pr-8 py-[7px] appearance-none focus:outline-none shadow-[0_2px_8px_rgba(0,0,0,0.02)] truncate cursor-pointer transition-colors"
             >
               <option value="overall">All Habits</option>
               {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747985] pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
@@ -646,7 +646,7 @@ export default function Analytics() {
 
         {/* Hero Performance Card */}
         {isFutureOnly ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 bg-white border border-[#e6e7eb] rounded-[18px] shadow-sm text-center">
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[18px] shadow-sm text-center">
               <Icon name="event_upcoming" className="text-5xl text-on-surface-variant mb-4" />
               <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
               <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
@@ -654,11 +654,11 @@ export default function Analytics() {
               </p>
           </div>
         ) : (
-          <div className="bg-white rounded-[18px] border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col pt-5 pb-2 overflow-hidden relative">
+          <div className="bg-surface-container-lowest rounded-[18px] border border-outline-variant/30 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col pt-5 pb-2 overflow-hidden relative">
             <div className="px-5 flex justify-between items-start mb-2">
               <div className="flex flex-col">
-                <span className="text-[#15171c] font-bold text-[14px]">Overall Performance</span>
-                <span className="text-[44px] font-black text-[#4f7cff] leading-[1.1] tracking-tight">{Math.round(kpis.averageScore || 0)}%</span>
+                <span className="text-on-surface font-bold text-[14px]">Overall Performance</span>
+                <span className="text-[44px] font-black text-primary leading-[1.1] tracking-tight">{Math.round(kpis.averageScore || 0)}%</span>
               </div>
               
               <div className="flex flex-col items-end">
@@ -671,7 +671,7 @@ export default function Analytics() {
                 >
                   {trendData.text}
                 </span>
-                <span className="text-[#a0a5b1] text-[11px] font-medium">{trendData.label}</span>
+                <span className="text-on-surface-variant/60 text-[11px] font-medium">{trendData.label}</span>
               </div>
             </div>
 
@@ -683,10 +683,10 @@ export default function Analytics() {
               ) : (
                 <div className="flex flex-col px-5 pb-5">
                   <div className="flex items-center gap-2 mb-4 shrink-0 flex-wrap">
-                    <div className="flex bg-[#f9fafb] rounded-full p-1 border border-[#e6e7eb] shadow-sm">
-                      <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Day</button>
-                      <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Week</button>
-                      <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Month</button>
+                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/40 shadow-sm">
+                      <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
+                      <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
+                      <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
                     </div>
                   </div>
                   <div className="flex-grow flex flex-col overflow-x-auto pb-2 custom-scrollbar">
@@ -695,18 +695,18 @@ export default function Analytics() {
                         {heatmapGrid.map((monthData, mIndex) => (
                           <div key={mIndex} className="flex gap-2">
                             {(mIndex === 0) && (
-                              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-[#747985] shrink-0 mt-[20px]" style={{ height: '154px' }}>
+                              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
                                 <span className="leading-tight">Mon</span><span className="leading-tight">Tue</span><span className="leading-tight">Wed</span><span className="leading-tight">Thu</span><span className="leading-tight">Fri</span><span className="leading-tight">Sat</span><span className="leading-tight">Sun</span>
                               </div>
                             )}
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-bold text-[#747985] uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
+                              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
                               <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
                                 {monthData.cells.map((cell, i) => (
                                   <div 
                                     key={i} 
                                     onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
-                                    className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-[#f3f4f6]' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                                    className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
                                   ></div>
                                 ))}
                               </div>
@@ -718,9 +718,9 @@ export default function Analytics() {
                       <div className="flex gap-3 w-max">
                         {aggregatedHeatmapData.map((period, i) => (
                           <div key={i} className={`flex flex-col items-center justify-center rounded-[14px] p-4 min-w-[90px] ${getPerfBandClass(period.average)} shadow-sm border border-outline-variant/20`}>
-                            <span className="text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
-                            <span className="text-3xl font-black text-white">{period.average}</span>
-                            <span className="text-[10px] font-bold text-white/70 uppercase mt-1">/100</span>
+                            <span className="text-[11px] font-bold text-surface-container-lowest/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
+                            <span className="text-3xl font-black text-surface-container-lowest">{period.average}</span>
+                            <span className="text-[10px] font-bold text-surface-container-lowest/70 uppercase mt-1">/100</span>
                           </div>
                         ))}
                       </div>
@@ -736,39 +736,39 @@ export default function Analytics() {
         {!isFutureOnly && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
             {/* KPI 1: Average */}
-            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 rounded-full bg-[#f0f4ff] text-[#4f7cff] flex items-center justify-center mb-2">
+            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-4"/></svg>
               </div>
-              <span className="text-[24px] font-black text-[#4f7cff] leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
-              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
+              <span className="text-[24px] font-black text-primary leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
+              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
             </div>
             
             {/* KPI 2: Consistency */}
-            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center mb-2">
+            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               </div>
-              <span className="text-[24px] font-black text-[#10b981] leading-none mb-1">{kpis.consistency || 0}%</span>
-              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
+              <span className="text-[24px] font-black text-perf-high leading-none mb-1">{kpis.consistency || 0}%</span>
+              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
             </div>
 
             {/* KPI 3: Current Streak */}
-            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 rounded-full bg-[#fffbeb] text-[#f59e0b] flex items-center justify-center mb-2">
+            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-perf-medium/10 text-perf-medium flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               </div>
-              <span className="text-[24px] font-black text-[#f59e0b] leading-none mb-1">{kpis.currentStreak || 0}</span>
-              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
+              <span className="text-[24px] font-black text-perf-medium leading-none mb-1">{kpis.currentStreak || 0}</span>
+              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
             </div>
 
             {/* KPI 4: Best Streak */}
-            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 rounded-full bg-[#fdf4ff] text-[#d946ef] flex items-center justify-center mb-2">
+            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
               </div>
-              <span className="text-[24px] font-black text-[#d946ef] leading-none mb-1">{kpis.bestStreak || 0}</span>
-              <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
+              <span className="text-[24px] font-black text-purple-500 leading-none mb-1">{kpis.bestStreak || 0}</span>
+              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
             </div>
           </div>
         )}
@@ -776,63 +776,63 @@ export default function Analytics() {
         {/* Performance Insights */}
         {!isFutureOnly && (
           <div className="flex flex-col gap-3 mt-2 mb-8">
-            <h2 className="text-[15px] font-bold text-[#15171c] ml-1">Performance Insights</h2>
+            <h2 className="text-[15px] font-bold text-on-surface ml-1">Performance Insights</h2>
             
-            <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
               {/* Insight 1: Best Day */}
-              <div className="flex items-center justify-between p-4 border-b border-[#f0f0f0] hover:bg-[#f9fafb] transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center shrink-0">
                     <Icon name="emoji_events" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Best Day</span>
-                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Best Day</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
                       {kpis.bestDay && kpis.bestDay !== 'N/A' ? new Date(kpis.bestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[16px] font-black text-[#10b981]">{kpis.bestDayScore || 0}%</span>
-                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                  <span className="text-[16px] font-black text-perf-high">{kpis.bestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
                 </div>
               </div>
 
               {/* Insight 2: Needs Attention */}
-              <div className="flex items-center justify-between p-4 border-b border-[#f0f0f0] hover:bg-[#f9fafb] transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-perf-poor/10 text-perf-poor flex items-center justify-center shrink-0">
                     <Icon name="error" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Needs Attention</span>
-                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Needs Attention</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
                       {kpis.lowestDay && kpis.lowestDay !== 'N/A' ? new Date(kpis.lowestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[16px] font-black text-[#ef4444]">{kpis.lowestDayScore || 0}%</span>
-                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                  <span className="text-[16px] font-black text-perf-poor">{kpis.lowestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
                 </div>
               </div>
 
               {/* Insight 3: Tracked Days */}
-              <div className="flex items-center justify-between p-4 hover:bg-[#f9fafb] transition-colors">
+              <div className="flex items-center justify-between p-4 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#eff6ff] text-[#3b82f6] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
                     <Icon name="calendar_today" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[#15171c] text-[14px] font-bold leading-tight">Tracked Days</span>
-                    <span className="text-[#747985] text-[12px] font-medium mt-0.5">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Tracked Days</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
                       out of {kpis.totalDays || 0} days
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[16px] font-black text-[#3b82f6]">{kpis.trackedDays || 0}/{kpis.totalDays || 0}</span>
-                  <Icon name="chevron_right" className="text-[#d1d5db] text-[18px]" />
+                  <span className="text-[16px] font-black text-blue-500">{kpis.trackedDays || 0}/{kpis.totalDays || 0}</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
                 </div>
               </div>
             </div>
@@ -845,41 +845,41 @@ export default function Analytics() {
       {/* Day Details Modal */}
       {selectedDay && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-[#f0f0f0] flex justify-between items-center bg-[#f9fafb]">
+          <div className="bg-surface-container-lowest rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container">
               <div>
-                <h3 className="text-[20px] font-bold text-[#15171c] leading-tight">
+                <h3 className="text-[20px] font-bold text-on-surface leading-tight">
                   {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </h3>
-                <p className="text-[#747985] text-[13px] font-medium mt-1">Daily Performance</p>
+                <p className="text-on-surface-variant text-[13px] font-medium mt-1">Daily Performance</p>
               </div>
               <button 
                 onClick={() => setSelectedDay(null)}
-                className="w-10 h-10 rounded-full bg-[#f0f0f0] text-[#747985] flex items-center justify-center hover:bg-[#e6e7eb] hover:text-[#15171c] transition-colors"
+                className="w-10 h-10 rounded-full bg-surface-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant/50 hover:text-on-surface transition-colors"
               >
                 <Icon name="close" className="text-[22px]" />
               </button>
             </div>
             
-            <div className="p-5 overflow-y-auto custom-scrollbar flex-grow bg-white">
+            <div className="p-5 overflow-y-auto custom-scrollbar flex-grow bg-surface-container-lowest">
               {(() => {
                 const daySummary = summaries.find(s => s.id === selectedDay);
                 if (!daySummary) {
                   return (
                     <div className="flex flex-col items-center justify-center py-10 text-center">
-                      <div className="w-16 h-16 rounded-full bg-[#f9fafb] flex items-center justify-center mb-4">
-                        <Icon name="block" className="text-[28px] text-[#d1d5db]" />
+                      <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
+                        <Icon name="block" className="text-[28px] text-on-surface-variant/40" />
                       </div>
-                      <p className="text-[#15171c] font-semibold text-[16px]">No Activity Tracked</p>
-                      <p className="text-[#747985] text-[14px] mt-1">You didn't track any habits on this day.</p>
+                      <p className="text-on-surface font-semibold text-[16px]">No Activity Tracked</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't track any habits on this day.</p>
                     </div>
                   );
                 }
 
                 return (
                   <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between p-4 bg-[#f4f7ff] rounded-[16px] border border-[#e0e7ff]">
-                      <span className="text-[15px] font-bold text-[#15171c]">Overall Score</span>
+                    <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[16px] border border-primary/10">
+                      <span className="text-[15px] font-bold text-on-surface">Overall Score</span>
                       <div className="flex items-center gap-2">
                         <span className={`text-[24px] font-black text-perf-${getPerformanceBand(daySummary.overallScore).id}`}>
                           {daySummary.overallScore}%
@@ -888,20 +888,20 @@ export default function Analytics() {
                     </div>
 
                     <div>
-                      <h4 className="text-[12px] font-bold text-[#747985] uppercase tracking-wider mb-3 ml-1">Habit Breakdown</h4>
+                      <h4 className="text-[12px] font-bold text-on-surface-variant uppercase tracking-wider mb-3 ml-1">Habit Breakdown</h4>
                       <div className="flex flex-col gap-2">
                         {habits.map(h => {
                           const score = daySummary.habitScores?.[h.id];
                           if (score === undefined) return null;
                           const band = getPerformanceBand(score).id;
                           return (
-                            <div key={h.id} className="flex items-center justify-between p-3.5 bg-white border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
+                            <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
                               <div className="flex items-center gap-3">
                                 <span className="text-[18px]">{h.icon}</span>
-                                <span className="text-[14px] font-semibold text-[#15171c]">{h.name}</span>
+                                <span className="text-[14px] font-semibold text-on-surface">{h.name}</span>
                               </div>
                               <div className="flex items-center gap-3">
-                                <div className="w-16 h-2 rounded-full bg-[#f0f0f0] overflow-hidden">
+                                <div className="w-16 h-2 rounded-full bg-surface-variant/30 overflow-hidden">
                                   <div className={`h-full bg-perf-${band} rounded-full`} style={{ width: `${score}%` }}></div>
                                 </div>
                                 <span className={`text-[14px] font-bold text-perf-${band} w-10 text-right`}>{score}%</span>
