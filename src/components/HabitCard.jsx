@@ -335,21 +335,22 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const generateGradient = () => {
           const t100_pct = Math.min(100, Math.max(0, (dTarget100 / maxSlider) * 100));
           const t0_pct = Math.min(100, Math.max(0, (dTarget0 / maxSlider) * 100));
-          const val_pct = Math.min(100, Math.max(0, (dVal / maxSlider) * 100));
           
-          const greenHex = '#22c55e40'; // Green with opacity
-          const redHex = '#ef444440'; // Red with opacity
+          const greenHex = '#22c55e60'; // Green
+          const redHex = '#ef444460'; // Red
           const trackColor = 'var(--color-surface-container-high)';
-          const fillHex = 'var(--color-primary)';
           
           if (habit.direction === 'higher_is_better') {
+            // 0 -> t0: RED, t0 -> t100: TRACK, t100 -> 100: GREEN
             return `linear-gradient(to right, 
-              ${trackColor} 0%, 
-              ${trackColor} ${val_pct}%, 
+              ${redHex} 0%, 
+              ${redHex} ${t0_pct}%, 
+              ${trackColor} ${t0_pct}%, 
               ${trackColor} ${t100_pct}%, 
               ${greenHex} ${t100_pct}%, 
               ${greenHex} 100%)`;
           } else {
+            // 0 -> t100: GREEN, t100 -> t0: TRACK, t0 -> 100: RED
             return `linear-gradient(to right, 
               ${greenHex} 0%, 
               ${greenHex} ${t100_pct}%, 

@@ -396,6 +396,7 @@ export default function AdvancedHabitSelector() {
     
     // Find the actual selected object to bind values
     const selectedObj = selectedHabits.find(sh => sh.id === h.id);
+    if (!selectedObj) return null;
 
     if (h.scoringType === 'binary') {
       return (
@@ -443,7 +444,7 @@ export default function AdvancedHabitSelector() {
             </div>
           </div>
         )}
-        {h.scoringType !== 'binary' && (
+        {h.scoringType !== 'binary' && selectedObj.direction && (
           <div className="mb-4">
             <div className="ahs-seg-control flex">
               <button 
