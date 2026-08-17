@@ -191,18 +191,29 @@ export default function Analytics() {
       current.setDate(current.getDate() + 1);
     }
 
+    const todayDate = new Date();
+    const todayStr = new Date(todayDate.getTime() - todayDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
     return dates.map(dateStr => {
       const dataPoint = { date: dateStr };
       const summary = summaries.find(s => s.id === dateStr);
-      dataPoint.overallScore = summary?.overallScore || 0;
+      
+      if (dateStr > todayStr || (dateStr === todayStr && !summary)) {
+        dataPoint.overallScore = null;
+      } else {
+        dataPoint.overallScore = summary?.overallScore || 0;
+      }
       
       habits.forEach(h => {
-        dataPoint[h.id] = summary?.habitScores?.[h.id] !== undefined ? summary.habitScores[h.id] : null;
+        if (dateStr > todayStr || (dateStr === todayStr && summary?.habitScores?.[h.id] === undefined)) {
+          dataPoint[h.id] = null;
+        } else {
+          dataPoint[h.id] = summary?.habitScores?.[h.id] !== undefined ? summary.habitScores[h.id] : 0;
+        }
       });
       
       return dataPoint;
-    });
-  }, [startDate, endDate, summaries, habits]);
+    });  }, [startDate, endDate, summaries, habits]);
 
   const dailyDataForHeatmap = useMemo(() => {
     return chartData.map(d => ({
@@ -248,34 +259,56 @@ export default function Analytics() {
   const getEChartOption = (habitId) => {
     const isOverall = habitId === 'overall';
     const series = isOverall
-      ? [{
-          name: 'Overall Score',
-          type: 'line',
-          data: chartData.map(d => d.overallScore),
-          itemStyle: { color: '#d0bcff' },
-          lineStyle: { width: 3 },
-          areaStyle: {
-            color: {
-              type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(208,188,255,0.4)' },
-                { offset: 1, color: 'rgba(208,188,255,0.02)' }
-              ]
-            }
-          },
-          showSymbol: false,
-          smooth: true
-        }]
+      ? (() => {
+          const rawData = chartData.map(d => d.overallScore);
+          let lastIdx = -1;
+          for (let i = rawData.length - 1; i >= 0; i--) {
+            if (rawData[i] !== null) { lastIdx = i; break; }
+          }
+          const formattedData = rawData.map((val, idx) => {
+            if (idx === lastIdx) return { value: val, symbol: 'circle', symbolSize: 8 };
+            return val;
+          });
+          return [{
+            name: 'Overall Score',
+            type: 'line',
+            data: formattedData,
+            itemStyle: { color: '#d0bcff' },
+            lineStyle: { width: 3 },
+            areaStyle: {
+              color: {
+                type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(208,188,255,0.4)' },
+                  { offset: 1, color: 'rgba(208,188,255,0.02)' }
+                ]
+              }
+            },
+            showSymbol: true,
+            symbol: 'none',
+            smooth: true
+          }];
+        })()
       : [habitId].map((id) => {
           const habit = habits.find(h => h.id === id);
-          // Use global habit index for persistent color assignment
           const globalIndex = habits.findIndex(h => h.id === id);
           const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
           const color = colors[globalIndex % colors.length];
+          
+          const rawData = chartData.map(d => d[id]);
+          let lastIdx = -1;
+          for (let i = rawData.length - 1; i >= 0; i--) {
+            if (rawData[i] !== null) { lastIdx = i; break; }
+          }
+          const formattedData = rawData.map((val, idx) => {
+            if (idx === lastIdx) return { value: val, symbol: 'circle', symbolSize: 8 };
+            return val;
+          });
+
           return {
             name: habit?.name || id,
             type: 'line',
-            data: chartData.map(d => d[id]),
+            data: formattedData,
             connectNulls: true,
             itemStyle: { color },
             lineStyle: { width: 3 },
@@ -288,10 +321,12 @@ export default function Analytics() {
                 ]
               }
             },
-            showSymbol: false,
+            showSymbol: true,
+            symbol: 'none',
             smooth: true
           };
         });
+
 
     return {
 
