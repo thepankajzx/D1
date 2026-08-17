@@ -331,10 +331,6 @@ export default function Dashboard() {
           <div className="flex flex-col z-10">
             <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 flex items-center gap-2">
               Dashboard
-              {/* DEBUG INFO */}
-              <span className="text-[10px] bg-red-100 text-red-800 px-2 py-1 rounded-full border border-red-200 uppercase tracking-widest">
-                Debug: {habits ? habits.length : 'null'} habits
-              </span>
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-2">
               You don't have any habits tracked yet. Start your journey by setting up your first daily habits.
