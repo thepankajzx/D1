@@ -563,12 +563,13 @@ export default function AdvancedHabitSelector() {
             <header className="ahs-header-main">
               <div className="ahs-header-left">
                 <h1>Choose Your Daily Habits</h1>
-                <p>Select the habits you want to track. <span className="text-red-500 font-bold">Habits will be locked for 30 days once saved.</span></p>
-                
-                <div className="ahs-badges-row">
-                  <span className="ahs-badge"><Icon name="insights" /> Smart Scoring</span>
-                  <span className="ahs-badge"><Icon name="analytics" /> Personalized Insights</span>
+                <p className="text-red-500 font-bold mb-4">Habit will be locked for 30 days once saved</p>
+                <div className="mb-6">
+                    <button className="flex items-center gap-2 py-2 px-4 border border-outline-variant rounded-full font-bold text-on-surface hover:bg-surface-variant transition-colors" onClick={() => setScoringModal('all')}>
+                        <Icon name="help_outline" /> How habit scoring logics works
+                    </button>
                 </div>
+                <hr className="border-t border-dotted border-outline-variant/50 w-full mb-6" />
               </div>
 
               <div className="ahs-progress-widget">
@@ -588,105 +589,26 @@ export default function AdvancedHabitSelector() {
               </div>
             </header>
 
-            {/* LIVE PREVIEWS (Top) */}
-            <div id="scoring-preview-section" className="ahs-live-preview mb-8 mt-4">
-                <div className="mb-4">
-                    <h3 className="font-headline-md font-bold flex items-center gap-2 text-indigo-800">
-                        <Icon name="science" className="text-indigo-600" /> Live Scoring Preview
-                    </h3>
-                    <p className="text-sm opacity-80 mt-1">See how different values affect your daily score.</p>
-                </div>
-                
-                <div className="ahs-previews-row">
-                    <div className="ahs-preview-widget mb-6">
-                        <div className="ahs-preview-header flex justify-between items-center mb-3">
-                            <div className="ahs-preview-title font-bold flex items-center gap-2">
-                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_up" /></div>
-                                Higher is Better
-                            </div>
-                            <div className="ahs-preview-score">
-                                {Math.round(calculateScore('numeric', 'higher', previewHighVal, 100, 0))}% <span>Score</span>
-                            </div>
-                        </div>
-                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 100, Floor: 20)</p>
-                        <div className="ahs-slider-wrap w-full py-2">
-                            <input 
-                                type="range" min="0" max="150" value={previewHighVal} 
-                                onChange={(e) => setPreviewHighVal(parseInt(e.target.value))}
-                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
-                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewHighVal/150)*100}%, transparent 0)` }}
-                            />
-                        </div>
-                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
-                            <span>0 input</span>
-                            <span className="font-bold opacity-100">{previewHighVal} entered</span>
-                            <span>150+ input</span>
-                        </div>
-                    </div>
-
-                    <div className="ahs-preview-widget mb-6">
-                        <div className="ahs-preview-header flex justify-between items-center mb-3">
-                            <div className="ahs-preview-title font-bold flex items-center gap-2">
-                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_down" /></div>
-                                Lower is Better
-                            </div>
-                            <div className="ahs-preview-score font-mono-data text-xl font-bold">
-                                {Math.round(calculateScore('numeric', 'lower_is_better', previewLowVal, 20, 100))}% <span className="text-sm font-normal opacity-70">Score</span>
-                            </div>
-                        </div>
-                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 20, Floor: 100)</p>
-                        <div className="ahs-slider-wrap w-full py-2">
-                            <input 
-                                type="range" min="0" max="150" value={previewLowVal} 
-                                onChange={(e) => setPreviewLowVal(parseInt(e.target.value))}
-                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
-                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewLowVal/150)*100}%, transparent 0)` }}
-                            />
-                        </div>
-                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
-                            <span>0 input</span>
-                            <span className="font-bold opacity-100">{previewLowVal} entered</span>
-                            <span>150+ input</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="ahs-filters-container w-full overflow-hidden">
-                <div className="flex flex-wrap gap-2 w-full pb-2 justify-start sm:justify-center">
-                    {categories.map(cat => (
-                        <React.Fragment key={cat}>
-                            {cat === 'All' && <div className="h-6 w-[1px] bg-outline-variant/30 mx-1 hidden sm:block"></div>}
-                            <button 
-                                onClick={() => {
-                                    if (cat === 'All') {
-                                        setActiveCategories(['All']);
-                                    } else if (cat === 'Selected') {
-                                        setActiveCategories(['Selected']);
-                                    } else {
-                                        let newSelection = activeCategories.filter(c => c !== 'All' && c !== 'Selected');
-                                        if (newSelection.includes(cat)) {
-                                            newSelection = newSelection.filter(c => c !== cat);
-                                            if (newSelection.length === 0) newSelection = ['All'];
-                                        } else {
-                                            newSelection.push(cat);
-                                        }
-                                        setActiveCategories(newSelection);
-                                    }
-                                }}
-                                className={`ahs-pill ${cat === 'Selected' ? 'bg-primary/10 text-primary border-primary/30' : ''} ${cat === 'Custom' ? 'custom-pill' : ''} ${activeCategories.includes(cat) ? 'active' : ''}`}
-                            >
+            <div className="ahs-filters-container w-full overflow-visible mb-6">
+                <div className="relative max-w-[200px]">
+                    <select 
+                        value={activeCategories[0] || 'All'}
+                        onChange={(e) => {
+                            const cat = e.target.value;
+                            setActiveCategories([cat]);
+                        }}
+                        className="w-full appearance-none bg-surface-container border border-outline-variant rounded-full py-3 px-5 pr-10 font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm"
+                    >
+                        {categories.map(cat => (
+                            <option key={cat} value={cat}>
                                 {cat === 'All' ? 'All Habits' : cat === 'Custom' ? 'Custom Habit' : cat === 'Selected' ? `Selected (${selectedHabits.length + customHabits.length})` : cat}
-                            </button>
-                        </React.Fragment>
-                    ))}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+                        <Icon name="expand_more" />
+                    </div>
                 </div>
-            </div>
-            
-            <div className="mt-4 mb-6">
-                <button className="ahs-btn-scoring w-full flex justify-center py-3 border-none bg-surface-container rounded-xl font-bold" onClick={() => setScoringModal('all')}>
-                    <Icon name="help_outline" /> How Scoring Works
-                </button>
             </div>
 
             <div className="ahs-layout-grid">
@@ -968,6 +890,71 @@ export default function AdvancedHabitSelector() {
                 </div>
               </main>
             </div>
+
+            {/* LIVE PREVIEWS (Moved to Bottom) */}
+            <div id="scoring-preview-section" className="ahs-live-preview mb-8 mt-8 border-t border-outline-variant/30 pt-8">
+                <div className="mb-4">
+                    <h3 className="font-headline-md font-bold flex items-center gap-2 text-indigo-800">
+                        <Icon name="science" className="text-indigo-600" /> Live Scoring Preview
+                    </h3>
+                    <p className="text-sm opacity-80 mt-1">See how different values affect your daily score.</p>
+                </div>
+                
+                <div className="ahs-previews-row">
+                    <div className="ahs-preview-widget mb-6">
+                        <div className="ahs-preview-header flex justify-between items-center mb-3">
+                            <div className="ahs-preview-title font-bold flex items-center gap-2">
+                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_up" /></div>
+                                Higher is Better
+                            </div>
+                            <div className="ahs-preview-score">
+                                {Math.round(calculateScore('numeric', 'higher', previewHighVal, 100, 0))}% <span>Score</span>
+                            </div>
+                        </div>
+                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 100, Floor: 20)</p>
+                        <div className="ahs-slider-wrap w-full py-2">
+                            <input 
+                                type="range" min="0" max="150" value={previewHighVal} 
+                                onChange={(e) => setPreviewHighVal(parseInt(e.target.value))}
+                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
+                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewHighVal/150)*100}%, transparent 0)` }}
+                            />
+                        </div>
+                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
+                            <span>0 input</span>
+                            <span className="font-bold opacity-100">{previewHighVal} entered</span>
+                            <span>150+ input</span>
+                        </div>
+                    </div>
+
+                    <div className="ahs-preview-widget mb-6">
+                        <div className="ahs-preview-header flex justify-between items-center mb-3">
+                            <div className="ahs-preview-title font-bold flex items-center gap-2">
+                                <div className="w-8 h-8 rounded bg-surface-variant text-on-surface flex items-center justify-center"><Icon name="trending_down" /></div>
+                                Lower is Better
+                            </div>
+                            <div className="ahs-preview-score font-mono-data text-xl font-bold">
+                                {Math.round(calculateScore('numeric', 'lower_is_better', previewLowVal, 20, 100))}% <span className="text-sm font-normal opacity-70">Score</span>
+                            </div>
+                        </div>
+                        <p className="text-xs opacity-70 mb-2 font-medium">Drag to simulate daily input (Target: 20, Floor: 100)</p>
+                        <div className="ahs-slider-wrap w-full py-2">
+                            <input 
+                                type="range" min="0" max="150" value={previewLowVal} 
+                                onChange={(e) => setPreviewLowVal(parseInt(e.target.value))}
+                                className="ahs-slider w-full h-2 rounded-full appearance-none bg-surface-container cursor-pointer"
+                                style={{ background: `linear-gradient(to right, var(--color-primary) ${(previewLowVal/150)*100}%, transparent 0)` }}
+                            />
+                        </div>
+                        <div className="ahs-preview-labels flex justify-between text-xs opacity-60 mt-1">
+                            <span>0 input</span>
+                            <span className="font-bold opacity-100">{previewLowVal} entered</span>
+                            <span>150+ input</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
           </div>
         )}
 
