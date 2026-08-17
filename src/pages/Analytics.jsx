@@ -626,13 +626,57 @@ export default function Analytics() {
               </div>
             </div>
 
+            
             {/* ECharts Instance or Heatmap */}
             <div className="w-full flex-grow min-h-[180px] -mb-2">
               {viewMode === 'charts' ? (
                 <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '180px', width: '100%' }} />
               ) : (
-                <div className="px-4 pb-4 h-[200px] flex items-center justify-center">
-                  <span className="text-on-surface-variant text-sm font-medium bg-surface-container p-3 rounded-xl border border-outline-variant/50">Switch to Chart view for Hero line graph.</span>
+                <div className="flex flex-col px-5 pb-5">
+                  <div className="flex items-center gap-2 mb-4 shrink-0 flex-wrap">
+                    <div className="flex bg-[#f9fafb] rounded-full p-1 border border-[#e6e7eb] shadow-sm">
+                      <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Day</button>
+                      <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Week</button>
+                      <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-[#151515] text-white' : 'text-[#747985]'}`}>Month</button>
+                    </div>
+                  </div>
+                  <div className="flex-grow flex flex-col overflow-x-auto pb-2 custom-scrollbar">
+                    {heatmapPeriod === 'day' ? (
+                      <div className="flex gap-4 w-full">
+                        {heatmapGrid.map((monthData, mIndex) => (
+                          <div key={mIndex} className="flex gap-2">
+                            {(mIndex === 0) && (
+                              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-[#747985] shrink-0 mt-[20px]" style={{ height: '154px' }}>
+                                <span className="leading-tight">Mon</span><span className="leading-tight">Tue</span><span className="leading-tight">Wed</span><span className="leading-tight">Thu</span><span className="leading-tight">Fri</span><span className="leading-tight">Sat</span><span className="leading-tight">Sun</span>
+                              </div>
+                            )}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-[#747985] uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
+                              <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
+                                {monthData.cells.map((cell, i) => (
+                                  <div 
+                                    key={i} 
+                                    onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
+                                    className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-[#f3f4f6]' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                                  ></div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex gap-3 w-max">
+                        {aggregatedHeatmapData.map((period, i) => (
+                          <div key={i} className={`flex flex-col items-center justify-center rounded-[14px] p-4 min-w-[90px] ${getPerfBandClass(period.average)} shadow-sm border border-outline-variant/20`}>
+                            <span className="text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
+                            <span className="text-3xl font-black text-white">{period.average}</span>
+                            <span className="text-[10px] font-bold text-white/70 uppercase mt-1">/100</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -645,7 +689,7 @@ export default function Analytics() {
             {/* KPI 1: Average */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#f0f4ff] text-[#4f7cff] flex items-center justify-center mb-2">
-                <Icon name="monitoring" className="text-[20px]" />
+                <Icon name="bar_chart" className="text-[20px]" />
               </div>
               <span className="text-[24px] font-black text-[#4f7cff] leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
@@ -654,7 +698,7 @@ export default function Analytics() {
             {/* KPI 2: Consistency */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#ecfdf5] text-[#10b981] flex items-center justify-center mb-2">
-                <Icon name="track_changes" className="text-[20px]" />
+                <Icon name="check_circle" className="text-[20px]" />
               </div>
               <span className="text-[24px] font-black text-[#10b981] leading-none mb-1">{kpis.consistency || 0}%</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
@@ -672,7 +716,7 @@ export default function Analytics() {
             {/* KPI 4: Best Streak */}
             <div className="bg-white rounded-[16px] border border-[#f0f0f0] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 rounded-full bg-[#fdf4ff] text-[#d946ef] flex items-center justify-center mb-2">
-                <Icon name="stars" className="text-[20px]" />
+                <Icon name="star" className="text-[20px]" />
               </div>
               <span className="text-[24px] font-black text-[#d946ef] leading-none mb-1">{kpis.bestStreak || 0}</span>
               <span className="text-[#747985] text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
@@ -709,7 +753,7 @@ export default function Analytics() {
               <div className="flex items-center justify-between p-4 border-b border-[#f0f0f0] hover:bg-[#f9fafb] transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center shrink-0">
-                    <Icon name="warning" className="text-[18px]" />
+                    <Icon name="error" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[#15171c] text-[14px] font-bold leading-tight">Needs Attention</span>
@@ -728,7 +772,7 @@ export default function Analytics() {
               <div className="flex items-center justify-between p-4 hover:bg-[#f9fafb] transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-[#eff6ff] text-[#3b82f6] flex items-center justify-center shrink-0">
-                    <Icon name="calendar_month" className="text-[18px]" />
+                    <Icon name="calendar_today" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[#15171c] text-[14px] font-bold leading-tight">Tracked Days</span>
@@ -746,58 +790,7 @@ export default function Analytics() {
           </div>
         )}
 
-        {/* Keeping Heatmap Full-Screen Modal Logic Below */}
-        {viewMode === 'heatmap' && (
-           <div className="bg-white rounded-[18px] border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col p-5">
-              <h2 className="text-[15px] font-bold text-[#15171c] mb-4">Heatmap View</h2>
-              <div className="flex items-center gap-2 mb-4 shrink-0 flex-wrap">
-                 <div className="flex bg-surface-container-lowest rounded-full p-1 border border-outline-variant/50 shadow-sm">
-                   <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Day</button>
-                   <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Week</button>
-                   <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-[#151515] text-white' : 'text-on-surface-variant'}`}>Month</button>
-                 </div>
               </div>
-              <div className="flex-grow flex flex-col overflow-x-auto pb-4 custom-scrollbar">
-                {heatmapPeriod === 'day' ? (
-                  <div className={`flex gap-4 w-full`}>
-                    {heatmapGrid.map((monthData, mIndex) => (
-                      <div key={mIndex} className="flex gap-2">
-                        {(mIndex === 0) && (
-                          <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '154px' }}>
-                            <span className="leading-tight">Mon</span><span className="leading-tight">Tue</span><span className="leading-tight">Wed</span><span className="leading-tight">Thu</span><span className="leading-tight">Fri</span><span className="leading-tight">Sat</span><span className="leading-tight">Sun</span>
-                          </div>
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
-                          <div className="grid-heatmap" style={{ gap: '4px', height: '154px' }}>
-                            {monthData.cells.map((cell, i) => (
-                              <div 
-                                key={i} 
-                                onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
-                                className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
-                              ></div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex gap-3 w-max">
-                    {aggregatedHeatmapData.map((period, i) => (
-                      <div key={i} className={`flex flex-col items-center justify-center rounded-2xl p-4 min-w-[100px] ${getPerfBandClass(period.average)} shadow-sm border border-outline-variant/20`}>
-                        <span className="text-[11px] font-bold text-white/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
-                        <span className="text-3xl font-bold text-white">{period.average}</span>
-                        <span className="text-[10px] font-bold text-white/70 uppercase mt-1">/100</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-           </div>
-        )}
-
-      </div>
       )}
       <ProModal 
         isOpen={showProUpgradeModal} 
