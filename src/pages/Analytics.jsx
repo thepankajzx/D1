@@ -447,7 +447,7 @@ export default function Analytics() {
             const date = new Date(d.date);
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }),
-        axisLabel: { color: 'var(--on-surface-variant, #868381)', fontSize: 10 },
+        axisLabel: { color: '#868381', fontSize: 10 },
         axisLine: { show: false },
         axisTick: { show: false }
       },
@@ -455,7 +455,7 @@ export default function Analytics() {
         type: 'value',
         min: 0,
         max: 100,
-        axisLabel: { color: 'var(--on-surface-variant, #868381)', fontSize: 10 },
+        axisLabel: { color: '#868381', fontSize: 10 },
         splitLine: { lineStyle: { type: 'dashed', color: 'rgba(150, 150, 150, 0.15)' } }
       },
       series: series
@@ -772,13 +772,23 @@ export default function Analytics() {
             </div>
             
             {/* KPI 2: Consistency */}
-            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            {(() => {
+              const cons = kpis.consistency || 0;
+              let colorClass = "text-perf-poor";
+              let bgClass = "bg-perf-poor/10";
+              if (cons >= 80) { colorClass = "text-perf-high"; bgClass = "bg-perf-high/10"; }
+              else if (cons >= 50) { colorClass = "text-yellow-500"; bgClass = "bg-yellow-500/10"; }
+              
+              return (
+              <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+                <div className={`w-10 h-10 rounded-full ${bgClass} ${colorClass} flex items-center justify-center mb-2`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <span className={`text-[24px] font-black ${colorClass} leading-none mb-1`}>{cons}%</span>
+                <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
               </div>
-              <span className="text-[24px] font-black text-perf-high leading-none mb-1">{kpis.consistency || 0}%</span>
-              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
-            </div>
+              );
+            })()}
 
             {/* KPI 3: Current Streak */}
             <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
@@ -825,14 +835,14 @@ export default function Analytics() {
                 </div>
               </div>
 
-              {/* Insight 2: Needs Attention */}
+              {/* Insight 2: Worst Day */}
               <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-perf-poor/10 text-perf-poor flex items-center justify-center shrink-0">
                     <Icon name="error" className="text-[18px]" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-on-surface text-[14px] font-bold leading-tight">Needs Attention</span>
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Worst Day</span>
                     <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
                       {kpis.lowestDay && kpis.lowestDay !== 'N/A' ? new Date(kpis.lowestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                     </span>
