@@ -632,40 +632,35 @@ export default function Analytics() {
   return (
     <div className="flex flex-col gap-6 w-full -mt-2">
       {/* Header & Date Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-[24px] sm:text-[28px] font-bold text-on-surface">Performance Analytics</h1>
-        </div>
+      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
+        <h1 className="text-[22px] sm:text-[28px] font-bold text-on-surface truncate tracking-tight">Performance Analytics</h1>
         
-        <div className="flex flex-col items-end gap-2 relative z-20" ref={dateSelectorRef}>
-          <div className="flex items-center bg-surface-container-lowest backdrop-blur-md rounded-full p-1 border border-outline-variant/50 shadow-sm w-fit">
-            {['7', '30', '90', 'custom'].map((val) => {
-              const isActive = rangeOption === val;
-              const isCustom = val === 'custom';
-              const label = isCustom ? 'Custom' : `${val} Days`;
-              return (
-                <button
-                  key={val}
-                  onClick={() => {
-                    if (isCustom && !userDoc?.isPro) {
-                      setShowProUpgradeModal(true);
-                      return;
-                    }
-                    setRangeOption(val);
-                    if (isCustom) {
-                      setIsCustomDropdownOpen(true);
-                    } else {
-                      setIsCustomDropdownOpen(false);
-                    }
-                  }}
-                  className={`flex items-center justify-center gap-1.5 h-8 sm:h-9 px-3 sm:px-5 rounded-full text-[11px] sm:text-[13px] font-medium transition-all duration-200 whitespace-nowrap ${isActive ? 'bg-on-surface text-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-                >
-                  {isCustom && <Icon name="calendar_today" className=" text-[14px] sm:text-[16px]" />}
-                  {label}
-                  {isCustom && !userDoc?.isPro && <span className="pro-badge" style={{ padding: '2px 6px', fontSize: '9px', lineHeight: 1, height: '18px', marginLeft: '2px' }}>PRO</span>}
-                </button>
-              );
-            })}
+        <div className="relative shrink-0 z-20" ref={dateSelectorRef}>
+          <div className="relative">
+            <select 
+              value={rangeOption}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'custom' && !userDoc?.isPro) {
+                  setShowProUpgradeModal(true);
+                  // Reset select to previous value (this is a bit tricky with just state, but setting state works)
+                  return;
+                }
+                setRangeOption(val);
+                if (val === 'custom') {
+                  setIsCustomDropdownOpen(true);
+                } else {
+                  setIsCustomDropdownOpen(false);
+                }
+              }}
+              className="appearance-none bg-surface-container-lowest border border-outline-variant/50 text-on-surface font-semibold text-[12px] sm:text-[13px] rounded-full pl-3 sm:pl-4 pr-8 sm:pr-9 py-1.5 sm:py-2 shadow-sm focus:outline-none hover:bg-surface-variant/30 transition-colors cursor-pointer"
+            >
+              <option value="7">7 Days</option>
+              <option value="30">30 Days</option>
+              <option value="90">90 Days</option>
+              <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
+            </select>
+            <Icon name="calendar_today" className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[14px] sm:text-[16px]" />
           </div>
           
           {/* Inline custom date panel */}
