@@ -11,22 +11,9 @@ const initAudio = () => {
 
 export const playTick = () => {
     try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.type = 'sine';
-        // A sharp high-to-low pitch drop for a "tick" sound
-        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-        
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
+        const audio = new Audio((import.meta.env.BASE_URL || '/') + 'audio/toggle.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log(e));
     } catch (e) { console.error("Audio error", e); }
 };
 
