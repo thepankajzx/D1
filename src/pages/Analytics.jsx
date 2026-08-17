@@ -149,8 +149,8 @@ export default function Analytics() {
   }, [user, startDate, endDate, loadingData]);
 
   // Computations
-  const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate), [summaries, startDate, endDate]);
-  const breakdown = useMemo(() => computeHabitBreakdown(habits, summaries, startDate, endDate), [habits, summaries, startDate, endDate]);
+  const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate, allSummaries), [summaries, startDate, endDate, allSummaries]);
+  const breakdown = useMemo(() => computeHabitBreakdown(habits, summaries, startDate, endDate, allSummaries), [habits, summaries, startDate, endDate, allSummaries]);
   const kpis = useMemo(() => {
     if (selectedHabit === 'overall') return baseKpis;
     const hb = breakdown.find(b => b.id === selectedHabit);
@@ -161,6 +161,8 @@ export default function Analytics() {
         bestDayScore: hb.bestScore,
         lowestDayScore: hb.lowestScore,
         consistency: hb.consistency,
+        currentStreak: hb.currentStreak,
+        bestStreak: hb.bestStreak,
         bestDay: 'Selected Habit'
     };
   }, [baseKpis, breakdown, selectedHabit]);
@@ -431,25 +433,11 @@ export default function Analytics() {
     );
   }
 
-  const renderCustomKPIHeader = (habitId) => {
-    const isOverall = habitId === 'overall';
-    const breakdownHabit = isOverall ? {
-      id: 'overall',
-      name: 'Overall',
-      avgScore: kpis.averageScore,
-      consistency: kpis.consistency,
-      bestScore: kpis.bestDayScore,
-      bestDate: kpis.bestDay,
-      lowestScore: kpis.lowestDayScore,
-      lowestDate: kpis.lowestDay,
-      trackedDays: kpis.trackedDays
-    } : breakdown.find(b => b.id === habitId) || {};
-
-    const habitDataPoints = chartData.map(d => ({ date: d.date, score: isOverall ? d.overallScore : (d[habitId] || 0) }));
-    const segments = habitDataPoints.slice(-30);
-    
+  const trendData = useMemo(() => {
+    const isOverall = selectedHabit === 'overall';
     let diff = 0;
-    
+    let label = 'vs prev';
+
     if (rangeOption !== 'all' && rangeOption !== 'custom') {
         const days = parseInt(rangeOption) || 30;
         const prevStartObj = new Date(startDate);
@@ -465,15 +453,17 @@ export default function Analytics() {
         if (isOverall) {
             allSummaries.forEach(s => {
                 if (s.id >= previousStartDate && s.id <= previousEndDate) {
-                    prevSum += s.overallScore;
-                    prevCount++;
+                    if (s.overallScore !== undefined) {
+                        prevSum += s.overallScore;
+                        prevCount++;
+                    }
                 }
             });
         } else {
-            summaries.forEach(s => {
+            allSummaries.forEach(s => {
                 if (s.id >= previousStartDate && s.id <= previousEndDate) {
-                    if (s.habitScores && s.habitScores[habitId] !== undefined) {
-                        prevSum += s.habitScores[habitId];
+                    if (s.habitScores && s.habitScores[selectedHabit] !== undefined) {
+                        prevSum += s.habitScores[selectedHabit];
                         prevCount++;
                     }
                 }
@@ -481,153 +471,25 @@ export default function Analytics() {
         }
         
         const prevAvg = prevCount > 0 ? prevSum / prevCount : 0;
-        const currentAvg = breakdownHabit.avgScore || 0;
+        const currentAvg = kpis.averageScore || 0;
         
         diff = Math.round(currentAvg) - Math.round(prevAvg);
+        label = `vs last ${days} days`;
     } else {
-        const validScores = habitDataPoints.filter(d => d.score > 0).map(d => d.score);
+        const validScores = chartData.map(d => isOverall ? d.overallScore : (d[selectedHabit] !== undefined ? d[selectedHabit] : 0)).filter(s => s !== null && s > 0);
         const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
         const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
-        diff = latestScore - prevScore;
+        diff = Math.round(latestScore) - Math.round(prevScore);
+        label = `vs prev day`;
     }
     
-    const isUp = diff >= 0;
-    const diffText = `${isUp ? '↑' : '↓'} ${Math.abs(diff)}%`;
-
-    let displayBestScore = breakdownHabit.bestScore;
-    let displayLowestScore = breakdownHabit.lowestScore;
-    let displayBestDate = breakdownHabit.bestDate;
-    let displayLowestDate = breakdownHabit.lowestDate;
-    let bestLabel = 'Best Day';
-    let worstLabel = 'Worst Day';
-
-    if (viewMode === 'heatmap' && heatmapPeriod !== 'day' && aggregatedHeatmapData && aggregatedHeatmapData.length > 0) {
-        bestLabel = heatmapPeriod === 'week' ? 'Best Week' : 'Best Month';
-        worstLabel = heatmapPeriod === 'week' ? 'Worst Week' : 'Worst Month';
-        
-        let best = aggregatedHeatmapData[0];
-        let worst = aggregatedHeatmapData[0];
-        
-        aggregatedHeatmapData.forEach(d => {
-            if (d.average > best.average) best = d;
-            if (d.average < worst.average) worst = d;
-        });
-        
-        displayBestScore = best.average;
-        displayBestDate = best.label;
-        displayLowestScore = worst.average;
-        displayLowestDate = worst.label;
-    }
-
-    let timeframeLabel = 'All-Time';
-    if (rangeOption !== 'all' && rangeOption !== 'custom') {
-        timeframeLabel = `${parseInt(rangeOption) || 30} Days`;
-    } else if (rangeOption === 'custom') {
-        timeframeLabel = 'Custom';
-    }
-
-    const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
-    const globalIndex = habits.findIndex(h => h.id === habitId);
-    const color = isOverall ? '#17b8c8' : colors[globalIndex % colors.length];
-
-    return (
-      <div className="flex flex-col w-full overflow-hidden">
-        {/* HEADER */}
-        <section className="px-[5px] sm:px-[5px] pt-[16px] sm:pt-[18px] pb-[14px] sm:pb-[16px]">
-            <div className="flex items-center justify-between gap-[12px]">
-                <div className="flex items-center gap-[10px] min-w-0">
-                    <span className="w-[11px] h-[11px] sm:w-[13px] sm:h-[13px] min-w-[11px] sm:min-w-[13px] rounded-full" style={{ backgroundColor: color }}></span>
-                    <h1 className="text-[21px] sm:text-[23px] leading-[1.1] font-bold tracking-[-0.35px] text-[#15171c] truncate">
-                        {breakdownHabit.name || 'Unknown'}
-                    </h1>
-                </div>
-                <div className="inline-flex items-center justify-center gap-[8px] h-[40px] sm:h-[42px] px-[10px] sm:px-[12px] border border-[#e6e7eb] rounded-full bg-white text-[#15171c] text-[12px] sm:text-[13px] font-semibold whitespace-nowrap shrink-0">
-                    {timeframeLabel}
-                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="17" rx="3"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                </div>
-            </div>
-            {breakdownHabit.description && (
-              <p className="mt-[8px] ml-[22px] sm:ml-[23px] text-[#747985] text-[12px] sm:text-[13px] leading-[1.35]">
-                  {breakdownHabit.description}
-              </p>
-            )}
-        </section>
-
-        <div className="h-[1px] bg-[#e6e7eb] mx-[15px] sm:mx-[18px]"></div>
-
-        {/* TARGET & STATS MERGED */}
-        <section className="p-[14px_15px] sm:p-[16px_18px] pb-[14px] sm:pb-[16px] flex flex-col shadow-sm">
-            <div className="bg-[#151515] text-white rounded-t-[18px] p-[16px] sm:p-[20px] flex flex-col gap-[14px]">
-                <div className="flex items-center justify-between w-full">
-                    <span className="text-white/80 text-[12px] uppercase tracking-widest font-bold leading-none">Average</span>
-                    <div className="flex items-center gap-[10px]">
-                        <span className="text-[20px] sm:text-[24px] leading-none font-black tracking-tight">{Math.round(breakdownHabit.avgScore) || 0}%</span>
-                        <span 
-                          className="inline-flex items-center px-[8px] py-[4px] rounded-[6px] text-[12px] font-bold leading-none"
-                          style={{
-                            color: isUp ? '#4adc93' : '#ef4444',
-                            backgroundColor: isUp ? 'rgba(74, 220, 147, 0.15)' : 'rgba(239, 68, 68, 0.15)'
-                          }}
-                        >
-                            {diffText}
-                        </span>
-                    </div>
-                </div>
-                <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
-                    {Array.from({ length: 20 }, (_, i) => {
-                        const score = Math.round(breakdownHabit.avgScore) || 0;
-                        const filledCount = Math.round((score / 100) * 20);
-                        const isFilled = i < filledCount;
-                        return (
-                            <span 
-                                key={i}
-                                className="h-[18px] sm:h-[21px] rounded-[4px]"
-                                style={{ backgroundColor: isFilled ? color : '#272727' }}
-                            ></span>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-3 border border-[#e6e7eb] border-t-0 rounded-b-[18px] bg-white overflow-hidden shadow-sm">
-                <div className="min-w-0 p-[12px_10px] relative border-r border-[#e6e7eb] flex justify-between items-center bg-white">
-
-                    <div className="flex flex-col items-start gap-[4px]">
-                        <span className="text-[#747985] text-[10px] sm:text-[11px] font-bold tracking-[0.5px] uppercase leading-none">{bestLabel}</span>
-                        <span className="text-[#15171c] text-[11px] sm:text-[12px] font-semibold leading-none">
-                            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayBestDate || 'N/A') : (displayBestDate && displayBestDate !== 'N/A' && displayBestDate !== 'Selected Habit' ? new Date(displayBestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
-                        </span>
-                    </div>
-                    <span className="text-[18px] sm:text-[22px] font-black text-[#18a56c]">{displayBestScore || 0}%</span>
-                </div>
-                <div className="min-w-0 p-[12px_10px] relative border-r border-[#e6e7eb] flex justify-between items-center bg-white">
-                    <div className="flex flex-col items-start gap-[4px]">
-                        <span className="text-[#747985] text-[10px] sm:text-[11px] font-bold tracking-[0.5px] uppercase leading-none">{worstLabel}</span>
-                        <span className="text-[#15171c] text-[11px] sm:text-[12px] font-semibold leading-none">
-                            {(viewMode === 'heatmap' && heatmapPeriod !== 'day') ? (displayLowestDate || 'N/A') : (displayLowestDate && displayLowestDate !== 'N/A' && displayLowestDate !== 'Selected Habit' ? new Date(displayLowestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : 'N/A')}
-                        </span>
-                    </div>
-                    <span className="text-[18px] sm:text-[22px] font-black text-[#ef4444]">{displayLowestScore || 0}%</span>
-                </div>
-                <div className="min-w-0 p-[12px_10px] relative flex justify-between items-center bg-white">
-                    <div className="flex flex-col items-start gap-[4px]">
-                        <span className="text-[#747985] text-[10px] sm:text-[11px] font-bold tracking-[0.5px] uppercase leading-none">Tracked</span>
-                        <span className="text-[#15171c] text-[11px] sm:text-[12px] font-semibold leading-none">Days</span>
-                    </div>
-                    <div className="flex items-baseline gap-[2px]">
-                        <span className="text-[18px] sm:text-[22px] font-black text-[#4f7cff]">{breakdownHabit.trackedDays || 0}</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-      </div>
-    );
-  };
+    return {
+        diff,
+        isUp: diff >= 0,
+        text: `${diff >= 0 ? '↑' : '↓'} ${Math.abs(diff)}%`,
+        label
+    };
+  }, [rangeOption, startDate, allSummaries, selectedHabit, kpis, chartData]);
 
   return (
     <div className="flex flex-col gap-6 w-full -mt-2">

@@ -1,4 +1,77 @@
-export function computeKPIs(summaries, startDate, endDate) {
+function computeStreaks(allSummaries, endDate, habitId = 'overall') {
+  const sorted = [...allSummaries].filter(s => s.id <= endDate).sort((a, b) => a.id.localeCompare(b.id));
+  
+  if (sorted.length === 0) return { currentStreak: 0, bestStreak: 0 };
+
+  const scoreMap = new Map();
+  sorted.forEach(s => {
+    let score = 0;
+    if (habitId === 'overall') {
+      score = s.overallScore || 0;
+    } else {
+      score = (s.habitScores && s.habitScores[habitId] !== undefined) ? s.habitScores[habitId] : 0;
+    }
+    scoreMap.set(s.id, score);
+  });
+
+  const firstDate = new Date(sorted[0].id);
+  const lastDate = new Date(endDate);
+  
+  let bestStreak = 0;
+  let tempStreak = 0;
+  let current = new Date(firstDate);
+  
+  while (current <= lastDate) {
+    const dateStr = current.toISOString().split('T')[0];
+    const score = scoreMap.get(dateStr) || 0;
+    if (score >= 60) {
+      tempStreak++;
+      if (tempStreak > bestStreak) bestStreak = tempStreak;
+    } else {
+      tempStreak = 0;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  let currentStreak = 0;
+  let checkDate = new Date(endDate);
+  
+  const endStr = checkDate.toISOString().split('T')[0];
+  const endScore = scoreMap.get(endStr) || 0;
+  
+  if (endScore >= 60) {
+    while (true) {
+      const dStr = checkDate.toISOString().split('T')[0];
+      const s = scoreMap.get(dStr) || 0;
+      if (s >= 60) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+  } else {
+    checkDate.setDate(checkDate.getDate() - 1);
+    const yestStr = checkDate.toISOString().split('T')[0];
+    const yestScore = scoreMap.get(yestStr) || 0;
+    if (yestScore >= 60) {
+      while (true) {
+        const dStr = checkDate.toISOString().split('T')[0];
+        const s = scoreMap.get(dStr) || 0;
+        if (s >= 60) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  return { currentStreak, bestStreak };
+}
+
+export function computeKPIs(summaries, startDate, endDate, allSummaries = []) {
   let scoreSum = 0;
   let count = 0;
   let highestScore = -1;
@@ -36,6 +109,8 @@ export function computeKPIs(summaries, startDate, endDate) {
   // inclusive
   const totalDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
   
+  const { currentStreak, bestStreak } = computeStreaks(allSummaries, endDate, 'overall');
+  
   return {
     averageScore: count > 0 ? Math.round(scoreSum / count) : 0,
     bestDay: bestDay,
@@ -44,7 +119,9 @@ export function computeKPIs(summaries, startDate, endDate) {
     lowestDayScore: lowestScore === 101 ? null : lowestScore,
     consistency: Math.round((daysWithEntry / totalDays) * 100) || 0,
     trackedDays: daysWithEntry,
-    totalDays: totalDays
+    totalDays: totalDays,
+    currentStreak,
+    bestStreak
   };
 }
 
@@ -132,7 +209,7 @@ export function generateHeatmapGrid(summaries, filterMode, selectedHabitId, star
   return result;
 }
 
-export function computeHabitBreakdown(habits, summaries, startDate, endDate) {
+export function computeHabitBreakdown(habits, summaries, startDate, endDate, allSummaries = []) {
   const start = new Date(startDate);
   const end = new Date(endDate);
   const totalDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
@@ -164,6 +241,8 @@ export function computeHabitBreakdown(habits, summaries, startDate, endDate) {
     const avgScore = count > 0 ? sum / count : 0;
     const consistency = Math.round((daysWithEntry / totalDays) * 100) || 0;
     
+    const { currentStreak, bestStreak } = computeStreaks(allSummaries, endDate, habit.id);
+    
     return {
       ...habit,
       avgScore,
@@ -173,7 +252,9 @@ export function computeHabitBreakdown(habits, summaries, startDate, endDate) {
       lowestScore: min === 101 ? null : min,
       lowestDate: minDate,
       trackedDays: daysWithEntry,
-      totalDays
+      totalDays,
+      currentStreak,
+      bestStreak
     };
   });
   
