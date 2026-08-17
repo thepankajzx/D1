@@ -238,16 +238,43 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               <span>Target: {formatTime(habit.target100)}</span>
               <span>Baseline: {formatTime(habit.target0)}</span>
             </div>
-            <div className="relative flex items-center border border-outline-variant rounded-lg overflow-hidden focus-within:border-primary transition-colors">
+            <div 
+              className="relative flex items-center border border-outline-variant rounded-lg overflow-hidden focus-within:border-primary transition-colors cursor-pointer hover:bg-surface-variant/30"
+              onClick={(e) => {
+                // Trigger showPicker when clicking anywhere on the wrapper
+                if (e.target.tagName !== 'INPUT') {
+                  const input = e.currentTarget.querySelector('input[type="time"]');
+                  if (input) {
+                    try {
+                      if (typeof input.showPicker === 'function') {
+                        input.showPicker();
+                      } else {
+                        input.focus();
+                        input.click();
+                      }
+                    } catch (err) {
+                      input.focus();
+                    }
+                  }
+                }
+              }}
+            >
               <input 
                 type="time" 
                 aria-label={`Time for ${habit.name}`}
                 value={formatTime(val)}
                 onChange={(e) => handleChange(parseTime(e.target.value))}
-                className="w-full bg-transparent border-none py-3 px-4 font-mono-data text-mono-data text-primary focus:ring-0" 
+                onClick={(e) => {
+                  try {
+                    if (typeof e.target.showPicker === 'function') {
+                      e.target.showPicker();
+                    }
+                  } catch (err) {}
+                }}
+                className="w-full bg-transparent border-none py-3 px-4 font-mono-data text-mono-data text-primary focus:ring-0 cursor-pointer outline-none" 
               />
-              <div className="absolute right-4 pointer-events-none text-on-surface-variant">
-                <Icon name="schedule" className=" text-sm" />
+              <div className="absolute right-4 pointer-events-none text-on-surface dark:text-white">
+                <Icon name="schedule_filled" className="text-[20px]" />
               </div>
             </div>
           </div>
