@@ -83,7 +83,7 @@
 .ahs-progress-widget p { font-size: 0.75rem; color: var(--ahs-text-sub); font-weight: 500; }
 
 /* LAYOUT & CARDS */
-.ahs-layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start; }
+.ahs-layout-grid { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: start; }
 .ahs-category-section { margin-bottom: 40px; }
 .ahs-category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .ahs-cat-icon { font-size: 1.5rem; background: var(--ahs-bg-card); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid var(--ahs-border-light); box-shadow: var(--ahs-shadow-sm); }

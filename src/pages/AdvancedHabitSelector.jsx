@@ -967,25 +967,6 @@ export default function AdvancedHabitSelector() {
                   </div>
                 </div>
               </main>
-
-              {/* SIDEBAR */}
-              <aside className="ahs-sidebar hidden md:flex">
-                  <div className="ahs-side-card">
-                      <div className="ahs-sc-title">Selection Summary</div>
-                      <ul className="ahs-summary-list">
-                          <li><Icon name="check_circle" className="ahs-text-success" /> <span>{selectedHabits.length + customHabits.length} New Habits Selected</span></li>
-                          <li><Icon name="inventory_2" /> <span className="ahs-text-primary">{Math.max(0, MAX_FREE_HABITS - (existingHabits.length + selectedHabits.length + customHabits.length))} Slots Remaining</span></li>
-                      </ul>
-                  </div>
-                  <div className="ahs-side-card">
-                      <div className="ahs-sc-title"><span className="text-amber-500">💡</span> Tips</div>
-                      <ul className="text-sm text-on-surface-variant font-medium flex flex-col gap-3">
-                          <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Be realistic with your targets.</li>
-                          <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Consistency beats perfection.</li>
-                          <li className="flex items-start gap-2"><Icon name="keyboard_arrow_right" className="text-lg" /> Track your progress daily.</li>
-                      </ul>
-                  </div>
-              </aside>
             </div>
           </div>
         )}
