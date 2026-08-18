@@ -91,8 +91,9 @@ export default function Analytics() {
   
   // Heatmap State
   const [isZoomedOut, setIsZoomedOut] = useState(false);
-  const [showPercentages, setShowPercentages] = useState(false);
   const [heatmapPeriod, setHeatmapPeriod] = useState('day'); // 'day', 'week', 'month'
+  const [showPercentages, setShowPercentages] = useState(false);
+  const [isHeatmapExpanded, setIsHeatmapExpanded] = useState(false);
   
   // Data States
   const [summaries, setSummaries] = useState([]);
@@ -645,31 +646,42 @@ export default function Analytics() {
 
             
             {/* ECharts Instance or Heatmap */}
-            <div className="w-full flex-grow min-h-[180px] -mb-2">
-              {viewMode === 'charts' ? (
+            <div className={isHeatmapExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "w-full flex-grow min-h-[180px] -mb-2"}>
+              {viewMode === 'charts' && !isHeatmapExpanded ? (
                 <ReactEChartsCore echarts={echarts} option={getEChartOption(selectedHabit)} style={{ height: '180px', width: '100%' }} />
               ) : (
-                <div className="flex flex-col px-5 pb-5">
-                  <div className="flex items-center gap-2 mb-4 shrink-0 flex-wrap">
-                    <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/40 shadow-sm">
-                      <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
-                      <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
-                      <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
+                <div className={`flex flex-col ${isHeatmapExpanded ? 'max-w-[1400px] mx-auto w-full' : 'px-5 pb-5'}`}>
+                  <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/40 shadow-sm">
+                        <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
+                        <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
+                        <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
+                      </div>
+                      {heatmapPeriod === 'day' && (
+                        <button 
+                          onClick={() => setShowPercentages(!showPercentages)}
+                          className={`px-3 h-8 rounded-full flex items-center justify-center gap-1 transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
+                          title="Toggle Percentages"
+                        >
+                          <Icon name={showPercentages ? 'visibility' : 'visibility_off'} className="text-[16px]" />
+                          <span className="text-[12px] font-bold leading-none">%</span>
+                        </button>
+                      )}
                     </div>
                     {heatmapPeriod === 'day' && (
                       <button 
-                        onClick={() => setShowPercentages(!showPercentages)}
-                        className={`px-3 h-8 rounded-full flex items-center justify-center gap-1 transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
-                        title="Toggle Percentages"
+                        onClick={() => setIsHeatmapExpanded(!isHeatmapExpanded)}
+                        className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant/40 shadow-sm"
+                        title={isHeatmapExpanded ? "Exit Fullscreen" : "Fullscreen Heatmap"}
                       >
-                        <Icon name={showPercentages ? 'visibility' : 'visibility_off'} className="text-[16px]" />
-                        <span className="text-[12px] font-bold leading-none">%</span>
+                        <Icon name={isHeatmapExpanded ? "fullscreen_exit" : "fullscreen"} className="text-[18px]" />
                       </button>
                     )}
                   </div>
-                  <div className="flex-grow flex flex-col overflow-x-auto pb-2 custom-scrollbar">
+                  <div className={`flex-grow flex flex-col ${isHeatmapExpanded ? '' : 'overflow-x-auto overflow-y-hidden pb-2 custom-scrollbar'}`}>
                     {heatmapPeriod === 'day' ? (
-                      <div className="flex gap-4 w-max min-w-full">
+                      <div className={`flex gap-4 ${isHeatmapExpanded ? 'flex-wrap justify-center sm:justify-start' : 'w-max min-w-full'}`}>
                         {heatmapGrid.map((monthData, mIndex) => (
                           <div key={mIndex} className="flex gap-2">
                             {(mIndex === 0) && (
