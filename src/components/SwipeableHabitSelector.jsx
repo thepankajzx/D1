@@ -142,7 +142,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
               return (
                 <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
                   <div 
-                    className={`flex items-center h-full px-3 gap-3 w-full rounded-full transition-all duration-200 border ${
+                    className={`flex items-center h-full px-3 gap-2 w-full rounded-[10px] transition-all duration-200 border ${
                       isSelected 
                         ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] opacity-100 scale-100' 
                         : `bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`

@@ -513,20 +513,22 @@ export default function Analytics() {
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header Controls Row 1: 3-column Layout */}
-      <div className="flex flex-row justify-between items-center gap-1 sm:gap-2 w-full mt-2 relative">
+      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 relative">
         {/* Left: Chart/Heatmap Toggle Pill */}
-        <div className="flex bg-surface-container rounded-full p-[2px] sm:p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[70px] sm:w-[80px] h-[36px]">
+        <div className="flex bg-surface-container-lowest rounded-[10px] p-[3px] border border-outline-variant/40 shrink-0 h-[36px]">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'charts' ? 'bg-primary/15 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-transparent' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+            className={`flex items-center justify-center gap-1.5 px-2 sm:px-3 rounded-[8px] transition-all duration-200 ${viewMode === 'charts' ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             <Icon name="insights" className="text-[18px]" />
+            <span className="text-[13px] hidden sm:inline">Chart</span>
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-primary/15 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-transparent' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+            className={`flex items-center justify-center gap-1.5 px-2 sm:px-3 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             <Icon name="apps" className="text-[18px]" />
+            <span className="text-[13px] hidden sm:inline">Heatmap</span>
           </button>
         </div>
         
@@ -547,7 +549,7 @@ export default function Analytics() {
         </div>
         
         {/* Timeframe Selector Dropdown */}
-        <div className="relative shrink-0 z-20 flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-[12px] h-[36px] px-2 shadow-sm focus-within:border-primary/50 hover:border-outline-variant transition-colors">
+        <div className="relative shrink-0 z-20 flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-2.5 hover:border-outline-variant transition-colors">
           <Icon name="calendar_today" className="text-on-surface-variant text-[16px] shrink-0" />
           <select 
             value={rangeOption}
