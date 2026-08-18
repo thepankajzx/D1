@@ -206,9 +206,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             {/* Center circle */}
             <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
               {val === 1 ? (
-                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✔</span>
+                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">âœ”</span>
               ) : (
-                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">✖</span>
+                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">âœ–</span>
               )}
             </div>
           </div>
@@ -341,44 +341,78 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             
             
             <div className="flex items-center gap-3 w-full">
-              {/* Slider Track */}
-              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[24px] text-right">0</span>
-              <div className="flex-grow flex items-center h-5">
-                <input 
-                  type="range" 
-                  aria-label={`Target slider for ${habit.name}`}
-                  min={minSlider} 
-                  max={maxSlider} 
-                  step={sliderStep}
-                  value={dVal}
-                  style={{ background: generateGradient() }}
-                  onChange={(e) => {
-                      const newValue = Math.round(Number(e.target.value));
-                      const prevValue = Math.round(val * mult);
-                      setVal(newValue / mult);
+              <div className="flex items-center gap-2 w-full mt-1">
+                {/* Min Label */}
+                <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[16px] text-right">0</span>
+                
+                {/* Minus Button */}
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    const newValue = Math.max(minSlider, Math.round(val * mult) - 1); 
+                    setVal(newValue / mult); 
+                    handleChange(newValue / mult); 
+                    if(navigator.vibrate) navigator.vibrate(50); 
+                  }} 
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0"
+                >
+                  <Icon name="remove" className="text-[16px]" />
+                </button>
 
-                      if (navigator.vibrate) {
-                          const prevPct = (prevValue / maxSlider) * 100;
-                          const newPct = (newValue / maxSlider) * 100;
-                          if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
-                              navigator.vibrate(50);
-                          }
-                          if (
-                            (prevValue < dTarget100 && newValue >= dTarget100) ||
-                            (prevValue > dTarget100 && newValue <= dTarget100)
-                          ) {
-                              navigator.vibrate(50);
-                          }
-                      }
-                  }}
-                  onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                  onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                  className="custom-slider w-full m-0 !h-[6px]" 
-                />
+                {/* Slider */}
+                <div className="flex-grow flex items-center h-5">
+                  <input 
+                    type="range" 
+                    aria-label={`Target slider for ${habit.name}`}
+                    min={minSlider} 
+                    max={maxSlider} 
+                    step={sliderStep}
+                    value={dVal}
+                    style={{ background: generateGradient() }}
+                    onChange={(e) => {
+                        const newValue = Math.round(Number(e.target.value));
+                        const prevValue = Math.round(val * mult);
+                        setVal(newValue / mult);
+  
+                        if (navigator.vibrate) {
+                            const prevPct = (prevValue / maxSlider) * 100;
+                            const newPct = (newValue / maxSlider) * 100;
+                            if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
+                                navigator.vibrate(50);
+                            }
+                            if (
+                              (prevValue < dTarget100 && newValue >= dTarget100) ||
+                              (prevValue > dTarget100 && newValue <= dTarget100)
+                            ) {
+                                navigator.vibrate(50);
+                            }
+                        }
+                    }}
+                    onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
+                    onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
+                    className="custom-slider w-full m-0 !h-[6px]" 
+                  />
+                </div>
+
+                {/* Plus Button */}
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    const newValue = Math.min(maxSlider, Math.round(val * mult) + 1); 
+                    setVal(newValue / mult); 
+                    handleChange(newValue / mult); 
+                    if(navigator.vibrate) navigator.vibrate(50); 
+                  }} 
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0"
+                >
+                  <Icon name="add" className="text-[16px]" />
+                </button>
+                
+                {/* Max Label */}
+                <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[16px]">
+                  {Math.round(dTarget100)}
+                </span>
               </div>
-              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[24px]">
-                {Math.round(dTarget100)}
-              </span>
 
                             {showManualInput && (
                 <div className="relative flex items-center shrink-0 ml-1 gap-1">
@@ -484,7 +518,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   };
 
   const formatDisplayValue = () => {
-    if (val === null || val === undefined) return '—';
+    if (val === null || val === undefined) return 'â€”';
     if (habit.scoringType === 'time') return formatTime(val);
     if (habit.scoringType === 'binary') {
       return val === 1 ? 'Yes' : 'No';
@@ -610,6 +644,8 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     </>
   );
 }
+
+
 
 
 
