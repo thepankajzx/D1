@@ -6,8 +6,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const options = [
-    ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' })),
-    { id: 'overall', name: 'Overall', icon: 'grid_view' }
+    { id: 'overall', name: 'Overall', icon: 'grid_view' },
+    ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' }))
   ];
 
   const selectedOpt = options.find(opt => opt.id === selectedHabitId) || options[0];
@@ -46,10 +46,14 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                       ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
                       : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
                   }`}
-                  onClick={() => {
-                    onChange(opt.id);
+                  onClick={(e) => {
+                    e.stopPropagation();
                     triggerVibration();
                     setIsDropdownOpen(false);
+                    // Defer the heavy Analytics re-render so the dropdown closes instantly
+                    setTimeout(() => {
+                      onChange(opt.id);
+                    }, 50);
                   }}
                 >
                   <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
