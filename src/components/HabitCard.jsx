@@ -201,55 +201,30 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const renderInput = () => {
     switch (habit.scoringType) {
       case 'binary': {
-        // Determine label text based on habit name/context
-        const yesLabel = 'Yes';
-        const noLabel = 'No';
         return (
-          <div className="flex flex-col gap-3 flex-grow justify-end">
-            <div className="relative flex w-full h-[46px] rounded-full bg-surface-container-low border border-outline-variant/30 overflow-hidden group">
-              
-              {/* Background fills */}
-              <div 
-                className={`absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
-              />
-              <div 
-                className={`absolute inset-y-0 right-0 w-1/2 bg-red-500 transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} 
-              />
+          <div className="relative flex w-full h-[36px] rounded-[10px] bg-surface-container-lowest border border-outline-variant/40 overflow-hidden group">
+            {/* Background fills */}
+            <div className={`absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
+            <div className={`absolute inset-y-0 right-0 w-1/2 bg-red-500 transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
 
-              {/* Clickable halves */}
-              <div className="absolute inset-0 flex">
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
-                    handleChange(1); 
-                  }} className="flex-1 flex items-center justify-center z-10 cursor-pointer"
-                >
-                  <span className={`font-semibold text-sm transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant'}`}>
-                    Yes
-                  </span>
-                </button>
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    if (navigator.vibrate) navigator.vibrate(10);
-                    handleChange(0); 
-                  }} className="flex-1 flex items-center justify-center z-10 cursor-pointer"
-                >
-                  <span className={`font-semibold text-sm transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant'}`}>
-                    No
-                  </span>
-                </button>
-              </div>
+            {/* Clickable halves */}
+            <div className="absolute inset-0 flex">
+              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate([15, 30, 15]); handleChange(1); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+                <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
+              </button>
+              <div className="w-[1px] bg-outline-variant/30 z-10" />
+              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); handleChange(0); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+                <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
+              </button>
+            </div>
 
-              {/* Center circle */}
-              <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[34px] h-[34px] rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-                {val === 1 ? (
-                  <span className="text-green-600 font-bold text-[16px] leading-none mb-[2px]">✓</span>
-                ) : (
-                  <span className="text-red-600 font-bold text-[14px] leading-none mb-[2px]">✕</span>
-                )}
-              </div>
+            {/* Center circle */}
+            <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+              {val === 1 ? (
+                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✓</span>
+              ) : (
+                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">✕</span>
+              )}
             </div>
           </div>
         );
@@ -480,6 +455,37 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     if (habit.scoringType === 'subjective') return `${val}/10`;
     return `${val} ${habit.unit || ''}`.trim();
   };
+
+  if (habit.scoringType === 'binary') {
+    return (
+      <>
+        <div 
+          onClick={() => setShowDetail(true)}
+          className="bg-surface premium-border rounded-[16px] p-3 flex flex-row items-center justify-between gap-3 w-full cursor-pointer hover:bg-surface-variant/30 transition-colors"
+        >
+          {/* Left: Icon and Title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[12px]" />
+            <h3 className="font-bold text-[15px] text-on-surface truncate">
+              {habit.name}
+            </h3>
+          </div>
+          
+          {/* Right: Inline Input */}
+          <div className="shrink-0 w-[110px]" onClick={(e) => e.stopPropagation()}>
+            {renderInput()}
+          </div>
+        </div>
+        {showDetail && (
+          <HabitDetailSheet
+            habit={habit}
+            allSummaries={allSummaries || []}
+            onClose={() => setShowDetail(false)}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
