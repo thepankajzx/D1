@@ -4,6 +4,7 @@ import HabitIcon from './HabitIcon';
 
 export default function SwipeableHabitSelector({ habits, selectedHabitId, onChange }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const containerRef = useRef(null);
   const [dragOffset, setDragOffset] = useState(0);
 
@@ -33,6 +34,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     dragStartY.current = e.touches[0].clientY;
     isDragging.current = true;
     hasDragged.current = false;
+    setIsActive(true);
   };
 
   const handleTouchMove = (e) => {
@@ -75,12 +77,19 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     isDragging.current = false;
     dragStartY.current = null;
     setDragOffset(0);
+    setIsActive(false);
     // hasDragged is deliberately not reset here so onClick can read it
   };
+
+  const scrollTimeout = useRef(null);
 
   // Support wheel for desktop testing (also made very sensitive)
   const handleWheel = (e) => {
     e.preventDefault();
+    setIsActive(true);
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => setIsActive(false), 500);
+
     if (e.deltaY > 0 && safeCurrentIndex < options.length - 1) {
       onChange(options[safeCurrentIndex + 1].id);
       triggerVibration();
@@ -129,10 +138,10 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
       className="relative shrink-0 flex-1 max-w-[180px] h-[36px] z-30 cursor-pointer touch-none"
     >
       <div 
-        className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none"
+        className={`absolute w-full top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200 ${isActive ? 'h-[144px]' : 'h-[36px] overflow-hidden'}`}
         style={{
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
+          WebkitMaskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none',
+          maskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none'
         }}
       >
         <div 
@@ -152,10 +161,10 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                       : 'bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent opacity-50 scale-95'
                   }`}
                 >
-                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={16} className="!rounded-[6px]" />
+                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={16} className="!rounded-full" />
                   <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
                   {isSelected && (
-                    <Icon name="unfold_more" className="text-[14px] text-on-surface-variant opacity-50 ml-auto" />
+                    <Icon name="unfold_more" className="text-[16px] text-on-surface-variant ml-auto shrink-0" />
                   )}
                 </div>
               </div>
@@ -185,7 +194,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                     setIsDropdownOpen(false);
                   }}
                 >
-                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={18} className="!rounded-[8px]" />
+                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={18} className="!rounded-full" />
                   <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
                   {isSelected && (
                     <Icon name="check" className="text-[16px] ml-auto text-primary" />
