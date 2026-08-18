@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -155,6 +155,14 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
+  
+  const stepTimeoutRef = useRef(null);
+  const stepIntervalRef = useRef(null);
+  const valRef = useRef(getInitialVal());
+
+  useEffect(() => {
+    valRef.current = val;
+  }, [val]);
 
   
   useEffect(() => {
@@ -162,6 +170,35 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
       setVal(entry.rawValue);
     }
   }, [entry]);
+
+  const startStepping = (direction, min, max, multiplier = 1) => {
+    // Initial step
+    const performStep = () => {
+      let currentRounded = Math.round((valRef.current ?? 0) * multiplier);
+      let newVal = currentRounded + direction;
+      if (newVal < min) newVal = min;
+      if (newVal > max) newVal = max;
+      valRef.current = newVal / multiplier;
+      setVal(valRef.current);
+      if (navigator.vibrate) navigator.vibrate(20);
+    };
+
+    performStep();
+
+    // Start long-press repeat
+    stepTimeoutRef.current = setTimeout(() => {
+      stepIntervalRef.current = setInterval(performStep, 100);
+    }, 400);
+  };
+
+  const stopStepping = () => {
+    if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current);
+    if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
+    // Persist final value
+    if (valRef.current !== val) {
+      handleChange(valRef.current);
+    }
+  };
 
   const handleChange = (newRawVal) => {
     setVal(newRawVal);
@@ -263,32 +300,66 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           </div>
         );
       case 'subjective':
-        return (
-          <div className="flex flex-col w-full mt-3">
-            <div className="flex items-center gap-3 w-full">
-              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[24px] text-right">1</span>
-              <div className="flex-grow flex items-center h-5">
-                <input 
-                  type="range" 
-                  aria-label={`Subjective score for ${habit.name}`}
-                  min="1" max="10" step="1" 
-                  value={val}
-                  onChange={(e) => {
-                     setVal(Number(e.target.value));
-                     if (navigator.vibrate) navigator.vibrate(50);
+          return (
+            <div className="flex flex-col w-full mt-3">
+              <div className="flex items-center gap-3 w-full">
+                <button
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.target.setPointerCapture(e.pointerId);
+                    startStepping(-1, 1, 10, 1);
                   }}
-                  onPointerUp={(e) => handleChange(Number(e.target.value))}
-                  onTouchEnd={(e) => handleChange(Number(e.target.value))}
-                  className="subjective-slider w-full m-0 !h-[6px]" 
-                />
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    e.target.releasePointerCapture(e.pointerId);
+                    stopStepping();
+                  }}
+                  onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
+                  onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                >
+                  <Icon name="remove" className="text-[16px]" />
+                </button>
+                <div className="flex-grow flex items-center h-5">
+                  <input 
+                    type="range" 
+                    aria-label={`Subjective score for ${habit.name}`}
+                    min="1" max="10" step="1" 
+                    value={val}
+                    onChange={(e) => {
+                       setVal(Number(e.target.value));
+                       if (navigator.vibrate) navigator.vibrate(50);
+                    }}
+                    onPointerUp={(e) => handleChange(Number(e.target.value))}
+                    onTouchEnd={(e) => handleChange(Number(e.target.value))}
+                    className="subjective-slider w-full m-0 !h-[6px]" 
+                  />
+                </div>
+                <button
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.target.setPointerCapture(e.pointerId);
+                    startStepping(1, 1, 10, 1);
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    e.target.releasePointerCapture(e.pointerId);
+                    stopStepping();
+                  }}
+                  onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
+                  onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                >
+                  <Icon name="add" className="text-[16px]" />
+                </button>
               </div>
-              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[24px]">10</span>
+              <div className="text-center font-mono-data text-primary font-bold mt-2">
+                {val}/10
+              </div>
             </div>
-            <div className="text-center font-mono-data text-primary font-bold mt-2">
-              {val}/10
-            </div>
-          </div>
-        );
+          );
       case 'number':
       case 'duration':
       default:
@@ -347,14 +418,26 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 
                 {/* Minus Button */}
                 <button 
-                  onClick={(e) => { 
+                  onPointerDown={(e) => { 
                     e.stopPropagation(); 
-                    const newValue = Math.max(minSlider, Math.round(val * mult) - 1); 
-                    setVal(newValue / mult); 
-                    handleChange(newValue / mult); 
-                    if(navigator.vibrate) navigator.vibrate(50); 
-                  }} 
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0"
+                    e.target.setPointerCapture(e.pointerId);
+                    startStepping(-1, minSlider, maxSlider, mult);
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    e.target.releasePointerCapture(e.pointerId);
+                    stopStepping();
+                  }}
+                  onPointerLeave={(e) => {
+                    e.stopPropagation();
+                    stopStepping();
+                  }}
+                  onPointerCancel={(e) => {
+                    e.stopPropagation();
+                    stopStepping();
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
                 >
                   <Icon name="remove" className="text-[16px]" />
                 </button>
@@ -396,14 +479,26 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
                 {/* Plus Button */}
                 <button 
-                  onClick={(e) => { 
+                  onPointerDown={(e) => { 
                     e.stopPropagation(); 
-                    const newValue = Math.min(maxSlider, Math.round(val * mult) + 1); 
-                    setVal(newValue / mult); 
-                    handleChange(newValue / mult); 
-                    if(navigator.vibrate) navigator.vibrate(50); 
-                  }} 
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0"
+                    e.target.setPointerCapture(e.pointerId);
+                    startStepping(1, minSlider, maxSlider, mult);
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    e.target.releasePointerCapture(e.pointerId);
+                    stopStepping();
+                  }}
+                  onPointerLeave={(e) => {
+                    e.stopPropagation();
+                    stopStepping();
+                  }}
+                  onPointerCancel={(e) => {
+                    e.stopPropagation();
+                    stopStepping();
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
                 >
                   <Icon name="add" className="text-[16px]" />
                 </button>
