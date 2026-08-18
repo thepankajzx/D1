@@ -52,7 +52,7 @@ export default function ProCustomDateModal({ onClose }) {
         </h2>
 
         <p className="pcdm-description">
-          Analyze any date range with Pro.
+          Analyze your habits with customized time frames or longer time frames.
         </p>
 
         <button
@@ -60,8 +60,8 @@ export default function ProCustomDateModal({ onClose }) {
           type="button"
           onClick={handleUnlockPro}
         >
-          <span className="pcdm-sparkle">✦</span>
-          <span>Unlock Pro</span>
+          <span className="pcdm-sparkle">✨</span>
+          <span>Unlock the Pro</span>
         </button>
 
         <p className="pcdm-footnote">

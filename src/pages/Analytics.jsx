@@ -350,6 +350,7 @@ export default function Analytics() {
         borderWidth: 0,
         padding: 0,
         shadowColor: 'transparent',
+        confine: true,
         formatter: function (params) {
           if (!params || !params.length) return '';
           
@@ -359,78 +360,30 @@ export default function Analytics() {
           const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
           
           if (params.length > 1) {
-            // Combined Chart - Compact List View
-            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 8px 12px; min-width: 180px; font-family: 'Inter', sans-serif; border: 1px solid var(--outline-variant, #e5e7eb);">`;
-            html += `<div style="font-size: 15px; color: var(--on-surface-variant, #6b7280); margin-bottom: 8px; font-weight: 500; border-bottom: 1px solid var(--outline-variant, #f3f4f6); padding-bottom: 4px;">${dateStr}</div>`;
-            
+            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 6px 10px; font-family: 'Inter', sans-serif; min-width: 130px;">`;
+            html += `<div style="font-size: 11px; color: var(--on-surface-variant, #6b7280); margin-bottom: 4px; font-weight: 500; border-bottom: 1px solid var(--outline-variant, #f3f4f6); padding-bottom: 2px;">${dateStr}</div>`;
             params.forEach(param => {
               const seriesName = param.seriesName;
               const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
-              const color = param.color || '#3b82f6';
-              const finalColor = seriesName === 'Overall Score' ? '#8b5cf6' : color;
-              
+              const color = seriesName === 'Overall Score' ? '#8b5cf6' : (param.color || '#3b82f6');
               html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <div style="width: 6px; height: 6px; border-radius: 50%; background: ${finalColor};"></div>
-                    <div style="font-size: 14px; font-weight: 500; color: var(--on-surface-variant, #374151);">${seriesName}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background: ${color};"></div>
+                    <span style="font-size: 12px; font-weight: 500; color: var(--on-surface-variant, #374151); max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${seriesName}</span>
                   </div>
-                  <div style="font-size: 14px; font-weight: 700; color: var(--on-surface, #111827);">${score}%</div>
-                </div>
-              `;
+                  <strong style="font-size: 12px; font-weight: 700; color: var(--on-surface, #111827);">${score}%</strong>
+                </div>`;
             });
             html += `</div>`;
             return html;
           } else {
-            // Individual Chart - Detailed View (Compact for Mobile)
-            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 10px; min-width: 200px; max-width: 240px; font-family: 'Inter', sans-serif; border: 1px solid var(--outline-variant, #e5e7eb);">`;
-            
             const param = params[0];
-            const seriesName = param.seriesName;
             const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
-            const isOverall = seriesName === 'Overall Score';
-            
-            if (isOverall) {
-              const calendarIconHtml = renderToString(<Icon name="calendar_today" style={{ fontSize: '10px', width: '10px', height: '10px', fill: 'currentColor' }} />);
-              html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <div style="font-weight: 600; font-size: 15px; color: var(--on-surface, #111827);">Overall Score</div>
-                  <div style="background: var(--perf-high-bg, rgba(16, 185, 129, 0.1)); color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 15px; border: 1px solid var(--perf-high-border, rgba(16, 185, 129, 0.2));">${score}%</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 4px; color: var(--on-surface-variant, #4b5563); font-size: 12px;">
-                  ${calendarIconHtml}
-                  <span>${dateStr}</span>
-                </div>
-              `;
-            } else {
-              const habit = habits.find(h => h.name === seriesName);
-              const icon = habit?.icon || 'check_circle';
-              const color = param.color || '#3b82f6';
-              const calendarIconHtml = renderToString(<Icon name="calendar_today" style={{ fontSize: '10px', width: '10px', height: '10px', fill: 'currentColor' }} />);
-              const habitIconHtml = renderToString(<Icon name={icon} style={{ fontSize: '14px', width: '14px', height: '14px', fill: 'currentColor' }} />);
-              
-              html += `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <div style="background: ${color}; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;">
-                      ${habitIconHtml}
-                    </div>
-                    <div>
-                      <div style="font-weight: 600; font-size: 14px; color: var(--on-surface, #111827); line-height: 1.2; margin-bottom: 4px;">${seriesName}</div>
-                      <div style="display: flex; align-items: center; gap: 4px; color: var(--on-surface-variant, #4b5563); font-size: 12px;">
-                        ${calendarIconHtml}
-                        <span>${dateStr}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style="background: var(--perf-high-bg, rgba(16, 185, 129, 0.1)); color: #10b981; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 12px; border: 1px solid var(--perf-high-border, rgba(16, 185, 129, 0.2));">
-                    ${score}%
-                  </div>
-                </div>
-              `;
-            }
-            html += `</div>`;
-            return html;
+            return `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 4px 10px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; color: var(--on-surface-variant, #4b5563); font-weight: 500;">${dateStr}</span>
+              <strong style="font-size: 12px; color: var(--on-surface, #111827);">${score}%</strong>
+            </div>`;
           }
         }
       },
@@ -668,7 +621,7 @@ export default function Analytics() {
               </p>
           </div>
         ) : (
-          <div className="bg-surface-container-lowest rounded-[18px] border border-outline-variant/30 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col pt-5 pb-2 overflow-hidden relative">
+          <div className="flex flex-col pt-2 pb-2 relative w-full">
             <div className="px-5 flex justify-between items-start mb-2">
               <div className="flex flex-col">
                 <span className="text-on-surface font-bold text-[14px]">{selectedHabit === 'overall' ? 'Overall Performance' : habits.find(h => h.id === selectedHabit)?.name || 'Performance'}</span>
@@ -914,41 +867,61 @@ export default function Analytics() {
                   );
                 }
 
+                const isOverall = selectedHabit === 'overall';
+                const mainScore = isOverall ? daySummary.overallScore : daySummary.habitScores?.[selectedHabit];
+                
+                if (mainScore === undefined) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
+                        <Icon name="block" className="text-[28px] text-on-surface-variant/40" />
+                      </div>
+                      <p className="text-on-surface font-semibold text-[16px]">No Activity Tracked</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't track this habit on this day.</p>
+                    </div>
+                  );
+                }
+
+                const mainLabel = isOverall ? 'Overall Score' : habits.find(h => h.id === selectedHabit)?.name;
+                const mainBand = getPerformanceBand(mainScore).id;
+
                 return (
                   <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[16px] border border-primary/10">
-                      <span className="text-[15px] font-bold text-on-surface">Overall Score</span>
+                      <span className="text-[15px] font-bold text-on-surface">{mainLabel}</span>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[24px] font-black text-perf-${getPerformanceBand(daySummary.overallScore).id}`}>
-                          {daySummary.overallScore}%
+                        <span className={`text-[24px] font-black text-perf-${mainBand}`}>
+                          {Math.round(mainScore)}%
                         </span>
                       </div>
                     </div>
 
-                    <div>
-                      <h4 className="text-[12px] font-bold text-on-surface-variant uppercase tracking-wider mb-3 ml-1">Habit Breakdown</h4>
-                      <div className="flex flex-col gap-2">
-                        {habits.map(h => {
-                          const score = daySummary.habitScores?.[h.id];
-                          if (score === undefined) return null;
-                          const band = getPerformanceBand(score).id;
-                          return (
-                            <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
-                              <div className="flex items-center gap-3">
-                                <Icon name={h.icon} className="text-[20px] text-on-surface" />
-                                <span className="text-[14px] font-semibold text-on-surface">{h.name}</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div className="w-16 h-2 rounded-full bg-surface-variant/30 overflow-hidden">
-                                  <div className={`h-full bg-perf-${band} rounded-full`} style={{ width: `${score}%` }}></div>
+                    {isOverall && (
+                      <div>
+                        <h4 className="text-[12px] font-bold text-on-surface-variant uppercase tracking-wider mb-3 ml-1">Habit Breakdown</h4>
+                        <div className="flex flex-col gap-2">
+                          {habits.map(h => {
+                            const score = daySummary.habitScores?.[h.id];
+                            if (score === undefined) return null;
+                            const band = getPerformanceBand(score).id;
+                            return (
+                              <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
+                                <div className="flex items-center gap-3">
+                                  <Icon name={h.icon} className="text-[20px] text-on-surface" />
+                                  <span className="text-[14px] font-semibold text-on-surface">{h.name}</span>
                                 </div>
-                                <span className={`text-[14px] font-bold text-perf-${band} w-10 text-right`}>{score}%</span>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-2 rounded-full bg-surface-variant/30 overflow-hidden">
+                                    <div className={`h-full bg-perf-${band} rounded-full`} style={{ width: `${score}%` }}></div>
+                                  </div>
+                                  <span className={`text-[14px] font-bold text-perf-${band} w-10 text-right`}>{Math.round(score)}%</span>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })()}

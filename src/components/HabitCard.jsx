@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
-import { playSuccess, playTick } from '../audio';
+import { getScoreAndBand } from '../lib/scoring';
 
 // Helper to format minutes into HH:MM
 function formatTime(minutes) {
@@ -218,24 +218,22 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               {/* Clickable halves */}
               <div className="absolute inset-0 flex">
                 <button 
-                  onClick={() => {
-                     handleChange(1);
-                     if (navigator.vibrate) navigator.vibrate(20);
-                     playSuccess();
-                  }}
-                  className="flex-1 flex items-center justify-center z-10 cursor-pointer"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
+                    handleChange(100); 
+                  }} className="flex-1 flex items-center justify-center z-10 cursor-pointer"
                 >
                   <span className={`font-semibold text-sm transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant'}`}>
                     Yes
                   </span>
                 </button>
                 <button 
-                  onClick={() => {
-                     handleChange(0);
-                     if (navigator.vibrate) navigator.vibrate(20);
-                     playTick();
-                  }}
-                  className="flex-1 flex items-center justify-center z-10 cursor-pointer"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    handleChange(0); 
+                  }} className="flex-1 flex items-center justify-center z-10 cursor-pointer"
                 >
                   <span className={`font-semibold text-sm transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant'}`}>
                     No
@@ -382,13 +380,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 <div className="flex bg-surface-container-high rounded-full p-1 border border-outline-variant/20">
                   <button 
                     className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); playTick(); }}
+                    onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); }}
                   >
                     HR
                   </button>
                   <button 
                     className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); playTick(); }}
+                    onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); }}
                   >
                     MIN
                   </button>
