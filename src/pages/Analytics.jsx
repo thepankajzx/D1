@@ -285,25 +285,38 @@ export default function Analytics() {
             if (idx === lastIdx) return { value: val, symbol: 'circle', symbolSize: 8 };
             return val;
           });
-          return [{
-            name: 'Overall Score',
-            type: 'line',
-            data: formattedData,
-            itemStyle: { color: '#d0bcff' },
-            lineStyle: { width: 3 },
-            areaStyle: {
-              color: {
-                type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-                colorStops: [
-                  { offset: 0, color: 'rgba(208,188,255,0.4)' },
-                  { offset: 1, color: 'rgba(208,188,255,0.02)' }
-                ]
-              }
+          return [
+            {
+              name: 'Overall Score',
+              type: 'line',
+              data: formattedData,
+              connectNulls: false,
+              itemStyle: { color: '#d0bcff' },
+              lineStyle: { width: 3 },
+              areaStyle: {
+                color: {
+                  type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                  colorStops: [
+                    { offset: 0, color: 'rgba(208,188,255,0.4)' },
+                    { offset: 1, color: 'rgba(208,188,255,0.02)' }
+                  ]
+                }
+              },
+              showSymbol: true,
+              symbol: 'none',
+              smooth: true
             },
-            showSymbol: true,
-            symbol: 'none',
-            smooth: true
-          }];
+            {
+              name: 'Missed',
+              type: 'scatter',
+              data: rawData.map(val => val === null ? 0 : null),
+              symbol: 'emptyCircle',
+              symbolSize: 7,
+              itemStyle: { color: '#1a1a1a', borderColor: '#555555', borderWidth: 2 },
+              tooltip: { formatter: 'Skipped' },
+              hoverAnimation: false
+            }
+          ];
         })()
       : [habitId].map((id) => {
           const habit = habits.find(h => h.id === id);
@@ -321,27 +334,39 @@ export default function Analytics() {
             return val;
           });
 
-          return {
-            name: habit?.name || id,
-            type: 'line',
-            data: formattedData,
-            connectNulls: true,
-            itemStyle: { color },
-            lineStyle: { width: 3 },
-            areaStyle: {
-              color: {
-                type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-                colorStops: [
-                  { offset: 0, color: color + '55' },
-                  { offset: 1, color: color + '05' }
-                ]
-              }
+          return [
+            {
+              name: habit?.name || id,
+              type: 'line',
+              data: formattedData,
+              connectNulls: false,
+              itemStyle: { color },
+              lineStyle: { width: 3 },
+              areaStyle: {
+                color: {
+                  type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                  colorStops: [
+                    { offset: 0, color: color + '55' },
+                    { offset: 1, color: color + '05' }
+                  ]
+                }
+              },
+              showSymbol: true,
+              symbol: 'none',
+              smooth: true
             },
-            showSymbol: true,
-            symbol: 'none',
-            smooth: true
-          };
-        });
+            {
+              name: 'Missed',
+              type: 'scatter',
+              data: rawData.map(val => val === null ? 0 : null),
+              symbol: 'emptyCircle',
+              symbolSize: 7,
+              itemStyle: { color: '#1a1a1a', borderColor: '#555555', borderWidth: 2 },
+              tooltip: { formatter: 'Skipped' },
+              hoverAnimation: false
+            }
+          ];
+        }).flat();
 
 
     return {
