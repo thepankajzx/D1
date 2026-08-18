@@ -49,6 +49,8 @@ export default function Dashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showKpiHelp, setShowKpiHelp] = useState(false);
+  const [showPartialSaveModal, setShowPartialSaveModal] = useState(false);
+  const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
 
   // Calculate all-time weakest and strongest habits
   const { weakestHabit, strongestHabit } = useMemo(() => {
@@ -150,7 +152,7 @@ export default function Dashboard() {
 
 
 
-  const handleSaveProgress = async () => {
+  const handleSaveProgress = async (bypassValidation = false) => {
     if (!user || !pendingChanges) return;
     setIsSaving(true);
     
@@ -158,12 +160,16 @@ export default function Dashboard() {
         const batch = writeBatch(db);
         
         let finalEntries = [...entries];
-        // Validate that all habits have been filled
-        const missingHabits = habits.filter(habit => !finalEntries.some(e => e.habitId === habit.id));
-        if (missingHabits.length > 0) {
-            alert(`Please complete the following habits before saving:\n- ${missingHabits.map(h => h.name).join('\n- ')}`);
-            setIsSaving(false);
-            return;
+        
+        if (!bypassValidation) {
+            // Validate that all habits have been filled
+            const missingHabits = habits.filter(habit => !finalEntries.some(e => e.habitId === habit.id));
+            if (missingHabits.length > 0) {
+                setMissingHabitsForSave(missingHabits);
+                setShowPartialSaveModal(true);
+                setIsSaving(false);
+                return;
+            }
         }
         
         // Write all final entries
@@ -509,11 +515,51 @@ export default function Dashboard() {
           )}
       </div>
 
-      <ProModal 
-        isOpen={showPaywall} 
-        onClose={() => setShowPaywall(false)} 
-        source="total_habits_limit" 
-      />
+      {showPaywall && (
+        <UpgradeModal onClose={() => setShowPaywall(false)} />
+      )}
+
+      {/* Partial Save Modal */}
+      {showPartialSaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
+          <div className="bg-surface rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-in zoom-in-95 duration-200 border premium-border">
+            <div className="p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-3 text-warning">
+                <Icon name="warning" className="text-[24px]" />
+                <h3 className="font-headline-sm text-headline-sm text-on-surface">Incomplete Habits</h3>
+              </div>
+              <p className="text-body-md text-on-surface-variant">
+                You still have {missingHabitsForSave.length} habit{missingHabitsForSave.length > 1 ? 's' : ''} left for today:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-on-surface-variant flex flex-col gap-1 max-h-[150px] overflow-y-auto">
+                {missingHabitsForSave.map(h => (
+                  <li key={h.id}>{h.name}</li>
+                ))}
+              </ul>
+              <p className="text-body-md text-on-surface-variant font-medium mt-2">
+                Do you want to save your progress now and complete the rest later?
+              </p>
+            </div>
+            <div className="p-4 bg-surface-container-lowest border-t border-outline-variant/40 flex justify-end gap-2">
+              <button
+                onClick={() => setShowPartialSaveModal(false)}
+                className="px-4 py-2 rounded-full font-label-lg text-on-surface hover:bg-surface-variant transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowPartialSaveModal(false);
+                  handleSaveProgress(true);
+                }}
+                className="px-4 py-2 rounded-full font-label-lg bg-primary text-on-primary shadow-sm hover:opacity-90 transition-opacity"
+              >
+                Save Partially
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* KPI Help Modal */}
       {showKpiHelp && (
