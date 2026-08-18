@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -484,13 +484,34 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   };
 
   const formatDisplayValue = () => {
+    if (val === null || val === undefined) return '—';
     if (habit.scoringType === 'time') return formatTime(val);
     if (habit.scoringType === 'binary') {
-      if (val === null) return '—';
       return val === 1 ? 'Yes' : 'No';
     }
     if (habit.scoringType === 'subjective') return `${val}/10`;
-    return `${val} ${habit.unit || ''}`.trim();
+    
+    if (habit.scoringType === 'duration') {
+      const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
+      let hrs = 0;
+      let mins = 0;
+      if (isBaseHours) {
+        hrs = Math.floor(val);
+        mins = Math.round((val - hrs) * 60);
+      } else {
+        hrs = Math.floor(val / 60);
+        mins = Math.round(val % 60);
+      }
+      let parts = [];
+      if (hrs > 0) parts.push(`${hrs} hour${hrs > 1 ? 's' : ''}`);
+      if (mins > 0) parts.push(`${mins} minute${mins > 1 ? 's' : ''}`);
+      if (parts.length === 0) return '0 minutes';
+      return parts.join(' ');
+    }
+    
+    // Fallback for number and other types
+    const unit = habit.unit || habit.defaultUnit || '';
+    return `${val} ${unit}`.trim();
   };
 
   if (habit.scoringType === 'binary') {
