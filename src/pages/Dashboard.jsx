@@ -8,6 +8,7 @@ import { useData } from '../contexts/DataContext';
 import HabitCard from '../components/HabitCard';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
+import StreakWidget from '../components/StreakWidget';
 
 const getPerfColor = (score) => {
   if (score === null || score === undefined || score === 0) return 'var(--color-outline-variant)';
@@ -385,6 +386,11 @@ export default function Dashboard() {
           <p className="font-body-md text-body-md text-on-surface-variant">
             {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
           </p>
+        </div>
+        
+        {/* Streak Widget placed in top right */}
+        <div className="flex-shrink-0 self-start md:self-center ml-auto">
+          <StreakWidget chartData={chartData} />
         </div>
         
         {/* KPI Cards (2 Pills) */}
