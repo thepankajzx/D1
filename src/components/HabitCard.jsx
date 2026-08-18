@@ -472,7 +472,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           </div>
           
           {/* Right: Inline Input */}
-          <div className="shrink-0 w-[110px]" onClick={(e) => e.stopPropagation()}>
+          <div className="shrink-0 w-[140px]" onClick={(e) => e.stopPropagation()}>
             {renderInput()}
           </div>
         </div>
