@@ -453,7 +453,11 @@ export default function Dashboard() {
 
       {/* Bento Grid Main Content */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-        {habits.map((habit, index) => {
+        {[...habits].sort((a, b) => {
+          if (a.scoringType === 'binary' && b.scoringType !== 'binary') return -1;
+          if (a.scoringType !== 'binary' && b.scoringType === 'binary') return 1;
+          return 0;
+        }).map((habit, index) => {
           // Wider first item
           const spanClass = index === 0 ? "col-span-1 md:col-span-2 lg:col-span-2" : "col-span-1";
           const entry = entries.find(e => e.habitId === habit.id);
