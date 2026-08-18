@@ -366,8 +366,8 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-12 w-full pb-24">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col md:flex-row gap-6 mb-6">
+        <div className="flex flex-col gap-2 flex-grow">
           <div className="flex items-center gap-4 mb-1 relative">
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
               <input 
@@ -382,33 +382,14 @@ export default function Dashboard() {
               <Icon name="calendar_today" className=" text-sm text-on-surface-variant" />
             </div>
           </div>
-          <h1 className="text-[32px] sm:text-[40px] font-black text-on-surface leading-tight mt-3 tracking-tight">Daily Review</h1>
-          <p className="text-[15px] font-medium text-on-surface-variant">
-            <span className="text-[#6d28d9] font-bold">{dailySummary?.habitsCompleted || 0}</span> of <span className="text-[#6d28d9] font-bold">{habits.length}</span> habits completed today.
+          <h1 className="font-headline-lg text-headline-lg text-primary mt-2">Daily Review</h1>
+          <p className="font-body-md text-body-md text-on-surface-variant">
+            {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
           </p>
         </div>
         
-        {/* Streak Widget & Today's Score */}
-        <div className="flex items-center gap-5 shrink-0 mt-4 md:mt-0">
-          <StreakWidget allSummaries={allSummaries} />
-          
-          <div className="flex flex-col justify-center">
-            <span className="text-[13px] font-bold text-on-surface-variant mb-1">Today's Score</span>
-            <span className="text-[36px] font-black leading-none mb-1 tracking-tight" style={{ color: '#6d28d9' }}>{dailySummary?.overallScore || 0}%</span>
-            {(() => {
-                const score = dailySummary?.overallScore;
-                if (score === null || score === undefined) return <span className="text-[13px] font-semibold text-on-surface-variant">Let's get started! 🚀</span>;
-                if (score >= 80) return <span className="text-[13px] font-semibold text-[#16a34a]">Keep it up! 🔥</span>;
-                if (score >= 50) return <span className="text-[13px] font-semibold text-yellow-500">Doing good! 👍</span>;
-                if (score > 0) return <span className="text-[13px] font-semibold text-orange-500">Keep pushing! 💪</span>;
-                return <span className="text-[13px] font-semibold text-red-500">Needs work! 😕</span>;
-            })()}
-          </div>
-        </div>
-      </div>
-        
-      {/* KPI Cards (2 Pills) */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full mb-8">
+        {/* KPI Cards (2 Pills) */}
+        <div className="flex flex-row gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
           
           {/* Weakest Habit Pill */}
           <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
@@ -471,6 +452,7 @@ export default function Dashboard() {
           </div>
           
         </div>
+      </div>
 
       {/* Bento Grid Main Content */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
