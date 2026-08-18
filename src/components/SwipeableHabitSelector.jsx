@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
+import HabitIcon from './HabitIcon';
 
 export default function SwipeableHabitSelector({ habits, selectedHabitId, onChange }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -137,24 +138,13 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
         className="relative w-full h-[36px] bg-surface-container-lowest text-on-surface border border-outline-variant/40 rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer select-none overflow-hidden group hover:bg-surface-container transition-colors"
       >
         <div 
-          className="absolute inset-0 flex items-center px-3 gap-2 transition-transform duration-200 ease-out"
+          className="absolute inset-0 flex items-center px-3 gap-3 transition-transform duration-200 ease-out"
           style={{ transform: `translateY(${visualOffset}px)` }}
         >
-          <div className="shrink-0 flex items-center justify-center w-[16px]">
-            {selectedOpt.id === 'overall' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant group-hover:text-on-surface transition-colors">
-                <rect width="7" height="7" x="3" y="3" rx="1"/>
-                <rect width="7" height="7" x="14" y="3" rx="1"/>
-                <rect width="7" height="7" x="14" y="14" rx="1"/>
-                <rect width="7" height="7" x="3" y="14" rx="1"/>
-              </svg>
-            ) : (
-              <Icon name={selectedOpt.icon || 'star'} className="text-[16px] text-on-surface-variant" />
-            )}
-          </div>
+          <HabitIcon name={selectedOpt.icon || 'star'} habitId={selectedOpt.id} boxed={true} size={18} className="!rounded-[8px]" />
           <span className="font-semibold text-[13px] truncate flex-1 leading-none">{selectedOpt.name}</span>
           
-          <Icon name="unfold_more" className="text-[14px] text-on-surface-variant opacity-50 ml-auto" />
+          <Icon name="unfold_more" className="text-[16px] text-on-surface-variant opacity-50 ml-auto" />
         </div>
       </div>
       
@@ -172,7 +162,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                 <button
                   key={opt.id}
                   data-selected={isSelected}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[13px] font-semibold transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] font-semibold transition-colors ${
                     isSelected 
                       ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
                       : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
@@ -183,18 +173,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                     setIsDropdownOpen(false);
                   }}
                 >
-                  <div className="shrink-0 flex items-center justify-center w-[16px]">
-                    {opt.id === 'overall' ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isSelected ? 'text-on-surface' : 'text-on-surface-variant'}>
-                        <rect width="7" height="7" x="3" y="3" rx="1"/>
-                        <rect width="7" height="7" x="14" y="3" rx="1"/>
-                        <rect width="7" height="7" x="14" y="14" rx="1"/>
-                        <rect width="7" height="7" x="3" y="14" rx="1"/>
-                      </svg>
-                    ) : (
-                      <Icon name={opt.icon || 'star'} className={`text-[16px] ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`} />
-                    )}
-                  </div>
+                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={18} className="!rounded-[8px]" />
                   <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
                   {isSelected && (
                     <Icon name="check" className="text-[16px] ml-auto" />

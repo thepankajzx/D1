@@ -7,6 +7,7 @@ import { useData } from '../contexts/DataContext';
 import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
+import HabitIcon from '../components/HabitIcon';
 import ScoringModal from '../components/ScoringModal';
 import ProModal from '../components/ProModal';
 import './AdvancedHabitSelector.css';
@@ -850,8 +851,8 @@ export default function AdvancedHabitSelector() {
                           className={`ahs-habit-card ${isSelected ? 'selected' : ''}`} 
                           onClick={() => toggleHabit(habit)}
                         >
-                            <div className="ahs-hc-top">
-                                <div className={`ahs-hc-icon ${bgClass}`}><Icon name={habit.icon} /></div>
+                            <div className="ahs-hc-header">
+                                <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={28} className="mb-2" />
                                 <div className="ahs-card-actions">
                                     <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); openScoringModalForHabit(habit); }}>
                                       <Icon name="help_outline" className="text-[12px]" /> Scoring
@@ -953,8 +954,8 @@ export default function AdvancedHabitSelector() {
                     return `${hStr.toString().padStart(2, '0')}:${mStr.toString().padStart(2, '0')}`;
                 };
                 return (
-                <div key={h.id} className="ahs-summary-item">
-                    <div className="ahs-hc-icon bg-gray-900 text-white"><Icon name={h.icon || 'star'} /></div>
+                <div key={h.id} className="ahs-summary-item flex items-center gap-4">
+                    <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={20} />
                     <div className="ahs-si-details">
                         <div className="ahs-si-title">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
                         <div className="ahs-si-target">

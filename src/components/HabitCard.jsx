@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
+import HabitIcon from '../components/HabitIcon';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -485,9 +486,12 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
       <div className="bg-surface premium-border rounded-xl p-6 flex flex-col gap-6 w-full">
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">
-              {habit.name}
-            </span>
+            <div className="flex items-center gap-3 mb-2">
+              <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[8px]" />
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+                {habit.name}
+              </span>
+            </div>
             <span className="font-headline-md text-headline-md text-primary">
               {formatDisplayValue()}
             </span>
