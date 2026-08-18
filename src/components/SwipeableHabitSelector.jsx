@@ -75,6 +75,19 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     setIsActive(false);
   };
 
+  // Map mouse events to touch handlers for desktop support
+  const handleMouseDown = (e) => {
+    handleTouchStart({ touches: [{ clientY: e.clientY }] });
+  };
+  const handleMouseMove = (e) => {
+    if (isDragging.current) {
+      handleTouchMove({ preventDefault: () => e.preventDefault(), touches: [{ clientY: e.clientY }] });
+    }
+  };
+  const handleMouseUp = (e) => {
+    handleTouchEnd(e);
+  };
+
   const scrollTimeout = useRef(null);
 
   // Support wheel for desktop testing (also made very sensitive)
