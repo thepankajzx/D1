@@ -155,15 +155,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
-  
-  // Toggle state for duration habits
-  const [displayMode, setDisplayMode] = useState(
-    habit.scoringType === 'duration' 
-      ? (habit.unit?.toLowerCase().startsWith('h') ? 'hours' : 'minutes') 
-      : 'default'
-  );
-
-  const getMultiplier = () => {
+const getMultiplier = () => {
     if (habit.scoringType !== 'duration') return 1;
     const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
     if (isBaseHours && displayMode === 'minutes') return 60;
@@ -306,7 +298,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
       case 'number':
       case 'duration':
       default:
-        const mult = getMultiplier();
+        const mult = 1;
         const dVal = val * mult;
         const dTarget100 = (habit.target100 || 0) * mult;
         const dTarget0 = (habit.target0 || 0) * mult;
@@ -348,7 +340,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           }
         };
 
-        const currentDisplayUnit = habit.scoringType === 'duration' ? (displayMode === 'hours' ? 'hrs' : 'mins') : habit.unit;
+        const currentDisplayUnit = habit.unit;
         
         return (
           <div className="flex flex-col w-full mt-3">
@@ -411,9 +403,75 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 {Math.round(dTarget100)}
               </span>
 
-              {/* Manual Input */}
-              {showManualInput && (
-                <div className="relative flex items-center shrink-0 ml-1">
+                            {showManualInput && (
+                <div className="relative flex items-center shrink-0 ml-1 gap-1">
+                  {habit.scoringType === 'duration' ? (() => {
+                    const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
+                    let hrs = 0;
+                    let mins = 0;
+                    if (isBaseHours) {
+                      hrs = Math.floor(val);
+                      mins = Math.round((val - hrs) * 60);
+                    } else {
+                      hrs = Math.floor(val / 60);
+                      mins = Math.round(val % 60);
+                    }
+                    return (
+                      <>
+                        <input
+                          type="number"
+                          aria-label="Hours"
+                          min="0"
+                          value={hrs === 0 && mins === 0 ? '' : hrs}
+                          placeholder="hr"
+                          onChange={(e) => {
+                            const newHrs = Number(e.target.value) || 0;
+                            if (isBaseHours) {
+                              setVal(newHrs + (mins / 60));
+                            } else {
+                              setVal((newHrs * 60) + mins);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const newHrs = Number(e.target.value) || 0;
+                            if (isBaseHours) {
+                              handleChange(newHrs + (mins / 60));
+                            } else {
+                              handleChange((newHrs * 60) + mins);
+                            }
+                          }}
+                          className="w-10 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-1 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
+                        />
+                        <span className="text-[10px] text-on-surface-variant font-medium">h</span>
+                        <input
+                          type="number"
+                          aria-label="Minutes"
+                          min="0"
+                          max="59"
+                          value={hrs === 0 && mins === 0 ? '' : mins}
+                          placeholder="min"
+                          onChange={(e) => {
+                            const newMins = Number(e.target.value) || 0;
+                            if (isBaseHours) {
+                              setVal(hrs + (newMins / 60));
+                            } else {
+                              setVal((hrs * 60) + newMins);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const newMins = Number(e.target.value) || 0;
+                            if (isBaseHours) {
+                              handleChange(hrs + (newMins / 60));
+                            } else {
+                              handleChange((hrs * 60) + newMins);
+                            }
+                          }}
+                          className="w-10 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-1 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
+                        />
+                        <span className="text-[10px] text-on-surface-variant font-medium">m</span>
+                      </>
+                    );
+                  })() : (
                     <input
                       type="number"
                       aria-label={`Target value for ${habit.name}`}
@@ -430,6 +488,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                       }}
                       className="w-16 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-2 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
                     />
+                  )}
                 </div>
               )}
             </div>
@@ -460,10 +519,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   if (habit.scoringType === 'binary') {
     return (
       <>
-        <div 
-          onClick={() => setShowDetail(true)}
-          className="bg-surface premium-border rounded-[16px] p-3 flex flex-row items-center justify-between gap-3 w-full cursor-pointer hover:bg-surface-variant/30 transition-colors"
-        >
+        <div className="bg-surface premium-border rounded-[16px] p-3 flex flex-row items-center justify-between gap-3 w-full">
           {/* Left: Icon and Title */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[12px] shrink-0" />
@@ -556,4 +612,5 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     </>
   );
 }
+
 
