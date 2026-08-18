@@ -88,6 +88,7 @@ export default function Analytics() {
   const [selectedHabit, setSelectedHabit] = useState(() => searchParams.get('habit') || 'overall'); // 'overall' or habit ID
   const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
   const [viewMode, setViewMode] = useState('charts'); // 'charts' or 'heatmap'
+  const [isChartDropdownOpen, setIsChartDropdownOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
   
   // Heatmap State
@@ -511,22 +512,54 @@ export default function Analytics() {
 
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
-      {/* 1. Header Controls Row 1: Toggle & Date */}
-      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1">
-        {/* Chart/Heatmap Toggle */}
-        <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[150px] h-[36px]">
+      {/* 1. Header Controls Row 1: 3-column Layout */}
+      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1 relative">
+        {/* Left: Chart/Heatmap Toggle Dropdown */}
+        <div className="relative shrink-0">
           <button 
-            onClick={() => setViewMode('charts')}
-            className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+            onClick={() => setIsChartDropdownOpen(!isChartDropdownOpen)}
+            className="flex items-center justify-center w-[40px] h-[36px] rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-sm text-on-surface hover:bg-surface-container transition-colors"
           >
-            Chart
+            <Icon name={viewMode === 'charts' ? 'show_chart' : 'grid_on'} className="text-[18px]" />
           </button>
-          <button 
-            onClick={() => setViewMode('heatmap')}
-            className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
-          >
-            Heatmap
-          </button>
+          
+          {isChartDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setIsChartDropdownOpen(false)}></div>
+              <div className="absolute top-[calc(100%+8px)] left-0 bg-surface/95 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[12px] p-1.5 z-50 flex flex-col min-w-[130px] animate-in fade-in zoom-in-95 duration-200">
+                <button 
+                  onClick={() => { setViewMode('charts'); setIsChartDropdownOpen(false); }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-colors ${viewMode === 'charts' ? 'bg-primary/10 text-primary' : 'text-on-surface hover:bg-surface-variant'}`}
+                >
+                  <Icon name="show_chart" className="text-[18px]" />
+                  Chart
+                </button>
+                <button 
+                  onClick={() => { setViewMode('heatmap'); setIsChartDropdownOpen(false); }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-colors ${viewMode === 'heatmap' ? 'bg-primary/10 text-primary' : 'text-on-surface hover:bg-surface-variant'}`}
+                >
+                  <Icon name="grid_on" className="text-[18px]" />
+                  Heatmap
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Center: Habit Selector Dropdown (Swipeable) */}
+        <div className="flex-1 flex justify-center">
+          <SwipeableHabitSelector 
+            habits={habits} 
+            selectedHabitId={selectedHabit} 
+            onChange={(id) => {
+              setSelectedHabit(id);
+              setSearchParams(prev => {
+                const p = new URLSearchParams(prev);
+                p.set('habit', id);
+                return p;
+              });
+            }} 
+          />
         </div>
         
         {/* Timeframe Selector Dropdown */}
@@ -729,7 +762,7 @@ export default function Analytics() {
         {/* Habit Streak Timeline */}
         {!isFutureOnly && summaries.length > 0 && (
           <div className="flex flex-col gap-1 w-full mt-4">
-            <span className="text-[14px] font-bold text-on-surface px-2 sm:px-5">Streak</span>
+            <span className="text-[18px] font-black text-on-surface px-2 sm:px-5">Streak</span>
             <HabitStreakTimeline 
               habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
               summaries={summaries}
