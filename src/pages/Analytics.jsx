@@ -584,16 +584,16 @@ export default function Analytics() {
         {/* Chart/Heatmap Toggle & Habit Selector Row */}
         <div className="flex items-center justify-between gap-4 w-full">
           {/* Chart/Heatmap Toggle */}
-          <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0">
+          <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[150px] h-[36px]">
             <button 
               onClick={() => setViewMode('charts')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+              className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
             >
               Chart
             </button>
             <button 
               onClick={() => setViewMode('heatmap')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/30' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+              className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
             >
               Heatmap
             </button>
