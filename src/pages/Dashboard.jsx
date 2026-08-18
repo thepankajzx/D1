@@ -58,7 +58,7 @@ export default function Dashboard() {
     
     const habitStats = {};
     habits.forEach(h => {
-        // Skip subjective habits — they don't have a meaningful percentage score
+        // Skip subjective habits â€” they don't have a meaningful percentage score
         if (h.scoringType === 'subjective') return;
         habitStats[h.id] = { total: 0, count: 0, name: h.name };
     });
@@ -451,30 +451,47 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bento Grid Main Content */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-        {[...habits].sort((a, b) => {
-          if (a.scoringType === 'binary' && b.scoringType !== 'binary') return -1;
-          if (a.scoringType !== 'binary' && b.scoringType === 'binary') return 1;
-          return 0;
-        }).map((habit, index) => {
-          // Wider first item
-          const spanClass = index === 0 ? "col-span-1 md:col-span-2 lg:col-span-2" : "col-span-1";
-          const entry = entries.find(e => e.habitId === habit.id);
-          
-          return (
-            <div key={`${habit.id}-${selectedDate}`} className={spanClass}>
-                <HabitCard 
-                  habit={habit} 
-                  entry={entry} 
-                  onUpdate={handleEntryUpdate}
-                  allSummaries={allSummaries}
-                />
-            </div>
-          );
-        })}
+      {/* Grouped Grid Main Content */}
+      <div className="flex flex-col gap-8 relative">
         
-      </section>
+        {/* Binary Habits Section */}
+        {habits.filter(h => h.scoringType === 'binary').length > 0 && (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {habits.filter(h => h.scoringType === 'binary').map((habit) => {
+              const entry = entries.find(e => e.habitId === habit.id);
+              return (
+                <div key={`${habit.id}-${selectedDate}`} className="col-span-1">
+                    <HabitCard 
+                      habit={habit} 
+                      entry={entry} 
+                      onUpdate={handleEntryUpdate}
+                      allSummaries={allSummaries}
+                    />
+                </div>
+              );
+            })}
+          </section>
+        )}
+
+        {/* Other Habits Section */}
+        {habits.filter(h => h.scoringType !== 'binary').length > 0 && (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {habits.filter(h => h.scoringType !== 'binary').map((habit) => {
+              const entry = entries.find(e => e.habitId === habit.id);
+              return (
+                <div key={`${habit.id}-${selectedDate}`} className="col-span-1">
+                    <HabitCard 
+                      habit={habit} 
+                      entry={entry} 
+                      onUpdate={handleEntryUpdate}
+                      allSummaries={allSummaries}
+                    />
+                </div>
+              );
+            })}
+          </section>
+        )}
+      </div>
       
       {/* Static Submit Button at Bottom */}
       <div className="mt-8 flex flex-col items-center justify-center w-full gap-4">
@@ -595,3 +612,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
