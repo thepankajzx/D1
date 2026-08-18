@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
 import HabitIcon from './HabitIcon';
+import WheelPicker from './WheelPicker';
 
 export default function SwipeableHabitSelector({ habits, selectedHabitId, onChange }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -151,36 +152,20 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
       {/* Glassmorphism Dropdown Menu */}
       {isDropdownOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
           <div 
-            ref={dropdownRef}
-            className="absolute top-[calc(100%+8px)] right-0 w-[220px] max-h-[300px] overflow-y-auto bg-surface/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-outline-variant/30 rounded-[16px] p-2 z-50 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right"
-          >
-            {options.map((opt) => {
-              const isSelected = opt.id === selectedHabitId;
-              return (
-                <button
-                  key={opt.id}
-                  data-selected={isSelected}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] font-semibold transition-colors ${
-                    isSelected 
-                      ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
-                      : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
-                  }`}
-                  onClick={() => {
-                    onChange(opt.id);
-                    triggerVibration();
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={18} className="!rounded-[8px]" />
-                  <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
-                  {isSelected && (
-                    <Icon name="check" className="text-[16px] ml-auto" />
-                  )}
-                </button>
-              );
-            })}
+            className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[2px] transition-opacity"
+            onClick={() => setIsDropdownOpen(false)}
+          />
+          <div className="absolute right-0 top-full mt-2 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+            <WheelPicker 
+              items={options}
+              selectedValue={selectedHabitId}
+              onChange={(id) => {
+                 onChange(id);
+                 triggerVibration();
+              }}
+              onClose={() => setIsDropdownOpen(false)}
+            />
           </div>
         </>
       )}
