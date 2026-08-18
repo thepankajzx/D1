@@ -119,50 +119,55 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div className="relative shrink-0 flex-1 max-w-[160px] z-30">
+    <div 
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onClick={handleClick}
+      className="relative shrink-0 flex-1 max-w-[160px] h-[36px] z-30 cursor-pointer"
+    >
       <div 
-        ref={containerRef}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onClick={handleClick}
-        className="relative w-full h-[36px] bg-surface-container-lowest text-on-surface border border-outline-variant/40 rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer select-none overflow-hidden group hover:bg-surface-container transition-colors"
-      >
-      <div 
-        className="absolute w-full flex flex-col transition-transform duration-200 ease-out"
-        style={{ 
-          transform: `translateY(calc(-${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
+        className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none"
+        style={{
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
         }}
       >
-        {options.map((opt, i) => {
-          const isSelected = i === safeCurrentIndex;
-          return (
-            <div 
-              key={opt.id} 
-              className={`flex items-center h-[36px] px-3 gap-2 w-full ${isSelected ? 'opacity-100' : 'opacity-40'} transition-opacity duration-200`}
-            >
-              <div className="shrink-0 flex items-center justify-center w-[16px]">
-                {opt.id === 'overall' ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant group-hover:text-on-surface transition-colors">
-                    <rect width="7" height="7" x="3" y="3" rx="1"/>
-                    <rect width="7" height="7" x="14" y="3" rx="1"/>
-                    <rect width="7" height="7" x="14" y="14" rx="1"/>
-                    <rect width="7" height="7" x="3" y="14" rx="1"/>
-                  </svg>
-                ) : (
-                  <Icon name={opt.icon || 'star'} className="text-[16px] text-on-surface-variant" />
-                )}
+        <div 
+          className="absolute w-full flex flex-col transition-transform duration-200 ease-out"
+          style={{ 
+            transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
+          }}
+        >
+          {options.map((opt, i) => {
+            const isSelected = i === safeCurrentIndex;
+            return (
+              <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
+                <div 
+                  className={`flex items-center h-full px-3 gap-2 w-full rounded-[8px] transition-all duration-200 border ${
+                    isSelected 
+                      ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-sm opacity-100 scale-100' 
+                      : 'bg-surface-container/60 backdrop-blur-md text-on-surface-variant border-transparent opacity-50 scale-95'
+                  }`}
+                >
+                  <div className="shrink-0 flex items-center justify-center w-[16px]">
+                    {opt.id === 'overall' ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`${isSelected ? 'text-on-surface' : 'text-on-surface-variant'} transition-colors`}>
+                        <rect width="7" height="7" x="3" y="3" rx="1"/>
+                        <rect width="7" height="7" x="14" y="3" rx="1"/>
+                        <rect width="7" height="7" x="14" y="14" rx="1"/>
+                        <rect width="7" height="7" x="3" y="14" rx="1"/>
+                      </svg>
+                    ) : (
+                      <Icon name={opt.icon || 'star'} className={`text-[16px] ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`} />
+                    )}
+                  </div>
+                  <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
+                </div>
               </div>
-              <span className="font-semibold text-[13px] truncate flex-1 leading-none">{opt.name}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Up/Down Arrow Hint */}
-      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none opacity-50">
-        <Icon name="keyboard_arrow_up" className="text-[10px] -mb-1" />
-        <Icon name="keyboard_arrow_down" className="text-[10px]" />
-      </div>
+            );
+          })}
+        </div>
       </div>
       
       {/* Dropdown Menu */}
