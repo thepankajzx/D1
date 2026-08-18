@@ -120,7 +120,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div className="relative flex-1 min-w-[90px] max-w-[150px] h-[36px] z-30 shrink">
+    <div className="relative w-full min-w-[110px] max-w-[170px] h-[36px] z-30 shrink">
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
