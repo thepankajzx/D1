@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
 
 export default function SwipeableHabitSelector({ habits, selectedHabitId, onChange }) {
-  const [dragOffset, setDragOffset] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [visualOffset, setVisualOffset] = useState(0); // For initial nudge animation
   const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
   
   // Combine 'overall' and habits
   const options = [
@@ -18,12 +19,11 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const dragStartY = useRef(null);
   const isDragging = useRef(false);
   const hasDragged = useRef(false);
-  const itemHeight = 36; // approximate height of one item in px
-  const threshold = 40; // firm threshold to trigger a change
+  const sensitivity = 25; // How many pixels of drag = 1 step change. Lower is faster!
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50); // Strong, short haptic feedback
+      navigator.vibrate(50); // Strong haptic feedback
     }
   };
 
@@ -31,6 +31,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     dragStartY.current = e.touches[0].clientY;
     isDragging.current = true;
     hasDragged.current = false;
+    setIsDropdownOpen(true); // Show dropdown instantly on touch
   };
 
   const handleTouchMove = (e) => {
@@ -47,24 +48,19 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     if (Math.abs(deltaY) > 5) {
       hasDragged.current = true;
     }
-    
-    // Limit visually how far it drags (optional, makes it feel tight)
-    setDragOffset(deltaY * 0.5);
 
-    if (Math.abs(deltaY) > threshold) {
-      // Swiped far enough
+    if (Math.abs(deltaY) > sensitivity) {
+      // Swiped far enough for a step
       if (deltaY < 0 && safeCurrentIndex < options.length - 1) {
         // Swipe UP -> Next item
         onChange(options[safeCurrentIndex + 1].id);
         triggerVibration();
-        dragStartY.current = currentY; // Reset anchor for continuous scrolling
-        setDragOffset(0);
+        dragStartY.current = currentY; // Reset anchor
       } else if (deltaY > 0 && safeCurrentIndex > 0) {
         // Swipe DOWN -> Prev item
         onChange(options[safeCurrentIndex - 1].id);
         triggerVibration();
         dragStartY.current = currentY; // Reset anchor
-        setDragOffset(0);
       }
     }
   };
@@ -72,11 +68,12 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const handleTouchEnd = () => {
     isDragging.current = false;
     dragStartY.current = null;
-    setDragOffset(0);
-    // hasDragged is deliberately not reset here so onClick can read it
+    if (hasDragged.current) {
+      // If they were actively dragging, close it when they lift finger
+      setTimeout(() => setIsDropdownOpen(false), 150);
+    }
   };
 
-  // Support wheel for desktop testing
   const handleWheel = (e) => {
     e.preventDefault();
     if (e.deltaY > 0 && safeCurrentIndex < options.length - 1) {
@@ -89,14 +86,13 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   useEffect(() => {
-    // Nudge animation on mount to hint at swipeability
-    const timeout1 = setTimeout(() => setDragOffset(-20), 600);
-    const timeout2 = setTimeout(() => setDragOffset(15), 900);
-    const timeout3 = setTimeout(() => setDragOffset(0), 1200);
+    // Initial Nudge Animation to show it's scrollable
+    const timeout1 = setTimeout(() => setVisualOffset(-15), 600);
+    const timeout2 = setTimeout(() => setVisualOffset(10), 900);
+    const timeout3 = setTimeout(() => setVisualOffset(0), 1200);
     
     const el = containerRef.current;
     if (el) {
-      // Passive false to allow preventDefault
       el.addEventListener('touchmove', handleTouchMove, { passive: false });
       el.addEventListener('wheel', handleWheel, { passive: false });
     }
@@ -109,7 +105,17 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
         el.removeEventListener('wheel', handleWheel);
       }
     };
-  }, [safeCurrentIndex, options.length]); // Re-bind when index changes so closures have fresh data
+  }, [safeCurrentIndex, options.length]);
+
+  // Scroll active item into view inside dropdown
+  useEffect(() => {
+    if (isDropdownOpen && dropdownRef.current) {
+      const activeEl = dropdownRef.current.querySelector('[data-selected="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [isDropdownOpen, safeCurrentIndex]);
 
   const handleClick = () => {
     if (!hasDragged.current) {
@@ -118,41 +124,68 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     }
   };
 
+  const selectedOpt = options[safeCurrentIndex];
+
   return (
-    <div 
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onClick={handleClick}
-      className="relative shrink-0 flex-1 max-w-[160px] h-[36px] z-30 cursor-pointer"
-    >
+    <div className="relative shrink-0 flex-1 max-w-[160px] z-30">
+      {/* Main Pill Button */}
       <div 
-        className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none"
-        style={{
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
-        }}
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleClick}
+        className="relative w-full h-[36px] bg-surface-container-lowest text-on-surface border border-outline-variant/40 rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer select-none overflow-hidden group hover:bg-surface-container transition-colors"
       >
         <div 
-          className="absolute w-full flex flex-col transition-transform duration-200 ease-out"
-          style={{ 
-            transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
-          }}
+          className="absolute inset-0 flex items-center px-3 gap-2 transition-transform duration-200 ease-out"
+          style={{ transform: `translateY(${visualOffset}px)` }}
         >
-          {options.map((opt, i) => {
-            const isSelected = i === safeCurrentIndex;
-            return (
-              <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
-                <div 
-                  className={`flex items-center h-full px-3 gap-2 w-full rounded-[8px] transition-all duration-200 border ${
+          <div className="shrink-0 flex items-center justify-center w-[16px]">
+            {selectedOpt.id === 'overall' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant group-hover:text-on-surface transition-colors">
+                <rect width="7" height="7" x="3" y="3" rx="1"/>
+                <rect width="7" height="7" x="14" y="3" rx="1"/>
+                <rect width="7" height="7" x="14" y="14" rx="1"/>
+                <rect width="7" height="7" x="3" y="14" rx="1"/>
+              </svg>
+            ) : (
+              <Icon name={selectedOpt.icon || 'star'} className="text-[16px] text-on-surface-variant" />
+            )}
+          </div>
+          <span className="font-semibold text-[13px] truncate flex-1 leading-none">{selectedOpt.name}</span>
+          
+          <Icon name="unfold_more" className="text-[14px] text-on-surface-variant opacity-50 ml-auto" />
+        </div>
+      </div>
+      
+      {/* Glassmorphism Dropdown Menu */}
+      {isDropdownOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
+          <div 
+            ref={dropdownRef}
+            className="absolute top-[calc(100%+8px)] right-0 w-[220px] max-h-[300px] overflow-y-auto bg-surface/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-outline-variant/30 rounded-[16px] p-2 z-50 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right"
+          >
+            {options.map((opt) => {
+              const isSelected = opt.id === selectedHabitId;
+              return (
+                <button
+                  key={opt.id}
+                  data-selected={isSelected}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[13px] font-semibold transition-colors ${
                     isSelected 
-                      ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-sm opacity-100 scale-100' 
-                      : 'bg-surface-container/60 backdrop-blur-md text-on-surface-variant border-transparent opacity-50 scale-95'
+                      ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
+                      : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
                   }`}
+                  onClick={() => {
+                    onChange(opt.id);
+                    triggerVibration();
+                    setIsDropdownOpen(false);
+                  }}
                 >
                   <div className="shrink-0 flex items-center justify-center w-[16px]">
                     {opt.id === 'overall' ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`${isSelected ? 'text-on-surface' : 'text-on-surface-variant'} transition-colors`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isSelected ? 'text-on-surface' : 'text-on-surface-variant'}>
                         <rect width="7" height="7" x="3" y="3" rx="1"/>
                         <rect width="7" height="7" x="14" y="3" rx="1"/>
                         <rect width="7" height="7" x="14" y="14" rx="1"/>
@@ -162,49 +195,13 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                       <Icon name={opt.icon || 'star'} className={`text-[16px] ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`} />
                     )}
                   </div>
-                  <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      
-      {/* Dropdown Menu */}
-      {isDropdownOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
-          <div className="absolute top-[calc(100%+4px)] left-0 w-[200px] bg-surface border border-outline-variant/40 shadow-lg rounded-[12px] p-1 z-50 animate-in fade-in zoom-in-95 duration-200">
-            {options.map((opt) => (
-              <button
-                key={opt.id}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-colors ${
-                  opt.id === selectedHabitId ? 'bg-primary/10 text-primary' : 'text-on-surface hover:bg-surface-container'
-                }`}
-                onClick={() => {
-                  onChange(opt.id);
-                  triggerVibration();
-                  setIsDropdownOpen(false);
-                }}
-              >
-                <div className="shrink-0 flex items-center justify-center w-[16px]">
-                  {opt.id === 'overall' ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="7" height="7" x="3" y="3" rx="1"/>
-                      <rect width="7" height="7" x="14" y="3" rx="1"/>
-                      <rect width="7" height="7" x="14" y="14" rx="1"/>
-                      <rect width="7" height="7" x="3" y="14" rx="1"/>
-                    </svg>
-                  ) : (
-                    <Icon name={opt.icon || 'star'} className="text-[16px]" />
+                  <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
+                  {isSelected && (
+                    <Icon name="check" className="text-[16px] ml-auto" />
                   )}
-                </div>
-                <span className="truncate">{opt.name}</span>
-                {opt.id === selectedHabitId && (
-                  <Icon name="check" className="text-[16px] ml-auto" />
-                )}
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </>
       )}
