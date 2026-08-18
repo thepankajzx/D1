@@ -553,6 +553,11 @@ export default function Analytics() {
           <Icon name="calendar_today" className="text-on-surface-variant text-[14px] sm:text-[16px] shrink-0" />
           <select 
             value={rangeOption}
+            onClick={(e) => {
+              if (rangeOption === 'custom' && !isCustomDropdownOpen) {
+                setIsCustomDropdownOpen(true);
+              }
+            }}
             onChange={(e) => {
               const val = e.target.value;
               if (val === 'custom' && !userDoc?.isPro) {
