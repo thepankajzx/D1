@@ -69,7 +69,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
           {/* Title */}
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-headline-sm text-headline-sm text-on-surface">{habit.name}</h2>
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors">
+            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors">
               <Icon name="close" className="text-lg" />
             </button>
           </div>
@@ -119,10 +119,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
 
             {/* View Full Analytics */}
             <button
-              onClick={() => {
-                onClose();
-                navigate(`/analytics?habit=${habit.id}`);
-              }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
               className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               <Icon name="bar_chart" className="text-base" />
@@ -134,7 +131,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
             <Icon name="bar_chart" className="text-4xl mb-2 opacity-40" />
             <p className="text-sm">No data logged yet for this habit.</p>
             <button
-              onClick={() => { onClose(); navigate(`/analytics?habit=${habit.id}`); }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
               className="mt-4 w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               <Icon name="bar_chart" className="text-base" />
@@ -358,13 +355,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 <div className="flex bg-surface-container-high rounded-full p-[2px] border border-outline-variant/20">
                   <button 
                     className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); }}
+                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); setDisplayMode('hours'); }}
                   >
                     HR
                   </button>
                   <button 
                     className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); }}
+                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); setDisplayMode('minutes'); }}
                   >
                     MIN
                   </button>
@@ -512,14 +509,14 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           {/* Right side: Detail & Edit buttons */}
           <div className="flex items-center gap-1.5 shrink-0 pl-2">
             <button
-              onClick={() => setShowDetail(true)}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setShowDetail(true); }}
               className="w-8 h-8 flex items-center justify-center rounded-[8px] border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors"
               title="View details"
             >
               <Icon name="bar_chart" className="text-[16px]" />
             </button>
             <button
-              onClick={() => setShowManualInput(!showManualInput)}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setShowManualInput(!showManualInput); }}
               className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
               title="Manual Entry"
             >
