@@ -179,12 +179,13 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                       ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
                       : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
                   }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  onClick={() => {
                     onChange(opt.id);
                     triggerVibration();
-                    setIsDropdownOpen(false);
+                    // Close immediately, wrapped in timeout to ensure router state change doesn't interrupt it
+                    setTimeout(() => {
+                      setIsDropdownOpen(false);
+                    }, 0);
                   }}
                 >
                   <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
