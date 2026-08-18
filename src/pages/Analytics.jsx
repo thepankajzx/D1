@@ -725,15 +725,18 @@ export default function Analytics() {
                               <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
                               <div className="grid-heatmap" style={{ gap: '4px', height: '164px' }}>
                                 {monthData.cells.map((cell, i) => (
-                                  <div 
-                                    key={i} 
-                                    onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
-                                    className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
-                                  >
-                                    {(!cell.isPad && cell.score !== null && showPercentages) && (
-                                      <span className={`text-[9.5px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
-                                    )}
-                                  </div>
+                                    <div 
+                                      key={i} 
+                                      onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
+                                      className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                                    >
+                                      {(!cell.isPad && cell.score !== null && showPercentages) && (
+                                        <span className={`text-[9.5px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
+                                      )}
+                                      {(!cell.isPad && cell.score === null) && (
+                                        <div className="w-[6px] h-[6px] rounded-full bg-black/60 shadow-inner"></div>
+                                      )}
+                                    </div>
                                 ))}
                               </div>
                             </div>
@@ -917,8 +920,8 @@ export default function Analytics() {
                       <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
                         <Icon name="block" className="text-[28px] text-on-surface-variant/40" />
                       </div>
-                      <p className="text-on-surface font-semibold text-[16px]">No Activity Tracked</p>
-                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't track any habits on this day.</p>
+                      <p className="text-on-surface font-semibold text-[16px]">No Data Filled</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't fill any data here.</p>
                     </div>
                   );
                 }
@@ -932,8 +935,8 @@ export default function Analytics() {
                       <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
                         <Icon name="block" className="text-[28px] text-on-surface-variant/40" />
                       </div>
-                      <p className="text-on-surface font-semibold text-[16px]">No Activity Tracked</p>
-                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't track this habit on this day.</p>
+                      <p className="text-on-surface font-semibold text-[16px]">No Data Filled</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't fill any data here.</p>
                     </div>
                   );
                 }

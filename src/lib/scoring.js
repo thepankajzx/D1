@@ -63,7 +63,7 @@ export function calculateDailySummary(habits, entries, priorityModeEnabled) {
     }
   }
 
-  const overallScore = scoredHabitsTotal > 0 ? Math.round(scoreSum / scoredHabitsTotal) : 0;
+  const overallScore = scoredHabitsTotal > 0 ? Math.round(scoreSum / scoredHabitsTotal) : null;
 
   return {
     overallScore,

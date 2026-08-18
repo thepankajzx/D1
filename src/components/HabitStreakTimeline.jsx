@@ -138,13 +138,16 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
                             className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-10 transition-all shadow-sm"
                             style={{
                               backgroundColor: isCompleted ? color : '#ffffff',
-                              opacity: 1
+                              opacity: 1,
+                              border: isCompleted ? 'none' : '1px solid var(--color-outline-variant)'
                             }}
                           >
-                            {isCompleted && (
+                            {isCompleted ? (
                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                               </svg>
+                            ) : (
+                              <div className="w-[4px] h-[4px] rounded-full bg-black/30"></div>
                             )}
                           </div>
                         </div>
