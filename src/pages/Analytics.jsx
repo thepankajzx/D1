@@ -754,6 +754,7 @@ export default function Analytics() {
             <HabitStreakTimeline 
               habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
               summaries={summaries}
+              allSummaries={allSummaries}
               startDate={startDate}
               endDate={endDate}
             />

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import Icon from './Icon';
 
 // A predefined set of distinct colors for habits
@@ -18,7 +18,7 @@ function formatDateStr(date) {
   return `${year}-${month}-${day}`;
 }
 
-export default function HabitStreakTimeline({ habits, summaries, startDate, endDate }) {
+export default function HabitStreakTimeline({ habits, summaries, allSummaries, startDate, endDate }) {
   // Generate dates array between startDate and endDate
   const dates = useMemo(() => {
     const list = [];
@@ -39,6 +39,39 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
     return list;
   }, [startDate, endDate]);
 
+  const getHabitStreak = (habitId) => {
+    if (!allSummaries || !allSummaries.length) return 0;
+    const todayStr = formatDateStr(new Date());
+    let streak = 0;
+    
+    const getScore = (sum) => {
+      if (habitId === 'overall') return sum.overallScore;
+      return sum.habitScores?.[habitId];
+    };
+    
+    // Check if there's an entry for today
+    const todaySum = allSummaries.find(s => s.id === todayStr);
+    if (todaySum && getScore(todaySum) > 0) {
+      streak++;
+    }
+
+    let checkDate = new Date();
+    checkDate.setDate(checkDate.getDate() - 1);
+    let active = true;
+
+    while(active) {
+      const dateStr = formatDateStr(checkDate);
+      const sum = allSummaries.find(s => s.id === dateStr);
+      if (sum && getScore(sum) > 0) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        active = false;
+      }
+    }
+    return streak;
+  };
+
   if (!dates.length || !habits.length) return null;
 
   // Header texts
@@ -51,7 +84,7 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-2 shrink-0">
         <span className="text-on-surface text-[14px] font-bold tracking-tight">
-          {startStr} – {endStr}
+          {startStr} - {endStr}
         </span>
       </div>
 
@@ -61,8 +94,15 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
           
           {/* Days Header Row */}
           <div className="flex mb-3">
-            {/* Empty space for habit names sticky sidebar */}
-            <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-background"></div>
+            {/* Sticky sidebar header */}
+            <div className="w-[200px] shrink-0 sticky left-0 z-20 bg-background flex items-center pr-2">
+              <div className="flex-1"></div>
+              {/* Streak Icon Header */}
+              <div className="w-[40px] flex justify-center shrink-0">
+                <Icon name="bolt" className="text-[18px] text-amber-500" />
+              </div>
+              <div className="absolute right-[-12px] top-0 bottom-0 w-[12px] bg-gradient-to-r from-background to-transparent pointer-events-none"></div>
+            </div>
             
             {/* Days Columns */}
             <div className="flex gap-[6px]">
@@ -85,12 +125,13 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
           <div className="flex flex-col gap-[14px]">
             {habits.map((habit, hIdx) => {
               const color = HABIT_COLORS[hIdx % HABIT_COLORS.length];
+              const currentStreak = getHabitStreak(habit.id);
               
               return (
                 <div key={habit.id} className="flex items-center relative h-[32px]">
                   
                   {/* Sticky Sidebar: Habit Info */}
-                  <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-background flex items-center gap-2.5 pr-2">
+                  <div className="w-[200px] shrink-0 sticky left-0 z-20 bg-background flex items-center gap-2.5 pr-2">
                     <div 
                       className="w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 shadow-sm"
                       style={{ backgroundColor: `${color}15`, color: color }}
@@ -100,6 +141,16 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
                     <span className="text-[13px] font-bold text-on-surface truncate pr-2 leading-tight flex-1">
                       {habit.name}
                     </span>
+                    
+                    {/* Current Streak Box */}
+                    <div className="w-[40px] flex justify-center shrink-0">
+                      <div className="w-[28px] h-[28px] rounded-[6px] bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center shadow-sm">
+                        <span className="font-mono-data text-[12px] font-bold text-on-surface">
+                          {currentStreak}
+                        </span>
+                      </div>
+                    </div>
+
                     {/* Shadow gradient for sticky transition */}
                     <div className="absolute right-[-12px] top-0 bottom-0 w-[12px] bg-gradient-to-r from-background to-transparent pointer-events-none"></div>
                   </div>
