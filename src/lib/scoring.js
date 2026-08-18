@@ -97,9 +97,9 @@ export function recalculateStreaks(dailySummaries) {
   let checkDate = new Date();
   
   // If today has no summary yet, we might still have a streak ending yesterday.
-  // We'll see if today's summary exists.
+  // We'll see if today's summary exists and has data.
   const todaySummary = summaryMap.get(todayStr);
-  if (todaySummary) {
+  if (todaySummary && todaySummary.overallScore !== null) {
       currentStreak++;
   }
   
@@ -110,7 +110,7 @@ export function recalculateStreaks(dailySummaries) {
       const dateStr = checkDate.toISOString().split('T')[0];
       const summary = summaryMap.get(dateStr);
       
-      if (summary) {
+      if (summary && summary.overallScore !== null) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -128,7 +128,7 @@ export function recalculateStreaks(dailySummaries) {
   let previousDate = null;
   
   for (const sum of sortedSummaries) {
-      if (sum) {
+      if (sum && sum.overallScore !== null) {
           if (!previousDate) {
               currentHistoricalStreak = 1;
           } else {

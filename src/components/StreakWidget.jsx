@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import brandSvg from '../assets/streak-icon.svg';
+import { recalculateStreaks } from '../lib/scoring';
 
 const getScoreColor = (score) => {
     if (score >= 90) return '#22c55e'; 
@@ -9,34 +10,58 @@ const getScoreColor = (score) => {
     return '#ef4444'; 
 };
 
-const StreakWidget = ({ chartData }) => {
+const StreakWidget = ({ allSummaries }) => {
     const [showModal, setShowModal] = useState(false);
     const [stats, setStats] = useState({ currentStreak: 0, last7Days: 0, last30Days: 0 });
 
     useEffect(() => {
-        if (!chartData || chartData.length === 0) return;
+        if (!allSummaries || allSummaries.length === 0) return;
         
-        const last7 = chartData.slice(-7);
-        const avg7 = last7.reduce((sum, d) => sum + (d.overallScore || 0), 0) / (last7.length || 1);
-        
-        const last30 = chartData.slice(-30);
-        const avg30 = last30.reduce((sum, d) => sum + (d.overallScore || 0), 0) / (last30.length || 1);
-        
-        let streak = 0;
-        for (let i = chartData.length - 1; i >= 0; i--) {
-            if (chartData[i].overallScore >= 50) {
-                streak++;
-            } else {
-                break;
+        const generateDates = (days) => {
+            const dates = [];
+            const today = new Date();
+            const tzoffset = today.getTimezoneOffset() * 60000;
+            const localToday = new Date(today.getTime() - tzoffset);
+            
+            for (let i = 0; i < days; i++) {
+                const d = new Date(localToday);
+                d.setDate(d.getDate() - i);
+                dates.push(d.toISOString().split('T')[0]);
             }
-        }
+            return dates;
+        };
+
+        const last7Dates = generateDates(7);
+        const last30Dates = generateDates(30);
+
+        const getAvg = (dates) => {
+            let sum = 0;
+            let validDays = 0;
+            dates.forEach(dateStr => {
+                const summary = allSummaries.find(s => s.id === dateStr);
+                if (summary && summary.overallScore !== null) {
+                    sum += summary.overallScore;
+                    validDays++;
+                }
+            });
+            // Treat missing days as 0 in average to reflect consistency
+            return Math.round(dates.length > 0 ? sum / dates.length : 0);
+        };
+
+        const avg7 = getAvg(last7Dates);
+        const avg30 = getAvg(last30Dates);
         
+        // Re-use central streak logic
+        // We filter out null scores first because null means no data tracked (skipped day)
+        const validSummaries = allSummaries.filter(s => s.overallScore !== null);
+        const { currentStreak } = recalculateStreaks(validSummaries);
+
         setStats({
-            currentStreak: streak,
-            last7Days: Math.round(avg7),
-            last30Days: Math.round(avg30)
+            currentStreak: currentStreak,
+            last7Days: avg7,
+            last30Days: avg30
         });
-    }, [chartData]);
+    }, [allSummaries]);
 
     const borderColor = getScoreColor(stats.last7Days);
 

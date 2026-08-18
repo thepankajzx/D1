@@ -390,7 +390,7 @@ export default function Dashboard() {
         
         {/* Streak Widget placed in top right */}
         <div className="flex-shrink-0 self-start md:self-center ml-auto">
-          <StreakWidget chartData={chartData} />
+          <StreakWidget allSummaries={allSummaries} />
         </div>
         
         {/* KPI Cards (2 Pills) */}
