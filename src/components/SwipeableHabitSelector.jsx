@@ -138,7 +138,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
       className="relative shrink-0 flex-1 max-w-[180px] h-[36px] z-30 cursor-pointer touch-none"
     >
       <div 
-        className={`absolute w-full top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200 ${isActive ? 'h-[144px]' : 'h-[36px] overflow-hidden'}`}
+        className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200"
         style={{
           WebkitMaskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none',
           maskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none'
@@ -158,7 +158,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                   className={`flex items-center h-full px-3 gap-3 w-full rounded-[10px] transition-all duration-200 border ${
                     isSelected 
                       ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] opacity-100 scale-100' 
-                      : 'bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent opacity-50 scale-95'
+                      : `bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
                   }`}
                 >
                   <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={16} className="!rounded-full" />
