@@ -206,9 +206,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             {/* Center circle */}
             <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
               {val === 1 ? (
-                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">âœ“</span>
+                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✔</span>
               ) : (
-                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">âœ•</span>
+                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">✖</span>
               )}
             </div>
           </div>
@@ -486,7 +486,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const formatDisplayValue = () => {
     if (habit.scoringType === 'time') return formatTime(val);
     if (habit.scoringType === 'binary') {
-      if (val === null) return 'â€”';
+      if (val === null) return '—';
       return val === 1 ? 'Yes' : 'No';
     }
     if (habit.scoringType === 'subjective') return `${val}/10`;
