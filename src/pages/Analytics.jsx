@@ -549,8 +549,8 @@ export default function Analytics() {
         </div>
         
         {/* Timeframe Selector Dropdown */}
-        <div className="relative shrink-0 z-20 flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-2.5 hover:border-outline-variant transition-colors">
-          <Icon name="calendar_today" className="text-on-surface-variant text-[16px] shrink-0" />
+        <div className="relative shrink z-20 flex items-center justify-between bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-1 sm:px-2.5 hover:border-outline-variant transition-colors min-w-[65px] max-w-[85px]">
+          <Icon name="calendar_today" className="text-on-surface-variant text-[14px] sm:text-[16px] shrink-0" />
           <select 
             value={rangeOption}
             onChange={(e) => {
@@ -566,7 +566,7 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none bg-transparent text-on-surface font-semibold text-[13px] pl-1.5 pr-4 focus:outline-none cursor-pointer"
+            className="appearance-none bg-transparent text-on-surface font-semibold text-[12px] sm:text-[13px] pl-1 pr-4 sm:pr-5 focus:outline-none cursor-pointer w-full"
           >
             <option value="7">7D</option>
             <option value="30">30D</option>

@@ -20,8 +20,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const hasDragged = useRef(false);
   const itemHeight = 36; // approximate height of one item in px
   
-  // Slower scrolling threshold (increased to make it less sensitive)
-  const threshold = 70; 
+  // Extremely slow scrolling threshold to prevent flying past items
+  const threshold = 150; 
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -69,7 +69,11 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    if (!isDragging.current || dragStartY.current === null) return;
+    
+    // Instead of continuous scrolling, we can also just reset here.
+    // The high threshold of 150 mostly fixes the "too fast" issue.
     isDragging.current = false;
     dragStartY.current = null;
     setIsActive(false);
@@ -116,7 +120,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div className="relative w-[130px] sm:w-[150px] h-[36px] z-30 shrink">
+    <div className="relative flex-1 min-w-[90px] max-w-[150px] h-[36px] z-30 shrink">
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}

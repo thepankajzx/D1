@@ -43,7 +43,7 @@ function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background pb-16 md:pb-0">
       {/* Top Navbar - Full Width on PC */}
-      <nav className="bg-surface text-primary font-body-md text-body-md docked full-width border-b border-outline-variant/30 flat shadow-sm transition-colors duration-200 ease-in-out fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface/95">
+      <nav className="bg-surface text-primary font-body-md text-body-md docked full-width border-b border-outline-variant/30 flat shadow-sm transition-colors duration-200 ease-in-out fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] bg-surface/95">
         <div className="flex items-center gap-8">
           <Link to="/" className="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2">
             <Icon name="rocket_launch" className="" />
