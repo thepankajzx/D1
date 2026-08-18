@@ -310,10 +310,10 @@ export default function Analytics() {
             {
               name: 'Missed',
               type: 'scatter',
-              data: rawData.map(val => val === null ? 0 : null),
+              data: rawData.map(val => val === 0 ? 0 : null),
               symbol: 'emptyCircle',
               symbolSize: 7,
-              itemStyle: { color: '#1a1a1a', borderColor: '#555555', borderWidth: 2 },
+              itemStyle: { color: '#ffffff', borderColor: '#9ca3af', borderWidth: 2 },
               tooltip: { formatter: 'Skipped' },
               hoverAnimation: false
             }
@@ -359,10 +359,10 @@ export default function Analytics() {
             {
               name: 'Missed',
               type: 'scatter',
-              data: rawData.map(val => val === null ? 0 : null),
+              data: rawData.map(val => val === 0 ? 0 : null),
               symbol: 'emptyCircle',
               symbolSize: 7,
-              itemStyle: { color: '#1a1a1a', borderColor: '#555555', borderWidth: 2 },
+              itemStyle: { color: '#ffffff', borderColor: '#9ca3af', borderWidth: 2 },
               tooltip: { formatter: 'Skipped' },
               hoverAnimation: false
             }
@@ -417,8 +417,9 @@ export default function Analytics() {
       },
       legend: {
         show: true,
-        textStyle: { color: 'var(--on-surface-variant, #747985)' },
-        bottom: 0
+        textStyle: { color: '#747985', fontSize: 12, fontWeight: 500 },
+        bottom: 0,
+        itemGap: 20
       },
       dataZoom: [
         {
