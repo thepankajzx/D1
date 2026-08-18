@@ -13,11 +13,11 @@ import { renderToString } from 'react-dom/server';
 import ReactEChartsCoreLib from 'echarts-for-react/lib/core';
 const ReactEChartsCore = ReactEChartsCoreLib.default || ReactEChartsCoreLib;
 import * as echarts from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
+import { LineChart, ScatterChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent, DataZoomComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
-echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
+echarts.use([LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, CanvasRenderer]);
 import { Link, useSearchParams } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
