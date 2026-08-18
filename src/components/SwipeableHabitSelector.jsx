@@ -6,7 +6,6 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const containerRef = useRef(null);
-  const [dragOffset, setDragOffset] = useState(0);
 
   const options = [
     ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' })),
@@ -21,8 +20,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const hasDragged = useRef(false);
   const itemHeight = 36; // approximate height of one item in px
   
-  // Make it extremely sensitive: just 15px movement to trigger a scroll
-  const threshold = 15; 
+  // Slower scrolling threshold
+  const threshold = 40; 
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -53,9 +52,6 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     if (Math.abs(deltaY) > 5) {
       hasDragged.current = true;
     }
-    
-    // Visually limit the drag to feel tight
-    setDragOffset(deltaY * 0.8);
 
     if (Math.abs(deltaY) > threshold) {
       // Swiped far enough
@@ -64,13 +60,11 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
         onChange(options[safeCurrentIndex + 1].id);
         triggerVibration();
         dragStartY.current = currentY; // Reset anchor for continuous scrolling
-        setDragOffset(0);
       } else if (deltaY > 0 && safeCurrentIndex > 0) {
         // Swipe DOWN -> Prev item
         onChange(options[safeCurrentIndex - 1].id);
         triggerVibration();
         dragStartY.current = currentY; // Reset anchor
-        setDragOffset(0);
       }
     }
   };
@@ -79,18 +73,6 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     isDragging.current = false;
     dragStartY.current = null;
     setIsActive(false);
-    // Remove smooth transition before snapping
-    if (containerRef.current) {
-      const scrollWrapper = containerRef.current.querySelector('.scroll-wrapper');
-      if (scrollWrapper) scrollWrapper.style.transition = 'none';
-    }
-    setDragOffset(0);
-    setTimeout(() => {
-      if (containerRef.current) {
-        const scrollWrapper = containerRef.current.querySelector('.scroll-wrapper');
-        if (scrollWrapper) scrollWrapper.style.transition = 'transform 100ms ease-out';
-      }
-    }, 50);
   };
 
   const scrollTimeout = useRef(null);
@@ -112,11 +94,6 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   useEffect(() => {
-    // Nudge animation on mount to hint at swipeability
-    const timeout1 = setTimeout(() => setDragOffset(-20), 600);
-    const timeout2 = setTimeout(() => setDragOffset(15), 900);
-    const timeout3 = setTimeout(() => setDragOffset(0), 1200);
-    
     const el = containerRef.current;
     if (el) {
       // Passive false to allow preventDefault
@@ -124,9 +101,6 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
       el.addEventListener('wheel', handleWheel, { passive: false });
     }
     return () => {
-      clearTimeout(timeout1);
-      clearTimeout(timeout2);
-      clearTimeout(timeout3);
       if (el) {
         el.removeEventListener('touchmove', handleTouchMove);
         el.removeEventListener('wheel', handleWheel);
@@ -158,9 +132,9 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
           }}
         >
           <div 
-            className="scroll-wrapper absolute w-full flex flex-col transition-transform duration-100 ease-out"
+            className="scroll-wrapper absolute w-full flex flex-col transition-transform duration-200 ease-out"
             style={{ 
-              transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
+              transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px))` 
             }}
           >
             {options.map((opt, i) => {
@@ -189,9 +163,9 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
       
       {/* Dropdown Menu (Opened on Tap) */}
       {isDropdownOpen && (
-        <div className="absolute z-50">
+        <>
           <div className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px] transition-opacity" onClick={() => setIsDropdownOpen(false)}></div>
-          <div className="absolute top-[calc(100%+8px)] right-0 w-[200px] max-h-[300px] overflow-y-auto bg-surface/95 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[16px] p-2 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+          <div className="absolute top-[calc(100%+8px)] right-0 w-[200px] max-h-[300px] overflow-y-auto bg-surface/95 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[16px] p-2 z-50 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right">
             {options.map((opt) => {
               const isSelected = opt.id === selectedHabitId;
               return (
@@ -217,7 +191,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
               );
             })}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
