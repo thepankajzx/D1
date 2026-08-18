@@ -366,7 +366,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-12 w-full pb-24">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
         <div className="flex flex-col gap-2 flex-grow">
           <div className="flex items-center gap-4 mb-1 relative">
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
