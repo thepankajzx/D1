@@ -23,6 +23,7 @@ import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
 import ProModal from '../components/ProModal';
 import ProCustomDateModal from '../components/ProCustomDateModal';
+import HabitStreakTimeline from '../components/HabitStreakTimeline';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
@@ -762,6 +763,16 @@ export default function Analytics() {
               <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
             </div>
           </div>
+        )}
+
+        {/* Habit Streak Timeline */}
+        {!isFutureOnly && summaries.length > 0 && (
+          <HabitStreakTimeline 
+            habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
+            summaries={summaries}
+            startDate={startDate}
+            endDate={endDate}
+          />
         )}
 
         {/* Performance Insights */}
