@@ -365,9 +365,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-12 w-full pb-24">
-      {/* Header Section */}
-      <section className="flex flex-col md:flex-row items-start justify-between gap-6 pt-2 w-full">
-        <div className="flex flex-col gap-2">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+        <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4 mb-1 relative">
             <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
               <input 
@@ -389,7 +389,7 @@ export default function Dashboard() {
         </div>
         
         {/* Streak Widget & Today's Score */}
-        <div className="flex items-center gap-5 shrink-0 self-start md:self-center ml-auto mr-2 md:mr-8 mt-4 md:mt-0">
+        <div className="flex items-center gap-5 shrink-0 mt-4 md:mt-0">
           <StreakWidget allSummaries={allSummaries} />
           
           <div className="flex flex-col justify-center">
@@ -405,9 +405,10 @@ export default function Dashboard() {
             })()}
           </div>
         </div>
+      </div>
         
-        {/* KPI Cards (2 Pills) */}
-        <div className="flex flex-row gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
+      {/* KPI Cards (2 Pills) */}
+      <div className="flex flex-col sm:flex-row gap-3 w-full mb-8">
           
           {/* Weakest Habit Pill */}
           <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
@@ -470,7 +471,6 @@ export default function Dashboard() {
           </div>
           
         </div>
-      </section>
 
       {/* Bento Grid Main Content */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
