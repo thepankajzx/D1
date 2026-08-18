@@ -116,13 +116,18 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div className="relative w-full min-w-[110px] max-w-[170px] h-[36px] z-30 shrink">
+    <div className="relative w-full h-[36px] z-30">
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onClick={handleClick}
-        className="absolute inset-0 cursor-pointer touch-none"
+        className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-3 pr-6 sm:pr-8 bg-surface-container-lowest rounded-[10px] h-full shadow-sm overflow-hidden select-none border border-outline-variant/40 cursor-grab active:cursor-grabbing hover:border-outline-variant transition-colors w-full relative"
       >
         <div 
           className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200"
@@ -144,21 +149,19 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                   <div 
                     className={`flex items-center h-full px-3 gap-2 w-full rounded-[10px] transition-all duration-200 border ${
                       isSelected 
-                        ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] opacity-100 scale-100' 
-                        : `bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
+                        ? 'bg-transparent text-on-surface border-transparent opacity-100 scale-100' 
+                        : `bg-transparent text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
                     }`}
                   >
                     <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
                     <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
-                    {isSelected && (
-                      <Icon name="arrow_drop_down" className="text-[18px] text-on-surface-variant ml-auto shrink-0" />
-                    )}
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
+        <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
       </div>
       
       {/* Dropdown Menu (Opened on Tap) */}

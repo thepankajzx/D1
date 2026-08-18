@@ -513,27 +513,27 @@ export default function Analytics() {
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header Controls Row 1: 3-column Layout */}
-      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 relative">
+      <div className="grid grid-cols-3 gap-2 w-full mt-2 relative">
         {/* Left: Chart/Heatmap Toggle Pill */}
-        <div className="flex bg-surface-container-lowest rounded-[10px] p-[3px] border border-outline-variant/40 shrink-0 h-[36px]">
+        <div className="flex bg-surface-container-lowest rounded-[10px] p-[3px] border border-outline-variant/40 h-[36px] w-full">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`flex items-center justify-center gap-1.5 px-2 sm:px-3 rounded-[8px] transition-all duration-200 ${viewMode === 'charts' ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'charts' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
-            <Icon name="insights" className="text-[18px]" />
-            <span className="text-[13px] hidden sm:inline">Chart</span>
+            <Icon name="insights" className="text-[16px] sm:text-[18px]" />
+            <span className="text-[12px] sm:text-[13px] hidden md:inline">Chart</span>
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`flex items-center justify-center gap-1.5 px-2 sm:px-3 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
-            <Icon name="apps" className="text-[18px]" />
-            <span className="text-[13px] hidden sm:inline">Heatmap</span>
+            <Icon name="apps" className="text-[16px] sm:text-[18px]" />
+            <span className="text-[12px] sm:text-[13px] hidden md:inline">Heat</span>
           </button>
         </div>
         
         {/* Center: Habit Selector Dropdown (Swipeable) */}
-        <div className="flex justify-center w-full max-w-[170px]">
+        <div className="flex justify-center w-full min-w-0">
           <SwipeableHabitSelector 
             habits={habits} 
             selectedHabitId={selectedHabit} 
@@ -549,7 +549,7 @@ export default function Analytics() {
         </div>
         
         {/* Timeframe Selector Dropdown */}
-        <div className="relative shrink-0 z-20 flex items-center justify-between bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-1 sm:px-2.5 hover:border-outline-variant transition-colors min-w-[75px]">
+        <div className="relative z-20 flex items-center justify-between bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-1 sm:px-2.5 hover:border-outline-variant transition-colors w-full min-w-0">
           <Icon name="calendar_today" className="text-on-surface-variant text-[14px] sm:text-[16px] shrink-0" />
           <select 
             value={rangeOption}
@@ -571,7 +571,7 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none bg-transparent text-on-surface font-semibold text-[12px] sm:text-[13px] pl-1 pr-6 sm:pr-7 focus:outline-none cursor-pointer"
+            className="appearance-none bg-transparent text-on-surface font-semibold text-[12px] sm:text-[13px] pl-1 pr-6 sm:pr-7 focus:outline-none cursor-pointer w-full truncate"
           >
             <option value="7">7D</option>
             <option value="30">30D</option>
