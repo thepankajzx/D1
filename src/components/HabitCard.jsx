@@ -156,6 +156,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   };
   const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
   
   // Toggle state for duration habits
   const [displayMode, setDisplayMode] = useState(
@@ -350,18 +351,19 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const currentDisplayUnit = habit.scoringType === 'duration' ? (displayMode === 'hours' ? 'hrs' : 'mins') : habit.unit;
         
         return (
-          <div className="flex flex-col gap-4 flex-grow justify-end">
+        return (
+          <div className="flex flex-col w-full mt-3">
             {habit.scoringType === 'duration' && (
-              <div className="flex justify-center mb-[-8px]">
-                <div className="flex bg-surface-container-high rounded-full p-1 border border-outline-variant/20">
+              <div className="flex justify-start mb-2">
+                <div className="flex bg-surface-container-high rounded-full p-[2px] border border-outline-variant/20">
                   <button 
-                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+                    className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
                     onClick={(e) => { e.stopPropagation(); setDisplayMode('hours'); }}
                   >
                     HR
                   </button>
                   <button 
-                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+                    className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
                     onClick={(e) => { e.stopPropagation(); setDisplayMode('minutes'); }}
                   >
                     MIN
@@ -369,50 +371,50 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 </div>
               </div>
             )}
-            <div className="flex justify-between items-center text-xs text-on-surface-variant">
-              <span>0 {currentDisplayUnit}</span>
-              <span>Target: {Math.round(dTarget100)} {currentDisplayUnit}</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 mt-2">
-                <div className="flex-grow flex items-center">
-                  <input 
-                    type="range" 
-                    aria-label={`Target slider for ${habit.name}`}
-                    min={minSlider} 
-                    max={maxSlider} 
-                    step={sliderStep}
-                    value={dVal}
-                    style={{ background: generateGradient() }}
-                    onChange={(e) => {
-                        const newValue = Math.round(Number(e.target.value));
-                        const prevValue = Math.round(val * mult);
-                        setVal(newValue / mult);
+            
+            <div className="flex items-center gap-3 w-full">
+              {/* Slider Track */}
+              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[24px] text-right">0</span>
+              <div className="flex-grow flex items-center h-5">
+                <input 
+                  type="range" 
+                  aria-label={`Target slider for ${habit.name}`}
+                  min={minSlider} 
+                  max={maxSlider} 
+                  step={sliderStep}
+                  value={dVal}
+                  style={{ background: generateGradient() }}
+                  onChange={(e) => {
+                      const newValue = Math.round(Number(e.target.value));
+                      const prevValue = Math.round(val * mult);
+                      setVal(newValue / mult);
 
-                        if (navigator.vibrate) {
-                            // Calculate percentage of maxSlider
-                            const prevPct = (prevValue / maxSlider) * 100;
-                            const newPct = (newValue / maxSlider) * 100;
-                            
-                            // Vibrate every 5%
-                            if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
-                                navigator.vibrate(10);
-                            }
-                            
-                            // Vibrate stronger if crossing target
-                            if (
-                              (prevValue < dTarget100 && newValue >= dTarget100) ||
-                              (prevValue > dTarget100 && newValue <= dTarget100)
-                            ) {
-                                navigator.vibrate(30);
-                            }
-                        }
-                    }}
-                    onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                    onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                    className="custom-slider w-full m-0" 
-                  />
-                </div>
-                <div className="relative flex items-center">
+                      if (navigator.vibrate) {
+                          const prevPct = (prevValue / maxSlider) * 100;
+                          const newPct = (newValue / maxSlider) * 100;
+                          if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
+                              navigator.vibrate(10);
+                          }
+                          if (
+                            (prevValue < dTarget100 && newValue >= dTarget100) ||
+                            (prevValue > dTarget100 && newValue <= dTarget100)
+                          ) {
+                              navigator.vibrate(30);
+                          }
+                      }
+                  }}
+                  onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
+                  onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
+                  className="custom-slider w-full m-0 !h-[6px]" 
+                />
+              </div>
+              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[24px]">
+                {Math.round(dTarget100)}
+              </span>
+
+              {/* Manual Input */}
+              {showManualInput && (
+                <div className="relative flex items-center shrink-0 ml-1">
                     <input
                       type="number"
                       aria-label={`Target value for ${habit.name}`}
@@ -427,10 +429,10 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                               e.currentTarget.blur();
                           }
                       }}
-                      className="w-20 bg-surface-container border border-outline-variant rounded-md px-2 py-1.5 text-center font-mono-data text-primary focus:border-primary focus:outline-none transition-colors"
+                      className="w-16 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-2 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
                     />
-                    {currentDisplayUnit && <span className="ml-2 text-xs font-bold text-on-surface-variant tracking-wider">{currentDisplayUnit}</span>}
                 </div>
+              )}
             </div>
           </div>
         );
@@ -489,33 +491,40 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
   return (
     <>
-      <div className="bg-surface premium-border rounded-xl p-6 flex flex-col gap-6 w-full">
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-2">
-              <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[8px]" />
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
-                {habit.name}
-              </span>
-            </div>
-            <span className="font-headline-md text-headline-md text-primary">
-              {formatDisplayValue()}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Detail button */}
-            <button
-              onClick={() => setShowDetail(true)}
-              className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
-              title="View habit details"
-            >
-              <Icon name="bar_chart" className="text-base" />
-            </button>
-            <div className={`px-3 py-1 rounded-full border ${entry?.computedScore >= 100 ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low border-outline-variant'}`}>
-              <span className="font-mono-data text-mono-data text-xs font-medium">
+      <div className="bg-surface premium-border rounded-[16px] p-4 flex flex-col w-full">
+        <div className="flex justify-between items-center w-full">
+          {/* Left side: Icon, Name, Pill, Value */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={18} className="!rounded-[8px] shrink-0" />
+            <h3 className="font-bold text-[14px] text-on-surface truncate shrink">{habit.name}</h3>
+            
+            <div className={`shrink-0 px-2 py-[2px] rounded-full ${entry?.computedScore >= 100 ? 'bg-[#22c55e20] text-[#16a34a]' : 'bg-surface-container-high text-on-surface-variant'}`}>
+              <span className="font-mono-data text-[10px] font-bold">
                 {getScoreDisplay()}
               </span>
             </div>
+            
+            <span className="font-mono-data text-[14px] text-on-surface ml-1 font-bold shrink-0">
+              {formatDisplayValue()}
+            </span>
+          </div>
+
+          {/* Right side: Detail & Edit buttons */}
+          <div className="flex items-center gap-1.5 shrink-0 pl-2">
+            <button
+              onClick={() => setShowDetail(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-[8px] border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors"
+              title="View details"
+            >
+              <Icon name="bar_chart" className="text-[16px]" />
+            </button>
+            <button
+              onClick={() => setShowManualInput(!showManualInput)}
+              className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+              title="Manual Entry"
+            >
+              <Icon name="edit" className="text-[14px]" />
+            </button>
           </div>
         </div>
         
