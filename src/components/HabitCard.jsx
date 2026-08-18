@@ -221,7 +221,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   onClick={(e) => { 
                     e.stopPropagation(); 
                     if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
-                    handleChange(100); 
+                    handleChange(1); 
                   }} className="flex-1 flex items-center justify-center z-10 cursor-pointer"
                 >
                   <span className={`font-semibold text-sm transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant'}`}>
