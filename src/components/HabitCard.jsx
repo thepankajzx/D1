@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -155,13 +155,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   const [val, setVal] = useState(getInitialVal);
   const [showDetail, setShowDetail] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
-const getMultiplier = () => {
-    if (habit.scoringType !== 'duration') return 1;
-    const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
-    if (isBaseHours && displayMode === 'minutes') return 60;
-    if (!isBaseHours && displayMode === 'hours') return 1/60;
-    return 1;
-  };
+
   
   useEffect(() => {
     if (entry && entry.rawValue !== undefined) {
@@ -212,9 +206,9 @@ const getMultiplier = () => {
             {/* Center circle */}
             <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
               {val === 1 ? (
-                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✓</span>
+                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">âœ“</span>
               ) : (
-                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">✕</span>
+                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">âœ•</span>
               )}
             </div>
           </div>
@@ -344,24 +338,7 @@ const getMultiplier = () => {
         
         return (
           <div className="flex flex-col w-full mt-3">
-            {habit.scoringType === 'duration' && (
-              <div className="flex justify-start mb-2">
-                <div className="flex bg-surface-container-high rounded-full p-[2px] border border-outline-variant/20">
-                  <button 
-                    className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); setDisplayMode('hours'); }}
-                  >
-                    HR
-                  </button>
-                  <button 
-                    className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); setDisplayMode('minutes'); }}
-                  >
-                    MIN
-                  </button>
-                </div>
-              </div>
-            )}
+            
             
             <div className="flex items-center gap-3 w-full">
               {/* Slider Track */}
@@ -509,7 +486,7 @@ const getMultiplier = () => {
   const formatDisplayValue = () => {
     if (habit.scoringType === 'time') return formatTime(val);
     if (habit.scoringType === 'binary') {
-      if (val === null) return '—';
+      if (val === null) return 'â€”';
       return val === 1 ? 'Yes' : 'No';
     }
     if (habit.scoringType === 'subjective') return `${val}/10`;
@@ -612,5 +589,6 @@ const getMultiplier = () => {
     </>
   );
 }
+
 
 
