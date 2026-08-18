@@ -302,15 +302,6 @@ export default function Dashboard() {
     setAllSummaries(newAllSummaries);
   };
 
-  const handleAddHabitClick = (e) => {
-    e.preventDefault();
-    if (habits.length >= 8) {
-      setShowPaywall(true);
-    } else {
-      navigate('/onboarding/select');
-    }
-  };
-
   if (loadingData) {
       return (
           <div className="flex flex-col gap-12 w-full pb-24 animate-pulse">
@@ -479,14 +470,6 @@ export default function Dashboard() {
           );
         })}
         
-        {/* Placeholder Card to encourage adding more */}
-        <button onClick={handleAddHabitClick} className="bg-surface-container-low border border-dashed border-outline-variant rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center min-h-[220px] hover:bg-surface-variant transition-colors cursor-pointer col-span-1 shadow-sm hover:shadow-md w-full">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Icon name="add" className=" text-2xl" />
-          </div>
-          <span className="font-label-md text-label-md text-on-surface font-medium">Add Habit</span>
-          <span className="font-body-sm text-body-sm text-on-surface-variant">Track something new</span>
-        </button>
       </section>
       
       {/* Static Submit Button at Bottom */}
