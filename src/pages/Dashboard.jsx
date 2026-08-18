@@ -382,15 +382,28 @@ export default function Dashboard() {
               <Icon name="calendar_today" className=" text-sm text-on-surface-variant" />
             </div>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary">Daily Review</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
+          <h1 className="text-[32px] sm:text-[40px] font-black text-on-surface leading-tight mt-3 tracking-tight">Daily Review</h1>
+          <p className="text-[15px] font-medium text-on-surface-variant">
+            <span className="text-[#6d28d9] font-bold">{dailySummary?.habitsCompleted || 0}</span> of <span className="text-[#6d28d9] font-bold">{habits.length}</span> habits completed today.
           </p>
         </div>
         
-        {/* Streak Widget placed in top right */}
-        <div className="flex-shrink-0 self-start md:self-center ml-auto">
+        {/* Streak Widget & Today's Score */}
+        <div className="flex items-center gap-5 shrink-0 self-start md:self-center ml-auto mr-2 md:mr-8 mt-4 md:mt-0">
           <StreakWidget allSummaries={allSummaries} />
+          
+          <div className="flex flex-col justify-center">
+            <span className="text-[13px] font-bold text-on-surface-variant mb-1">Today's Score</span>
+            <span className="text-[36px] font-black leading-none mb-1 tracking-tight" style={{ color: '#6d28d9' }}>{dailySummary?.overallScore || 0}%</span>
+            {(() => {
+                const score = dailySummary?.overallScore;
+                if (score === null || score === undefined) return <span className="text-[13px] font-semibold text-on-surface-variant">Let's get started! 🚀</span>;
+                if (score >= 80) return <span className="text-[13px] font-semibold text-[#16a34a]">Keep it up! 🔥</span>;
+                if (score >= 50) return <span className="text-[13px] font-semibold text-yellow-500">Doing good! 👍</span>;
+                if (score > 0) return <span className="text-[13px] font-semibold text-orange-500">Keep pushing! 💪</span>;
+                return <span className="text-[13px] font-semibold text-red-500">Needs work! 😕</span>;
+            })()}
+          </div>
         </div>
         
         {/* KPI Cards (2 Pills) */}
