@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -206,9 +206,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             {/* Center circle */}
             <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
               {val === 1 ? (
-                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">âœ”</span>
+                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">Ã¢Å“â€</span>
               ) : (
-                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">âœ–</span>
+                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">Ã¢Å“â€“</span>
               )}
             </div>
           </div>
@@ -518,7 +518,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   };
 
   const formatDisplayValue = () => {
-    if (val === null || val === undefined) return 'â€”';
+    if (val === null || val === undefined) return 'Ã¢â‚¬â€';
     if (habit.scoringType === 'time') return formatTime(val);
     if (habit.scoringType === 'binary') {
       return val === 1 ? 'Yes' : 'No';
@@ -595,15 +595,28 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             <h3 className="font-bold text-[14px] text-on-surface truncate shrink">{habit.name}</h3>
             
             {(() => {
-              const scoreDisplay = getScoreDisplay();
-              return scoreDisplay ? (
-                <div className={`shrink-0 px-1.5 py-[2px] rounded-[6px] ${entry?.computedScore >= 100 ? 'bg-[#22c55e20] text-[#16a34a]' : 'bg-surface-container-high text-on-surface-variant'}`}>
-                  <span className="font-mono-data text-[10px] font-bold">
-                    {scoreDisplay}
-                  </span>
-                </div>
-              ) : null;
-            })()}
+                const scoreDisplay = getScoreDisplay();
+                if (!scoreDisplay) return null;
+                
+                const score = entry?.computedScore;
+                let bgClass = 'bg-surface-container-high text-on-surface-variant'; // default / empty
+                
+                if (score !== undefined && score !== null) {
+                  if (score >= 40) {
+                    bgClass = 'bg-green-500/15 text-green-700 dark:text-green-400';
+                  } else if (score > 0) {
+                    bgClass = 'bg-orange-500/15 text-orange-700 dark:text-orange-400';
+                  }
+                }
+                
+                return (
+                  <div className={`shrink-0 flex items-center justify-center px-[12px] h-[26px] rounded-[8px] ${bgClass}`}>
+                    <span className="font-mono-data text-[12px] font-bold tracking-wide">
+                      {scoreDisplay}
+                    </span>
+                  </div>
+                );
+              })()}
             
             <span className="font-mono-data text-[14px] text-on-surface ml-1 font-bold shrink-0">
               {formatDisplayValue()}
@@ -644,6 +657,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     </>
   );
 }
+
 
 
 
