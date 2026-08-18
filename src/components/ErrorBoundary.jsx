@@ -16,7 +16,9 @@ export class ErrorBoundary extends React.Component {
       const isReloaded = sessionStorage.getItem('chunk_load_error_reloaded');
       if (!isReloaded) {
         sessionStorage.setItem('chunk_load_error_reloaded', 'true');
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set('bust', Date.now().toString());
+        window.location.replace(url.toString());
         return { hasError: true, isReloading: true };
       }
     }
@@ -53,12 +55,26 @@ export class ErrorBoundary extends React.Component {
           <p className="text-on-surface-variant max-w-md mb-8">
             We encountered an unexpected issue while loading this page. This could be due to a temporary network glitch or a bug on our end.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          
+          {this.state.error && (
+            <div className="bg-error-container/20 border border-error-container/30 p-4 rounded-xl mb-8 w-full max-w-md text-left overflow-hidden">
+                <p className="text-error font-mono-data text-xs break-words">
+                    {this.state.error.toString()}
+                </p>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <button 
-              onClick={() => window.location.reload()} 
+              onClick={() => {
+                sessionStorage.removeItem('chunk_load_error_reloaded');
+                const url = new URL(window.location.href);
+                url.searchParams.set('bust', Date.now().toString());
+                window.location.replace(url.toString());
+              }}
               className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
             >
-              <Icon name="refresh" /> Reload Page
+              <Icon name="sync" className="text-xl" /> Reload Page
             </button>
             <button 
               onClick={() => window.location.href = import.meta.env.BASE_URL || '/'} 
@@ -66,6 +82,7 @@ export class ErrorBoundary extends React.Component {
             >
               <Icon name="home" /> Go to Home
             </button>
+          </div>
           </div>
           {/* We keep the error logged in the console for debugging but hide it from the UI */}
         </div>
