@@ -278,25 +278,27 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         );
       case 'subjective':
         return (
-          <div className="flex flex-col gap-4 flex-grow justify-end">
-            <div className="flex justify-between text-xs text-on-surface-variant">
-              <span>1</span>
-              <span>10</span>
+          <div className="flex flex-col w-full mt-3">
+            <div className="flex items-center gap-3 w-full">
+              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[24px] text-right">1</span>
+              <div className="flex-grow flex items-center h-5">
+                <input 
+                  type="range" 
+                  aria-label={`Subjective score for ${habit.name}`}
+                  min="1" max="10" step="1" 
+                  value={val}
+                  onChange={(e) => {
+                     setVal(Number(e.target.value));
+                     if (navigator.vibrate) navigator.vibrate(50);
+                  }}
+                  onPointerUp={(e) => handleChange(Number(e.target.value))}
+                  onTouchEnd={(e) => handleChange(Number(e.target.value))}
+                  className="subjective-slider w-full m-0 !h-[6px]" 
+                />
+              </div>
+              <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[24px]">10</span>
             </div>
-            <input 
-              type="range" 
-              aria-label={`Subjective score for ${habit.name}`}
-              min="1" max="10" step="1" 
-              value={val}
-              onChange={(e) => {
-                 setVal(Number(e.target.value));
-                 if (navigator.vibrate) navigator.vibrate(50);
-              }}
-              onPointerUp={(e) => handleChange(Number(e.target.value))}
-              onTouchEnd={(e) => handleChange(Number(e.target.value))}
-              className="subjective-slider" 
-            />
-            <div className="text-center font-mono-data text-primary font-bold">
+            <div className="text-center font-mono-data text-primary font-bold mt-2">
               {val}/10
             </div>
           </div>
@@ -529,13 +531,15 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             >
               <Icon name="bar_chart" className="text-[16px]" />
             </button>
-            <button
-              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowManualInput(!showManualInput); }}
-              className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
-              title="Manual Entry"
-            >
-              <Icon name="edit" className="text-[14px]" />
-            </button>
+            {habit.scoringType !== 'subjective' && (
+              <button
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowManualInput(!showManualInput); }}
+                className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+                title="Manual Entry"
+              >
+                <Icon name="edit" className="text-[14px]" />
+              </button>
+            )}
           </div>
         </div>
         
