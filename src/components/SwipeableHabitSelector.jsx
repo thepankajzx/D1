@@ -20,8 +20,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const hasDragged = useRef(false);
   const itemHeight = 36; // approximate height of one item in px
   
-  // Slower scrolling threshold
-  const threshold = 40; 
+  // Slower scrolling threshold (increased to make it less sensitive)
+  const threshold = 70; 
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -116,7 +116,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div className="relative shrink-0 w-[150px] h-[36px] z-30">
+    <div className="relative w-[130px] sm:w-[150px] h-[36px] z-30 shrink">
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
@@ -176,7 +176,9 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                       ? 'bg-surface-container-lowest text-on-surface shadow-sm border border-outline-variant/50' 
                       : 'bg-transparent text-on-surface-variant hover:bg-surface-container/50 border border-transparent'
                   }`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     onChange(opt.id);
                     triggerVibration();
                     setIsDropdownOpen(false);

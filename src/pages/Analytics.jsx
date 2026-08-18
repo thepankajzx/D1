@@ -513,9 +513,9 @@ export default function Analytics() {
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header Controls Row 1: 3-column Layout */}
-      <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1 relative">
+      <div className="flex flex-row justify-between items-center gap-1 sm:gap-2 w-full mt-2 relative">
         {/* Left: Chart/Heatmap Toggle Pill */}
-        <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[80px] h-[36px]">
+        <div className="flex bg-surface-container rounded-full p-[2px] sm:p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[70px] sm:w-[80px] h-[36px]">
           <button 
             onClick={() => setViewMode('charts')}
             className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'charts' ? 'bg-primary/15 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-transparent' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
