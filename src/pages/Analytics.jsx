@@ -528,7 +528,7 @@ export default function Analytics() {
             className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             <Icon name="apps" className="text-[16px] sm:text-[18px]" />
-            <span className="text-[12px] sm:text-[13px] hidden md:inline">Heat</span>
+            <span className="text-[12px] sm:text-[13px] hidden md:inline">Heatmap</span>
           </button>
         </div>
         
