@@ -22,7 +22,11 @@ export function DataProvider({ children }) {
     return cached ? JSON.parse(cached) : [];
   });
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
-  const [userDocData, setUserDocData] = useState(null);
+
+  // Grant pro to demo/dev accounts immediately, before Firestore loads
+  const DEV_PRO_EMAILS = ['dummytest2025@example.com', 'test2025@gmail.com'];
+  const isDevPro = DEV_PRO_EMAILS.includes(user?.email?.toLowerCase() ?? '');
+  const [userDocData, setUserDocData] = useState(isDevPro ? { isPro: true } : null);
   const [loadingData, setLoadingData] = useState(() => {
     // If we have cached habits, we don't need to block the UI
     const hasCachedData = !!localStorage.getItem(`habits_${user?.uid}`);
