@@ -56,23 +56,23 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
 
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
-      {/* Bottom Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-[24px] shadow-2xl p-5 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto">
-        {/* Handle bar */}
-        <div className="w-10 h-1 bg-outline-variant rounded-full mx-auto mb-4" />
-
-        {/* Title */}
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-headline-sm text-headline-sm text-on-surface">{habit.name}</h2>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors">
-            <Icon name="close" className="text-xl" />
-          </button>
-        </div>
+      {/* Modal Container */}
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+          onClick={onClose}
+        />
+        
+        {/* Centered Popup */}
+        <div className="relative w-full max-w-[90vw] sm:max-w-sm bg-surface rounded-[24px] shadow-2xl p-5 sm:p-6 max-h-[85vh] overflow-y-auto flex flex-col z-[61]">
+          {/* Title */}
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-headline-sm text-headline-sm text-on-surface">{habit.name}</h2>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors">
+              <Icon name="close" className="text-lg" />
+            </button>
+          </div>
 
         {stats ? (
           <>
@@ -142,6 +142,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
             </button>
           </div>
         )}
+        </div>
       </div>
     </>
   );
