@@ -518,15 +518,15 @@ export default function Analytics() {
         <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[80px] h-[36px]">
           <button 
             onClick={() => setViewMode('charts')}
-            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'charts' ? 'bg-primary/15 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-transparent' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
           >
-            <Icon name="show_chart" className="text-[18px]" />
+            <Icon name="insights" className="text-[18px]" />
           </button>
           <button 
             onClick={() => setViewMode('heatmap')}
-            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-primary/15 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-transparent' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
           >
-            <Icon name="grid_on" className="text-[18px]" />
+            <Icon name="apps" className="text-[18px]" />
           </button>
         </div>
         
@@ -547,7 +547,8 @@ export default function Analytics() {
         </div>
         
         {/* Timeframe Selector Dropdown */}
-        <div className="relative shrink-0 z-20 flex items-center">
+        <div className="relative shrink-0 z-20 flex items-center bg-surface-container-lowest border border-outline-variant/40 rounded-[12px] h-[36px] px-2 shadow-sm focus-within:border-primary/50 hover:border-outline-variant transition-colors">
+          <Icon name="calendar_today" className="text-on-surface-variant text-[16px] shrink-0" />
           <select 
             value={rangeOption}
             onChange={(e) => {
@@ -563,14 +564,14 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none h-[36px] bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-3 pr-8 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
+            className="appearance-none bg-transparent text-on-surface font-semibold text-[13px] pl-1.5 pr-4 focus:outline-none cursor-pointer"
           >
             <option value="7">7D</option>
             <option value="30">30D</option>
             <option value="90">90D</option>
             <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
           </select>
-          <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
+          <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && rangeOption === 'custom' && (
