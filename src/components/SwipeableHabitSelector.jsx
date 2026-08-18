@@ -14,7 +14,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(20); // Short, sharp haptic feedback
+      navigator.vibrate(50); // Short, sharp haptic feedback
     }
   };
 
@@ -49,8 +49,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                   onClick={() => {
                     onChange(opt.id);
                     triggerVibration();
-                    // Close immediately
-                    setTimeout(() => setIsDropdownOpen(false), 0);
+                    setIsDropdownOpen(false);
                   }}
                 >
                   <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
@@ -67,3 +66,4 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     </div>
   );
 }
+

@@ -35,7 +35,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
       setTimeout(() => setGlowTarget(null), 1000);
     } else {
       if (navigator.vibrate && Number.isInteger(value) && value % 5 === 0) {
-        navigator.vibrate(10);
+        navigator.vibrate(50);
       }
     }
   };
@@ -1026,3 +1026,4 @@ export default function AdvancedHabitSelector() {
     </div>
   );
 }
+

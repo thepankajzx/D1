@@ -69,7 +69,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
           {/* Title */}
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-headline-sm text-headline-sm text-on-surface">{habit.name}</h2>
-            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors">
+            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onClose(); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors">
               <Icon name="close" className="text-lg" />
             </button>
           </div>
@@ -119,7 +119,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
 
             {/* View Full Analytics */}
             <button
-              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
               className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               <Icon name="bar_chart" className="text-base" />
@@ -131,7 +131,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
             <Icon name="bar_chart" className="text-4xl mb-2 opacity-40" />
             <p className="text-sm">No data logged yet for this habit.</p>
             <button
-              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); onClose(); navigate(`/analytics?habit=${habit.id}`); }}
               className="mt-4 w-full flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl py-3 font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               <Icon name="bar_chart" className="text-base" />
@@ -208,11 +208,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
             {/* Clickable halves */}
             <div className="absolute inset-0 flex">
-              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate([15, 30, 15]); handleChange(1); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(1); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
                 <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
               </button>
               <div className="w-[1px] bg-outline-variant/30 z-10" />
-              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); handleChange(0); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(0); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
                 <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
               </button>
             </div>
@@ -290,7 +290,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
               value={val}
               onChange={(e) => {
                  setVal(Number(e.target.value));
-                 if (navigator.vibrate) navigator.vibrate(10);
+                 if (navigator.vibrate) navigator.vibrate(50);
               }}
               onPointerUp={(e) => handleChange(Number(e.target.value))}
               onTouchEnd={(e) => handleChange(Number(e.target.value))}
@@ -355,13 +355,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                 <div className="flex bg-surface-container-high rounded-full p-[2px] border border-outline-variant/20">
                   <button 
                     className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'hours' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); setDisplayMode('hours'); }}
+                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); setDisplayMode('hours'); }}
                   >
                     HR
                   </button>
                   <button 
                     className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-colors ${displayMode === 'minutes' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
-                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(10); setDisplayMode('minutes'); }}
+                    onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); setDisplayMode('minutes'); }}
                   >
                     MIN
                   </button>
@@ -390,13 +390,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                           const prevPct = (prevValue / maxSlider) * 100;
                           const newPct = (newValue / maxSlider) * 100;
                           if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
-                              navigator.vibrate(10);
+                              navigator.vibrate(50);
                           }
                           if (
                             (prevValue < dTarget100 && newValue >= dTarget100) ||
                             (prevValue > dTarget100 && newValue <= dTarget100)
                           ) {
-                              navigator.vibrate(30);
+                              navigator.vibrate(50);
                           }
                       }
                   }}
@@ -437,7 +437,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
   };
 
   const getScoreDisplay = () => {
-    if (habit.scoringType === 'subjective') return 'Logged';
+    if (habit.scoringType === 'subjective') return null;
     if (habit.scoringType === 'binary' && val === null) return '--';
     if (entry && entry.computedScore !== undefined && entry.computedScore !== null) {
       return `${entry.computedScore}%`;
@@ -463,16 +463,25 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           className="bg-surface premium-border rounded-[16px] p-3 flex flex-row items-center justify-between gap-3 w-full cursor-pointer hover:bg-surface-variant/30 transition-colors"
         >
           {/* Left: Icon and Title */}
-          <div className="flex items-center gap-3 min-w-0">
-            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[12px]" />
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[12px] shrink-0" />
             <h3 className="font-bold text-[15px] text-on-surface truncate">
               {habit.name}
             </h3>
           </div>
           
-          {/* Right: Inline Input */}
-          <div className="shrink-0 w-[140px]" onClick={(e) => e.stopPropagation()}>
-            {renderInput()}
+          {/* Right: Inline Input and Detail button */}
+          <div className="flex items-center gap-1.5 shrink-0 pl-2">
+            <div className="w-[140px]" onClick={(e) => e.stopPropagation()}>
+              {renderInput()}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); setShowDetail(true); }}
+              className="w-8 h-8 flex items-center justify-center rounded-[8px] border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors"
+              title="View details"
+            >
+              <Icon name="bar_chart" className="text-[16px]" />
+            </button>
           </div>
         </div>
         {showDetail && (
@@ -495,11 +504,16 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={18} className="!rounded-[8px] shrink-0" />
             <h3 className="font-bold text-[14px] text-on-surface truncate shrink">{habit.name}</h3>
             
-            <div className={`shrink-0 px-2 py-[2px] rounded-full ${entry?.computedScore >= 100 ? 'bg-[#22c55e20] text-[#16a34a]' : 'bg-surface-container-high text-on-surface-variant'}`}>
-              <span className="font-mono-data text-[10px] font-bold">
-                {getScoreDisplay()}
-              </span>
-            </div>
+            {(() => {
+              const scoreDisplay = getScoreDisplay();
+              return scoreDisplay ? (
+                <div className={`shrink-0 px-1.5 py-[2px] rounded-[6px] ${entry?.computedScore >= 100 ? 'bg-[#22c55e20] text-[#16a34a]' : 'bg-surface-container-high text-on-surface-variant'}`}>
+                  <span className="font-mono-data text-[10px] font-bold">
+                    {scoreDisplay}
+                  </span>
+                </div>
+              ) : null;
+            })()}
             
             <span className="font-mono-data text-[14px] text-on-surface ml-1 font-bold shrink-0">
               {formatDisplayValue()}
@@ -509,14 +523,14 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
           {/* Right side: Detail & Edit buttons */}
           <div className="flex items-center gap-1.5 shrink-0 pl-2">
             <button
-              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setShowDetail(true); }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowDetail(true); }}
               className="w-8 h-8 flex items-center justify-center rounded-[8px] border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-colors"
               title="View details"
             >
               <Icon name="bar_chart" className="text-[16px]" />
             </button>
             <button
-              onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setShowManualInput(!showManualInput); }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowManualInput(!showManualInput); }}
               className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
               title="Manual Entry"
             >
@@ -538,3 +552,4 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     </>
   );
 }
+

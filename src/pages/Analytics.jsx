@@ -517,14 +517,14 @@ export default function Analytics() {
         {/* Left: Chart/Heatmap Toggle Pill */}
         <div className="flex bg-surface-container-lowest rounded-[10px] p-[3px] border border-outline-variant/40 h-[36px] w-full">
           <button 
-            onClick={() => setViewMode('charts')}
+            onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setViewMode('charts'); }}
             className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'charts' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             <Icon name="insights" className="text-[16px] sm:text-[18px]" />
             <span className="text-[12px] sm:text-[13px] hidden md:inline">Chart</span>
           </button>
           <button 
-            onClick={() => setViewMode('heatmap')}
+            onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setViewMode('heatmap'); }}
             className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
           >
             <Icon name="apps" className="text-[16px] sm:text-[18px]" />
@@ -664,13 +664,13 @@ export default function Analytics() {
                   <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/40 shadow-sm">
-                        <button onClick={() => setHeatmapPeriod('day')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
-                        <button onClick={() => setHeatmapPeriod('week')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
-                        <button onClick={() => setHeatmapPeriod('month')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('day'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('week'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('month'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
                       </div>
                       {heatmapPeriod === 'day' && (
                         <button 
-                          onClick={() => setShowPercentages(!showPercentages)}
+                          onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowPercentages(!showPercentages); }}
                           className={`px-3 h-8 rounded-full flex items-center justify-center gap-1 transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
                           title="Toggle Percentages"
                         >
@@ -681,7 +681,7 @@ export default function Analytics() {
                     </div>
                     {heatmapPeriod === 'day' && (
                       <button 
-                        onClick={() => setIsHeatmapExpanded(!isHeatmapExpanded)}
+                        onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsHeatmapExpanded(!isHeatmapExpanded); }}
                         className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant/40 shadow-sm"
                         title={isHeatmapExpanded ? "Exit Fullscreen" : "Fullscreen Heatmap"}
                       >
@@ -711,7 +711,7 @@ export default function Analytics() {
                                 {monthData.cells.map((cell, i) => (
                                     <div 
                                       key={i} 
-                                      onClick={() => { if (!cell.isPad) setSelectedDay(cell.date); }}
+                                      onClick={() => { if (!cell.isPad) { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(cell.date); } }}
                                       className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
                                     >
                                       {(!cell.isPad && cell.score !== null && showPercentages) && (
@@ -897,7 +897,7 @@ export default function Analytics() {
                 <p className="text-on-surface-variant text-[13px] font-medium mt-1">Daily Performance</p>
               </div>
               <button 
-                onClick={() => setSelectedDay(null)}
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(null); }}
                 className="w-10 h-10 rounded-full bg-surface-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant/50 hover:text-on-surface transition-colors"
               >
                 <Icon name="close" className="text-[22px]" />
@@ -991,3 +991,6 @@ export default function Analytics() {
   );
 
 }
+
+
+
