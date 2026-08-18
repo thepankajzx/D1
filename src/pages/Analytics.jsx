@@ -514,36 +514,20 @@ export default function Analytics() {
     <div className="flex flex-col gap-4 w-full -mt-2">
       {/* 1. Header Controls Row 1: 3-column Layout */}
       <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1 relative">
-        {/* Left: Chart/Heatmap Toggle Dropdown */}
-        <div className="relative shrink-0">
+        {/* Left: Chart/Heatmap Toggle Pill */}
+        <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[80px] h-[36px]">
           <button 
-            onClick={() => setIsChartDropdownOpen(!isChartDropdownOpen)}
-            className="flex items-center justify-center w-[40px] h-[36px] rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-sm text-on-surface hover:bg-surface-container transition-colors"
+            onClick={() => setViewMode('charts')}
+            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
           >
-            <Icon name={viewMode === 'charts' ? 'show_chart' : 'grid_on'} className="text-[18px]" />
+            <Icon name="show_chart" className="text-[18px]" />
           </button>
-          
-          {isChartDropdownOpen && (
-            <>
-              <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setIsChartDropdownOpen(false)}></div>
-              <div className="absolute top-[calc(100%+8px)] left-0 bg-surface/95 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[12px] p-1.5 z-50 flex flex-col min-w-[130px] animate-in fade-in zoom-in-95 duration-200">
-                <button 
-                  onClick={() => { setViewMode('charts'); setIsChartDropdownOpen(false); }}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-colors ${viewMode === 'charts' ? 'bg-primary/10 text-primary' : 'text-on-surface hover:bg-surface-variant'}`}
-                >
-                  <Icon name="show_chart" className="text-[18px]" />
-                  Chart
-                </button>
-                <button 
-                  onClick={() => { setViewMode('heatmap'); setIsChartDropdownOpen(false); }}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-colors ${viewMode === 'heatmap' ? 'bg-primary/10 text-primary' : 'text-on-surface hover:bg-surface-variant'}`}
-                >
-                  <Icon name="grid_on" className="text-[18px]" />
-                  Heatmap
-                </button>
-              </div>
-            </>
-          )}
+          <button 
+            onClick={() => setViewMode('heatmap')}
+            className={`flex-1 flex items-center justify-center rounded-full transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+          >
+            <Icon name="grid_on" className="text-[18px]" />
+          </button>
         </div>
         
         {/* Center: Habit Selector Dropdown (Swipeable) */}
@@ -563,7 +547,7 @@ export default function Analytics() {
         </div>
         
         {/* Timeframe Selector Dropdown */}
-        <div className="relative shrink-0 z-20">
+        <div className="relative shrink-0 z-20 flex items-center">
           <select 
             value={rangeOption}
             onChange={(e) => {
@@ -579,14 +563,14 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none h-[36px] bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-4 pr-10 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
+            className="appearance-none h-[36px] bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-3 pr-8 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
           >
-            <option value="7">7 Days</option>
-            <option value="30">30 Days</option>
-            <option value="90">90 Days</option>
+            <option value="7">7D</option>
+            <option value="30">30D</option>
+            <option value="90">90D</option>
             <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
           </select>
-          <Icon name="keyboard_arrow_down" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
+          <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && rangeOption === 'custom' && (
@@ -627,16 +611,6 @@ export default function Analytics() {
         </div>
       ) : (
       <div className="flex flex-col gap-5 w-full animate-in fade-in duration-500 mt-2">
-      
-        {/* Habit Selector Row 2 */}
-        <div className="flex items-center justify-end gap-4 w-full">
-          {/* Habit Selector Dropdown (Swipeable) */}
-          <SwipeableHabitSelector 
-            habits={habits} 
-            selectedHabitId={selectedHabit} 
-            onChange={setSelectedHabit} 
-          />
-        </div>
 
         <div className="custom-dashed-line"></div>
 
