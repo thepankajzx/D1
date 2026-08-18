@@ -419,6 +419,13 @@ export default function Analytics() {
         textStyle: { color: 'var(--on-surface-variant, #747985)' },
         bottom: 0
       },
+      dataZoom: [
+        {
+          type: 'inside',
+          xAxisIndex: 0,
+          filterMode: 'filter'
+        }
+      ],
       grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
       xAxis: {
         type: 'category',
