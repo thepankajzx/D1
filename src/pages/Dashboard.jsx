@@ -255,7 +255,7 @@ export default function Dashboard() {
 
   const handleDateChange = async (e) => {
     if (pendingChanges) {
-        await handleSaveProgress();
+        await handleSaveProgress(true); // bypass validation when changing dates
     }
     setSelectedDate(e.target.value);
   };
@@ -475,7 +475,7 @@ export default function Dashboard() {
       {/* Static Submit Button at Bottom */}
       <div className="mt-8 flex flex-col items-center justify-center w-full gap-4">
           <button 
-              onClick={handleSaveProgress} 
+              onClick={() => handleSaveProgress(false)} 
               disabled={isSaving || !pendingChanges} 
               className={`w-full md:w-auto md:min-w-[300px] px-10 py-4 rounded-full font-label-lg transition-all duration-300 flex items-center justify-center gap-3 ${
                   pendingChanges
@@ -519,8 +519,13 @@ export default function Dashboard() {
                   <li key={h.id}>{h.name}</li>
                 ))}
               </ul>
-              <p className="text-body-md text-on-surface-variant font-medium mt-2">
-                Do you want to save your progress now and complete the rest later?
+              <div className="bg-error-container/30 p-3 rounded-[8px] border border-error-container">
+                <p className="text-[13px] text-on-surface-variant leading-relaxed">
+                  <span className="font-bold text-on-surface">Note:</span> You must complete the remaining habits before midnight. Otherwise, they will be marked as blank (missed) for today.
+                </p>
+              </div>
+              <p className="text-body-md text-on-surface-variant font-medium mt-1">
+                Do you want to save your partial progress now?
               </p>
             </div>
             <div className="p-4 bg-surface-container-lowest border-t border-outline-variant/40 flex justify-end gap-2">
