@@ -511,9 +511,23 @@ export default function Analytics() {
 
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
-      {/* 1. Header & Date Controls */}
+      {/* 1. Header Controls Row 1: Toggle & Date */}
       <div className="flex flex-row justify-between items-center gap-2 w-full mt-2 px-1">
-        <h1 className="text-[22px] sm:text-[28px] font-bold text-on-surface truncate tracking-tight">Analytics</h1>
+        {/* Chart/Heatmap Toggle */}
+        <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[150px] h-[36px]">
+          <button 
+            onClick={() => setViewMode('charts')}
+            className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+          >
+            Chart
+          </button>
+          <button 
+            onClick={() => setViewMode('heatmap')}
+            className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
+          >
+            Heatmap
+          </button>
+        </div>
         
         {/* Timeframe Selector Dropdown */}
         <div className="relative shrink-0 z-20">
@@ -532,14 +546,14 @@ export default function Analytics() {
                 setIsCustomDropdownOpen(false);
               }
             }}
-            className="appearance-none bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-3 pr-8 py-1.5 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
+            className="appearance-none h-[36px] bg-surface-container-lowest border border-outline-variant/40 text-on-surface font-semibold text-[13px] rounded-full pl-4 pr-10 shadow-sm focus:outline-none hover:bg-surface-container transition-colors cursor-pointer"
           >
             <option value="7">7 Days</option>
             <option value="30">30 Days</option>
             <option value="90">90 Days</option>
             <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
           </select>
-          <Icon name="keyboard_arrow_down" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
+          <Icon name="keyboard_arrow_down" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]" />
           
           {/* Inline custom date panel */}
           {isCustomDropdownOpen && rangeOption === 'custom' && (
@@ -581,24 +595,8 @@ export default function Analytics() {
       ) : (
       <div className="flex flex-col gap-5 w-full animate-in fade-in duration-500 mt-2">
       
-        {/* Chart/Heatmap Toggle & Habit Selector Row */}
-        <div className="flex items-center justify-between gap-4 w-full">
-          {/* Chart/Heatmap Toggle */}
-          <div className="flex bg-surface-container rounded-full p-[3px] border border-outline-variant/50 shadow-sm shrink-0 w-[150px] h-[36px]">
-            <button 
-              onClick={() => setViewMode('charts')}
-              className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'charts' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
-            >
-              Chart
-            </button>
-            <button 
-              onClick={() => setViewMode('heatmap')}
-              className={`flex-1 rounded-full text-[13px] font-semibold transition-all duration-300 ${viewMode === 'heatmap' ? 'bg-surface-container-lowest text-on-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-variant border border-transparent'}`}
-            >
-              Heatmap
-            </button>
-          </div>
-          
+        {/* Habit Selector Row 2 */}
+        <div className="flex items-center justify-end gap-4 w-full">
           {/* Habit Selector Dropdown (Swipeable) */}
           <SwipeableHabitSelector 
             habits={habits} 
@@ -730,12 +728,15 @@ export default function Analytics() {
 
         {/* Habit Streak Timeline */}
         {!isFutureOnly && summaries.length > 0 && (
-          <HabitStreakTimeline 
-            habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
-            summaries={summaries}
-            startDate={startDate}
-            endDate={endDate}
-          />
+          <div className="flex flex-col gap-1 w-full mt-4">
+            <span className="text-[14px] font-bold text-on-surface px-2 sm:px-5">Streak</span>
+            <HabitStreakTimeline 
+              habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
+              summaries={summaries}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
         )}
 
         <div className="custom-dashed-line mt-2 mb-2"></div>
