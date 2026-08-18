@@ -47,7 +47,7 @@ export class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 text-center">
           <div className="w-16 h-16 bg-error-container text-on-error-container rounded-full flex items-center justify-center mb-6">
-            <Icon name="error_outline" className="text-3xl" />
+            <Icon name="error" className="text-3xl" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-on-surface mb-3">Oops! Something went wrong</h1>
           <p className="text-on-surface-variant max-w-md mb-8">
