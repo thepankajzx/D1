@@ -8,7 +8,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   
   // Combine 'overall' and habits
   const options = [
-    { id: 'overall', name: 'All Habits', icon: 'grid_view' },
+    { id: 'overall', name: 'Overall', icon: 'grid_view' },
     ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon }))
   ];
 
