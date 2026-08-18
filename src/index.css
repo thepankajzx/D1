@@ -241,6 +241,32 @@
   .btn-outline {
       @apply w-full border border-outline-variant text-on-surface py-3 rounded font-label-sm flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors;
   }
+  
+  .custom-dashed-line {
+    height: 1px;
+    width: 100%;
+    background-image: linear-gradient(to right, theme('colors.outline') 60%, transparent 40%);
+    background-size: 14px 1px;
+    background-repeat: repeat-x;
+    opacity: 0.6;
+  }
+  
+  .custom-dashed-border-b {
+    position: relative;
+    border-bottom: none !important;
+  }
+  .custom-dashed-border-b::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-image: linear-gradient(to right, theme('colors.outline') 60%, transparent 40%);
+    background-size: 14px 1px;
+    background-repeat: repeat-x;
+    opacity: 0.6;
+  }
 }
 
 @layer components {
