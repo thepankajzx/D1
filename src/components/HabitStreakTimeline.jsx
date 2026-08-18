@@ -3,14 +3,10 @@ import Icon from './Icon';
 
 // A predefined set of distinct colors for habits
 const HABIT_COLORS = [
-  '#f59e0b', // Amber
-  '#3b82f6', // Blue
-  '#10b981', // Emerald
-  '#8b5cf6', // Purple
-  '#ef4444', // Red
-  '#06b6d4', // Cyan
-  '#f97316', // Orange
-  '#ec4899', // Pink
+  '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', 
+  '#06b6d4', '#f97316', '#ec4899', '#84cc16', '#14b8a6', 
+  '#6366f1', '#d946ef', '#f43f5e', '#0ea5e9', '#22c55e',
+  '#a855f7', '#eab308', '#f97316', '#0284c7', '#be123c'
 ];
 
 // Helper to format Date to 'YYYY-MM-DD' ignoring timezone shifts
@@ -50,7 +46,7 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
   const endStr = dates[dates.length - 1].toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 
   return (
-    <div className="bg-surface-container rounded-[24px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/30 flex flex-col overflow-hidden mb-6 mt-2 relative">
+    <div className="flex flex-col w-full overflow-hidden mb-6 relative">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-2 shrink-0">
@@ -66,7 +62,7 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
           {/* Days Header Row */}
           <div className="flex mb-3">
             {/* Empty space for habit names sticky sidebar */}
-            <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-surface-container"></div>
+            <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-background"></div>
             
             {/* Days Columns */}
             <div className="flex gap-[6px]">
@@ -94,7 +90,7 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
                 <div key={habit.id} className="flex items-center relative h-[32px]">
                   
                   {/* Sticky Sidebar: Habit Info */}
-                  <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-surface-container flex items-center gap-2.5 pr-2">
+                  <div className="w-[140px] shrink-0 sticky left-0 z-20 bg-background flex items-center gap-2.5 pr-2">
                     <div 
                       className="w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 shadow-sm"
                       style={{ backgroundColor: `${color}15`, color: color }}
@@ -105,7 +101,7 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
                       {habit.name}
                     </span>
                     {/* Shadow gradient for sticky transition */}
-                    <div className="absolute right-[-12px] top-0 bottom-0 w-[12px] bg-gradient-to-r from-surface-container to-transparent pointer-events-none"></div>
+                    <div className="absolute right-[-12px] top-0 bottom-0 w-[12px] bg-gradient-to-r from-background to-transparent pointer-events-none"></div>
                   </div>
 
                   {/* Timeline Nodes */}
@@ -141,9 +137,8 @@ export default function HabitStreakTimeline({ habits, summaries, startDate, endD
                           <div 
                             className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-10 transition-all shadow-sm"
                             style={{
-                              backgroundColor: isCompleted ? color : `${color}12`,
-                              border: isCompleted ? 'none' : `1px solid ${color}30`,
-                              opacity: isCompleted ? 1 : 0.6
+                              backgroundColor: isCompleted ? color : '#ffffff',
+                              opacity: 1
                             }}
                           >
                             {isCompleted && (

@@ -714,6 +714,16 @@ export default function Analytics() {
           </div>
         )}
 
+        {/* Habit Streak Timeline */}
+        {!isFutureOnly && summaries.length > 0 && (
+          <HabitStreakTimeline 
+            habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
+            summaries={summaries}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        )}
+
         {/* Compact KPI Grid (2x2) */}
         {!isFutureOnly && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
@@ -765,15 +775,6 @@ export default function Analytics() {
           </div>
         )}
 
-        {/* Habit Streak Timeline */}
-        {!isFutureOnly && summaries.length > 0 && (
-          <HabitStreakTimeline 
-            habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
-            summaries={summaries}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        )}
 
         {/* Performance Insights */}
         {!isFutureOnly && (
