@@ -1,27 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Icon from './Icon';
 import HabitIcon from './HabitIcon';
 
 export default function SwipeableHabitSelector({ habits, selectedHabitId, onChange }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isActive, setIsActive] = useState(false);
-  const containerRef = useRef(null);
 
   const options = [
     ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' })),
     { id: 'overall', name: 'Overall', icon: 'grid_view' }
   ];
 
-  const currentIndex = options.findIndex(opt => opt.id === selectedHabitId);
-  const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
-
-  const dragStartY = useRef(null);
-  const isDragging = useRef(false);
-  const hasDragged = useRef(false);
-  const itemHeight = 36; // approximate height of one item in px
-  
-  // Smooth scrolling threshold
-  const threshold = 40; 
+  const selectedOpt = options.find(opt => opt.id === selectedHabitId) || options[0];
 
   const triggerVibration = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -29,153 +18,18 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
     }
   };
 
-  const handleTouchStart = (e) => {
-    // Ignore if tapping inside dropdown
-    if (isDropdownOpen) return;
-    dragStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
-    hasDragged.current = false;
-    setIsActive(true);
-  };
-
-  const handleTouchMove = (e) => {
-    if (!isDragging.current || dragStartY.current === null) return;
-    
-    // Prevent default scrolling when dragging on this component
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - dragStartY.current;
-    
-    if (Math.abs(deltaY) > 5) {
-      hasDragged.current = true;
-    }
-
-    if (Math.abs(deltaY) > threshold) {
-      // Swiped far enough
-      if (deltaY < 0 && safeCurrentIndex < options.length - 1) {
-        // Swipe UP -> Next item
-        onChange(options[safeCurrentIndex + 1].id);
-        triggerVibration();
-        isDragging.current = false; // Stop dragging until next touch to prevent flying past
-      } else if (deltaY > 0 && safeCurrentIndex > 0) {
-        // Swipe DOWN -> Prev item
-        onChange(options[safeCurrentIndex - 1].id);
-        triggerVibration();
-        isDragging.current = false; // Stop dragging until next touch
-      }
-    }
-  };
-
-  const handleTouchEnd = (e) => {
-    isDragging.current = false;
-    dragStartY.current = null;
-    setIsActive(false);
-  };
-
-  // Map mouse events to touch handlers for desktop support
-  const handleMouseDown = (e) => {
-    handleTouchStart({ touches: [{ clientY: e.clientY }] });
-  };
-  const handleMouseMove = (e) => {
-    if (isDragging.current) {
-      handleTouchMove({ preventDefault: () => e.preventDefault(), touches: [{ clientY: e.clientY }] });
-    }
-  };
-  const handleMouseUp = (e) => {
-    handleTouchEnd(e);
-  };
-
-  const scrollTimeout = useRef(null);
-
-  // Support wheel for desktop testing (also made very sensitive)
-  const handleWheel = (e) => {
-    e.preventDefault();
-    setIsActive(true);
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => setIsActive(false), 500);
-
-    if (e.deltaY > 0 && safeCurrentIndex < options.length - 1) {
-      onChange(options[safeCurrentIndex + 1].id);
-      triggerVibration();
-    } else if (e.deltaY < 0 && safeCurrentIndex > 0) {
-      onChange(options[safeCurrentIndex - 1].id);
-      triggerVibration();
-    }
-  };
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      // Passive false to allow preventDefault
-      el.addEventListener('touchmove', handleTouchMove, { passive: false });
-      el.addEventListener('wheel', handleWheel, { passive: false });
-    }
-    return () => {
-      if (el) {
-        el.removeEventListener('touchmove', handleTouchMove);
-        el.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, [safeCurrentIndex, options.length]); // Re-bind when index changes so closures have fresh data
-
-  const handleClick = () => {
-    if (!hasDragged.current) {
-      setIsDropdownOpen(!isDropdownOpen);
-      triggerVibration();
-    }
-  };
-
   return (
     <div className="relative w-full h-[36px] z-30">
-      <div 
-        ref={containerRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onClick={handleClick}
-        className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-3 pr-6 sm:pr-8 bg-surface-container-lowest rounded-[10px] h-full shadow-sm overflow-hidden select-none border border-outline-variant/40 cursor-grab active:cursor-grabbing hover:border-outline-variant transition-colors w-full relative"
+      <button 
+        onClick={() => { setIsDropdownOpen(!isDropdownOpen); triggerVibration(); }}
+        className="flex items-center gap-2 pl-3 pr-7 bg-surface-container-lowest rounded-[10px] h-full shadow-sm overflow-hidden select-none border border-outline-variant/40 hover:border-outline-variant transition-colors w-full relative cursor-pointer"
       >
-        <div 
-          className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200"
-          style={{
-            WebkitMaskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none',
-            maskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none'
-          }}
-        >
-          <div 
-            className="scroll-wrapper absolute w-full flex flex-col transition-transform duration-200 ease-out"
-            style={{ 
-              transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px))` 
-            }}
-          >
-            {options.map((opt, i) => {
-              const isSelected = i === safeCurrentIndex;
-              return (
-                <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
-                  <div 
-                    className={`flex items-center h-full px-3 gap-2 w-full rounded-[10px] transition-all duration-200 border ${
-                      isSelected 
-                        ? 'bg-transparent text-on-surface border-transparent opacity-100 scale-100' 
-                        : `bg-transparent text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
-                    }`}
-                  >
-                    <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
-                    <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="shrink-0 flex items-center justify-center">
+          <HabitIcon name={selectedOpt.icon || 'star'} habitId={selectedOpt.id} boxed={false} size={20} />
         </div>
-        <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
-      </div>
+        <span className="font-semibold text-[13px] text-on-surface truncate flex-1 text-left">{selectedOpt.name}</span>
+        <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px] pointer-events-none" />
+      </button>
       
       {/* Dropdown Menu (Opened on Tap) */}
       {isDropdownOpen && (
@@ -195,16 +49,14 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                   onClick={() => {
                     onChange(opt.id);
                     triggerVibration();
-                    // Close immediately, wrapped in timeout to ensure router state change doesn't interrupt it
-                    setTimeout(() => {
-                      setIsDropdownOpen(false);
-                    }, 0);
+                    // Close immediately
+                    setTimeout(() => setIsDropdownOpen(false), 0);
                   }}
                 >
                   <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
-                  <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
+                  <span className={`truncate text-left ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
                   {isSelected && (
-                    <Icon name="check" className="text-[16px] ml-auto text-primary" />
+                    <Icon name="check" className="text-[16px] ml-auto text-primary shrink-0" />
                   )}
                 </button>
               );
