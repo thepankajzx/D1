@@ -24,6 +24,7 @@ import Icon from '../components/Icon';
 import ProModal from '../components/ProModal';
 import ProCustomDateModal from '../components/ProCustomDateModal';
 import HabitStreakTimeline from '../components/HabitStreakTimeline';
+import SwipeableHabitSelector from '../components/SwipeableHabitSelector';
 
 const getPerfBandClass = (score) => {
   if (score === null || score === undefined) return '';
@@ -617,35 +618,15 @@ export default function Analytics() {
             </button>
           </div>
           
-          {/* Habit Selector Dropdown */}
-          <div className="relative shrink-0 flex-1 max-w-[160px] group">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
-              {selectedHabit === 'overall' ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant group-hover:text-on-surface transition-colors">
-                  <rect width="7" height="7" x="3" y="3" rx="1"/>
-                  <rect width="7" height="7" x="14" y="3" rx="1"/>
-                  <rect width="7" height="7" x="14" y="14" rx="1"/>
-                  <rect width="7" height="7" x="3" y="14" rx="1"/>
-                </svg>
-              ) : (
-                <Icon name={habits.find(h => h.id === selectedHabit)?.icon || 'star'} className="text-[16px]" />
-              )}
-            </div>
-            <select 
-              value={selectedHabit} 
-              onChange={e => setSelectedHabit(e.target.value)}
-              className="w-full bg-surface-container-lowest text-on-surface border border-outline-variant/40 hover:bg-surface-container font-semibold text-[13px] rounded-[10px] pl-9 pr-8 py-[7px] appearance-none focus:outline-none shadow-[0_2px_8px_rgba(0,0,0,0.02)] truncate cursor-pointer transition-colors"
-            >
-              <option value="overall">All Habits</option>
-              {habits.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-            </select>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
-          </div>
+          {/* Habit Selector Dropdown (Swipeable) */}
+          <SwipeableHabitSelector 
+            habits={habits} 
+            selectedHabitId={selectedHabit} 
+            onChange={setSelectedHabit} 
+          />
         </div>
 
-        <hr className="w-full border-t border-dashed border-outline-variant/60" />
+        <div className="custom-dashed-line"></div>
 
         {/* Hero Performance Card */}
         {isFutureOnly ? (
@@ -678,7 +659,7 @@ export default function Analytics() {
               </div>
             </div>
 
-            <hr className="w-full border-t border-dashed border-outline-variant/60" />
+            <div className="custom-dashed-line"></div>
             
             {/* ECharts Instance or Heatmap */}
             <div className={isHeatmapExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "w-full flex-grow min-h-[180px] -mb-2"}>
@@ -764,7 +745,7 @@ export default function Analytics() {
           </div>
         )}
 
-        <hr className="w-full border-t border-dashed border-outline-variant/60 mt-2 mb-2" />
+        <div className="custom-dashed-line mt-2 mb-2"></div>
 
         {/* Habit Streak Timeline */}
         {!isFutureOnly && summaries.length > 0 && (
@@ -776,7 +757,7 @@ export default function Analytics() {
           />
         )}
 
-        <hr className="w-full border-t border-dashed border-outline-variant/60 mt-2 mb-2" />
+        <div className="custom-dashed-line mt-2 mb-2"></div>
 
         {/* Compact KPI Grid (2x2) */}
         {!isFutureOnly && (
@@ -835,11 +816,11 @@ export default function Analytics() {
           <div className="flex flex-col gap-0 mt-2 mb-8">
             <h2 className="text-[15px] font-bold text-on-surface ml-1 mb-3">Performance Insights</h2>
             
-            <hr className="w-full border-t border-dashed border-outline-variant/60" />
+            <div className="custom-dashed-line"></div>
             
             <div className="flex flex-col">
               {/* Insight 1: Best Day */}
-              <div className="flex items-center justify-between p-4 border-b border-dashed border-outline-variant/60 hover:bg-surface-container transition-colors">
+              <div className="flex items-center justify-between p-4 custom-dashed-border-b hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center shrink-0">
                     <Icon name="emoji_events" className="text-[18px]" />
@@ -858,7 +839,7 @@ export default function Analytics() {
               </div>
 
               {/* Insight 2: Worst Day */}
-              <div className="flex items-center justify-between p-4 border-b border-dashed border-outline-variant/60 hover:bg-surface-container transition-colors">
+              <div className="flex items-center justify-between p-4 custom-dashed-border-b hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-perf-poor/10 text-perf-poor flex items-center justify-center shrink-0">
                     <Icon name="error" className="text-[18px]" />
