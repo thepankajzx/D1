@@ -351,7 +351,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         const currentDisplayUnit = habit.scoringType === 'duration' ? (displayMode === 'hours' ? 'hrs' : 'mins') : habit.unit;
         
         return (
-        return (
           <div className="flex flex-col w-full mt-3">
             {habit.scoringType === 'duration' && (
               <div className="flex justify-start mb-2">

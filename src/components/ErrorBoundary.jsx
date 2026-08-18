@@ -83,7 +83,6 @@ export class ErrorBoundary extends React.Component {
               <Icon name="home" /> Go to Home
             </button>
           </div>
-          </div>
           {/* We keep the error logged in the console for debugging but hide it from the UI */}
         </div>
       );
