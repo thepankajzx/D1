@@ -695,8 +695,14 @@ export default function Analytics() {
                         {heatmapGrid.map((monthData, mIndex) => (
                           <div key={mIndex} className="flex gap-2">
                             {(mIndex === 0) && (
-                              <div className="flex flex-col justify-between py-[2px] pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]" style={{ height: '164px' }}>
-                                <span className="leading-tight">Mon</span><span className="leading-tight">Tue</span><span className="leading-tight">Wed</span><span className="leading-tight">Thu</span><span className="leading-tight">Fri</span><span className="leading-tight">Sat</span><span className="leading-tight">Sun</span>
+                              <div className="grid-heatmap pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]">
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Mon</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Tue</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Wed</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Thu</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Fri</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Sat</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Sun</div>
                               </div>
                             )}
                             <div className="flex flex-col gap-1">
