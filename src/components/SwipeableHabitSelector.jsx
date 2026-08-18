@@ -9,8 +9,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const [dragOffset, setDragOffset] = useState(0);
 
   const options = [
-    { id: 'overall', name: 'Overall', icon: 'grid_view' },
-    ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' }))
+    ...habits.map(h => ({ id: h.id, name: h.name, icon: h.icon || 'star' })),
+    { id: 'overall', name: 'Overall', icon: 'grid_view' }
   ];
 
   const currentIndex = options.findIndex(opt => opt.id === selectedHabitId);
@@ -31,6 +31,8 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   const handleTouchStart = (e) => {
+    // Ignore if tapping inside dropdown
+    if (isDropdownOpen) return;
     dragStartY.current = e.touches[0].clientY;
     isDragging.current = true;
     hasDragged.current = false;
@@ -76,9 +78,19 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   const handleTouchEnd = () => {
     isDragging.current = false;
     dragStartY.current = null;
-    setDragOffset(0);
     setIsActive(false);
-    // hasDragged is deliberately not reset here so onClick can read it
+    // Remove smooth transition before snapping
+    if (containerRef.current) {
+      const scrollWrapper = containerRef.current.querySelector('.scroll-wrapper');
+      if (scrollWrapper) scrollWrapper.style.transition = 'none';
+    }
+    setDragOffset(0);
+    setTimeout(() => {
+      if (containerRef.current) {
+        const scrollWrapper = containerRef.current.querySelector('.scroll-wrapper');
+        if (scrollWrapper) scrollWrapper.style.transition = 'transform 100ms ease-out';
+      }
+    }, 50);
   };
 
   const scrollTimeout = useRef(null);
@@ -130,54 +142,56 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
   };
 
   return (
-    <div 
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onClick={handleClick}
-      className="relative shrink-0 flex-1 max-w-[180px] h-[36px] z-30 cursor-pointer touch-none"
-    >
+    <div className="relative shrink-0 w-[150px] h-[36px] z-30">
       <div 
-        className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200"
-        style={{
-          WebkitMaskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none',
-          maskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none'
-        }}
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleClick}
+        className="absolute inset-0 cursor-pointer touch-none"
       >
         <div 
-          className="absolute w-full flex flex-col transition-transform duration-100 ease-out"
-          style={{ 
-            transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
+          className="absolute w-full h-[144px] top-1/2 -translate-y-1/2 pointer-events-none select-none transition-all duration-200"
+          style={{
+            WebkitMaskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none',
+            maskImage: isActive ? 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)' : 'none'
           }}
         >
-          {options.map((opt, i) => {
-            const isSelected = i === safeCurrentIndex;
-            return (
-              <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
-                <div 
-                  className={`flex items-center h-full px-3 gap-3 w-full rounded-[10px] transition-all duration-200 border ${
-                    isSelected 
-                      ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] opacity-100 scale-100' 
-                      : `bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
-                  }`}
-                >
-                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={16} className="!rounded-full" />
-                  <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
-                  {isSelected && (
-                    <Icon name="unfold_more" className="text-[16px] text-on-surface-variant ml-auto shrink-0" />
-                  )}
+          <div 
+            className="scroll-wrapper absolute w-full flex flex-col transition-transform duration-100 ease-out"
+            style={{ 
+              transform: `translateY(calc(54px - ${safeCurrentIndex * itemHeight}px + ${dragOffset}px))` 
+            }}
+          >
+            {options.map((opt, i) => {
+              const isSelected = i === safeCurrentIndex;
+              return (
+                <div key={opt.id} className="h-[36px] w-full px-0.5 py-0.5">
+                  <div 
+                    className={`flex items-center h-full px-3 gap-3 w-full rounded-full transition-all duration-200 border ${
+                      isSelected 
+                        ? 'bg-surface-container-lowest text-on-surface border-outline-variant/40 shadow-[0_2px_8px_rgba(0,0,0,0.02)] opacity-100 scale-100' 
+                        : `bg-surface-container-low/80 backdrop-blur-md text-on-surface-variant border-transparent scale-95 ${isActive ? 'opacity-50' : 'opacity-0'}`
+                    }`}
+                  >
+                    <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
+                    <span className={`font-semibold text-[13px] truncate flex-1 leading-none ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
+                    {isSelected && (
+                      <Icon name="arrow_drop_down" className="text-[18px] text-on-surface-variant ml-auto shrink-0" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
       
       {/* Dropdown Menu (Opened on Tap) */}
       {isDropdownOpen && (
-        <>
+        <div className="absolute z-50">
           <div className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px] transition-opacity" onClick={() => setIsDropdownOpen(false)}></div>
-          <div className="absolute top-[calc(100%+8px)] right-0 w-[220px] max-h-[300px] overflow-y-auto bg-surface/80 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[16px] p-2 z-50 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+          <div className="absolute top-[calc(100%+8px)] right-0 w-[200px] max-h-[300px] overflow-y-auto bg-surface/95 backdrop-blur-xl shadow-lg border border-outline-variant/30 rounded-[16px] p-2 flex flex-col gap-1 custom-scrollbar animate-in fade-in zoom-in-95 duration-200 origin-top-right">
             {options.map((opt) => {
               const isSelected = opt.id === selectedHabitId;
               return (
@@ -194,7 +208,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
                     setIsDropdownOpen(false);
                   }}
                 >
-                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={true} size={18} className="!rounded-full" />
+                  <HabitIcon name={opt.icon || 'star'} habitId={opt.id} boxed={false} size={20} />
                   <span className={`truncate ${isSelected ? 'text-on-surface' : 'text-on-surface-variant'}`}>{opt.name}</span>
                   {isSelected && (
                     <Icon name="check" className="text-[16px] ml-auto text-primary" />
@@ -203,7 +217,7 @@ export default function SwipeableHabitSelector({ habits, selectedHabitId, onChan
               );
             })}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
