@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
-import { getScoreAndBand } from '../lib/scoring';
+
 
 // Helper to format minutes into HH:MM
 function formatTime(minutes) {
