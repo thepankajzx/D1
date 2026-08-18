@@ -645,6 +645,8 @@ export default function Analytics() {
           </div>
         </div>
 
+        <hr className="w-full border-t border-dashed border-outline-variant/60" />
+
         {/* Hero Performance Card */}
         {isFutureOnly ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[18px] shadow-sm text-center">
@@ -655,8 +657,8 @@ export default function Analytics() {
               </p>
           </div>
         ) : (
-          <div className="flex flex-col pt-2 pb-2 relative w-full">
-            <div className="px-5 flex justify-between items-start mb-2">
+          <div className="flex flex-col relative w-full gap-4">
+            <div className="px-2 sm:px-5 flex justify-between items-start">
               <div className="flex flex-col">
                 <span className="text-on-surface font-bold text-[14px]">{selectedHabit === 'overall' ? 'Overall Performance' : habits.find(h => h.id === selectedHabit)?.name || 'Performance'}</span>
                 <span className="text-[44px] font-black text-primary leading-[1.1] tracking-tight">{Math.round(kpis.averageScore || 0)}%</span>
@@ -676,6 +678,7 @@ export default function Analytics() {
               </div>
             </div>
 
+            <hr className="w-full border-t border-dashed border-outline-variant/60" />
             
             {/* ECharts Instance or Heatmap */}
             <div className={isHeatmapExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "w-full flex-grow min-h-[180px] -mb-2"}>
@@ -707,7 +710,7 @@ export default function Analytics() {
                         className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant/40 shadow-sm"
                         title={isHeatmapExpanded ? "Exit Fullscreen" : "Fullscreen Heatmap"}
                       >
-                        <Icon name={isHeatmapExpanded ? "fullscreen_exit" : "fullscreen"} className="text-[18px]" />
+                        <Icon name={isHeatmapExpanded ? "close" : "fullscreen"} className="text-[18px]" />
                       </button>
                     )}
                   </div>
@@ -761,6 +764,8 @@ export default function Analytics() {
           </div>
         )}
 
+        <hr className="w-full border-t border-dashed border-outline-variant/60 mt-2 mb-2" />
+
         {/* Habit Streak Timeline */}
         {!isFutureOnly && summaries.length > 0 && (
           <HabitStreakTimeline 
@@ -771,11 +776,13 @@ export default function Analytics() {
           />
         )}
 
+        <hr className="w-full border-t border-dashed border-outline-variant/60 mt-2 mb-2" />
+
         {/* Compact KPI Grid (2x2) */}
         {!isFutureOnly && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mb-6">
             {/* KPI 1: Average */}
-            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center text-center py-2">
               <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-4"/></svg>
               </div>
@@ -792,7 +799,7 @@ export default function Analytics() {
               else if (cons >= 50) { colorClass = "text-yellow-500"; bgClass = "bg-yellow-500/10"; }
               
               return (
-              <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+              <div className="flex flex-col items-center justify-center text-center py-2">
                 <div className={`w-10 h-10 rounded-full ${bgClass} ${colorClass} flex items-center justify-center mb-2`}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
@@ -803,7 +810,7 @@ export default function Analytics() {
             })()}
 
             {/* KPI 3: Current Streak */}
-            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center text-center py-2">
               <div className="w-10 h-10 rounded-full bg-perf-medium/10 text-perf-medium flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               </div>
@@ -812,7 +819,7 @@ export default function Analytics() {
             </div>
 
             {/* KPI 4: Best Streak */}
-            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-4 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center text-center py-2">
               <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
               </div>
@@ -825,12 +832,14 @@ export default function Analytics() {
 
         {/* Performance Insights */}
         {!isFutureOnly && (
-          <div className="flex flex-col gap-3 mt-2 mb-8">
-            <h2 className="text-[15px] font-bold text-on-surface ml-1">Performance Insights</h2>
+          <div className="flex flex-col gap-0 mt-2 mb-8">
+            <h2 className="text-[15px] font-bold text-on-surface ml-1 mb-3">Performance Insights</h2>
             
-            <div className="bg-surface-container-lowest rounded-[16px] border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+            <hr className="w-full border-t border-dashed border-outline-variant/60" />
+            
+            <div className="flex flex-col">
               {/* Insight 1: Best Day */}
-              <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 hover:bg-surface-container transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-dashed border-outline-variant/60 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center shrink-0">
                     <Icon name="emoji_events" className="text-[18px]" />
@@ -849,7 +858,7 @@ export default function Analytics() {
               </div>
 
               {/* Insight 2: Worst Day */}
-              <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 hover:bg-surface-container transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-dashed border-outline-variant/60 hover:bg-surface-container transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-perf-poor/10 text-perf-poor flex items-center justify-center shrink-0">
                     <Icon name="error" className="text-[18px]" />
