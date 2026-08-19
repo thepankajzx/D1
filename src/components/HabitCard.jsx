@@ -629,9 +629,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
         mins = Math.round(val % 60);
       }
       let parts = [];
-      if (hrs > 0) parts.push(`${hrs} hour${hrs > 1 ? 's' : ''}`);
-      if (mins > 0) parts.push(`${mins} minute${mins > 1 ? 's' : ''}`);
-      if (parts.length === 0) return '0 minutes';
+      if (hrs > 0) parts.push(`${hrs}h`);
+      if (mins > 0) parts.push(`${mins}min`);
+      if (parts.length === 0) return '0min';
       return parts.join(' ');
     }
     
