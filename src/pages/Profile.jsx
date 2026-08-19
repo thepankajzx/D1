@@ -39,7 +39,7 @@ export default function Profile() {
         const diffTime = Math.abs(now - createdDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        const isSuperAdmin = currentUser?.email?.toLowerCase() === 'test.dummy2025@gmail.com' || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+        const isSuperAdmin = currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
         
         if (diffDays <= 30 && !isSuperAdmin) {
             alert(`Habits are locked for 30 days to build consistency. You cannot remove it yet. (${30 - diffDays} days remaining)`);

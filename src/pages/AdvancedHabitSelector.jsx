@@ -417,7 +417,7 @@ export default function AdvancedHabitSelector() {
       setViewMode('summary');
       window.scrollTo(0, 0);
     } else if (viewMode === 'summary') {
-      const isSuperAdmin = currentUser?.email?.toLowerCase() === 'test.dummy2025@gmail.com' || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+      const isSuperAdmin = currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
       if (isSuperAdmin) {
         executeSave();
       } else {
