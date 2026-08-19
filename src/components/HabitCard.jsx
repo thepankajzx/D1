@@ -253,11 +253,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
       }
       case 'time':
         return (
-          <div className="flex flex-col gap-2 flex-grow justify-end">
-            <div className="flex justify-between text-xs text-on-surface-variant mb-2">
-              <span>Target: {formatTime(habit.target100)}</span>
-              <span>Baseline: {formatTime(habit.target0)}</span>
-            </div>
+          <div className="flex flex-col gap-2 flex-grow justify-end mt-2">
             <div 
               className="relative flex items-center border border-outline-variant rounded-lg overflow-hidden focus-within:border-primary transition-colors cursor-pointer hover:bg-surface-variant/30"
               onClick={(e) => {
@@ -410,8 +406,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             
             <div className="flex items-center gap-3 w-full">
               <div className="flex items-center gap-2 w-full mt-1">
-                {/* Min Label */}
-                <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 w-[16px] text-right">0</span>
                 
                 {/* Minus Button */}
                 <button 
@@ -500,10 +494,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   <Icon name="add" className="text-[16px]" />
                 </button>
                 
-                {/* Max Label */}
-                <span className="text-[11px] font-mono-data text-on-surface-variant font-medium shrink-0 text-left min-w-[16px]">
-                  {Math.round(dTarget100)}
-                </span>
               </div>
 
                             {showManualInput && (
