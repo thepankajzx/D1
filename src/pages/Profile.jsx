@@ -190,7 +190,7 @@ export default function Profile() {
       <div className="md:col-span-8 flex flex-col gap-6">
         <section className="bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col gap-4 shadow-sm">
           <div className="flex justify-between items-center">
-            <h2 className="font-headline-md text-headline-md text-on-surface">My Habits</h2>
+            <h2 className="font-headline-md text-headline-md text-on-surface">My Habits ({habits.length})</h2>
             {showHabitsList && (
               <button onClick={handleAddHabitClick} className="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
                 <Icon name="add" style={{fontSize: '18px'}} />
@@ -204,7 +204,7 @@ export default function Profile() {
             className="w-full py-3 bg-surface-container-low text-on-surface font-semibold rounded-lg hover:bg-surface-variant flex items-center justify-center gap-2 transition-colors border border-outline-variant"
           >
             <Icon name="list_alt" />
-            {showHabitsList ? "Hide My Habits" : "View My Habits"}
+            {showHabitsList ? `Hide My Habits (${habits.length})` : `View My Habits (${habits.length})`}
             <Icon name={showHabitsList ? "expand_less" : "expand_more"} className="ml-auto mr-2" />
           </button>
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { logErrorToDb } from '../lib/logger';
 import { useAuth } from './AuthContext';
@@ -33,69 +33,6 @@ export function DataProvider({ children }) {
     return !hasCachedData;
   });
 
-  async function loadGlobalData() {
-    if (!user) return;
-    // Only show loading spinner if we don't have cached data
-    if (habits.length === 0) setLoadingData(true);
-    
-    try {
-      // Fetch user doc
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            const lowerEmail = user.email ? user.email.toLowerCase() : '';
-            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
-                data.isPro = true;
-            }
-            setUserDocData(data);
-            setPriorityModeEnabled(data.priorityModeEnabled || false);
-        } else {
-            const lowerEmail = user.email ? user.email.toLowerCase() : '';
-            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
-                setUserDocData({ isPro: true });
-            }
-        }
-      } catch (err) {
-        console.error("Error loading user doc:", err);
-        logErrorToDb(err);
-      }
-
-      // Fetch habits
-      try {
-        const habitsSnap = await getDocs(collection(db, `users/${user.uid}/habits`));
-        const fetchedHabits = habitsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        fetchedHabits.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-        setHabits(fetchedHabits);
-        localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
-      } catch (err) {
-        console.error("Error loading habits:", err);
-        logErrorToDb(err);
-      }
-
-      // Fetch summaries
-      try {
-        const summariesSnap = await getDocs(collection(db, `users/${user.uid}/dailySummaries`));
-        const fetchedSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // Sort by date (id) descending in memory
-        fetchedSummaries.sort((a, b) => b.id.localeCompare(a.id));
-        const recentSummaries = fetchedSummaries.slice(0, 30);
-        
-        setAllSummaries(recentSummaries);
-        localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
-      } catch (err) {
-        console.error("Error loading summaries:", err);
-        logErrorToDb(err);
-      }
-      
-    } catch (error) {
-      console.error("Critical error in loadGlobalData:", error);
-      logErrorToDb(error);
-    } finally {
-      setLoadingData(false);
-    }
-  }
-
   useEffect(() => {
     if (!user) {
       setHabits([]);
@@ -121,8 +58,78 @@ export function DataProvider({ children }) {
       setAllSummaries(JSON.parse(cachedSummaries));
     }
 
-    loadGlobalData();
+    let unsubHabits = () => {};
+    let unsubSummaries = () => {};
+
+    const setupListeners = async () => {
+      // Fetch user doc once
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            const lowerEmail = user.email ? user.email.toLowerCase() : '';
+            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+                data.isPro = true;
+            }
+            setUserDocData(data);
+            setPriorityModeEnabled(data.priorityModeEnabled || false);
+        } else {
+            const lowerEmail = user.email ? user.email.toLowerCase() : '';
+            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+                setUserDocData({ isPro: true });
+            }
+        }
+      } catch (err) {
+        console.error("Error loading user doc:", err);
+        logErrorToDb(err);
+      }
+
+      // Real-time listener for Habits
+      unsubHabits = onSnapshot(
+        collection(db, `users/${user.uid}/habits`),
+        (snap) => {
+          const fetchedHabits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          fetchedHabits.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+          setHabits(fetchedHabits);
+          localStorage.setItem(`habits_${user.uid}`, JSON.stringify(fetchedHabits));
+          setLoadingData(false);
+        },
+        (err) => {
+          console.error("Error loading habits:", err);
+          logErrorToDb(err);
+        }
+      );
+
+      // Real-time listener for Summaries
+      unsubSummaries = onSnapshot(
+        collection(db, `users/${user.uid}/dailySummaries`),
+        (snap) => {
+          const fetchedSummaries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          // Sort by date (id) descending in memory
+          fetchedSummaries.sort((a, b) => b.id.localeCompare(a.id));
+          const recentSummaries = fetchedSummaries.slice(0, 30);
+          setAllSummaries(recentSummaries);
+          localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(recentSummaries));
+        },
+        (err) => {
+          console.error("Error loading summaries:", err);
+          logErrorToDb(err);
+        }
+      );
+    };
+
+    setupListeners();
+
+    return () => {
+      unsubHabits();
+      unsubSummaries();
+    };
   }, [user]);
+
+  // Keep loadGlobalData for manual refreshes if needed, but it won't be as necessary now
+  async function loadGlobalData() {
+    // Empty function to prevent crashing where refreshData is called
+  }
 
   const value = {
     habits,
