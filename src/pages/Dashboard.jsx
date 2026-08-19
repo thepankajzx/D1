@@ -182,10 +182,14 @@ export default function Dashboard() {
         if (dailySummary) {
             const summaryData = { ...dailySummary };
             
-            // Add individual habit scores to the daily summary to power analytics without extra reads
+            // Add individual habit scores and raw values to the daily summary to power analytics without extra reads
             summaryData.habitScores = {};
+            summaryData.habitValues = {};
             finalEntries.forEach(e => {
                 summaryData.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+                if (e.rawValue !== undefined && e.rawValue !== null) {
+                    summaryData.habitValues[e.habitId] = e.rawValue;
+                }
             });
             
             delete summaryData.id;

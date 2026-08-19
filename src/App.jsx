@@ -9,6 +9,7 @@ import Icon from './components/Icon';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 const Analytics = lazy(() => import('./pages/Analytics'));
+const DeepDive = lazy(() => import('./pages/DeepDive'));
 
 const Profile = lazy(() => import('./pages/Profile'));
 const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
@@ -32,7 +33,7 @@ function Layout({ children }) {
   }
 
   const getLinkClass = (path) => {
-    const isActive = location.pathname === path;
+    const isActive = location.pathname.startsWith(path) && (path !== '/' || location.pathname === '/');
     return `h-16 flex items-center pt-1 font-label-sm text-label-sm tracking-[0.02em] font-medium uppercase transition-colors ${
       isActive 
         ? 'text-primary border-b-2 border-primary pb-1' 
@@ -88,8 +89,8 @@ function Layout({ children }) {
             <Icon name={location.pathname === '/' ? 'home_filled' : 'home_outlined'} className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Dashboard</span>
           </Link>
-          <Link to="/analytics" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === '/analytics' ? 'text-primary' : 'text-on-surface-variant'}`}>
-            <Icon name={location.pathname === '/analytics' ? 'insert_chart_filled' : 'insert_chart_outlined'} className=" text-2xl" />
+          <Link to="/analytics" className={`flex flex-col items-center justify-center w-full h-full ${location.pathname.startsWith('/analytics') ? 'text-primary' : 'text-on-surface-variant'}`}>
+            <Icon name={location.pathname.startsWith('/analytics') ? 'insert_chart_filled' : 'insert_chart_outlined'} className=" text-2xl" />
             <span className="text-[10px] font-medium mt-1">Analytics</span>
           </Link>
       </div>
@@ -112,6 +113,7 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route path="/" element={<Layout><Dashboard /></Layout>} />
                   <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+                  <Route path="/analytics/deep-dive" element={<Layout><DeepDive /></Layout>} />
                   <Route path="/profile" element={<Layout><Profile /></Layout>} />
                   <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
                   

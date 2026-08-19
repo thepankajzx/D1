@@ -565,6 +565,17 @@ export default function Analytics() {
 
   return (
     <div className="flex flex-col gap-4 w-full -mt-2">
+      {selectedHabit !== 'overall' && (
+         <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+           <div>
+             <h3 className="font-bold text-primary flex items-center gap-2"><Icon name="insights" /> Habit Deep Dive</h3>
+             <p className="text-sm text-on-surface-variant">Get advanced analytics, time patterns, and detailed breakdowns for this habit.</p>
+           </div>
+           <Link to={`/analytics/deep-dive?habitId=${selectedHabit}`} className="btn-primary whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold bg-primary text-on-primary">
+             View Deep Dive
+           </Link>
+         </div>
+      )}
       {/* 1. Header Controls Row 1: 3-column Layout */}
       <div className="grid grid-cols-3 gap-2 w-full mt-2 relative">
         {/* Left: Chart/Heatmap Toggle Pill */}
