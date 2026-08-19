@@ -355,9 +355,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   <Icon name="add" className="text-[16px]" />
                 </button>
               </div>
-              <div className="text-center font-mono-data text-primary font-bold mt-2">
-                {val}/10
-              </div>
             </div>
           );
       case 'number':
