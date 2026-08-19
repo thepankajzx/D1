@@ -24,7 +24,7 @@ export function DataProvider({ children }) {
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
 
   // Grant pro to demo/dev accounts immediately, before Firestore loads
-  const DEV_PRO_EMAILS = ['dummytest2025@example.com', 'test2025@gmail.com'];
+  const DEV_PRO_EMAILS = ['dummytest2025@example.com', 'test2025@gmail.com', 'test.dummy2025@gmail.com'];
   const isDevPro = DEV_PRO_EMAILS.includes(user?.email?.toLowerCase() ?? '');
   const [userDocData, setUserDocData] = useState(isDevPro ? { isPro: true } : null);
   const [loadingData, setLoadingData] = useState(() => {
@@ -68,14 +68,14 @@ export function DataProvider({ children }) {
         if (userDoc.exists()) {
             const data = userDoc.data();
             const lowerEmail = user.email ? user.email.toLowerCase() : '';
-            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+            if (DEV_PRO_EMAILS.includes(lowerEmail)) {
                 data.isPro = true;
             }
             setUserDocData(data);
             setPriorityModeEnabled(data.priorityModeEnabled || false);
         } else {
             const lowerEmail = user.email ? user.email.toLowerCase() : '';
-            if ((lowerEmail === 'dummytest2025@example.com' || lowerEmail === 'test2025@gmail.com')) {
+            if (DEV_PRO_EMAILS.includes(lowerEmail)) {
                 setUserDocData({ isPro: true });
             }
         }
