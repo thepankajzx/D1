@@ -41,7 +41,11 @@ import {
   Eye,
   EyeSlash,
   WarningCircle,
-  ArrowsClockwise
+  ArrowsClockwise,
+  Alarm,
+  DeviceMobile,
+  GraduationCap,
+  Hourglass
 } from '@phosphor-icons/react';
 
 // Maps old Material Symbol names to Phosphor React components
@@ -96,7 +100,11 @@ const ICON_MAP = {
   'visibility_off': EyeSlash,
   'error': WarningCircle,
   'sync': ArrowsClockwise,
-  'grid_view': SquaresFour
+  'grid_view': SquaresFour,
+  'alarm': Alarm,
+  'smartphone': DeviceMobile,
+  'school': GraduationCap,
+  'hourglass_empty': Hourglass
 };
 
 // Nice vibrant colors for the duotone/squircle effect
@@ -122,6 +130,15 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
+// Hardcoded color distribution for predefined habits
+const PREDEFINED_COLORS = {
+  "wakeup": 0, "sleep": 1, "sleep_duration": 2, "workout": 3,
+  "walking": 4, "water": 5, "protein": 6, "calories": 7,
+  "deepwork": 8, "pomodoro": 0, "reading": 1, "study": 2,
+  "screentime": 3, "meditation": 4, "journal": 5, "coldshower": 6,
+  "mood": 7, "energy": 8, "alcoholfree": 0, "smokingfree": 1
+};
+
 /**
  * HabitIcon renders a premium, solid (or duotone) icon inside a colored squircle.
  * @param {string} name - Legacy material symbol name
@@ -138,8 +155,12 @@ export default function HabitIcon({ name, habitId, boxed = true, size = 20, clas
   if (habitId === 'overall') {
     hexColor = '#f43f5e'; // Rose for overall
   } else if (habitId) {
-    const colorIndex = hashString(habitId) % PALETTE.length;
-    hexColor = PALETTE[colorIndex];
+    if (PREDEFINED_COLORS[habitId] !== undefined) {
+      hexColor = PALETTE[PREDEFINED_COLORS[habitId]];
+    } else {
+      const colorIndex = hashString(habitId) % PALETTE.length;
+      hexColor = PALETTE[colorIndex];
+    }
   }
 
   // Convert hex to rgba for the 15% opacity background
