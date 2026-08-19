@@ -72,7 +72,10 @@ function computeStreaks(allSummaries, endDate, habitId = 'overall') {
 }
 
 export function computeKPIs(summaries, startDate, endDate, allSummaries = []) {
-  let scoreSum = 0;
+  let weightedScoreSum = 0;
+  let totalHabitsRecorded = 0;
+  let expectedHabitsTotal = 0;
+  
   let count = 0;
   let highestScore = -1;
   let bestDay = null;
@@ -83,8 +86,14 @@ export function computeKPIs(summaries, startDate, endDate, allSummaries = []) {
 
   for (const sum of summaries) {
     if (sum.id >= startDate && sum.id <= endDate) {
-      if (sum.overallScore !== undefined) {
-        scoreSum += sum.overallScore;
+      if (sum.overallScore !== undefined && sum.overallScore !== null) {
+        const recordedCount = sum.habitsCompleted ?? 1;
+        const totalCount = sum.habitsTotal ?? recordedCount;
+        
+        weightedScoreSum += (sum.overallScore * recordedCount);
+        totalHabitsRecorded += recordedCount;
+        expectedHabitsTotal += totalCount;
+        
         count++;
         
         if (sum.overallScore > highestScore) {
@@ -112,7 +121,10 @@ export function computeKPIs(summaries, startDate, endDate, allSummaries = []) {
   const { currentStreak, bestStreak } = computeStreaks(allSummaries, endDate, 'overall');
   
   return {
-    averageScore: count > 0 ? Math.round(scoreSum / count) : 0,
+    averageScore: totalHabitsRecorded > 0 ? Math.round(weightedScoreSum / totalHabitsRecorded) : 0,
+    totalHabitsRecorded,
+    expectedHabitsTotal,
+    dataCoverage: expectedHabitsTotal > 0 ? Math.round((totalHabitsRecorded / expectedHabitsTotal) * 100) : 0,
     bestDay: bestDay,
     bestDayScore: highestScore === -1 ? null : highestScore,
     lowestDay: worstDay,

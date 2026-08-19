@@ -176,6 +176,9 @@ export default function Analytics() {
     return {
         ...baseKpis,
         averageScore: Math.round(hb.avgScore),
+        totalHabitsRecorded: hb.trackedDays,
+        expectedHabitsTotal: hb.totalDays,
+        dataCoverage: Math.round((hb.trackedDays / hb.totalDays) * 100) || 0,
         bestDayScore: hb.bestScore,
         lowestDayScore: hb.lowestScore,
         consistency: hb.consistency,
@@ -216,22 +219,27 @@ export default function Analytics() {
       const dataPoint = { date: dateStr };
       const summary = summaries.find(s => s.id === dateStr);
       
-      if (dateStr > todayStr || (dateStr === todayStr && !summary)) {
+      if (dateStr > todayStr || !summary || summary.habitsCompleted === 0) {
         dataPoint.overallScore = null;
+        dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: habits.length };
       } else {
-        dataPoint.overallScore = summary?.overallScore || 0;
+        dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : null;
+        dataPoint.meta = {
+           recordedCount: summary.habitsCompleted || 0,
+           expectedCount: summary.habitsTotal || habits.length
+        };
       }
       
       habits.forEach(h => {
-        if (dateStr > todayStr || (dateStr === todayStr && summary?.habitScores?.[h.id] === undefined)) {
+        if (dateStr > todayStr || !summary || summary.habitScores?.[h.id] === undefined) {
           dataPoint[h.id] = null;
         } else {
-          dataPoint[h.id] = summary?.habitScores?.[h.id] !== undefined ? summary.habitScores[h.id] : 0;
+          dataPoint[h.id] = summary.habitScores[h.id];
         }
       });
-      
       return dataPoint;
-    });  }, [startDate, endDate, summaries, habits]);
+    });
+  }, [effectiveStartDate, endDate, summaries, habits]);
 
   const dailyDataForHeatmap = useMemo(() => {
     return chartData.map(d => ({
@@ -278,14 +286,33 @@ export default function Analytics() {
     const isOverall = habitId === 'overall';
     const series = isOverall
       ? (() => {
-          const rawData = chartData.map(d => d.overallScore);
           let lastIdx = -1;
-          for (let i = rawData.length - 1; i >= 0; i--) {
-            if (rawData[i] !== null) { lastIdx = i; break; }
+          for (let i = chartData.length - 1; i >= 0; i--) {
+            if (chartData[i].overallScore !== null) { lastIdx = i; break; }
           }
-          const formattedData = rawData.map((val, idx) => {
-            if (idx === lastIdx) return { value: val, symbol: 'circle', symbolSize: 8 };
-            return val;
+          const formattedData = chartData.map((d, idx) => {
+            const val = d.overallScore;
+            if (val === null) return null;
+            const meta = d.meta;
+            const isPartial = meta.recordedCount > 0 && meta.recordedCount < meta.expectedCount;
+            
+            const basePoint = {
+              value: val,
+              meta: meta
+            };
+            
+            if (isPartial) {
+              basePoint.symbol = 'emptyCircle';
+              basePoint.symbolSize = 6;
+              basePoint.itemStyle = { borderWidth: 2, color: '#d0bcff' };
+            } else if (idx === lastIdx) {
+              basePoint.symbol = 'circle';
+              basePoint.symbolSize = 8;
+            } else {
+              basePoint.symbol = 'circle';
+              basePoint.symbolSize = 4;
+            }
+            return basePoint;
           });
           return [
             {
@@ -316,14 +343,24 @@ export default function Analytics() {
           const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
           const color = colors[globalIndex % colors.length];
           
-          const rawData = chartData.map(d => d[id]);
           let lastIdx = -1;
-          for (let i = rawData.length - 1; i >= 0; i--) {
-            if (rawData[i] !== null) { lastIdx = i; break; }
+          for (let i = chartData.length - 1; i >= 0; i--) {
+            if (chartData[i][id] !== null) { lastIdx = i; break; }
           }
-          const formattedData = rawData.map((val, idx) => {
-            if (idx === lastIdx) return { value: val, symbol: 'circle', symbolSize: 8 };
-            return val;
+          const formattedData = chartData.map((d, idx) => {
+            const val = d[id];
+            if (val === null) return null;
+            
+            // For a single habit, it's either recorded (1/1) or not. It's never 'partial'.
+            const basePoint = { value: val };
+            if (idx === lastIdx) {
+              basePoint.symbol = 'circle';
+              basePoint.symbolSize = 8;
+            } else {
+              basePoint.symbol = 'circle';
+              basePoint.symbolSize = 4;
+            }
+            return basePoint;
           });
 
           return [
@@ -366,34 +403,50 @@ export default function Analytics() {
           const dataIndex = params[0].dataIndex;
           const pointData = chartData[dataIndex];
           const dateObj = new Date(pointData.date + 'T00:00:00');
-          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          const isOverallMode = selectedHabit === 'overall';
           
-          if (params.length > 1) {
-            let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 6px 10px; font-family: 'Inter', sans-serif; min-width: 130px;">`;
-            html += `<div style="font-size: 11px; color: var(--on-surface-variant, #6b7280); margin-bottom: 4px; font-weight: 500; border-bottom: 1px solid var(--outline-variant, #f3f4f6); padding-bottom: 2px;">${dateStr}</div>`;
+          let html = `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 8px 12px; font-family: 'Inter', sans-serif; min-width: 140px;">`;
+          html += `<div style="font-size: 11px; color: var(--on-surface-variant, #6b7280); margin-bottom: 6px; font-weight: 500; border-bottom: 1px solid var(--outline-variant, #f3f4f6); padding-bottom: 4px;">${dateStr}</div>`;
+          
+          if (pointData.overallScore === null && isOverallMode) {
+            html += `<div style="color: var(--on-surface-variant); font-size: 13px; font-weight: 600;">No data</div>`;
+            html += `<div style="color: var(--on-surface-variant); opacity: 0.8; font-size: 11px; margin-top: 2px;">0 / ${pointData.meta.expectedCount} habits recorded</div>`;
+          } else {
             params.forEach(param => {
               const seriesName = param.seriesName;
-              const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
-              const color = seriesName === 'Overall Score' ? '#8b5cf6' : (param.color || '#3b82f6');
+              const valObj = param.data;
+              const score = valObj && valObj.value !== undefined ? Math.round(valObj.value) : Math.round(param.value);
+              const color = param.color || '#3b82f6';
+              
               html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                  <div style="display: flex; align-items: center; gap: 4px;">
-                    <div style="width: 6px; height: 6px; border-radius: 50%; background: ${color};"></div>
-                    <span style="font-size: 12px; font-weight: 500; color: var(--on-surface-variant, #374151); max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${seriesName}</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                      <div style="width: 6px; height: 6px; border-radius: 50%; background: ${color};"></div>
+                      <span style="font-size: 12px; font-weight: 500; color: var(--on-surface-variant, #374151); max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Overall Score</span>
+                    </div>
+                    <strong style="font-size: 14px; font-weight: 800; color: var(--on-surface, #111827);">${score}%</strong>
                   </div>
-                  <strong style="font-size: 12px; font-weight: 700; color: var(--on-surface, #111827);">${score}%</strong>
-                </div>`;
+              `;
+              
+              if (isOverallMode && valObj && valObj.meta) {
+                const meta = valObj.meta;
+                const statusText = meta.recordedCount === meta.expectedCount ? 'Complete day' : 'Partial day';
+                html += `
+                  <div style="font-size: 11px; color: var(--on-surface-variant); font-weight: 500; display: flex; flex-direction: column; margin-top: 2px;">
+                    <span>${meta.recordedCount} / ${meta.expectedCount} habits recorded</span>
+                    <span>${statusText}</span>
+                  </div>
+                `;
+              }
+              
+              html += `</div>`;
             });
-            html += `</div>`;
-            return html;
-          } else {
-            const param = params[0];
-            const score = param.value !== undefined && param.value !== null && param.value !== '-' ? Math.round(param.value) : 0;
-            return `<div style="background: var(--surface-container-lowest, #ffffff); border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 4px 10px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 11px; color: var(--on-surface-variant, #4b5563); font-weight: 500;">${dateStr}</span>
-              <strong style="font-size: 12px; color: var(--on-surface, #111827);">${score}%</strong>
-            </div>`;
           }
+          
+          html += `</div>`;
+          return html;
         }
       },
       legend: {
@@ -635,8 +688,15 @@ export default function Analytics() {
           <div className="flex flex-col relative w-full gap-4">
             <div className="px-2 sm:px-5 flex justify-between items-start">
               <div className="flex flex-col">
-                <span className="text-on-surface font-bold text-[14px]">{selectedHabit === 'overall' ? 'Overall Performance' : habits.find(h => h.id === selectedHabit)?.name || 'Performance'}</span>
-                <span className="text-[44px] font-black text-primary leading-[1.1] tracking-tight">{Math.round(kpis.averageScore || 0)}%</span>
+                <span className="text-on-surface font-bold text-[14px]">
+                  {selectedHabit === 'overall' ? 'Weighted Overall Average' : habits.find(h => h.id === selectedHabit)?.name || 'Performance'}
+                </span>
+                <span className="text-[44px] font-black text-primary leading-[1.1] tracking-tight">
+                  {Math.round(kpis.averageScore || 0)}%
+                </span>
+                <span className="text-on-surface-variant/80 font-medium text-[12px] mt-1">
+                  {kpis.totalHabitsRecorded || 0} / {kpis.expectedHabitsTotal || 0} habits recorded
+                </span>
               </div>
               
               <div className="flex flex-col items-end">
@@ -650,6 +710,11 @@ export default function Analytics() {
                   {trendData.text}
                 </span>
                 <span className="text-on-surface-variant/60 text-[11px] font-medium">{trendData.label}</span>
+                
+                <div className="flex flex-col items-end mt-2">
+                  <span className="text-on-surface-variant font-medium text-[11px] uppercase tracking-wider">Data Coverage</span>
+                  <span className="text-[16px] font-black text-on-surface leading-tight">{kpis.dataCoverage || 0}%</span>
+                </div>
               </div>
             </div>
 
@@ -708,24 +773,59 @@ export default function Analytics() {
                             <div className="flex flex-col gap-1">
                               <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
                               <div className="grid-heatmap">
-                                {monthData.cells.map((cell, i) => (
-                                    <div 
-                                      key={i} 
-                                      onClick={() => { if (!cell.isPad) { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(cell.date); } }}
-                                      className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container-high' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
-                                    >
-                                      {(!cell.isPad && cell.score !== null && showPercentages) && (
-                                        <span className={`text-[11px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
-                                      )}
-                                      {(!cell.isPad && cell.score === null) && (
-                                        <div className="w-[6px] h-[6px] rounded-full bg-black/60 shadow-inner"></div>
-                                      )}
-                                    </div>
-                                ))}
+                                  {monthData.cells.map((cell, i) => {
+                                    const isOverall = selectedHabit === 'overall';
+                                    const recorded = cell.meta ? (cell.meta.habitsCompleted || 0) : 0;
+                                    const expected = cell.meta ? (cell.meta.habitsTotal || habits.length) : (isOverall ? habits.length : 1);
+                                    const isPartial = isOverall && recorded > 0 && recorded < expected;
+                                    
+                                    let titleText = '';
+                                    if (!cell.isPad) {
+                                      const dateObj = new Date(cell.date + 'T00:00:00');
+                                      const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                      const statusText = cell.score === null ? 'No data recorded' : (isPartial ? 'Partial data' : 'Complete');
+                                      const scoreText = cell.score === null ? 'No data' : `Score: ${Math.round(cell.score)}%`;
+                                      titleText = `${dateStr}\n${scoreText}\n${isOverall ? recorded + ' / ' + expected + ' habits' : '1 / 1 habit'}\n${statusText}`;
+                                    }
+
+                                    return (
+                                      <div 
+                                        key={i} 
+                                        title={titleText}
+                                        onClick={() => { if (!cell.isPad) { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(cell.date); } }}
+                                        className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                                        style={{ opacity: isPartial ? 0.7 : 1 }}
+                                      >
+                                        {(!cell.isPad && cell.score !== null && showPercentages) && (
+                                          <span className={`text-[11px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
+                                        )}
+                                        {(!cell.isPad && isPartial) && (
+                                          <div className="absolute top-[2px] right-[2px] w-[4px] h-[4px] rounded-full bg-white opacity-80 shadow-sm pointer-events-none"></div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                               </div>
                             </div>
                           </div>
                         ))}
+                        
+                        <div className="flex items-center gap-4 mt-6 ml-2 text-[11px] text-on-surface-variant font-medium">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-3 h-3 rounded-[3px] bg-perf-10"></div>
+                              <span>Score intensity</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <div className="relative w-3 h-3 rounded-[3px] bg-perf-7" style={{ opacity: 0.7 }}>
+                                <div className="absolute top-0 right-0 w-[4px] h-[4px] rounded-full bg-white opacity-80 pointer-events-none"></div>
+                              </div>
+                              <span>Partial data</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-3 h-3 rounded-[3px] bg-surface-container"></div>
+                              <span>No data</span>
+                            </div>
+                          </div>
                       </div>
                     ) : (
                       <div className="flex gap-3 w-max">

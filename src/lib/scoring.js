@@ -36,9 +36,9 @@ export function calculateDailySummary(habits, entries, priorityModeEnabled) {
     const entry = entries.find(e => e.habitId === habit.id);
     const score = entry?.computedScore;
     
-    // Check if habit is completed (for the completion counter)
-    // A habit is considered "completed" if an entry exists and it's not a 0 score (or is subjective)
-    if (entry && (habit.scoringType === 'subjective' || score > 0)) {
+    // Check if habit is recorded (for the data coverage counter)
+    // A habit is considered "recorded" if an entry exists, even if the score is 0.
+    if (entry) {
         habitsCompleted++;
     }
 
