@@ -587,7 +587,7 @@ export default function HabitDiagnostics() {
           </span>
         </div>
 
-        <section className="bg-gradient-to-b from-[#0e1424] via-[#090d18] to-[#060913] text-white rounded-[28px] p-4 sm:p-5 md:p-6 border border-[#1c263c] shadow-2xl relative overflow-hidden space-y-3.5">
+        <section className="bg-gradient-to-b from-[#0e1424] via-[#090d18] to-[#060913] text-white rounded-2xl p-4 sm:p-5 border border-[#1c263c] shadow-2xl relative overflow-hidden space-y-3.5">
           {/* Glow ambient */}
           <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -ml-16 -mb-16" />
@@ -600,8 +600,8 @@ export default function HabitDiagnostics() {
                 name={habit?.icon} 
                 habitId={habit?.id} 
                 boxed={true} 
-                size={30} 
-                className="!w-14 !h-14 sm:!w-16 sm:!h-16 !rounded-2xl shrink-0 shadow-lg border border-white/10" 
+                size={26} 
+                className="!w-12 !h-12 sm:!w-14 sm:!h-14 !rounded-xl shrink-0 shadow-lg border border-white/10" 
               />
 
               <div className="min-w-0 flex-1">
@@ -630,7 +630,7 @@ export default function HabitDiagnostics() {
           </div>
 
         {/* Middle Row: Combined Consistency & Resilience Capsule Card */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#090d19]/90 border border-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] flex items-center justify-between gap-3 relative z-10">
+        <div className="p-3 sm:p-3.5 rounded-xl bg-[#090d19]/90 border border-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] flex items-center justify-between gap-3 relative z-10">
           
           {/* Left: Consistency Circular Progress & Stats */}
           <div className="flex items-center gap-3 min-w-0">
@@ -696,8 +696,8 @@ export default function HabitDiagnostics() {
         <div className="grid grid-cols-2 gap-2.5 relative z-10">
           
           {/* Card 1: Current Streak */}
-          <div className="p-3 rounded-2xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
               <Calendar size={16} weight="bold" />
             </div>
             <div className="min-w-0 flex-1">
@@ -711,8 +711,8 @@ export default function HabitDiagnostics() {
           </div>
 
           {/* Card 2: Best Streak */}
-          <div className="p-3 rounded-2xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
               <Trophy size={16} weight="bold" />
             </div>
             <div className="min-w-0 flex-1">
@@ -726,8 +726,8 @@ export default function HabitDiagnostics() {
           </div>
 
           {/* Card 3: Average Gap */}
-          <div className="p-3 rounded-2xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(244,63,94,0.15)]">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(244,63,94,0.15)]">
               <Target size={16} weight="bold" />
             </div>
             <div className="min-w-0 flex-1">
@@ -741,8 +741,8 @@ export default function HabitDiagnostics() {
           </div>
 
           {/* Card 4: Total Misses */}
-          <div className="p-3 rounded-2xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.15)]">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.15)]">
               <HourglassSimple size={16} weight="bold" />
             </div>
             <div className="min-w-0 flex-1">
@@ -760,7 +760,7 @@ export default function HabitDiagnostics() {
       </div>
 
       {/* ── 4. PINPOINT ROOT CAUSE DIAGNOSTIC CARD (समस्या कहाँ है) ── */}
-      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
         <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
           <div className="w-7 h-7 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
             <Warning size={16} weight="fill" />
@@ -943,7 +943,7 @@ export default function HabitDiagnostics() {
       </section>
 
       {/* ── 6. CROSS-HABIT IMPACT & CORRELATION MATRIX (दूसरों पे क्या impact, दूसरों का इस habit पे impact) ── */}
-      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
         <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
           <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
             <ArrowsLeftRight size={16} weight="bold" />
@@ -1024,7 +1024,7 @@ export default function HabitDiagnostics() {
       </section>
 
       {/* ── 7. RECENT GAPS & RECOVERY TIMELINE (DROPDOWN ACCORDION) ── */}
-      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3 transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 transition-all">
         
         {/* Dropdown Header Trigger */}
         <div 
@@ -1139,7 +1139,7 @@ export default function HabitDiagnostics() {
       </section>
 
       {/* ── 8. ACTIONABLE KNOWLEDGE HUB & PRO RESET PLAN (CLEAN & HIGH CONTRAST) ── */}
-      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
         <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
