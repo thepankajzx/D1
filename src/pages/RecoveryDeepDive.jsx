@@ -7,7 +7,7 @@ import { calculateRecoveryScore, getResilienceBadgeClasses } from '../lib/recove
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import {
-  ShieldCheck, Flame, Trophy, Star, CheckCircle,
+  ShieldCheck, Lock, Flame, Trophy, Star, CheckCircle,
   XCircle, HourglassSimple, Sparkle, ArrowRight,
   Info, CalendarCheck, TrendUp, ArrowLeft, CaretDown, X
 } from '@phosphor-icons/react';
@@ -70,6 +70,7 @@ export default function RecoveryDeepDive() {
   const [showInfo, setShowInfo] = useState(() => { try { return !localStorage.getItem('has_seen_resilience_guide'); } catch (e) { return false; } });
   const [expandedMisses, setExpandedMisses] = useState([]);
   const [expandedRule, setExpandedRule] = useState(null);
+  const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 14);
 
   const handleCloseInfo = () => { try { localStorage.setItem('has_seen_resilience_guide', 'true'); } catch (e) {} setShowInfo(false); };
   const toggleRule = (id) => setExpandedRule(prev => prev === id ? null : id);
@@ -89,7 +90,7 @@ export default function RecoveryDeepDive() {
   }, [habits, habitId, isSamplePreview, activeHabits]);
 
   const hasRealData = useMemo(() => {
-    if (isSamplePreview || !allSummaries || allSummaries.length === 0 || !habit?.id) return false;
+    if (isSamplePreview || !allSummaries || allSummaries.length < 14 || !habit?.id) return false;
     return allSummaries.some(s => s.habitScores && s.habitScores[habit.id] !== undefined);
   }, [allSummaries, habit, isSamplePreview]);
 

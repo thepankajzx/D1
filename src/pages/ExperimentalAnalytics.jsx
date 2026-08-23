@@ -1513,28 +1513,28 @@ export default function ExperimentalAnalytics() {
                   navigate(selectedHabitId === 'all' ? '/analytics/recovery' : `/analytics/recovery?habitId=${selectedHabitId}`);
                 }
               }}
-              className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col justify-center min-w-0 hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-xs transition-all group cursor-pointer relative"
+              className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col justify-between min-w-0 hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-xs transition-all group cursor-pointer relative"
               title="Tap to open Resilience & Recovery Deep Dive"
             >
-              <span className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-black uppercase tracking-tight text-emerald-700 dark:text-emerald-300 leading-none whitespace-nowrap flex items-center justify-between">
-                <span className="flex items-center gap-1 truncate">
-                  <ShieldCheck size={11} weight="fill" className="text-emerald-500 shrink-0" />
-                  {isHinglish ? 'रेज़िलिएंस' : 'Resilience'}
-                </span>
-                {(realSummaries?.length || 0) < 14 ? (
-                  <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[8px] font-black tracking-wider shrink-0 flex items-center gap-0.5">
-                    <Lock size={8} weight="bold" /> 14D
-                  </span>
-                ) : (
-                  <CaretRight size={10} weight="bold" className="text-emerald-500 group-hover:translate-x-0.5 transition-transform" />
-                )}
+              <span className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-black uppercase tracking-tight text-emerald-700 dark:text-emerald-300 leading-none whitespace-nowrap flex items-center gap-1 truncate">
+                <ShieldCheck size={11} weight="fill" className="text-emerald-500 shrink-0" />
+                <span>{isHinglish ? 'रेज़िलिएंस' : 'Resilience'}</span>
               </span>
+
               <div className="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight my-0.5 tracking-tight">
                 {resilienceScore}%
               </div>
-              <span className="text-[8.5px] xs:text-[9px] sm:text-[9.5px] font-semibold text-emerald-700/75 dark:text-emerald-400/75 whitespace-nowrap leading-none truncate">
-                {(realSummaries?.length || 0) < 14 ? (isHinglish ? 'प्रीव्यू देखें ➔' : 'Preview ➔') : (isHinglish ? 'रिकवरी हब ➔' : 'Bounce-back ➔')}
-              </span>
+
+              <div className="flex items-center justify-between gap-1 leading-none">
+                <span className="text-[8.5px] xs:text-[9px] sm:text-[9.5px] font-semibold text-emerald-700/75 dark:text-emerald-400/75 whitespace-nowrap truncate">
+                  {isHinglish ? 'रिकवरी हब' : 'Bounce-back'}
+                </span>
+                {(realSummaries?.length || 0) < 14 ? (
+                  <Lock size={11} weight="bold" className="text-amber-500 shrink-0" />
+                ) : (
+                  <CaretRight size={10} weight="bold" className="text-emerald-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                )}
+              </div>
             </div>
 
             {/* Card 2: Consistency Rate */}
