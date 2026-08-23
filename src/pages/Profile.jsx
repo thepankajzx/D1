@@ -35,6 +35,11 @@ export default function Profile() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
   const [showInsightsLockModal, setShowInsightsLockModal] = useState(false);
+  const [habitPendingDelete, setHabitPendingDelete] = useState(null);
+  const [deleteLockDays, setDeleteLockDays] = useState(0);
+  const [showDeleteLockedModal, setShowDeleteLockedModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [isDeletingHabit, setIsDeletingHabit] = useState(false);
   const navigate = useNavigate();
 
   // Streak & Milestone Calculations
@@ -281,24 +286,36 @@ export default function Profile() {
     return `0 ${unit}`.trim();
   };
 
-  const handleDeleteHabit = async (habitId) => {
+  const handleDeleteHabit = (habitId) => {
+    if (navigator.vibrate) navigator.vibrate(25);
     const habitToDelete = habits.find(h => h.id === habitId);
     if (habitToDelete && habitToDelete.createdAt) {
       const createdDate = new Date(habitToDelete.createdAt);
       const diffDays = Math.ceil((new Date() - createdDate) / (1000 * 60 * 60 * 24));
       const isSuperAdmin = import.meta.env.DEV || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
       if (diffDays <= 30 && !isSuperAdmin) {
-        alert(`Habits are locked for 30 days to build consistency. You cannot remove it yet. (${30 - diffDays} days remaining)`);
+        setDeleteLockDays(Math.max(1, 30 - diffDays));
+        setShowDeleteLockedModal(true);
         return;
       }
     }
-    if (!window.confirm("Are you sure you want to remove this habit?")) return;
+    setHabitPendingDelete(habitToDelete || { id: habitId, name: 'Habit' });
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmExecuteDelete = async () => {
+    if (!habitPendingDelete) return;
+    setIsDeletingHabit(true);
     try {
-      await deleteDoc(doc(db, 'users', currentUser.uid, 'habits', habitId));
-      setHabits(habits.filter(h => h.id !== habitId));
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'habits', habitPendingDelete.id));
+      setHabits(habits.filter(h => h.id !== habitPendingDelete.id));
+      setShowDeleteConfirmModal(false);
+      setHabitPendingDelete(null);
+      if (navigator.vibrate) navigator.vibrate(40);
     } catch (error) {
       console.error("Error deleting habit:", error);
-      alert("Failed to delete habit.");
+    } finally {
+      setIsDeletingHabit(false);
     }
   };
 
@@ -1226,6 +1243,102 @@ export default function Profile() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ── IN-APP CUSTOM HABIT DELETE CONFIRMATION MODAL ── */}
+      {showDeleteConfirmModal && (
+        <div 
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setShowDeleteConfirmModal(false)}
+        >
+          <div 
+            className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-xs">
+              <Icon name="delete" className="text-2xl" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                {isHinglish ? 'आदत हटाएँ?' : 'Delete Habit?'}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                {isHinglish 
+                  ? `क्या आप वास्तव में "${habitPendingDelete?.name}" आदत को अपनी प्रोफ़ाइल से हटाना चाहते हैं?`
+                  : `Are you sure you want to remove "${habitPendingDelete?.name}" from your active habits?`}
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                disabled={isDeletingHabit}
+                onClick={confirmExecuteDelete}
+                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs cursor-pointer transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+              >
+                {isDeletingHabit ? (
+                  <span>{isHinglish ? 'हटाया जा रहा है...' : 'Deleting...'}</span>
+                ) : (
+                  <>
+                    <Icon name="delete" className="text-sm" />
+                    <span>{isHinglish ? 'हाँ, आदत हटाएँ' : 'Yes, Delete Habit'}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirmModal(false)}
+                className="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+              >
+                {isHinglish ? 'रद्द करें' : 'Cancel'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── 30-DAY HABIT DELETE LOCKED MODAL ── */}
+      {showDeleteLockedModal && (
+        <div 
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setShowDeleteLockedModal(false)}
+        >
+          <div 
+            className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+              <Lock size={22} weight="fill" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                {isHinglish ? 'आदत 30 दिन के लिए लॉक है' : 'Habit Locked for 30 Days'}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                {isHinglish 
+                  ? 'निरंतरता और मजबूत अनुशासन बनाने के लिए नई आदतों को जोड़ने के बाद 30 दिनों तक हटाया नहीं जा सकता।'
+                  : 'Habits are locked for 30 days to build unbreakable consistency. You cannot remove it until the lock period ends.'}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs font-black">
+              <span className="text-slate-500 dark:text-slate-400">{isHinglish ? 'शेष समय' : 'Remaining Time'}</span>
+              <span className="text-amber-600 dark:text-amber-400">{deleteLockDays} {isHinglish ? 'दिन बाकी' : 'days left'}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowDeleteLockedModal(false)}
+              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs"
+            >
+              {isHinglish ? 'समझ गया' : 'Got it'}
+            </button>
           </div>
         </div>
       )}
