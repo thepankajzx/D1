@@ -7,9 +7,9 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Database, CheckCircle, ShieldCheck, Sparkle, Spinner } from '@phosphor-icons/react';
 
 const TARGET_HABITS_CONFIG = [
-  { id: 'workout', name: 'Workout', category: 'Fitness', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 45, target0: 0, userTarget100: 45, userTarget0: 0, icon: 'fitness_center', priorityRank: 1 },
-  { id: 'screentime', name: 'Screen Time', category: 'Lifestyle', scoringType: 'duration', direction: 'lower_is_better', defaultUnit: 'hours', unit: 'hours', target100: 1, target0: 4, userTarget100: 1, userTarget0: 4, icon: 'smartphone', priorityRank: 2 },
-  { id: 'study', name: 'Study', category: 'Focus', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 120, target0: 0, userTarget100: 120, userTarget0: 0, icon: 'school', priorityRank: 3 },
+  { id: 'workout', name: 'Workout', category: 'Fitness', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 30, target0: 0, userTarget100: 30, userTarget0: 0, icon: 'fitness_center', priorityRank: 1 },
+  { id: 'screentime', name: 'Screen Time', category: 'Lifestyle', scoringType: 'duration', direction: 'lower_is_better', defaultUnit: 'hours', unit: 'hours', target100: 0, target0: 1, userTarget100: 0, userTarget0: 1, icon: 'smartphone', priorityRank: 2 },
+  { id: 'study', name: 'Study', category: 'Focus', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 240, target0: 0, userTarget100: 240, userTarget0: 0, icon: 'school', priorityRank: 3 },
   { id: 'sleep', name: 'Sleep Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 1320, target0: 1440, userTarget100: 1320, userTarget0: 1440, icon: 'bedtime' },
   { id: 'wakeup', name: 'Wake Up Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 360, target0: 480, userTarget100: 360, userTarget0: 480, icon: 'alarm' },
   { id: 'custom_masturbation_free', name: 'No Masturbation', category: 'Lifestyle', scoringType: 'binary', direction: 'higher_is_better', defaultUnit: '', unit: '', target100: 1, target0: 0, userTarget100: 1, userTarget0: 0, icon: 'shield' },
