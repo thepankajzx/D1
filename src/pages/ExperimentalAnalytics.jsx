@@ -2492,40 +2492,60 @@ export default function ExperimentalAnalytics() {
 
           {/* 30-Day Lock Overlay for Streak Insights */}
           {(realSummaries?.length || 0) < 30 && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white/70 dark:bg-[#131722]/85 backdrop-blur-xs rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-md space-y-2 animate-in fade-in duration-150">
-              <div className="w-9 h-9 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
-                <Lock size={18} weight="fill" />
-              </div>
-              <div>
-                <h4 className="font-black text-sm text-slate-900 dark:text-white leading-tight">
-                  {isHinglish ? '30 दिन के बाद अनलॉक होगा' : 'Unlocks After 30 Days'}
-                </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mt-1 leading-relaxed">
-                  {isHinglish 
-                    ? 'आपकी आदतों का असली Best Day, Vulnerable Day और वीकेंड बनाम वीकडे पैटर्न 30 दिनों का डेटा पूरा होने के बाद अनलॉक होगा।'
-                    : 'Authentic Best Day, Vulnerable Day, and Weekend vs Weekday rhythm anomalies unlock after 30 total logged days.'}
-                </p>
-              </div>
+            <div className="absolute inset-0 z-10 flex items-center justify-center p-3 sm:p-4 bg-white/75 dark:bg-[#0b0f19]/85 backdrop-blur-xs rounded-3xl animate-in fade-in duration-150">
+              <div className="w-full max-w-[320px] bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-3.5 text-center">
+                
+                {/* Lock Icon */}
+                <div className="w-10 h-10 mx-auto rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+                  <Lock size={20} weight="fill" />
+                </div>
 
-              <div className="w-48 sm:w-56 space-y-1 pt-1">
-                <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-700 dark:text-slate-300">
-                  <span>{isHinglish ? 'प्रोग्रेस' : 'Progress'}</span>
-                  <span className="text-amber-600 dark:text-amber-400 font-black">
-                    {realSummaries?.length || 0} / 30 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 30 - (realSummaries?.length || 0))} {isHinglish ? 'दिन बाकी' : 'days left'})
-                  </span>
+                {/* Text Content with Clean Alignment */}
+                <div className="space-y-1">
+                  <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
+                    {isHinglish ? '30 दिन के बाद अनलॉक होगा' : 'Unlocks After 30 Days'}
+                  </h4>
+                  <p className="text-[11.5px] sm:text-xs text-slate-600 dark:text-slate-300 leading-relaxed px-1">
+                    {isHinglish 
+                      ? 'आपकी आदतों का असली Best Day, Vulnerable Day और वीकेंड बनाम वीकडे पैटर्न 30 दिनों का डेटा पूरा होने के बाद अनलॉक होगा।'
+                      : 'Authentic Best Day, Vulnerable Day, and Weekend vs Weekday rhythm anomalies unlock after 30 total logged days.'}
+                  </p>
                 </div>
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
-                    style={{ width: `${Math.max(5, Math.round(((realSummaries?.length || 0) / 30) * 100))}%` }}
-                  />
+
+                {/* Progress Box */}
+                <div className="space-y-1.5 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 text-left">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    <span>{isHinglish ? 'प्रोग्रेस' : 'Progress'}</span>
+                    <span className="text-amber-600 dark:text-amber-400 font-black">
+                      {realSummaries?.length || 0} / 30 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 30 - (realSummaries?.length || 0))} {isHinglish ? 'दिन बाकी' : 'days left'})
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                      style={{ width: `${Math.max(5, Math.min(100, Math.round(((realSummaries?.length || 0) / 30) * 100)))}%` }}
+                    />
+                  </div>
                 </div>
+
+                {/* Explore Sample Preview Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    navigate('/analytics/diagnose?habitId=sample_workout');
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <Sparkle size={13} weight="fill" />
+                  <span>{isHinglish ? 'सैंपल प्रीव्यू देखें (Explore Sample)' : 'Explore Sample Preview'}</span>
+                </button>
+
               </div>
             </div>
           )}
         </div>
       </section>
-
 
       {/* ── BOTTOM SHEET / MODAL: SELECT HABIT SCOPE ───────────────────────── */}
       {showHabitSheet && (
