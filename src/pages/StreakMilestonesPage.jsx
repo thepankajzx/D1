@@ -179,47 +179,47 @@ export default function StreakMilestonesPage() {
           </div>
         </div>
 
-        {/* ── MASTER HERO CARD ────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-[24px] p-5 sm:p-6 shadow-xs relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none -translate-y-12 translate-x-12"></div>
+        {/* ── MASTER HERO CARD (COMPACT) ────────────────────────── */}
+        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-2xl pointer-events-none -translate-y-8 translate-x-8"></div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-5 relative z-10">
+          <div className="flex items-center justify-between gap-3 relative z-10">
             {/* Left: Flame & Current Streak */}
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
-                <Flame size={36} weight="fill" className="animate-pulse" />
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                <Flame size={22} weight="fill" className="animate-pulse" />
               </div>
               <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                     {streakData.currentStreak}
                   </span>
-                  <span className="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     {isHinglish ? 'दिन की स्ट्रीक' : 'Day Streak'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 font-bold mt-1">
+                <p className="text-[11px] text-slate-500 font-bold mt-0.5">
                   {isHinglish ? `Personal Best: ${bestStreak} दिन` : `Personal Best: ${bestStreak} days`}
                 </p>
               </div>
             </div>
 
             {/* Right: Unlocked Progress Badge */}
-            <div className="w-full sm:w-auto text-left sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black">
-                <Trophy size={14} weight="fill" className="text-amber-500" />
-                <span>{unlockedCount} / {DEDICATED_MILESTONES.length} Achieved</span>
+            <div className="text-right">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-black">
+                <Trophy size={13} weight="fill" className="text-amber-500" />
+                <span>{unlockedCount} / {DEDICATED_MILESTONES.length}</span>
               </div>
-              <p className="text-[11px] font-bold text-slate-400 mt-1.5">
-                {isHinglish ? `अगला माइलस्टोन: ${milestoneInfo.label}` : `Next Goal: ${milestoneInfo.label}`}
+              <p className="text-[10px] font-bold text-slate-400 mt-1 truncate max-w-[120px] xs:max-w-none">
+                {isHinglish ? `अगला: ${milestoneInfo.label}` : `Next: ${milestoneInfo.label}`}
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── 9 UNIQUE MILESTONE TROPHIES GRID ────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
-          {DEDICATED_MILESTONES.map((m, idx) => {
+        {/* ── 9 COMPACT MILESTONE TROPHIES (2-COL MOBILE, 3-COL DESKTOP) ── */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 pt-0.5">
+          {DEDICATED_MILESTONES.map((m) => {
             const IconComponent = m.icon;
             const isUnlocked = bestStreak >= m.target;
             const isNext = !isUnlocked && m.target === milestoneInfo.target;
@@ -228,68 +228,68 @@ export default function StreakMilestonesPage() {
             return (
               <div
                 key={m.target}
-                className={`p-4 rounded-[22px] border transition-all relative overflow-hidden flex flex-col justify-between gap-3 ${
+                className={`p-2.5 sm:p-3 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between gap-2 ${
                   isUnlocked
-                    ? 'bg-white dark:bg-[#131722] border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md'
+                    ? 'bg-white dark:bg-[#131722] border-slate-200/90 dark:border-slate-800 shadow-2xs hover:shadow-xs'
                     : isNext
-                    ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700/60 shadow-xs'
-                    : 'bg-slate-100/50 dark:bg-slate-800/20 border-slate-200/50 dark:border-slate-800/50 opacity-60'
+                    ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700/60 shadow-2xs ring-1 ring-blue-400/30'
+                    : 'bg-slate-50 dark:bg-slate-800/20 border-slate-200/60 dark:border-slate-800/40 opacity-70'
                 }`}
               >
                 {/* Card Top: Icon & Target Tag */}
-                <div className="flex items-center justify-between">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+                <div className="flex items-center justify-between gap-1">
+                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
                     isUnlocked
-                      ? 'bg-gradient-to-tr ' + m.color + ' text-white shadow-md'
+                      ? 'bg-gradient-to-tr ' + m.color + ' text-white shadow-xs'
                       : isNext
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                   }`}>
                     {isUnlocked ? (
-                      <IconComponent size={24} weight="fill" />
+                      <IconComponent size={16} weight="fill" />
                     ) : isNext ? (
-                      <IconComponent size={24} weight="bold" />
+                      <IconComponent size={16} weight="bold" />
                     ) : (
-                      <Lock size={20} weight="bold" />
+                      <Lock size={14} weight="bold" />
                     )}
                   </div>
 
-                  <span className={`text-xs font-black px-2.5 py-1 rounded-full ${
+                  <span className={`text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
                     isUnlocked
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                       : isNext
                       ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-                      : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-500'
+                      : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-500'
                   }`}>
                     {m.target} {isHinglish ? 'दिन' : 'Days'}
                   </span>
                 </div>
 
-                {/* Card Middle: Title & Description */}
+                {/* Card Middle: Title & 1-Line Description */}
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white leading-snug">
+                  <h3 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white leading-tight truncate">
                     {isHinglish ? m.hindiTitle : m.title}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug line-clamp-2">
                     {isHinglish ? m.hindiDesc : m.desc}
                   </p>
                 </div>
 
                 {/* Card Bottom: Progress / Status */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80">
                   {isUnlocked ? (
-                    <div className="flex items-center justify-between text-xs font-black text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center justify-between text-[10.5px] font-black text-emerald-600 dark:text-emerald-400">
                       <span className="flex items-center gap-1">
-                        <CheckCircle size={14} weight="fill" />
-                        <span>{isHinglish ? 'माइलस्टोन हासिल' : 'Milestone Achieved'}</span>
+                        <CheckCircle size={12} weight="fill" />
+                        <span>{isHinglish ? 'हासिल' : 'Achieved'}</span>
                       </span>
-                      <span className="text-[10px] text-slate-400 font-bold">Achieved</span>
+                      <span className="text-[9px] text-slate-400 font-bold">✓</span>
                     </div>
                   ) : isNext ? (
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px] font-black text-blue-600 dark:text-blue-400">
-                        <span>{remaining} {isHinglish ? 'दिन बाकी' : 'days left'}</span>
-                        <span>{streakData.currentStreak} / {m.target}</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[9.5px] font-black text-blue-600 dark:text-blue-400 leading-none">
+                        <span>{remaining} {isHinglish ? 'दिन बाकी' : 'left'}</span>
+                        <span>{streakData.currentStreak}/{m.target}</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
@@ -299,8 +299,8 @@ export default function StreakMilestonesPage() {
                       </div>
                     </div>
                   ) : (
-                    <span className="text-[10px] font-bold text-slate-400 block">
-                      {isHinglish ? `${m.target} दिन की स्ट्रीक पर अनलॉक होगा` : `Unlocks at ${m.target}-day streak`}
+                    <span className="text-[9px] font-bold text-slate-400 block truncate">
+                      {isHinglish ? `${m.target} दिन पर अनलॉक` : `Unlocks at ${m.target}d`}
                     </span>
                   )}
                 </div>
