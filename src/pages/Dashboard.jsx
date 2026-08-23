@@ -9,6 +9,9 @@ import HabitCard from '../components/HabitCard';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
 import StreakWidget from '../components/StreakWidget';
+import TodayInsightHighlightCard from '../components/TodayInsightHighlightCard';
+import { useLanguage } from '../contexts/LanguageContext';
+
 
 const getPerfColor = (score) => {
   if (score === null || score === undefined || score === 0) return 'var(--color-outline-variant)';
@@ -27,7 +30,9 @@ const getPerfColor = (score) => {
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
   const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData } = useData();
+  const { isHinglish } = useLanguage();
   const navigate = useNavigate();
+
   
   // Debug log
   useEffect(() => {
@@ -365,99 +370,71 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="flex flex-col gap-12 w-full pb-24">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
-        <div className="flex flex-col gap-2 flex-grow">
-          <div className="flex items-center gap-4 mb-1 relative">
-            <div className="flex items-center gap-2 text-on-surface premium-border px-4 py-2 rounded-lg bg-surface shadow-sm cursor-pointer relative">
-              <input 
-                  type="date" 
-                  aria-label="Select Date"
-                  value={selectedDate} 
-                  onChange={handleDateChange} 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  style={{ colorScheme: 'dark' }} 
-              />
-              <span className="font-body-md text-body-md font-medium">{displayDate}</span>
-              <Icon name="calendar_today" className=" text-sm text-on-surface-variant" />
-            </div>
+    <div className="flex flex-col gap-4 sm:gap-5 w-full pb-24">
+      {/* 1. Top KPI Pills (Focus & Streak) */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full">
+        {/* Focus Action Pill */}
+        <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
+          <div className="flex items-center justify-between gap-1 mb-1">
+            <span className="text-amber-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+              <Icon name="bolt" className="text-[12px]" />
+              Focus
+            </span>
+            <span className="text-[12px] font-bold text-amber-400/90">{weakestHabit?.score || 0}%</span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary mt-2">Daily Review</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            {dailySummary?.habitsCompleted || 0} of {habits.length} habits completed today.
-          </p>
+          <div className="text-[13px] font-bold text-slate-100 truncate">
+            {weakestHabit?.name || (habits[0]?.name || 'Daily Target')}
+          </div>
+          <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
+            {weakestHabit?.score < 50 
+              ? (isHinglish ? 'Rebound ki zaroorat hai' : 'Needs rebound') 
+              : (isHinglish ? 'Pehle complete karo' : 'Execute early')}
+          </div>
         </div>
-        
-        {/* KPI Cards (2 Pills) */}
-        <div className="flex flex-row gap-2 w-full md:w-auto shrink-0 mt-4 md:mt-0">
-          
-          {/* Weakest Habit Pill */}
-          <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
-            <div className="flex items-center justify-between gap-[6px] mb-[8px]">
-              <div className="flex flex-col min-w-0">
-                <span className="text-red-400/80 text-[8px] uppercase tracking-widest font-bold leading-none mb-0.5">Lowest</span>
-                <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium truncate">{weakestHabit?.name || 'N/A'}</span>
-              </div>
-              <span className="text-[14px] sm:text-[16px] font-bold shrink-0">{weakestHabit?.score || 0}%</span>
-            </div>
-            <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
-                {Array.from({ length: 20 }, (_, i) => {
-                    const score = weakestHabit?.score || 0;
-                    const filledCount = Math.round((score / 100) * 20);
-                    const isFilled = i < filledCount;
-                    let color = '#ef4444'; 
-                    if (score >= 80) color = '#22c55e'; 
-                    else if (score >= 60) color = '#86efac'; 
-                    else if (score >= 40) color = '#facc15'; 
-                    
-                    return (
-                        <span 
-                            key={i}
-                            className="h-[18px] sm:h-[21px] rounded-[4px]"
-                            style={{ backgroundColor: isFilled ? color : '#272727' }}
-                        ></span>
-                    );
-                })}
-            </div>
-          </div>
 
-          {/* Strongest Habit Pill */}
-          <div className="bg-[#151515] text-white rounded-xl p-[10px_14px] sm:p-[12px_16px] flex-1 shrink-0 relative flex flex-col justify-center overflow-hidden">
-            <div className="flex items-center justify-between gap-[6px] mb-[8px]">
-              <div className="flex flex-col min-w-0">
-                <span className="text-green-400/80 text-[8px] uppercase tracking-widest font-bold leading-none mb-0.5">Strongest</span>
-                <span className="text-[#b6b9bf] text-[12px] sm:text-[13px] font-medium truncate">{strongestHabit?.name || 'N/A'}</span>
-              </div>
-              <span className="text-[14px] sm:text-[16px] font-bold shrink-0">{strongestHabit?.score || 0}%</span>
-            </div>
-            <div className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[2px] sm:gap-[3px] w-full">
-                {Array.from({ length: 20 }, (_, i) => {
-                    const score = strongestHabit?.score || 0;
-                    const filledCount = Math.round((score / 100) * 20);
-                    const isFilled = i < filledCount;
-                    let color = '#ef4444'; 
-                    if (score >= 80) color = '#22c55e'; 
-                    else if (score >= 60) color = '#86efac'; 
-                    else if (score >= 40) color = '#facc15'; 
-                    
-                    return (
-                        <span 
-                            key={i}
-                            className="h-[18px] sm:h-[21px] rounded-[4px]"
-                            style={{ backgroundColor: isFilled ? color : '#272727' }}
-                        ></span>
-                    );
-                })}
-            </div>
+        {/* Momentum Streak Pill */}
+        <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
+          <div className="flex items-center justify-between gap-1 mb-1">
+            <span className="text-emerald-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+              <Icon name="local_fire_department" className="text-[12px]" />
+              Streak
+            </span>
+            <span className="text-[12px] font-bold text-emerald-400/90">{strongestHabit?.score || 100}%</span>
           </div>
-          
+          <div className="text-[13px] font-bold text-slate-100 truncate">
+            {strongestHabit?.name || (habits[0]?.name || 'Core Habit')}
+          </div>
+          <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
+            {isHinglish ? 'Streak tootne mat dena' : 'Keep unbroken'}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 2. Today's Daily Insight Highlight Card */}
+      <TodayInsightHighlightCard habits={habits} allSummaries={allSummaries} />
+
+      {/* 3. Date Selector */}
+      <div className="flex items-center justify-start">
+        <div className="flex items-center gap-2 text-on-surface border border-outline-variant/40 px-3.5 py-2 rounded-xl bg-surface-container-lowest hover:bg-surface-container shadow-2xs cursor-pointer relative transition-colors">
+          <input 
+            type="date" 
+            aria-label="Select Date"
+            value={selectedDate} 
+            onChange={handleDateChange} 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            style={{ colorScheme: 'dark' }} 
+          />
+          <Icon name="calendar_today" className="text-sm text-primary" />
+          <span className="font-semibold text-xs sm:text-sm text-on-surface">{displayDate}</span>
+          <Icon name="expand_more" className="text-sm text-on-surface-variant" />
         </div>
       </div>
 
       {/* Grouped Grid Main Content */}
-      <div className="flex flex-col gap-8 relative">
-        
+      <div className="flex flex-col gap-6 relative">
+
+
         {/* Binary Habits Section */}
         {habits.filter(h => h.scoringType === 'binary').length > 0 && (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

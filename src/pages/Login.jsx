@@ -151,6 +151,36 @@ export default function Login() {
             Continue with Google
           </button>
         </div>
+
+        {/* 1-Tap Fresh Account for Testing on Mobile */}
+        <div className="mt-4 pt-4 border-t border-outline-variant/30 text-center">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={async () => {
+              try {
+                setLoading(true);
+                setError('');
+                const randId = Math.floor(1000 + Math.random() * 9000);
+                const testEmail = `user_fresh_${randId}@test.com`;
+                const testPass = '123456';
+                const userCred = await signup(testEmail, testPass);
+                if (userCred?.user) {
+                  const userRef = doc(db, 'users', userCred.user.uid);
+                  await setDoc(userRef, { createdAt: new Date().toISOString(), currentStreak: 0, longestStreak: 0 });
+                }
+                navigate('/onboarding/welcome');
+              } catch (e) {
+                setError('Failed to create test user: ' + e.message);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="w-full py-2.5 px-4 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer border border-primary/20"
+          >
+            <span>⚡ Create Fresh Test Account (1-Tap)</span>
+          </button>
+        </div>
       </div>
     </div>
   );

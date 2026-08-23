@@ -1,5 +1,6 @@
 ﻿import React, { useMemo } from 'react';
 import Icon from './Icon';
+import HabitIcon from './HabitIcon';
 
 // A predefined set of distinct colors for habits
 const HABIT_COLORS = [

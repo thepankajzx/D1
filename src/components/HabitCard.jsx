@@ -714,7 +714,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             >
               <Icon name="bar_chart" className="text-[16px]" />
             </button>
-            {habit.scoringType !== 'subjective' && (
+            {habit.scoringType !== 'subjective' && habit.scoringType !== 'time' && (
               <button
                 onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowManualInput(!showManualInput); }}
                 className={`w-8 h-8 flex items-center justify-center rounded-[8px] border transition-colors ${showManualInput ? 'bg-primary/10 border-primary/30 text-primary' : 'border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}

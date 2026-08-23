@@ -60,75 +60,46 @@
   --color-perf-8: #22c55e;
   --color-perf-9: #16a34a;
   --color-perf-10: #14532d;
-}
 
-.dark {
-  --color-surface-container-high: #2b2930;
-  --color-on-surface-variant: #e3e2e7;
-  --color-inverse-primary: #1a1b1f;
-  --color-error: #ffb4ab;
-  --color-primary: #d0bcff;
-  --color-tertiary-fixed: #1a1b1f;
-  --color-on-secondary-container: #e3e2e7;
-  --color-surface-variant: #1a1b1f;
-  --color-error-container: #1a1b1f;
-  --color-tertiary-container: #e3e2e7;
-  --color-surface-bright: #1a1b1f;
-  --color-primary-container: #e3e2e7;
-  --color-surface-container-highest: #36343b;
-  --color-on-error: #1a1b1f;
-  --color-on-background: #e3e2e7;
-  --color-surface-container-low: #1c1b1f;
-  --color-on-primary: #1a1b1f;
-  --color-secondary: #e3e2e7;
-  --color-tertiary: #e3e2e7;
-  --color-on-secondary-fixed-variant: #e3e2e7;
-  --color-outline-variant: #49454f;
-  --color-on-surface: #e3e2e7;
-  --color-primary-fixed: #1a1b1f;
-  --color-primary-fixed-dim: #1a1b1f;
-  --color-surface-container-lowest: #0f0d13;
-  --color-on-primary-fixed: #e3e2e7;
-  --color-surface-dim: #1a1b1f;
-  --color-on-secondary-fixed: #e3e2e7;
-  --color-secondary-fixed-dim: #1a1b1f;
-  --color-on-tertiary-fixed-variant: #e3e2e7;
-  --color-surface-container: #211f26;
-  --color-on-tertiary-fixed: #e3e2e7;
-  --color-outline: #938f99;
-  --color-on-tertiary-container: #1a1b1f;
-  --color-on-primary-container: #1a1b1f;
-  --color-background: #141218;
-  --color-on-secondary: #1a1b1f;
-  --color-tertiary-fixed-dim: #1a1b1f;
-  --color-surface: #141218;
-  --color-on-primary-fixed-variant: #e3e2e7;
-  --color-on-error-container: #e3e2e7;
-  --color-surface-tint: #e3e2e7;
-  --color-on-tertiary: #1a1b1f;
-  --color-inverse-surface: #e3e2e7;
-  --color-secondary-fixed: #1a1b1f;
-  --color-inverse-on-surface: #1a1b1f;
-  --color-secondary-container: #1a1b1f;
-  --color-perf-0: #211f26; /* None/Empty */
-  --color-perf-1: #7f1d1d;
-  --color-perf-2: #991b1b;
-  --color-perf-3: #b91c1c;
-  --color-perf-4: #dc2626;
-  --color-perf-5: #f87171;
-  --color-perf-6: #86efac;
-  --color-perf-7: #4ade80;
-  --color-perf-8: #22c55e;
-  --color-perf-9: #16a34a;
-  --color-perf-10: #14532d;
+  /* Universal Dark/Light System Variables */
+  --bg: #f7f7fa;
+  --card: #ffffff;
+  --ink: #111318;
+  --muted: #667085;
+  --line: #e4e6eb;
+  --green: #12a66a;
+  --green-soft: #f0fbf5;
+  --red: #e5484d;
+  --red-soft: #fff0f1;
+  --blue: #3f7cff;
+  --purple: #7656e8;
+  --orange: #f88f22;
+  --gold: #d4a017;
+  --shadow-card: 0 4px 20px rgba(20,25,35,0.04);
+  --radius: 18px;
+  --tooltip-bg: #111318;
+  --tooltip-ink: #ffffff;
 }
 
 @layer base {
-  body {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
     background-color: theme('colors.background');
     color: theme('colors.on-background');
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }
 
@@ -361,5 +332,36 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1.2;
+}
+
+
+/* Utilities & Global Scrollbar Suppression */
+*::-webkit-scrollbar:horizontal {
+  display: none !important;
+  height: 0px !important;
+  width: 0px !important;
+}
+
+.hide-scrollbar,
+.no-scrollbar,
+.scrollbar-none,
+.overflow-x-auto,
+.overflow-x-scroll,
+[class*="overflow-x-auto"],
+[class*="overflow-x-scroll"] {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-x-scroll::-webkit-scrollbar,
+[class*="overflow-x-auto"]::-webkit-scrollbar,
+[class*="overflow-x-scroll"]::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  height: 0px !important;
+  width: 0px !important;
 }
 
