@@ -74,6 +74,7 @@ export default function Profile() {
 
   // Language state & Save handler
   const [selectedLang, setSelectedLang] = useState(language);
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [langSavedFeedback, setLangSavedFeedback] = useState(false);
 
   useEffect(() => {
@@ -661,81 +662,106 @@ export default function Profile() {
         {openSections.myProfile && (
           <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-5">
             
-            {/* Language & Preferences */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-3">
-              <div>
-                <h4 className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <Icon name="translate" className="text-[16px] text-primary" />
-                  <span>Language &amp; Preferences</span>
-                </h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Choose your preferred application language
-                </p>
-              </div>
-
-              {/* 2-Option Selector without subtext */}
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(20);
-                    setSelectedLang('en');
-                  }}
-                  className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-                    selectedLang === 'en'
-                      ? 'bg-white dark:bg-slate-800 border-primary shadow-sm ring-2 ring-primary/20'
-                      : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">English</span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                    selectedLang === 'en' ? 'border-primary bg-primary text-white' : 'border-slate-300 dark:border-slate-600'
-                  }`}>
-                    {selectedLang === 'en' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+            {/* Language & Preferences Dropdown */}
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 overflow-hidden transition-all shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  setIsLangDropdownOpen(prev => !prev);
+                }}
+                className="w-full p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-2xs">
+                    <Icon name="translate" className="text-[18px]" />
                   </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(20);
-                    setSelectedLang('hinglish');
-                  }}
-                  className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-                    selectedLang === 'hinglish'
-                      ? 'bg-white dark:bg-slate-800 border-primary shadow-sm ring-2 ring-primary/20'
-                      : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">Hinglish</span>
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                    selectedLang === 'hinglish' ? 'border-primary bg-primary text-white' : 'border-slate-300 dark:border-slate-600'
-                  }`}>
-                    {selectedLang === 'hinglish' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  <div className="min-w-0">
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                      {isHinglish ? 'भाषा एवं प्राथमिकताएं (Language & Preferences)' : 'Language & Preferences'}
+                    </h4>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                      {selectedLang === 'en' ? 'Active: English' : 'Active: Hindi (हिंदी / Hinglish)'}
+                    </p>
                   </div>
-                </button>
-              </div>
+                </div>
 
-              {/* Save Button & Feedback Banner */}
-              <div className="pt-1 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={handleSaveLanguage}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  <Icon name="check" className="text-[14px]" />
-                  <span>Save</span>
-                </button>
-
-                {langSavedFeedback && (
-                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg animate-in fade-in zoom-in-95 duration-150 flex items-center gap-1">
-                    <Icon name="check_circle" className="text-[13px]" />
-                    <span>Saved Successfully</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10.5px] font-black px-2.5 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {selectedLang === 'en' ? 'English' : 'Hindi'}
                   </span>
-                )}
-              </div>
-            </div>
+                  <Icon 
+                    name={isLangDropdownOpen ? "expand_less" : "expand_more"} 
+                    className="text-slate-400 text-xl transition-transform" 
+                  />
+                </div>
+              </button>
 
+              {isLangDropdownOpen && (
+                <div className="p-3.5 sm:p-4 pt-0 border-t border-slate-200/60 dark:border-slate-800/80 space-y-3 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-2 gap-2.5 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        setSelectedLang('en');
+                      }}
+                      className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                        selectedLang === 'en'
+                          ? 'bg-white dark:bg-slate-800 border-indigo-600 shadow-xs ring-2 ring-indigo-500/20'
+                          : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span className="font-extrabold text-xs text-slate-900 dark:text-white">English</span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        selectedLang === 'en' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 dark:border-slate-600'
+                      }`}>
+                        {selectedLang === 'en' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        setSelectedLang('hinglish');
+                      }}
+                      className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                        selectedLang === 'hinglish'
+                          ? 'bg-white dark:bg-slate-800 border-indigo-600 shadow-xs ring-2 ring-indigo-500/20'
+                          : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span className="font-extrabold text-xs text-slate-900 dark:text-white">Hindi (हिंदी)</span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        selectedLang === 'hinglish' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 dark:border-slate-600'
+                      }`}>
+                        {selectedLang === 'hinglish' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Save Button & Feedback Banner */}
+                  <div className="pt-1 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveLanguage}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 active:scale-98 text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Icon name="check" className="text-[14px]" />
+                      <span>{isHinglish ? 'सेव करें (Save)' : 'Save'}</span>
+                    </button>
+
+                    {langSavedFeedback && (
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg animate-in fade-in zoom-in-95 duration-150 flex items-center gap-1">
+                        <Icon name="check_circle" className="text-[13px]" />
+                        <span>{isHinglish ? 'सफलतापूर्वक सेव हुआ' : 'Saved Successfully'}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Account Details */}
             <div>
