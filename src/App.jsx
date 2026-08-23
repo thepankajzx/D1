@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -147,6 +147,16 @@ function Layout({ children }) {
   );
 }
 
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
+
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -154,6 +164,7 @@ function App() {
         <AuthProvider>
           <DataProvider>
             <HashRouter>
+              <ScrollToTop />
               <Suspense fallback={
                 <div className="min-h-screen bg-background"></div>
               }>

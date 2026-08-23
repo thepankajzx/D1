@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -70,6 +70,11 @@ export default function HabitDiagnostics() {
   const [guideTab, setGuideTab] = useState('friction'); // 'friction' | 'ripple' | 'timing'
   const [expandedMisses, setExpandedMisses] = useState([]);
   const [isLogDropdownOpen, setIsLogDropdownOpen] = useState(false);
+
+  // Always start at top of page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [habitIdParam]);
 
   // Tier 2 (14 Days) Unlock Check
   const trackedDaysCount = (allSummaries || []).length;
@@ -520,33 +525,36 @@ export default function HabitDiagnostics() {
         </div>
       </nav>
 
-      {/* ── 2. TIER 2 (14-DAY) LOCK BANNER IF TRACKED < 14 DAYS ── */}
+      {/* ── 2. TIER 2 (14-DAY) LOCK BANNER IF TRACKED < 14 DAYS (OPTIMIZED FOR MOBILE) ── */}
       {isLocked && (
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-900/60 flex items-center justify-between gap-3 shadow-2xs">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Lock size={16} weight="fill" />
+        <div className="p-2.5 sm:p-3.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-900/60 flex items-center justify-between gap-2 shadow-2xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Lock size={14} weight="fill" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">
-                  {isHinglish ? 'सैंपल डायग्नोस्टिक टेम्पलेट' : 'Sample Diagnostic Preview'}
+              <div className="flex items-center gap-1.5 flex-nowrap">
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 whitespace-nowrap">
+                  {isHinglish ? 'सैंपल प्रीव्यू' : 'Sample Preview'}
                 </span>
-                <span className="text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-amber-200/70 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
-                  14-Day Tier
+                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-200 border border-amber-500/30 whitespace-nowrap shrink-0">
+                  14d Tier
                 </span>
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate mt-0.5">
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium truncate mt-0.5">
                 {isHinglish 
-                  ? `लाइव पर्सनल डायग्नोसिस अनलॉक करने के लिए ${daysRemaining} दिन और ट्रैक करें।`
-                  : `Track for ${daysRemaining} more ${daysRemaining === 1 ? 'day' : 'days'} to unlock live personal habit diagnostics.`}
+                  ? `अनलॉक करने के लिए ${daysRemaining} दिन और ट्रैक करें`
+                  : `${daysRemaining} days left to unlock live diagnostics`}
               </p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => navigate('/analytics/roadmap')}
-            className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-black shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(30);
+              navigate('/analytics/roadmap');
+            }}
+            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-black shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95 whitespace-nowrap"
           >
             {isHinglish ? 'रोडमैप' : 'Roadmap'}
           </button>
