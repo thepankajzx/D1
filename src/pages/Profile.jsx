@@ -748,25 +748,6 @@ export default function Profile() {
             </div>
 
 
-            {/* Experimental Stats Page Entry */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">Experimental Stats Page</span>
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-emerald-600 text-white rounded-full">New Design</span>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                  Mobile-first single scroll, custom SVG curves, contribution heatmap, and habit breakdown.
-                </p>
-              </div>
-              <button 
-                onClick={() => navigate('/analytics/experimental')}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1.5"
-              >
-                <span>Try Experimental Stats</span>
-                <Icon name="arrow_forward" className="text-[14px]" />
-              </button>
-            </div>
 
             {/* Logout & Developer Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
