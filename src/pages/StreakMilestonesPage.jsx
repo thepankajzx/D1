@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import confetti from 'canvas-confetti';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -228,7 +229,8 @@ export default function StreakMilestonesPage() {
             return (
               <div
                 key={m.target}
-                className={`p-2.5 sm:p-3 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between gap-2 ${
+                onClick={() => handleMilestoneClick(m, isUnlocked)}
+                className={`p-2.5 sm:p-3 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between gap-2 cursor-pointer ${
                   isUnlocked
                     ? 'bg-white dark:bg-[#131722] border-slate-200/90 dark:border-slate-800 shadow-2xs hover:shadow-xs'
                     : isNext
@@ -326,6 +328,53 @@ export default function StreakMilestonesPage() {
         </div>
 
       </div>
+
+      {/* ── CELEBRATION MODAL ON TROPHY TAP ── */}
+      {celebratedMilestone && (
+        <div 
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setCelebratedMilestone(null)}
+        >
+          <div 
+            className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center shadow-lg animate-bounce">
+              <Trophy size={28} weight="fill" />
+            </div>
+
+            <div>
+              <span className="text-[10.5px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                {isHinglish ? '🏆 माइलस्टोन हासिल!' : '🏆 Milestone Unlocked!'}
+              </span>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1.5">
+                {isHinglish ? celebratedMilestone.hindiTitle : celebratedMilestone.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {isHinglish ? celebratedMilestone.hindiDesc : celebratedMilestone.desc}
+              </p>
+            </div>
+
+            <p className="text-[11px] italic font-semibold text-amber-700/90 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-800/60">
+              "{celebratedMilestone.motto}"
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(20);
+                try {
+                  confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 } });
+                } catch (e) {}
+                setCelebratedMilestone(null);
+              }}
+              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs"
+            >
+              {isHinglish ? 'शानदार! (Continue)' : 'Awesome!'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
