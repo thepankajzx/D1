@@ -2283,7 +2283,7 @@ export default function ExperimentalAnalytics() {
           {/* 2. Middle: Best Streak (All-Time Record) */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3 border-x border-slate-100 dark:border-slate-800/80 px-1 sm:px-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500/15 to-orange-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-inner border border-amber-500/20">
-              <Lightning size={20} weight="fill" className="text-amber-500" />
+              <Trophy size={20} weight="fill" className="text-amber-500" />
             </div>
             <div className="min-w-0">
               <div className="flex items-baseline justify-center sm:justify-start gap-1">

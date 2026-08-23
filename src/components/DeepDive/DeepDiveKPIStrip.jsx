@@ -114,7 +114,7 @@ export default function DeepDiveKPIStrip({
       subtitle: 'Personal Record',
       iconColor: 'text-orange-500',
       iconBg: 'bg-orange-50 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/40',
-      iconName: 'whatshot',
+      iconName: 'emoji_events',
       infoText: 'Your longest continuous streak of completing this habit without missing a day.',
     },
     {
