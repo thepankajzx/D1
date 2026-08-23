@@ -920,15 +920,22 @@ export default function AdvancedHabitSelector() {
 
                       return (
                         <div className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="font-black text-sm text-slate-900 dark:text-white">+ Create Custom Habit</span>
-                              <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                                {isPro ? 'Pro Unlocked' : '1 Free Habit'}
+                          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <h3 className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                                Create Custom Habit
+                              </h3>
+                              <span className="text-[9.5px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md shrink-0">
+                                {isPro ? 'PRO' : '1 Free'}
                               </span>
                             </div>
-                            <button className="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
-                              <Icon name="help_outline" className="text-[13px]" /> Scoring Rules
+                            <button 
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
+                              className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary text-[10.5px] font-bold flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
+                            >
+                              <Icon name="help_outline" className="text-[12px] text-primary" /> 
+                              <span>Scoring Rules</span>
                             </button>
                           </div>
 
