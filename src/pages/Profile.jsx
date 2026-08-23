@@ -343,50 +343,59 @@ export default function Profile() {
   const trackedDays = allSummaries.length;
 
   return (
-    <div className="max-w-4xl mx-auto w-full pb-20 space-y-6">
+    <div className="max-w-4xl mx-auto w-full pb-24 space-y-2.5 animate-in fade-in duration-200">
       
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Account &amp; Habits</h1>
-        <p className="text-sm text-slate-500 font-medium mt-0.5">Manage your habits, insight unlocks, reports, and membership.</p>
+      <div className="flex items-center gap-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-black shrink-0 shadow-2xs">
+          <Icon name="person" className="text-[18px]" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+            {isHinglish ? 'खाता एवं आदतें (Account & Habits)' : 'Account & Habits'}
+          </h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight truncate mt-0.5">
+            {isHinglish ? 'अपनी सक्रिय आदतें, इनसाइट अनलॉक, रिपोर्ट्स और प्लान प्रबंधित करें।' : 'Manage your habits, insight unlocks, reports, and membership.'}
+          </p>
+        </div>
       </div>
 
 
       {/* ── 1. MY HABITS (TOP ACCORDION COLUMN) ────────────────────────────────── */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
           onClick={() => toggleSection('myHabits')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center font-black shrink-0">
-              <Icon name="grid_view" className="text-[22px]" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Icon name="grid_view" className="text-[18px]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-slate-900">My Habits</h2>
-                <span className="text-xs font-black text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">My Habits</h2>
+                <span className="text-[10px] font-black text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-950/70 px-2 py-0.5 rounded-full shrink-0">
                   {habits.length} Active
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Your active habits, targets &amp; priorities</p>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Your active habits, targets &amp; priorities</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Icon name={openSections.myHabits ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.myHabits ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
         </div>
 
         {openSections.myHabits && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-4">
+          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
             
             {/* Priority Actions Banner */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-violet-50/50 border border-violet-200/80">
-              <div className="flex items-center gap-2.5">
-                <div className="text-violet-600 shrink-0">
-                  <Icon name="star" filled={true} className="text-[20px]" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-violet-50/60 dark:bg-violet-950/20 border border-violet-200/80 dark:border-violet-900/50">
+              <div className="flex items-center gap-2">
+                <div className="text-violet-600 dark:text-violet-400 shrink-0">
+                  <Icon name="star" filled={true} className="text-[16px]" />
                 </div>
-                <div className="text-xs text-slate-700 font-medium">
+                <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium">
                   {hasPriorities ? (
                     <span>Priorities set for your top 3 core habits.</span>
                   ) : (
@@ -397,11 +406,11 @@ export default function Profile() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSetPrioritiesClick}
-                  className="px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
                 >
                   {priorityIsLocked ? (
                     <>
-                      <Icon name="lock" filled={true} className="text-[13px]" />
+                      <Icon name="lock" filled={true} className="text-[12px]" />
                       <span>Locked ({priorityDaysRemaining}d)</span>
                     </>
                   ) : (
@@ -410,9 +419,9 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={handleAddHabitClick}
-                  className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
                 >
-                  <Icon name="add" className="text-[14px]" />
+                  <Icon name="add" className="text-[13px]" />
                   <span>Add Habit</span>
                 </button>
               </div>
@@ -420,11 +429,11 @@ export default function Profile() {
 
             {/* Habits List */}
             {habits.length === 0 ? (
-              <div className="text-center py-8 text-slate-400 text-sm">
+              <div className="text-center py-6 text-slate-400 text-xs">
                 No habits added yet. Click 'Add Habit' above to get started.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
                 {habits.map((habit) => {
                   const targetStr = getHabitTargetDisplay(habit);
                   return (
@@ -434,20 +443,20 @@ export default function Profile() {
                         if (navigator.vibrate) navigator.vibrate(30);
                         setSelectedHabitDetails(habit);
                       }}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between gap-3 hover:border-slate-300 hover:shadow-xs transition-all shadow-2xs cursor-pointer group"
+                      className="p-2.5 sm:p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#151a26] flex items-center justify-between gap-2.5 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs cursor-pointer group"
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={22} />
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={18} />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors truncate">{habit.name}</span>
+                            <span className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">{habit.name}</span>
                             {habit.priorityRank && (
-                              <span className="text-[10px] font-bold text-violet-700 bg-violet-100 px-1.5 py-0.5 rounded-md shrink-0">
-                                Priority #{habit.priorityRank}
+                              <span className="text-[9px] font-black text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-950 px-1.5 py-0.5 rounded-md shrink-0">
+                                #{habit.priorityRank}
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-slate-500 font-medium truncate mt-0.5">
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
                             {targetStr}
                           </div>
                         </div>
@@ -457,10 +466,10 @@ export default function Profile() {
                           e.stopPropagation();
                           handleDeleteHabit(habit.id);
                         }}
-                        className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                        className="w-7 h-7 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
                         title="Delete Habit"
                       >
-                        <Icon name="delete" className="text-[18px]" />
+                        <Icon name="delete" className="text-[16px]" />
                       </button>
                     </div>
                   );
@@ -472,66 +481,65 @@ export default function Profile() {
       </section>
 
       {/* ── 2. STREAK MILESTONES (CARD DIRECTING TO DEDICATED PAGE) ── */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
           onClick={() => {
             if (navigator.vibrate) navigator.vibrate(20);
             navigate('/streak-milestones');
           }}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors group"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
         >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black shrink-0 group-hover:scale-105 transition-transform">
-              <Trophy size={24} weight="fill" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+              <Trophy size={18} weight="fill" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 truncate">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">
                   {isHinglish ? 'Streak Milestones' : 'Streak Milestones'}
                 </h2>
-                <span className="text-xs font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-full shrink-0">
                   {unlockedTrophiesCount} / {MILESTONE_DEFINITIONS.length} Achieved
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
                 {isHinglish ? 'लगातार आदतें निभाने पर मिलने वाले विशेष बैजेस और ट्रॉफ़ी' : 'Trophies and badges unlocked as you build momentum'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-amber-600 font-bold text-xs shrink-0">
-            <span className="hidden sm:inline">View Wall</span>
-            <Icon name="arrow_forward" className="text-xl group-hover:translate-x-1 transition-transform" />
+          <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-600 transition-colors shrink-0 shadow-2xs">
+            <Icon name="arrow_forward" className="text-[14px]" />
           </div>
         </div>
       </section>
 
       {/* ── 3. UNLOCK ADVANCED INSIGHTS (THIRD ACCORDION COLUMN) ────────────────── */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
           onClick={() => toggleSection('unlockInsights')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black shrink-0">
-              <Icon name="redeem" filled={true} className="text-[22px]" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Icon name="redeem" filled={true} className="text-[18px]" />
             </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-black text-slate-900">Unlock Advanced Insights</h2>
-                <p className="text-xs text-slate-500 font-medium">Power Duos, Time-of-Day correlations, and habit radar</p>
-              </div>
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">Unlock Advanced Insights</h2>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Power Duos, Time-of-Day correlations, and habit radar</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Icon name={openSections.unlockInsights ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.unlockInsights ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
         </div>
 
         {openSections.unlockInsights && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <h3 className="font-bold text-sm text-slate-800">Dynamic 7-Day &amp; 30-Day Intelligence</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h3 className="font-black text-xs text-slate-800 dark:text-slate-200">Dynamic 7-Day &amp; 30-Day Intelligence</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Track habits consistently to automatically unlock deeper behavioral correlations.
                 </p>
               </div>
@@ -546,13 +554,13 @@ export default function Profile() {
                       navigate('/insights');
                     }
                   }}
-                  className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 font-bold text-xs text-slate-800 transition-colors cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-bold text-xs text-slate-800 dark:text-slate-200 transition-colors cursor-pointer shrink-0"
                 >
                   Insights Feed
                 </button>
                 <button 
                   onClick={() => navigate('/roadmap')}
-                  className="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
                 >
                   View Roadmap
                 </button>
@@ -563,36 +571,36 @@ export default function Profile() {
       </section>
 
       {/* ── 3. 30-DAY BETTER REPORT (THIRD ACCORDION COLUMN) ────────────────────── */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
           onClick={() => toggleSection('betterReport')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors gap-3"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors gap-3"
         >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black shrink-0">
-              <Icon name="auto_stories" filled={true} className="text-[22px]" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Icon name="auto_stories" filled={true} className="text-[18px]" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 truncate">30-Day Better Report</h2>
-                <span className="text-[10px] font-black text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">30-Day Better Report</h2>
+                <span className="text-[10px] font-black text-sky-800 dark:text-sky-300 bg-sky-100 dark:bg-sky-950 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
                   {trackedDays >= 30 ? 'Ready' : 'In Progress'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium truncate">Your personal 30-day habit documentary &amp; growth story</p>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Your personal 30-day habit documentary &amp; growth story</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Icon name={openSections.betterReport ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.betterReport ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
         </div>
 
         {openSections.betterReport && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <h3 className="font-bold text-sm text-slate-800">Behavioral Documentary &amp; Superpowers</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h3 className="font-black text-xs text-slate-800 dark:text-slate-200">Behavioral Documentary &amp; Superpowers</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Full 30-day recap with weekly slope progress, bounce-back velocity, and next milestones.
                 </p>
               </div>
@@ -605,10 +613,10 @@ export default function Profile() {
                     navigate('/better-report');
                   }
                 }}
-                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
               >
                 <span>Read Story</span>
-                <Icon name="arrow_forward" className="text-[14px]" />
+                <Icon name="arrow_forward" className="text-[13px]" />
               </button>
             </div>
           </div>
@@ -616,45 +624,45 @@ export default function Profile() {
       </section>
 
       {/* ── 4. MEMBERSHIP (FOURTH ACCORDION COLUMN) ────────────────────────────── */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
           onClick={() => toggleSection('membership')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black shrink-0">
-              <Icon name="workspace_premium" filled={true} className="text-[22px]" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Icon name="workspace_premium" filled={true} className="text-[18px]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-slate-900">Membership</h2>
-                <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">Membership</h2>
+                <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full shrink-0">
                   {userDoc?.isPro ? 'Pro Member' : 'Free Plan'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Subscription tier, plan limits &amp; features</p>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Subscription tier, plan limits &amp; features</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Icon name={openSections.membership ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.membership ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
         </div>
 
         {openSections.membership && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-extrabold text-sm text-slate-900">{userDoc?.isPro ? 'Definite Pro' : 'Free Plan'}</span>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">Active</span>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="font-black text-xs text-slate-900 dark:text-white">{userDoc?.isPro ? 'Definite Pro' : 'Free Plan'}</span>
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 rounded-full">Active</span>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   {userDoc?.isPro ? 'Unlimited habits, deep dive metrics, and export capabilities.' : 'Up to 8 habits, daily check-offs, and core tracking.'}
                 </p>
               </div>
               <button 
                 onClick={() => navigate('/subscription')}
-                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+                className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
               >
                 Manage Subscription
               </button>
@@ -667,20 +675,20 @@ export default function Profile() {
       <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
         <div 
           onClick={() => toggleSection('myProfile')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-black shrink-0">
-              <Icon name="person" className="text-[22px]" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Icon name="person" className="text-[18px]" />
             </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-slate-900">My Profile</h2>
-              <p className="text-xs text-slate-500 font-medium">Personal account info, theme &amp; preferences</p>
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">My Profile</h2>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Personal account info, theme &amp; preferences</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Icon name={openSections.myProfile ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.myProfile ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
         </div>
 
