@@ -8,6 +8,12 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
+    // Old historical logs (STRICTLY READ-ONLY for migration, no write/delete)
+    match /daily_logs/{date} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     // User's private data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
