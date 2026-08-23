@@ -224,7 +224,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
     switch (habit.scoringType) {
       case 'binary': {
         return (
-          <div className="relative flex w-full h-[36px] rounded-[10px] bg-surface-container-lowest border border-outline-variant/40 overflow-hidden group">
+          <div className="relative flex w-full h-[28px] rounded-[8px] bg-surface-container-lowest border border-outline-variant/40 overflow-hidden group">
             {/* Background fills */}
             <div className={`absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
             <div className={`absolute inset-y-0 right-0 w-1/2 bg-red-500 transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
@@ -232,16 +232,16 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
             {/* Clickable halves */}
             <div className="absolute inset-0 flex">
               <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(1); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
-                <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
+                <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
               </button>
               <div className="w-[1px] bg-outline-variant/30 z-10" />
               <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(0); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
-                <span className={`font-semibold text-[13px] transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
+                <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
               </button>
             </div>
 
             {/* Center circle */}
-            <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full bg-white shadow-sm flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+            <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-white shadow-xs flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
               {val === 1 ? (
                 <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✔</span>
               ) : (
@@ -287,9 +287,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     }
                   } catch (err) {}
                 }}
-                className="w-full bg-transparent border-none py-3 px-4 font-mono-data text-mono-data text-primary focus:ring-0 cursor-pointer outline-none" 
+                className="w-full bg-transparent border-none py-1.5 px-3 font-mono text-xs sm:text-[13px] font-bold text-primary focus:ring-0 cursor-pointer outline-none" 
               />
-              <div className="absolute right-4 pointer-events-none text-on-surface dark:text-white">
+              <div className="absolute right-3 pointer-events-none text-on-surface dark:text-white">
                 <Icon name="schedule_filled" className="text-[20px]" />
               </div>
             </div>
@@ -313,9 +313,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
                 >
-                  <Icon name="remove" className="text-[16px]" />
+                  <Icon name="remove" className="text-[14px]" />
                 </button>
                 <div className="flex-grow flex items-center h-5">
                   <input 
@@ -346,9 +346,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
                 >
-                  <Icon name="add" className="text-[16px]" />
+                  <Icon name="add" className="text-[14px]" />
                 </button>
               </div>
             </div>
@@ -428,9 +428,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
                 >
-                  <Icon name="remove" className="text-[16px]" />
+                  <Icon name="remove" className="text-[14px]" />
                 </button>
 
                 {/* Slider */}
@@ -489,9 +489,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-7 h-7 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none"
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
                 >
-                  <Icon name="add" className="text-[16px]" />
+                  <Icon name="add" className="text-[14px]" />
                 </button>
                 
               </div>
