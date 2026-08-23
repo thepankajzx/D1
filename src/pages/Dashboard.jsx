@@ -1,4 +1,5 @@
 import Icon from '../components/Icon';
+import { Target, Flame, Lightning } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
 import { useState, useEffect, useMemo } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
@@ -406,7 +407,7 @@ export default function Dashboard() {
         <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
           <div className="flex items-center justify-between gap-1 mb-1">
             <span className="text-amber-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Icon name="bolt" className="text-[12px]" />
+              <Target weight="fill" size={13} className="text-amber-400" />
               Focus
             </span>
             <span className="text-[12px] font-bold text-amber-400/90">{weakestHabit?.score || 0}%</span>
@@ -425,7 +426,7 @@ export default function Dashboard() {
         <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
           <div className="flex items-center justify-between gap-1 mb-1">
             <span className="text-emerald-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Icon name="local_fire_department" className="text-[12px]" />
+              <Flame weight="fill" size={13} className="text-emerald-400" />
               Streak
             </span>
             <span className="text-[12px] font-bold text-emerald-400/90">{strongestHabit?.score || 100}%</span>
