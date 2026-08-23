@@ -1,3 +1,4 @@
+import DataMigrationModal from '../components/DataMigrationModal';
 import React, { useState, useEffect } from 'react';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -31,6 +32,7 @@ export default function Profile() {
   const { habits, setHabits, allSummaries = [], loadingData, userDoc } = useData();
   const { language, setLanguage, t, isHinglish } = useLanguage();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
@@ -1400,6 +1402,9 @@ export default function Profile() {
 
       {/* ── PAYWALL MODAL ────────────────────────────────────────────────────── */}
       {showPaywall && <ProModal onClose={() => setShowPaywall(false)} />}
+
+      {/* ── HISTORICAL DATA MIGRATION MODAL ── */}
+      <DataMigrationModal isOpen={showMigrationModal} onClose={() => setShowMigrationModal(false)} />
     </div>
   );
 }
