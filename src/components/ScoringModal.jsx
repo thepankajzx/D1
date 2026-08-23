@@ -62,35 +62,35 @@ export default function ScoringModal({ type, onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200" 
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-[700px] max-h-[92vh] bg-[#f7f7fa] rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" 
+        className="relative w-full max-w-[480px] max-h-[80vh] sm:max-h-[84vh] bg-[#f8fafc] dark:bg-[#131722] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" 
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-slate-200/80 shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 bg-white dark:bg-[#151a26] border-b border-slate-200/80 dark:border-slate-800 shrink-0">
           <div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
+            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">
               Not just done. But how well?
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Choose how your habit is measured — from simple consistency to precision timing.
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              Choose how your habit is measured — consistency to precision.
             </p>
           </div>
           <button 
             type="button" 
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
+            className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
             title="Close"
           >
-            <X size={18} weight="bold" />
+            <X size={16} weight="bold" />
           </button>
         </div>
 
-        {/* Scrollable Content Body */}
-        <div className="overflow-y-auto p-4 sm:p-6 space-y-4">
+        {/* Scrollable Content Body (Hidden Scrollbars) */}
+        <div className="overflow-y-auto p-3.5 sm:p-4 space-y-3 flex-1 hide-scrollbar no-scrollbar scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           
           {/* Quick Nav (Tab System) */}
           <nav className="grid grid-cols-5 bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden max-w-full">
@@ -843,18 +843,19 @@ export default function ScoringModal({ type, onClose }) {
 
           </div>
 
-          {/* Footer Action */}
-          <div className="pt-1 flex justify-center">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-98 text-white rounded-xl text-xs sm:text-sm font-bold cursor-pointer transition-all shadow-sm"
-            >
-              Got it, close
-            </button>
-          </div>
-
         </div>
+
+        {/* Pinned Sticky Bottom Action Bar */}
+        <div className="p-3 sm:p-3.5 bg-white/95 dark:bg-[#151a26]/95 border-t border-slate-200/90 dark:border-slate-800 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 active:scale-98 text-white rounded-xl text-xs sm:text-sm font-black cursor-pointer transition-all shadow-md flex items-center justify-center gap-2"
+          >
+            <span>Got it, let's choose habits 🚀</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );
