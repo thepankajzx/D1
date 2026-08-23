@@ -1,15 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, writeBatch, setDoc } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Database, CheckCircle, ShieldCheck, Sparkle, Spinner } from '@phosphor-icons/react';
 
+const OLD_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDmV8kDK7YZk-lxPwwDG2drrjybylwenWE",
+  authDomain: "fci-lms.firebaseapp.com",
+  projectId: "fci-lms",
+  storageBucket: "fci-lms.firebasestorage.app",
+  messagingSenderId: "180801083177",
+  appId: "1:180801083177:web:3a9c3b02728749d2420938"
+};
+
+function getOldFirestore() {
+  const existing = getApps().find(a => a.name === 'fciLmsOldProject');
+  const app = existing || initializeApp(OLD_FIREBASE_CONFIG, 'fciLmsOldProject');
+  return getFirestore(app);
+}
+
 const TARGET_HABITS_CONFIG = [
-  { id: 'workout', name: 'Workout', category: 'Fitness', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 30, target0: 0, userTarget100: 30, userTarget0: 0, icon: 'fitness_center', priorityRank: 1 },
+  { id: 'study', name: 'Study', category: 'Focus', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 240, target0: 0, userTarget100: 240, userTarget0: 0, icon: 'school', priorityRank: 1 },
   { id: 'screentime', name: 'Screen Time', category: 'Lifestyle', scoringType: 'duration', direction: 'lower_is_better', defaultUnit: 'hours', unit: 'hours', target100: 0, target0: 1, userTarget100: 0, userTarget0: 1, icon: 'smartphone', priorityRank: 2 },
-  { id: 'study', name: 'Study', category: 'Focus', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 240, target0: 0, userTarget100: 240, userTarget0: 0, icon: 'school', priorityRank: 3 },
+  { id: 'workout', name: 'Workout', category: 'Fitness', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 30, target0: 0, userTarget100: 30, userTarget0: 0, icon: 'fitness_center', priorityRank: 3 },
   { id: 'sleep', name: 'Sleep Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 1320, target0: 1440, userTarget100: 1320, userTarget0: 1440, icon: 'bedtime' },
   { id: 'wakeup', name: 'Wake Up Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 360, target0: 480, userTarget100: 360, userTarget0: 480, icon: 'alarm' },
   { id: 'custom_masturbation_free', name: 'No Masturbation', category: 'Lifestyle', scoringType: 'binary', direction: 'higher_is_better', defaultUnit: '', unit: '', target100: 1, target0: 0, userTarget100: 1, userTarget0: 0, icon: 'shield' },
@@ -39,7 +55,8 @@ export default function DataMigrationModal({ isOpen, onClose }) {
     setLoadingPreview(true);
     setErrorMessage('');
     try {
-      const snap = await getDocs(collection(db, 'daily_logs'));
+      const oldDb = getOldFirestore();
+      const snap = await getDocs(collection(oldDb, 'daily_logs'));
       const docs = [];
       snap.forEach(d => {
         docs.push({ id: d.id, ...d.data() });
@@ -56,8 +73,8 @@ export default function DataMigrationModal({ isOpen, onClose }) {
         });
       }
     } catch (err) {
-      console.error('Error fetching old logs:', err);
-      setErrorMessage(err.message || 'Failed to read daily_logs');
+      console.error('Error fetching old logs from fci-lms:', err);
+      setErrorMessage(err.message || 'Failed to read daily_logs from fci-lms');
     } finally {
       setLoadingPreview(false);
     }
@@ -71,16 +88,16 @@ export default function DataMigrationModal({ isOpen, onClose }) {
     setErrorMessage('');
 
     try {
-      // 1. Ensure Target Habits exist under users/{uid}/habits
+      // 1. Write Habits Configuration
       const habitBatch = writeBatch(db);
       TARGET_HABITS_CONFIG.forEach(h => {
         const hRef = doc(db, `users/${user.uid}/habits`, h.id);
         habitBatch.set(hRef, h, { merge: true });
       });
       await habitBatch.commit();
-      setProgress(20);
+      setProgress(25);
 
-      // 2. Batch write entries and dailySummaries in chunks of 20 days
+      // 2. Batch write entries and dailySummaries
       const chunkSize = 20;
       const totalDocs = oldLogs.length;
 
@@ -93,18 +110,28 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           if (!date) return;
 
           const breakdown = docData.breakdown || {};
-          const workoutScore = breakdown.workoutScore ?? (docData.workoutValue ? 100 : 0);
-          const phoneScore = breakdown.phoneScore ?? (docData.phoneValue ? 80 : 100);
-          const studyScore = breakdown.studyScore ?? (docData.studyValue ? 100 : 0);
-          const sleepScore = breakdown.sleepScore ?? 100;
-          const wakeScore = breakdown.wakeScore ?? 100;
-          const mastScore = breakdown.masturbationScore ?? ((docData.masturbation === 1 || docData.masturbation === true) ? 100 : 0);
-          const pornScore = breakdown.pornScore ?? ((docData.porn === 1 || docData.porn === true) ? 100 : 0);
+          
+          // Parse values accurately
+          const studyMinutes = (docData.studyUnit === 'hours') ? (docData.studyValue * 60) : (docData.studyValue || 0);
+          const screenHours = (docData.phoneUnit === 'minutes') ? (docData.phoneValue / 60) : (docData.phoneValue || 0);
+          const workoutMinutes = (docData.workout === 'Yes' || docData.workoutValue > 0) ? (docData.workoutValue || 30) : 0;
+          
+          const isMastFree = (docData.masturbation === 'No' || docData.masturbation === 1 || docData.masturbation === true);
+          const isPornFree = (docData.porn === 'No' || docData.porn === 1 || docData.porn === true);
+
+          // Calculate normalized percentage scores (0 to 100)
+          const studyScore = Math.min(100, Math.round((studyMinutes / 240) * 100));
+          const screenScore = screenHours <= 0 ? 100 : Math.max(0, Math.round((1 - screenHours) * 100));
+          const workoutScore = workoutMinutes >= 30 ? 100 : Math.round((workoutMinutes / 30) * 100);
+          const mastScore = isMastFree ? 100 : 0;
+          const pornScore = isPornFree ? 100 : 0;
+          const sleepScore = breakdown.sleepScore ? Math.round(breakdown.sleepScore * 10) : 80;
+          const wakeScore = breakdown.wakeScore ? Math.round(breakdown.wakeScore * 10) : 80;
 
           const habitScores = {
-            workout: workoutScore,
-            screentime: phoneScore,
             study: studyScore,
+            screentime: screenScore,
+            workout: workoutScore,
             sleep: sleepScore,
             wakeup: wakeScore,
             custom_masturbation_free: mastScore,
@@ -112,19 +139,19 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           };
 
           const habitValues = {
-            workout: docData.workoutValue ?? 0,
-            screentime: docData.phoneValue ?? 0,
-            study: docData.studyValue ?? 0,
-            sleep: docData.sleep ?? '23:00',
-            wakeup: docData.wakeUp ?? '06:00',
-            custom_masturbation_free: (docData.masturbation === 1 || docData.masturbation === true) ? 1 : 0,
-            custom_porn_free: (docData.porn === 1 || docData.porn === true) ? 1 : 0
+            study: studyMinutes,
+            screentime: screenHours,
+            workout: workoutMinutes,
+            sleep: docData.sleep || '23:00',
+            wakeup: docData.wakeUp || '06:00',
+            custom_masturbation_free: isMastFree ? 1 : 0,
+            custom_porn_free: isPornFree ? 1 : 0
           };
 
-          const overallScore = docData.totalScore ?? Math.round(Object.values(habitScores).reduce((a, b) => a + b, 0) / 7);
+          const overallScore = docData.totalScore || Math.round(Object.values(habitScores).reduce((a, b) => a + b, 0) / 7);
           const habitsCompleted = Object.values(habitScores).filter(s => s >= 60).length;
 
-          // Write Individual Entries
+          // Individual Entries
           Object.entries(habitScores).forEach(([hId, sVal]) => {
             const entryRef = doc(db, `users/${user.uid}/entries`, `${hId}_${date}`);
             batch.set(entryRef, {
@@ -133,11 +160,11 @@ export default function DataMigrationModal({ isOpen, onClose }) {
               entryDate: date,
               rawValue: habitValues[hId],
               computedScore: sVal,
-              updatedAt: docData.updatedAt || new Date().toISOString()
+              updatedAt: new Date(docData.updatedAt || docData.timestamp || Date.now()).toISOString()
             }, { merge: true });
           });
 
-          // Write Daily Summary
+          // Daily Summary
           const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, date);
           batch.set(summaryRef, {
             id: date,
@@ -148,12 +175,12 @@ export default function DataMigrationModal({ isOpen, onClose }) {
             habitScores,
             habitValues,
             legacyRaw: docData,
-            updatedAt: docData.updatedAt || new Date().toISOString()
+            updatedAt: new Date(docData.updatedAt || docData.timestamp || Date.now()).toISOString()
           }, { merge: true });
         });
 
         await batch.commit();
-        const currentProgress = Math.min(95, 20 + Math.round(((i + chunk.length) / totalDocs) * 75));
+        const currentProgress = Math.min(95, 25 + Math.round(((i + chunk.length) / totalDocs) * 70));
         setProgress(currentProgress);
       }
 
@@ -211,10 +238,10 @@ export default function DataMigrationModal({ isOpen, onClose }) {
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">
-                Firebase Historical Data Migration
+                Firebase Cross-Project Data Migration
               </h3>
               <p className="text-[11px] font-medium text-slate-400 mt-0.5">
-                Migrate historical daily_logs into your account
+                From `fci-lms` ➔ Into your `d1-core` Account
               </p>
             </div>
           </div>
@@ -227,29 +254,27 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Target Account Badge */}
-        <div className="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40 flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 block">
-              Target Destination Account
-            </span>
-            <span className="text-xs font-black text-slate-900 dark:text-white truncate block">
-              {user?.email}
-            </span>
-            <span className="text-[10px] font-mono text-slate-400 block truncate">
-              UID: {user?.uid}
+        {/* Source & Destination Badges */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+            <span className="text-[9px] font-black uppercase text-slate-400 block">Source Project</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block mt-0.5">
+              fci-lms (Connected ✓)
             </span>
           </div>
-          <span className="text-[10.5px] font-black px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
-            Verified
-          </span>
+          <div className="p-2.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-900/40">
+            <span className="text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-300 block">Destination</span>
+            <span className="text-xs font-black text-slate-900 dark:text-white truncate block mt-0.5">
+              {user?.email}
+            </span>
+          </div>
         </div>
 
         {/* Inspection & Preview Status */}
         {loadingPreview ? (
           <div className="py-8 flex flex-col items-center justify-center gap-2 text-slate-400">
             <Spinner size={24} className="animate-spin text-primary" />
-            <span className="text-xs font-bold">Scanning Firestore daily_logs...</span>
+            <span className="text-xs font-bold">Scanning fci-lms `daily_logs`...</span>
           </div>
         ) : errorMessage ? (
           <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 text-rose-700 dark:text-rose-400 text-xs font-bold">
@@ -261,7 +286,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
             <div className="grid grid-cols-3 gap-2">
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-center">
                 <span className="text-[10px] font-bold text-slate-400 block uppercase">Total Logs</span>
-                <span className="text-base font-black text-slate-900 dark:text-white block mt-0.5">
+                <span className="text-base font-black text-indigo-600 dark:text-indigo-400 block mt-0.5">
                   {dateRange.count} Days
                 </span>
               </div>
@@ -279,22 +304,29 @@ export default function DataMigrationModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Mapped Habits Preview */}
+            {/* Custom Targets Preview */}
             <div className="p-3 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">
-                  7 Core Habits Ready to Map:
+                  Configured Habits &amp; Targets:
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                  100% Schema Compatible
+                  Ready to Import
                 </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {['Workout', 'Screen Time', 'Study', 'Sleep Time', 'Wake Up Time', 'No Masturbation', 'Porn Free'].map((hName, idx) => (
-                  <span key={idx} className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs">
-                    ✓ {hName}
-                  </span>
-                ))}
+              <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold">
+                  📚 Study: <strong className="text-indigo-600 dark:text-indigo-400">4 Hours</strong>
+                </span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold">
+                  📱 Screen: <strong className="text-indigo-600 dark:text-indigo-400">0 - 1 Hour</strong>
+                </span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold">
+                  💪 Workout: <strong className="text-indigo-600 dark:text-indigo-400">30 Mins</strong>
+                </span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold">
+                  🛡️ Retention &amp; Porn Free
+                </span>
               </div>
             </div>
 
@@ -302,7 +334,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
             <div className="flex items-center gap-3 text-[10.5px] font-bold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1">
                 <ShieldCheck size={14} weight="fill" className="text-emerald-500" />
-                Original Data Untouched
+                Original fci-lms Untouched
               </span>
               <span className="flex items-center gap-1">
                 <Sparkle size={14} weight="fill" className="text-indigo-500" />
@@ -316,7 +348,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
         {migrationStatus === 'running' && (
           <div className="space-y-1 pt-1">
             <div className="flex justify-between text-xs font-black text-indigo-600 dark:text-indigo-400">
-              <span>Writing Historical Documents...</span>
+              <span>Importing Documents...</span>
               <span>{progress}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
@@ -357,7 +389,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
               }}
               className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
             >
-              Refresh & View Analytics ➔
+              Refresh &amp; View Analytics ➔
             </button>
           ) : (
             <button
