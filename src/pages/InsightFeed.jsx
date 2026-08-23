@@ -37,6 +37,7 @@ export default function InsightFeed() {
   const [shareInsight, setShareInsight] = useState(null);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [explainerBadge, setExplainerBadge] = useState(null);
+  const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 7);
 
   // 4 Main Dropdown Sections: ALL CLOSED BY DEFAULT, SINGLE-OPEN ACCORDION
   const [openSection, setOpenSection] = useState(null);

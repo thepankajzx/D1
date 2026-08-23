@@ -34,6 +34,7 @@ export default function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
+  const [showInsightsLockModal, setShowInsightsLockModal] = useState(false);
   const navigate = useNavigate();
 
   // Streak & Milestone Calculations
@@ -519,7 +520,15 @@ export default function Profile() {
               </div>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => navigate('/insights')}
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    if (trackedDays < 7) {
+                      setShowInsightsLockModal(true);
+                    } else {
+                      navigate('/insights');
+                    }
+                  }}
                   className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 font-bold text-xs text-slate-800 transition-colors cursor-pointer shrink-0"
                 >
                   Insights Feed
@@ -1075,6 +1084,148 @@ export default function Profile() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 30-DAY BETTER REPORT LOCK MODAL ── */}
+      {showBetterReportLockModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150">
+            
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Lock size={16} weight="fill" />
+                </div>
+                <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                  {isHinglish ? '30 दिन का डेटा आवश्यक' : '30 Days of Data Required'}
+                </h4>
+              </div>
+              <button 
+                onClick={() => setShowBetterReportLockModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {isHinglish 
+                ? 'आपकी व्यक्तिगत 30-दिवसीय बिहेवियरल डॉक्यूमेंट्री और ग्रोथ स्टोरी अनलॉक करने के लिए कम से कम 30 दिनों का डेटा आवश्यक है।'
+                : 'Your personal 30-day habit documentary and monthly recap requires 30 total logged days.'}
+            </p>
+
+            {/* Progress counter */}
+            <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <span>{isHinglish ? 'आपकी प्रोग्रेस' : 'Your Progress'}</span>
+                <span className="text-amber-600 dark:text-amber-400">
+                  {trackedDays} / 30 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 30 - trackedDays)} {isHinglish ? 'दिन शेष' : 'days left'})
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                  style={{ width: `${Math.max(5, Math.min(100, Math.round((trackedDays / 30) * 100)))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBetterReportLockModal(false);
+                  navigate('/better-report');
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <Sparkle size={13} weight="fill" />
+                <span>{isHinglish ? 'सैंपल प्रीव्यू देखें (Peek Preview)' : 'Explore Sample Preview'}</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowBetterReportLockModal(false)}
+                className="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+              >
+                {isHinglish ? 'बंद करें' : 'Close'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── 7-DAY INSIGHTS FEED LOCK MODAL ── */}
+      {showInsightsLockModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150">
+            
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Lock size={16} weight="fill" />
+                </div>
+                <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                  {isHinglish ? '7 दिन का डेटा आवश्यक' : '7 Days of Data Required'}
+                </h4>
+              </div>
+              <button 
+                onClick={() => setShowInsightsLockModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {isHinglish 
+                ? 'लाइव इनसाइट्स फीड, पावर डुओ और कीस्टोन हैबिट्स निकालने के लिए कम से कम 7 दिनों का डेटा आवश्यक है।'
+                : 'Unlocking your personalized habit intelligence feed, Power Duos, and Keystone correlations requires 7 days of logs.'}
+            </p>
+
+            {/* Progress counter */}
+            <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <span>{isHinglish ? 'आपकी प्रोग्रेस' : 'Your Progress'}</span>
+                <span className="text-amber-600 dark:text-amber-400">
+                  {trackedDays} / 7 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 7 - trackedDays)} {isHinglish ? 'दिन शेष' : 'days left'})
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                  style={{ width: `${Math.max(5, Math.min(100, Math.round((trackedDays / 7) * 100)))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowInsightsLockModal(false);
+                  navigate('/insights');
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <Sparkle size={13} weight="fill" />
+                <span>{isHinglish ? 'सैंपल प्रीव्यू देखें (Peek Preview)' : 'Explore Sample Preview'}</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowInsightsLockModal(false)}
+                className="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+              >
+                {isHinglish ? 'बंद करें' : 'Close'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
