@@ -114,6 +114,7 @@ export default function ExperimentalAnalytics() {
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
   const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
   const [showResilienceLockModal, setShowResilienceLockModal] = useState(false);
+  const [showDiagnoseLockModal, setShowDiagnoseLockModal] = useState(false);
   const dateSelectorRef = useRef(null);
   const [showHabitSheet, setShowHabitSheet] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
@@ -2174,18 +2175,31 @@ export default function ExperimentalAnalytics() {
 
             <div className="pt-2 border-t border-rose-200/50 dark:border-rose-900/40 flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-500">Need recovery insights?</span>
-              <Link
-                to={`/analytics/diagnose?habitId=${weakestHabit.id}`}
-                className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 hover:underline cursor-pointer"
-              >
-                <span>Diagnose Habit</span>
-                {(realSummaries?.length || 0) < 14 && (
-                  <span className="text-[9.5px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300/60 dark:border-amber-800">
-                    Preview
+              {(realSummaries?.length || 0) < 14 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    setShowDiagnoseLockModal(true);
+                  }}
+                  className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 hover:underline cursor-pointer select-none"
+                >
+                  <span>Diagnose Habit</span>
+                  <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                    <Lock size={10} weight="fill" />
+                    <span>Preview</span>
                   </span>
-                )}
-                <CaretRight size={13} weight="bold" />
-              </Link>
+                  <CaretRight size={13} weight="bold" />
+                </button>
+              ) : (
+                <Link
+                  to={`/analytics/diagnose?habitId=${weakestHabit.id}`}
+                  className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 hover:underline cursor-pointer"
+                >
+                  <span>Diagnose Habit</span>
+                  <CaretRight size={13} weight="bold" />
+                </Link>
+              )}
             </div>
           </section>
         )}

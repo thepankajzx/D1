@@ -120,7 +120,7 @@ export default function InsightsRoadmap() {
                 ) : (
                   <>
                     <Lock size={11} weight="fill" />
-                    <span>7 Days</span>
+                    <span>{tier1Remaining} Days Left</span>
                   </>
                 )}
               </span>
@@ -155,7 +155,7 @@ export default function InsightsRoadmap() {
                 ) : (
                   <>
                     <Lock size={11} weight="fill" />
-                    <span>7 Days</span>
+                    <span>{tier1Remaining} Days Left</span>
                   </>
                 )}
               </span>
@@ -190,7 +190,7 @@ export default function InsightsRoadmap() {
                 ) : (
                   <>
                     <Lock size={11} weight="fill" />
-                    <span>7 Days</span>
+                    <span>{tier1Remaining} Days Left</span>
                   </>
                 )}
               </span>
@@ -225,7 +225,7 @@ export default function InsightsRoadmap() {
                 ) : (
                   <>
                     <Lock size={11} weight="fill" />
-                    <span>7 Days</span>
+                    <span>{tier1Remaining} Days Left</span>
                   </>
                 )}
               </span>
