@@ -162,7 +162,7 @@ export default function ExperimentalAnalytics() {
   const echartsRef = useRef(null);
 
 
-  // Check if preview mode (if < 7 days tracked)
+  // Check if preview mode - only show sample simulation when no habits are configured at all
   const isPreviewMode = realHabits.length === 0 && realSummaries.length === 0;
 
   // Resolved habits list
@@ -1303,20 +1303,17 @@ export default function ExperimentalAnalytics() {
   return (
     <div className="max-w-[720px] lg:max-w-6xl xl:max-w-7xl mx-auto w-full pb-20 space-y-2.5 sm:space-y-3.5 px-0 sm:px-2 lg:px-6 animate-in fade-in duration-300">
       
-      {/* ── PREVIEW NOTICE BANNER IF < 7 DAYS ─────────────────────────────── */}
+      {/* ── PREVIEW NOTICE BANNER - only shown when zero habits configured ─── */}
       {isPreviewMode && (
-        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-3 text-xs">
+        <div className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-900 dark:text-indigo-200 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            <Flask size={18} weight="fill" className="text-amber-600 shrink-0" />
+            <Flask size={18} weight="fill" className="text-indigo-500 shrink-0" />
             <span className="font-semibold leading-tight text-[11px] sm:text-xs">
               {isHinglish 
-                ? 'Experimental Stats: 7 live din track hone tak sample simulation preview dikh raha hai.' 
-                : 'Experimental Stats: Showing sample simulation preview until 7 live days are logged.'}
+                ? 'Koi habit configure nahi ki gayi hai. Pehle habits add karo.' 
+                : 'No habits configured yet. Add habits to see your real stats.'}
             </span>
           </div>
-          <span className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
-            {isHinglish ? 'Preview' : 'Preview'}
-          </span>
         </div>
       )}
 
