@@ -301,6 +301,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
               <div className="flex items-center gap-3 w-full">
                 <button
                   onPointerDown={(e) => {
+                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(-1, 1, 10, 1);
@@ -313,7 +314,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
+                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
                 >
                   <Icon name="remove" className="text-[14px]" />
                 </button>
@@ -334,6 +335,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                 </div>
                 <button
                   onPointerDown={(e) => {
+                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(1, 1, 10, 1);
@@ -346,7 +348,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
+                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
                 >
                   <Icon name="add" className="text-[14px]" />
                 </button>
@@ -409,8 +411,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                 
                 {/* Minus Button */}
                 <button 
-                  onPointerDown={(e) => { 
-                    e.stopPropagation(); 
+                  onPointerDown={(e) => {
+                    if (isSaved) return;
+                    e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(-1, minSlider, maxSlider, mult);
                   }}
@@ -428,7 +431,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
+                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
                 >
                   <Icon name="remove" className="text-[14px]" />
                 </button>
@@ -470,8 +473,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
 
                 {/* Plus Button */}
                 <button 
-                  onPointerDown={(e) => { 
-                    e.stopPropagation(); 
+                  onPointerDown={(e) => {
+                    if (isSaved) return;
+                    e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(1, minSlider, maxSlider, mult);
                   }}
@@ -489,7 +493,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="w-6 h-6 flex items-center justify-center bg-surface-container hover:bg-surface-variant rounded-full text-on-surface-variant active:scale-90 transition-all shrink-0 touch-none select-none cursor-pointer"
+                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
                 >
                   <Icon name="add" className="text-[14px]" />
                 </button>

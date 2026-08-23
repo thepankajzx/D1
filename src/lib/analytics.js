@@ -137,11 +137,31 @@ export function computeKPIs(summaries, startDate, endDate, allSummaries = []) {
   };
 }
 
+export function formatLocalDate(date) {
+  if (!date) return '';
+  if (typeof date === 'string') {
+    if (date.length === 10 && date.includes('-')) return date;
+    const parts = date.split('T')[0].split('-');
+    if (parts.length === 3) return date.split('T')[0];
+  }
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function generateHeatmapGrid(summaries, filterMode, selectedHabitId, startDate, endDate) {
   // A heatmap usually shows columns of weeks, 7 rows per column (Mon - Sun).
   const datesByMonth = new Map();
-  let current = new Date(startDate);
-  const end = new Date(endDate);
+  
+  // Parse startDate and endDate safely into year, month, day components
+  const [sYear, sMonth, sDay] = startDate.split('-').map(Number);
+  const [eYear, eMonth, eDay] = endDate.split('-').map(Number);
+  
+  let current = new Date(sYear, sMonth - 1, sDay, 12, 0, 0);
+  const end = new Date(eYear, eMonth - 1, eDay, 12, 0, 0);
   
   while (current <= end) {
     const monthKey = `${current.getFullYear()}-${current.getMonth()}`;
@@ -184,7 +204,7 @@ export function generateHeatmapGrid(summaries, filterMode, selectedHabitId, star
     const gridCells = paddedDates.map(date => {
       if (!date) return { isPad: true };
       
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(date);
       const data = scoreMap.get(dateStr);
       const score = data?.score !== undefined && data?.score !== null ? data.score : null;
       

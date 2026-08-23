@@ -27,6 +27,14 @@ const getPerfColor = (score) => {
   return 'var(--color-perf-10)';
 };
 
+function getTodayDate() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
   const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData } = useData();
@@ -41,11 +49,7 @@ export default function Dashboard() {
   }, [habits]);
   
   // State
-  const [selectedDate, setSelectedDate] = useState(() => {
-    // Local time YYYY-MM-DD
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-    return new Date(Date.now() - tzoffset).toISOString().split('T')[0];
-  });
+  const [selectedDate, setSelectedDate] = useState(() => getTodayDate());
   
   const [entries, setEntries] = useState([]);
   const [savedHabitIds, setSavedHabitIds] = useState(new Set());
