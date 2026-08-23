@@ -1331,19 +1331,19 @@ export default function ExperimentalAnalytics() {
               if (navigator.vibrate) navigator.vibrate(30);
               setShowTimeframeModal(true);
             }}
-            className="flex items-center gap-1.5 bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800 rounded-full h-[34px] px-3 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
+            className="flex items-center gap-1 bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800 rounded-full h-[28px] px-2.5 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
             title="Change Timeframe"
           >
-            <Calendar size={13} weight="bold" className="text-slate-500 shrink-0" />
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {rangeOption === '7' ? (isHinglish ? '7 Din' : '7 Days') :
-               rangeOption === '14' ? (isHinglish ? '14 Din' : '14 Days') :
-               rangeOption === '30' ? (isHinglish ? '30 Din' : '30 Days') :
-               rangeOption === '90' ? (isHinglish ? '90 Din' : '90 Days') :
-               rangeOption === '365' ? (isHinglish ? '1 Saal' : '1 Year') :
-               (isHinglish ? 'Custom' : 'Custom')}
+            <Calendar size={11} weight="bold" className="text-slate-500 shrink-0" />
+            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">
+              {rangeOption === '7' ? '7D' :
+               rangeOption === '14' ? '14D' :
+               rangeOption === '30' ? '30D' :
+               rangeOption === '90' ? '90D' :
+               rangeOption === 'custom' ? 'Custom' :
+               '30D'}
             </span>
-            <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
+            <CaretDown size={9} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
           </button>
         </div>
 
@@ -2236,7 +2236,7 @@ export default function ExperimentalAnalytics() {
       <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-[24px] p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all relative overflow-hidden space-y-3">
         {/* Card Header with In-Place Habit Dropdown Switcher & Timeframe Pill (Left) and Profile Trophy Wall Link (Right) */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 gap-2">
-          {/* Left Cluster: Custom In-App Habit Selector Dropdown + Timeframe Pill */}
+          {/* Left Cluster: Custom In-App Habit Selector Dropdown */}
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
@@ -2244,7 +2244,7 @@ export default function ExperimentalAnalytics() {
                 if (navigator.vibrate) navigator.vibrate(30);
                 setShowHabitSheet(true);
               }}
-              className="flex items-center gap-1.5 px-2.5 h-[30px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer shadow-2xs shrink-0 max-w-[130px] xs:max-w-[160px] select-none group"
+              className="flex items-center gap-1.5 px-2.5 h-[28px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer shadow-2xs shrink-0 max-w-[160px] select-none group"
               title="Tap to switch habit"
             >
               <div 
@@ -2253,27 +2253,8 @@ export default function ExperimentalAnalytics() {
               >
                 {selectedHabitId === 'all' ? <Sparkle size={8} weight="fill" /> : <HabitIcon name={currentSelectedHabit?.icon} size={8} className="text-white" />}
               </div>
-              <span className="text-[11px] font-black text-slate-900 dark:text-white truncate max-w-[65px] xs:max-w-[95px]">
+              <span className="text-[11px] font-black text-slate-900 dark:text-white truncate max-w-[95px]">
                 {selectedHabitId === 'all' ? 'Overall' : currentSelectedHabit?.name}
-              </span>
-              <CaretDown size={10} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
-            </button>
-
-            {/* Timeframe Pill right next to Habit dropdown */}
-            <button
-              type="button"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(30);
-                setShowTimeframeModal(true);
-              }}
-              className="flex items-center justify-center gap-1 px-2.5 h-[30px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs select-none text-[11px] font-black text-slate-700 dark:text-slate-300 tracking-wide cursor-pointer transition-all active:scale-95 group shrink-0"
-              title="Change Timeframe (7, 14, 30, 90 Days)"
-            >
-              <span>
-                {rangeOption === '7' ? (isHinglish ? '7 Din' : '7 Days') :
-                 rangeOption === '14' ? (isHinglish ? '14 Din' : '14 Days') :
-                 rangeOption === '30' ? (isHinglish ? '30 Din' : '30 Days') :
-                 (isHinglish ? '90 Din' : '90 Days')}
               </span>
               <CaretDown size={10} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
             </button>
@@ -3856,13 +3837,13 @@ export default function ExperimentalAnalytics() {
               </button>
             </div>
 
-            {/* Preset Options Grid (7, 14, 30, 90 Days Only) */}
+            {/* Preset Options Grid (7, 14, 30, 90 Days Free + Pro Custom) */}
             <div className="grid grid-cols-2 gap-2">
               {[
                 { key: '7', label: isHinglish ? '7 Din' : '7 Days', desc: isHinglish ? 'साप्ताहिक' : 'Weekly Sprint' },
                 { key: '14', label: isHinglish ? '14 Din' : '14 Days', desc: isHinglish ? 'दो हफ़्ते' : 'Two-Week Focus' },
                 { key: '30', label: isHinglish ? '30 Din' : '30 Days', desc: isHinglish ? 'मासिक' : 'Monthly Review' },
-                { key: '90', label: isHinglish ? '90 Din' : '90 Days', desc: isHinglish ? 'त्रैमासिक' : 'Quarterly Trend', pro: true }
+                { key: '90', label: isHinglish ? '90 Din' : '90 Days', desc: isHinglish ? 'त्रैमासिक' : 'Quarterly Trend' }
               ].map(opt => {
                 const isSelected = rangeOption === opt.key;
                 return (
@@ -3871,10 +3852,6 @@ export default function ExperimentalAnalytics() {
                     type="button"
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(30);
-                      if (opt.pro && !userDoc?.isPro) {
-                        setShowProUpgradeModal(true);
-                        return;
-                      }
                       setRangeOption(opt.key);
                       setShowTimeframeModal(false);
                     }}
@@ -3884,11 +3861,6 @@ export default function ExperimentalAnalytics() {
                         : 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200/70 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    {opt.pro && !userDoc?.isPro && (
-                      <span className="absolute top-2 right-2 text-[9px] font-black bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
-                        PRO
-                      </span>
-                    )}
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-black">{opt.label}</span>
                       {isSelected && <CheckCircle size={14} weight="fill" className="text-emerald-400 dark:text-emerald-600" />}
@@ -3900,11 +3872,86 @@ export default function ExperimentalAnalytics() {
                 );
               })}
             </div>
+
+            {/* Custom Range Option (PRO Only) */}
+            <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/50 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Crown size={14} weight="fill" className="text-amber-500" />
+                  <span className="text-xs font-black text-slate-900 dark:text-white">
+                    {isHinglish ? 'कस्टम तारीख रेंज' : 'Custom Date Range'}
+                  </span>
+                </div>
+                <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-2xs">
+                  PRO
+                </span>
+              </div>
+
+              {userDoc?.isPro ? (
+                <div className="space-y-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 block mb-1">
+                        {isHinglish ? 'शुरुआती तारीख' : 'Start Date'}
+                      </label>
+                      <input
+                        type="date"
+                        value={customStart}
+                        onChange={e => setCustomStart(e.target.value)}
+                        className="w-full text-xs font-bold p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 block mb-1">
+                        {isHinglish ? 'अंतिम तारीख' : 'End Date'}
+                      </label>
+                      <input
+                        type="date"
+                        value={customEnd}
+                        onChange={e => setCustomEnd(e.target.value)}
+                        className="w-full text-xs font-bold p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!customStart || !customEnd) {
+                        alert(isHinglish ? 'कृपया दोनों तारीखें चुनें' : 'Please select both start and end dates');
+                        return;
+                      }
+                      if (customStart > customEnd) {
+                        alert(isHinglish ? 'शुरुआती तारीख अंतिम तारीख से पहले होनी चाहिए' : 'Start date must be before end date');
+                        return;
+                      }
+                      setAppliedCustomStart(customStart);
+                      setAppliedCustomEnd(customEnd);
+                      setRangeOption('custom');
+                      setShowTimeframeModal(false);
+                    }}
+                    className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black transition-all cursor-pointer shadow-xs"
+                  >
+                    {isHinglish ? 'कस्टम रेंज लागू करें' : 'Apply Custom Range'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowTimeframeModal(false);
+                    setShowProUpgradeModal(true);
+                  }}
+                  className="w-full py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Sparkle size={13} weight="fill" />
+                  <span>{isHinglish ? 'Pro अनलॉक करें (Unlock Custom)' : 'Unlock Custom with Pro'}</span>
+                </button>
+              )}
+            </div>
+
           </div>
         </div>
       )}
-
-      <ProModal isOpen={showProUpgradeModal} onClose={() => setShowProUpgradeModal(false)} />
     </div>
   );
 }
