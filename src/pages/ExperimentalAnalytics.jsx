@@ -11,6 +11,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import ProModal from '../components/ProModal';
+import ProgressiveDataLockWrapper from '../components/ProgressiveDataLockWrapper';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -2302,6 +2303,15 @@ export default function ExperimentalAnalytics() {
 
         </div>
 
+        <ProgressiveDataLockWrapper
+          requiredDays={30}
+          currentDays={allSummaries?.length || 0}
+          titleEn="Unlocks with 30 Days of Tracking"
+          titleHi="30 दिन का डेटा ट्रैक करने पर अनलॉक होगा"
+          descEn="Calculating accurate Best Day, Vulnerable Day, and Weekend patterns requires at least 30 days of data to eliminate one-off coincidences."
+          descHi="Best Day, Vulnerable Day और वीकेंड पैटर्न का सटीक विश्लेषण निकालने के लिए कम से कम 30 दिनों का डेटा आवश्यक है ताकि संयोग के बजाय असली आदत का पता चल सके।"
+          className="mt-2"
+        >
         {/* ── 1ST DASHED DIVIDER LINE (COMPACT & SUBTLE) ── */}
         <div className="w-full pt-0.5 pb-0">
           <svg className="w-full h-[1.5px] text-slate-300 dark:text-slate-700/80" preserveAspectRatio="none">
@@ -2457,6 +2467,7 @@ export default function ExperimentalAnalytics() {
           </div>
 
         </div>
+        </ProgressiveDataLockWrapper>
       </section>
 
 
