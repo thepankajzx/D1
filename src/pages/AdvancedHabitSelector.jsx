@@ -36,26 +36,45 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
 
   const [glowTarget, setGlowTarget] = useState(null);
   const prevValRef = useRef({ target0, target100 });
+  const target0Ref = useRef(target0);
+  const target100Ref = useRef(target100);
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  const startHolding = (field, delta) => {
-    const adjust = () => {
-      const current = field === 'target0' ? target0 : target100;
-      let next = current + delta;
-      if (isDecimalUnit) next = Math.round(next * 10) / 10;
-      next = Math.max(0, Math.min(localMax, next));
-      handleSliderChange(field, next);
-    };
-    adjust();
-    timeoutRef.current = setTimeout(() => {
-      intervalRef.current = setInterval(adjust, 100);
-    }, 400);
-  };
+  useEffect(() => {
+    target0Ref.current = target0;
+  }, [target0]);
+
+  useEffect(() => {
+    target100Ref.current = target100;
+  }, [target100]);
 
   const stopHolding = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  const startHolding = (field, delta) => {
+    stopHolding();
+    const performStep = () => {
+      const current = field === 'target0' ? target0Ref.current : target100Ref.current;
+      let next = current + delta;
+      if (isDecimalUnit) {
+        next = Math.round(next * 10) / 10;
+      } else {
+        next = Math.round(next);
+      }
+      next = Math.max(0, Math.min(localMax, next));
+      if (field === 'target0') target0Ref.current = next;
+      else target100Ref.current = next;
+      handleSliderChange(field, next);
+    };
+
+    performStep();
+
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(performStep, 150);
+    }, 500);
   };
 
   const handleSliderChange = (field, value) => {
@@ -213,12 +232,13 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           <div className="flex items-center gap-3 w-full mt-2">
             <button
               type="button"
-              onMouseDown={() => startHolding('target100', -step)}
-              onMouseUp={stopHolding}
-              onMouseLeave={stopHolding}
-              onTouchStart={(e) => { e.preventDefault(); startHolding('target100', -step); }}
-              onTouchEnd={stopHolding}
-              onTouchCancel={stopHolding}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                startHolding('target100', -step);
+              }}
+              onPointerUp={stopHolding}
+              onPointerLeave={stopHolding}
+              onPointerCancel={stopHolding}
               className="w-9 h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
               title="Decrease Target (-1 unit)"
               aria-label="Decrease Target"
@@ -248,12 +268,13 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
 
             <button
               type="button"
-              onMouseDown={() => startHolding('target100', step)}
-              onMouseUp={stopHolding}
-              onMouseLeave={stopHolding}
-              onTouchStart={(e) => { e.preventDefault(); startHolding('target100', step); }}
-              onTouchEnd={stopHolding}
-              onTouchCancel={stopHolding}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                startHolding('target100', step);
+              }}
+              onPointerUp={stopHolding}
+              onPointerLeave={stopHolding}
+              onPointerCancel={stopHolding}
               className="w-9 h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
               title="Increase Target (+1 unit)"
               aria-label="Increase Target"
