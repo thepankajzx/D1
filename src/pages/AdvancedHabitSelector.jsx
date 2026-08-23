@@ -1149,52 +1149,52 @@ export default function AdvancedHabitSelector() {
 
         {viewMode === 'summary' && (
           <div id="view-summary" className="pt-0 pb-28">
-            <div className="ahs-summary-header mt-1 sm:mt-3 mb-4 sm:mb-6">
-                <h2>Review Your Plan</h2>
-                <p>Check your targets before locking them in. You can click 'Edit Selection' below if needed.</p>
+            <div className="ahs-summary-header mt-0 sm:mt-1 mb-3 sm:mb-4 text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Review Your Plan</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Check your targets before locking them in. You can edit selections below.</p>
             </div>
             
             {showPrioritySection && (
-              <div className="max-w-3xl mx-auto mb-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                <div className="flex justify-between items-center mb-1 relative">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-slate-800">Give Priority to Your Habits</h3>
+              <div className="max-w-3xl mx-auto mb-4 bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xs">
+                <div className="flex justify-between items-center mb-0.5 relative">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">Give Priority to Your Habits</h3>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {Object.keys(priorityRanks).length > 0 && (
                       <button 
                         onClick={() => setPriorityRanks({})}
-                        className="text-xs font-bold text-red-400 hover:text-red-500 transition-colors"
+                        className="text-[11px] font-bold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
                       >
                         Clear All
                       </button>
                     )}
                     <button 
                       onClick={() => setShowPriorityInfo(true)}
-                      className="text-slate-400 hover:text-indigo-500 transition-colors flex items-center justify-center p-1 rounded-full hover:bg-indigo-50"
+                      className="text-slate-400 hover:text-primary transition-colors flex items-center justify-center p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                       title="Why set priorities?"
                     >
-                      <Icon name="info" className="text-[20px]" />
+                      <Icon name="info" className="text-[16px]" />
                     </button>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mb-4">Select up to 3 core habits you care about most. We will prioritize their insights.</p>
-                <div className="flex gap-3">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">Select up to 3 core habits for priority insights.</p>
+                <div className="flex gap-2">
                   {[
-                    { rank: 1, icon: <PriorityIcon rank={1} className="w-12 h-12 drop-shadow-md mb-2" />, label: '#1' },
-                    { rank: 2, icon: <PriorityIcon rank={2} className="w-12 h-12 drop-shadow-md mb-2" />, label: '#2' },
-                    { rank: 3, icon: <PriorityIcon rank={3} className="w-12 h-12 drop-shadow-md mb-2" />, label: '#3' },
+                    { rank: 1, icon: <PriorityIcon rank={1} className="w-8 h-8 drop-shadow-xs mb-1" />, label: '#1' },
+                    { rank: 2, icon: <PriorityIcon rank={2} className="w-8 h-8 drop-shadow-xs mb-1" />, label: '#2' },
+                    { rank: 3, icon: <PriorityIcon rank={3} className="w-8 h-8 drop-shadow-xs mb-1" />, label: '#3' },
                   ].map(({ rank, icon, label }) => {
                     const habitIdForRank = Object.keys(priorityRanks).find(id => priorityRanks[id] === rank);
                     const habitForRank = habitIdForRank ? [...selectedHabits, ...customHabits].find(h => h.id === habitIdForRank) : null;
                     return (
                       <div 
                         key={rank} 
-                        className={`flex-1 flex flex-col items-center justify-center py-4 px-2 rounded-xl border-2 border-dashed transition-all ${habitForRank ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}
+                        className={`flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-xl border border-dashed transition-all ${habitForRank ? 'border-violet-400 bg-violet-50/80 dark:bg-violet-950/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30'}`}
                       >
                         {icon}
-                        <div className={`text-xs font-extrabold mb-1 ${habitForRank ? 'text-violet-700' : 'text-slate-400'}`}>{label}</div>
-                        <div className="text-[10px] font-semibold text-center text-slate-500 line-clamp-2 px-1">
+                        <div className={`text-[11px] font-black mb-0.5 ${habitForRank ? 'text-violet-700 dark:text-violet-400' : 'text-slate-400'}`}>{label}</div>
+                        <div className="text-[9.5px] font-bold text-center text-slate-600 dark:text-slate-400 line-clamp-1 px-1">
                           {habitForRank ? habitForRank.name : 'Not set'}
                         </div>
                       </div>
@@ -1236,23 +1236,23 @@ export default function AdvancedHabitSelector() {
                 const habitUnit = resolveReviewUnit();
 
                 return (
-                  <div key={h.id} className="ahs-summary-item flex items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
-                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={22} />
+                  <div key={h.id} className="ahs-summary-item flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151a26] shadow-2xs">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={16} className="!rounded-lg shrink-0" />
                       <div className="ahs-si-details flex-1 min-w-0">
-                          <div className="ahs-si-title font-bold text-slate-800 text-[15px] truncate">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
-                          <div className="ahs-si-target mt-1.5">
+                          <div className="ahs-si-title font-black text-slate-900 dark:text-white text-xs sm:text-[13px] truncate">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
+                          <div className="ahs-si-target mt-1">
                               {h.scoringType === 'binary' ? (
-                                <span className="text-[12px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">Type: Yes / No</span>
+                                <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">Type: Yes / No</span>
                               ) : h.scoringType === 'time' ? (
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-[12px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200/80">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                                     Target: {formatReviewTime(h.userTarget100)}
                                   </span>
                                 </div>
                               ) : (
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-[12px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200/80">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                                     Target: {h.userTarget100} {habitUnit}
                                   </span>
                                 </div>
