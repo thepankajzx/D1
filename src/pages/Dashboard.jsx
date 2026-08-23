@@ -65,13 +65,14 @@ export default function Dashboard() {
   const [showKpiLockModal, setShowKpiLockModal] = useState(false);
   const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
 
-  // Calculate all-time weakest and strongest habits
-  const { weakestHabit, strongestHabit } = useMemo(() => {
-    if (!allSummaries || allSummaries.length === 0 || !habits || habits.length === 0) return { weakestHabit: null, strongestHabit: null };
+    // Calculate all-time weakest and strongest habits
+  const { weakestHabit, strongestHabit, hasLoggedData } = useMemo(() => {
+    if (!allSummaries || allSummaries.length === 0 || !habits || habits.length === 0) {
+      return { weakestHabit: null, strongestHabit: null, hasLoggedData: false };
+    }
     
     const habitStats = {};
     habits.forEach(h => {
-        // Skip subjective habits â€” they don't have a meaningful percentage score
         if (h.scoringType === 'subjective') return;
         habitStats[h.id] = { total: 0, count: 0, name: h.name };
     });
@@ -107,8 +108,9 @@ export default function Dashboard() {
     });
 
     return { 
-        weakestHabit: weakest || { name: 'N/A', score: 0 }, 
-        strongestHabit: strongest || { name: 'N/A', score: 0 } 
+        weakestHabit: weakest, 
+        strongestHabit: strongest,
+        hasLoggedData: Boolean(weakest || strongest)
     };
   }, [allSummaries, habits]);
 
@@ -401,7 +403,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full pb-24">
-      {/* 1. Top KPI Pills (Focus & Streak) */}
+            {/* 1. Top KPI Pills (Focus & Streak) */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full">
         {/* Focus Action Pill */}
         <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
@@ -410,15 +412,19 @@ export default function Dashboard() {
               <Target weight="fill" size={13} className="text-amber-400" />
               Focus
             </span>
-            <span className="text-[12px] font-bold text-amber-400/90">{weakestHabit?.score || 0}%</span>
+            <span className="text-[12px] font-bold text-amber-400/90">
+              {hasLoggedData && weakestHabit ? `${weakestHabit.score}%` : '--'}
+            </span>
           </div>
           <div className="text-[13px] font-bold text-slate-100 truncate">
-            {weakestHabit?.name || (habits[0]?.name || 'Daily Target')}
+            {hasLoggedData && weakestHabit ? weakestHabit.name : (isHinglish ? 'आज की आदतें भरें' : 'Log Today\'s Habits')}
           </div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
-            {weakestHabit?.score < 50 
-              ? (isHinglish ? 'Rebound ki zaroorat hai' : 'Needs rebound') 
-              : (isHinglish ? 'Pehle complete karo' : 'Execute early')}
+            {hasLoggedData && weakestHabit
+              ? (weakestHabit.score < 50 
+                  ? (isHinglish ? 'Rebound ki zaroorat hai' : 'Needs rebound') 
+                  : (isHinglish ? 'Pehle complete karo' : 'Execute early'))
+              : (isHinglish ? 'Day 1 डेटा दर्ज करें' : 'Track Day 1 to start')}
           </div>
         </div>
 
@@ -429,16 +435,19 @@ export default function Dashboard() {
               <Flame weight="fill" size={13} className="text-emerald-400" />
               Streak
             </span>
-            <span className="text-[12px] font-bold text-emerald-400/90">{strongestHabit?.score || 100}%</span>
+            <span className="text-[12px] font-bold text-emerald-400/90">
+              {hasLoggedData && strongestHabit ? `${strongestHabit.score}%` : '0d'}
+            </span>
           </div>
           <div className="text-[13px] font-bold text-slate-100 truncate">
-            {strongestHabit?.name || (habits[0]?.name || 'Core Habit')}
+            {hasLoggedData && strongestHabit ? strongestHabit.name : (isHinglish ? 'स्ट्रीक इग्निशन' : 'Day 1 Ignition')}
           </div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
-            {isHinglish ? 'Streak tootne mat dena' : 'Keep unbroken'}
+            {hasLoggedData && strongestHabit
+              ? (isHinglish ? 'Streak tootne mat dena' : 'Keep unbroken')
+              : (isHinglish ? 'पहला स्ट्रीक शुरू करें' : 'Complete habits to ignite')}
           </div>
         </div>
-
       </div>
 
       {/* 2. Today's Daily Insight Highlight Card */}

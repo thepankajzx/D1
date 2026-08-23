@@ -130,7 +130,7 @@ export default function ExperimentalAnalytics() {
 
   // Selected scope & timeframe
   const [selectedHabitId, setSelectedHabitId] = useState('all'); // 'all' or habit.id
-  const [rangeOption, setRangeOption] = useState('30'); // '7', '14', '30', '90', 'custom'
+  const [rangeOption, setRangeOption] = useState('7'); // '7', '14', '30', '90', 'custom'
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
