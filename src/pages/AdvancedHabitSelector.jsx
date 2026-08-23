@@ -894,146 +894,139 @@ export default function AdvancedHabitSelector() {
                     )}
 
                     {activeCategories.includes('Custom') && (() => {
-                      const existingCustomsCount = existingHabits.filter(h => h.category === 'custom_' || h.category === 'Custom').length;
-                      const isFreeUsed = (customHabits.length + existingCustomsCount) >= 1;
-                      const isPro = userDoc?.isPro;
+                      const isSuperAdmin = import.meta.env.DEV || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+                      const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
+                      const isFreeUsed = customHabits.length >= 1;
                       const showProLocked = isFreeUsed && !isPro;
 
                       if (showProLocked) {
                         return (
-                          <div className="flex flex-col items-center justify-center p-8 text-center bg-surface border-2 border-dashed border-outline-variant rounded-2xl hover:bg-surface-variant transition-colors cursor-pointer w-full h-[280px]" onClick={(e) => {
+                          <div className="flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-[#151a26] border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl w-full" onClick={(e) => {
                             e.stopPropagation();
                             setPaywallSource("custom_habit_creation");
                             setShowPaywall(true);
                           }}>
-                            <div className="flex items-center gap-2 mb-4">
-                              <span className="font-bold text-lg text-on-surface flex items-center gap-1"><Icon name="add" className="text-xl"/> Unlimited Habits</span>
-                              <span className="pro-badge">PRO</span>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5"><Icon name="add" className="text-base"/> Unlimited Custom Habits</span>
+                              <span className="text-[10px] font-black bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">PRO</span>
                             </div>
-                            <p className="text-on-surface-variant text-sm max-w-[250px] mb-6">Upgrade to unlock unlimited custom habits and tracking.</p>
-                            <button className="flex items-center gap-2 border border-outline-variant rounded-full px-5 py-2 font-medium text-on-surface hover:bg-surface-variant transition-colors">
-                              <Icon name="lock" className="text-lg" /> Upgrade to Pro
+                            <p className="text-slate-500 text-xs max-w-[280px] mb-4 font-medium">You have added 1 Free Custom Habit. Upgrade to Pro to add unlimited custom habits.</p>
+                            <button className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full px-5 py-2 font-black text-xs hover:opacity-90 transition-all cursor-pointer shadow-xs">
+                              <Icon name="lock" className="text-sm" /> Upgrade to Pro
                             </button>
                           </div>
                         );
                       }
 
                       return (
-                        <div className="ahs-habit-card ahs-custom-builder" style={{borderStyle: 'dashed', borderColor: '#CBD5E1', padding: '16px'}} onClick={e => e.stopPropagation()}>
-                          <div className="ahs-hc-top" style={{justifyContent: 'flex-end', marginBottom: '8px'}}>
-                              <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
-                                <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
-                              </button>
+                        <div className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-sm text-slate-900 dark:text-white">+ Create Custom Habit</span>
+                              <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                                {isPro ? 'Pro Unlocked' : '1 Free Habit'}
+                              </span>
+                            </div>
+                            <button className="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
+                              <Icon name="help_outline" className="text-[13px]" /> Scoring Rules
+                            </button>
                           </div>
-                          <div className="ahs-hc-title text-primary font-bold flex justify-between items-center">
-                            <span>+ Create Custom Habit</span>
-                          </div>
-                          
-                          <>
-                              {!isFreeUsed && <div className="text-xs text-green-600 font-semibold mb-2 bg-green-50 w-fit px-2 py-1 rounded">One custom habit is free</div>}
-                              <div className="ahs-input-group w-full">
-                                  <label className="ahs-input-label">Habit Name</label>
-                                  <div className="ahs-form-control">
-                                    <input type="text" value={cbName} onChange={e => setCbName(e.target.value)} placeholder="e.g. Drink 2L Water" />
-                                  </div>
+
+                          <div className="space-y-2.5">
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Habit Name</label>
+                              <input 
+                                type="text" 
+                                value={cbName} 
+                                onChange={e => setCbName(e.target.value)} 
+                                placeholder="e.g. Read 10 Pages, Cold Shower" 
+                                className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Type</label>
+                                <select 
+                                  value={cbType} 
+                                  onChange={e => setCbType(e.target.value)}
+                                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                >
+                                  <option value="yn">Yes / No (Binary)</option>
+                                  <option value="duration">Duration / Number</option>
+                                  <option value="time">Target Time</option>
+                                </select>
                               </div>
-                              <div className="ahs-input-group w-full">
-                                  <label className="ahs-input-label">Type</label>
-                                  <div className="ahs-form-control">
-                                      <select value={cbType} onChange={e => setCbType(e.target.value)}>
-                                          <option value="yn">Yes / No</option>
-                                          <option value="duration">Duration / Number</option>
-                                          <option value="time">Target Time</option>
-                                      </select>
-                                  </div>
-                              </div>
-                              
+
                               {cbType === 'duration' && (
-                                <>
-                                  <div className="ahs-input-group w-full">
-                                      <label className="ahs-input-label">Unit</label>
-                                      <div className="ahs-form-control">
-                                          <select value={cbUnit} onChange={e => setCbUnit(e.target.value)}>
-                                              <option value="L">Litres (L)</option>
-                                              <option value="kg">Kilograms (kg)</option>
-                                              <option value="mins">Minutes (mins)</option>
-                                              <option value="hrs">Hours (hrs)</option>
-                                              <option value="steps">Steps</option>
-                                              <option value="pages">Pages</option>
-                                              <option value="reps">Reps</option>
-                                              <option value="custom">Custom...</option>
-                                          </select>
-                                      </div>
-                                  </div>
-                                  {cbUnit === 'custom' && (
-                                    <div className="ahs-input-group w-full">
-                                        <label className="ahs-input-label">Custom Unit Label</label>
-                                        <div className="ahs-form-control"><input type="text" value={cbUnitCustom} onChange={e => setCbUnitCustom(e.target.value)} placeholder="e.g. cups, laps, pushups" /></div>
-                                    </div>
-                                  )}
-                                </>
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Unit</label>
+                                  <select 
+                                    value={cbUnit} 
+                                    onChange={e => setCbUnit(e.target.value)}
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  >
+                                    <option value="mins">Minutes (mins)</option>
+                                    <option value="hrs">Hours (hrs)</option>
+                                    <option value="steps">Steps</option>
+                                    <option value="pages">Pages</option>
+                                    <option value="reps">Reps</option>
+                                    <option value="L">Litres (L)</option>
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="custom">Custom Unit...</option>
+                                  </select>
+                                </div>
                               )}
-                              
-                              {cbType !== 'yn' && (
-                                <>
-                                  {cbType === 'time' ? (
-                                    <div className="mb-6 w-full">
-                                        <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
-                                        <div className="bg-[#0B1120] text-white rounded-xl p-3 text-[13px] font-bold flex items-center gap-2 shadow-sm">
-                                          <Icon name="trending_down" className="text-[16px]" /> 
-                                          Early is Better (Before Target = 100%)
-                                        </div>
-                                    </div>
-                                  ) : (
-                                    <div className="mb-6 w-full">
-                                        <div className="flex justify-between items-center mb-3">
-                                          <label className="text-sm font-bold text-on-surface-variant">Scoring Logic</label>
-                                          <button 
-                                            type="button"
-                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
-                                            onClick={(e) => { 
-                                              e.stopPropagation(); 
-                                              document.getElementById('scoring-preview-section')?.scrollIntoView({ behavior: 'smooth' });
-                                            }}
-                                          >
-                                            <Icon name="help_outline" className="text-[12px]" /> How this works
-                                          </button>
-                                        </div>
-                                        <div className="flex bg-surface border border-outline-variant/50 rounded-xl overflow-hidden shadow-sm">
-                                            <button 
-                                              type="button" 
-                                              className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'higher' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
-                                              onClick={() => setCbDirection('higher')}
-                                            >
-                                              <Icon name="trending_up" className="text-[16px]" /> Higher is better
-                                            </button>
-                                            <button 
-                                              type="button" 
-                                              className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 font-bold text-[13px] transition-all duration-300 ${cbDirection === 'lower' ? 'bg-[#0B1120] text-white' : 'bg-transparent text-on-surface hover:bg-surface-variant/30'}`} 
-                                              onClick={() => setCbDirection('lower')}
-                                            >
-                                              <Icon name="trending_down" className="text-[16px]" /> Lower is better
-                                            </button>
-                                        </div>
-                                    </div>
-                                  )}
-                                  <div className="w-full mt-4">
-                                    <DualRangeSlider 
-                                      target0={cbFloor}
-                                      target100={cbTarget}
-                                      direction={cbType === 'time' ? 'lower' : cbDirection}
-                                      unit={cbType === 'time' ? 'mins' : cbUnitCustom || cbUnit}
-                                      isTime={cbType === 'time'}
-                                      onChange={(field, value) => {
-                                        if (field === 'target0') setCbFloor(value);
-                                        if (field === 'target100') setCbTarget(value);
-                                      }}
-                                    />
-                                  </div>
-                                </>
-                              )}
-                              <button className="ahs-btn ahs-btn-primary mt-4 h-[38px] text-[0.85rem]" onClick={addCustomHabit}>Add to Plan</button>
-                          </>
+                            </div>
+
+                            {cbType === 'duration' && cbUnit === 'custom' && (
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Custom Unit Label</label>
+                                <input 
+                                  type="text" 
+                                  value={cbUnitCustom} 
+                                  onChange={e => setCbUnitCustom(e.target.value)} 
+                                  placeholder="e.g. cups, laps, pushups" 
+                                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                />
+                              </div>
+                            )}
+
+                            {cbType !== 'yn' && (
+                              <div className="grid grid-cols-2 gap-2.5">
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                    {cbType === 'time' ? 'Target Time (100% Score)' : 'Target Goal (100%)'}
+                                  </label>
+                                  <input 
+                                    type={cbType === 'time' ? 'time' : 'number'}
+                                    value={cbTarget} 
+                                    onChange={e => setCbTarget(e.target.value)} 
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                    {cbType === 'time' ? 'Missed Time (0% Score)' : 'Baseline (0% Score)'}
+                                  </label>
+                                  <input 
+                                    type={cbType === 'time' ? 'time' : 'number'}
+                                    value={cbFloor} 
+                                    onChange={e => setCbFloor(e.target.value)} 
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            <button 
+                              type="button" 
+                              onClick={addCustomHabit}
+                              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer shadow-xs mt-2"
+                            >
+                              Add to Plan
+                            </button>
+                          </div>
                         </div>
                       );
                     })()}
