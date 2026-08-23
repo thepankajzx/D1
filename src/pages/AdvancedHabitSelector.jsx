@@ -604,8 +604,9 @@ export default function AdvancedHabitSelector() {
     if (cbType === 'yn') scoringType = 'binary';
     else if (cbType === 'time') scoringType = 'time';
 
-    const CUSTOM_ICONS = ['star', 'bolt', 'local_fire_department', 'favorite', 'emoji_events', 'rocket_launch', 'psychology', 'self_improvement', 'directions_run', 'fitness_center'];
-    const icon = CUSTOM_ICONS[customHabits.length % CUSTOM_ICONS.length];
+    const CUSTOM_DEDICATED_ICONS = ['rocket_launch', 'emoji_events', 'workspace_premium', 'local_fire_department', 'star'];
+    const totalCustomCount = customHabits.length + existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
+    const icon = CUSTOM_DEDICATED_ICONS[totalCustomCount % CUSTOM_DEDICATED_ICONS.length];
 
     const parseTime = (val) => {
       if (typeof val === 'string' && val.includes(':')) {
@@ -1005,55 +1006,53 @@ export default function AdvancedHabitSelector() {
 
                     {/* EXISTING CUSTOM HABITS */}
                     {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && customHabits.map(ch => {
-                      const isSelectedView = activeCategories.includes('Selected');
-                      const isExpanded = expandedSelectedHabits.includes(ch.id);
-
-                      if (isSelectedView) {
-                        return (
-                          <div key={ch.id} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 flex flex-col gap-3 shadow-sm mb-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                 <HabitIcon name={ch.icon || 'star'} habitId={ch.id} boxed={true} size={20} className="!w-10 !h-10 !rounded-xl shrink-0" />
-                                 <div className="flex flex-col">
-                                   <span className="font-bold text-on-surface text-sm sm:text-base">{ch.name}</span>
-                                   <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Custom</span>
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]) }} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-800 transition-colors">
-                                    <Icon name="edit" className="text-[16px]" />
-                                 </button>
-                                 <button onClick={(e) => deleteCustomHabit(ch.id, e)} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
-                                    <Icon name="close" className="text-[16px]" />
-                                 </button>
-                              </div>
-                            </div>
-                            {isExpanded && (
-                               <div className="pt-3 border-t border-outline-variant/30 mt-1 flex flex-col gap-3">
-                                  <div className="text-xs text-on-surface-variant font-medium">Type: {ch.scoringType} • {ch.unit} • {ch.direction}</div>
-                                  <button className="text-xs font-bold flex items-center gap-1 text-primary hover:underline w-fit" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
-                                    <Icon name="help_outline" className="text-[12px]"/> Scoring Rules
-                                  </button>
-                               </div>
-                            )}
-                          </div>
-                        );
-                      }
+                      const formatTargetStr = () => {
+                        if (ch.scoringType === 'binary') return 'Type: Yes / No';
+                        if (ch.scoringType === 'time') return `Target: ${formatTimeStr(ch.userTarget100)}`;
+                        return `Target: ${ch.userTarget100} ${ch.unit || ''}`.trim();
+                      };
 
                       return (
-                        <div key={ch.id} className="ahs-habit-card selected bg-gray-50 border-gray-800" onClick={(e) => deleteCustomHabit(ch.id, e)}>
-                          <div className="ahs-hc-top">
-                              <HabitIcon name={ch.icon || 'star'} habitId={ch.id} boxed={true} size={22} className="!w-10 !h-10 !rounded-xl shrink-0" />
-                              <div className="ahs-card-actions">
-                                  <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}>
-                                    <Icon name="help_outline" className="text-[12px]" /> Scoring Rules
-                                  </button>
-                                  <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
+                        <div 
+                          key={ch.id} 
+                          className="ahs-habit-card selected bg-white dark:bg-[#151a26] border-2 border-slate-900 dark:border-white rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 shadow-2xs w-full"
+                        >
+                          {/* Left Icon & Details */}
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <HabitIcon name={ch.icon || 'rocket_launch'} habitId={ch.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-lg shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate">
+                                  {ch.name}
+                                </span>
+                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                                  CUSTOM
+                                </span>
                               </div>
+                              <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
+                                {formatTargetStr()}
+                              </div>
+                            </div>
                           </div>
-                          <div className="ahs-hc-title">{ch.name} <span className="ahs-custom-badge">CUSTOM</span></div>
-                          <div className="text-xs text-on-surface-variant font-medium mb-2">Type: {ch.scoringType} • {ch.unit} • {ch.direction}</div>
-                          <div className="text-xs font-bold text-red-500 mt-4 underline text-right cursor-pointer">Remove</div>
+
+                          {/* Right Action Controls */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button 
+                              type="button" 
+                              className="ahs-btn-custom-scoring text-xs" 
+                              onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
+                            >
+                              <Icon name="help_outline" className="text-[12px]" /> Scoring
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={(e) => deleteCustomHabit(ch.id, e)}
+                              className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-colors cursor-pointer"
+                              title="Delete custom habit"
+                            >
+                              <Icon name="delete" className="text-[14px]" />
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
