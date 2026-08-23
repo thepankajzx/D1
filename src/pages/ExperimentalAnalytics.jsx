@@ -2305,7 +2305,7 @@ export default function ExperimentalAnalytics() {
 
         <ProgressiveDataLockWrapper
           requiredDays={30}
-          currentDays={allSummaries?.length || 0}
+          currentDays={realSummaries?.length || 0}
           titleEn="Unlocks with 30 Days of Tracking"
           titleHi="30 दिन का डेटा ट्रैक करने पर अनलॉक होगा"
           descEn="Calculating accurate Best Day, Vulnerable Day, and Weekend patterns requires at least 30 days of data to eliminate one-off coincidences."
