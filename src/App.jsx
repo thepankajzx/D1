@@ -12,25 +12,45 @@ import { Compass } from '@phosphor-icons/react';
 import { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-const Analytics = lazy(() => import('./pages/Analytics'));
-const ExperimentalAnalytics = lazy(() => import('./pages/ExperimentalAnalytics'));
-const DeepDive = lazy(() => import('./pages/DeepDive'));
+function lazyRetry(componentImport) {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      const isChunkLoadError = error?.name === 'ChunkLoadError' || 
+                               (error?.message && error.message.includes('Failed to fetch dynamically imported module'));
+      if (isChunkLoadError) {
+        const isReloaded = sessionStorage.getItem('chunk_retry_' + window.location.pathname);
+        if (!isReloaded) {
+          sessionStorage.setItem('chunk_retry_' + window.location.pathname, 'true');
+          window.location.reload();
+          return new Promise(() => {}); // hold promise until reload
+        }
+      }
+      throw error;
+    }
+  });
+}
 
-const DeepDiveIndex = lazy(() => import('./pages/DeepDiveIndex'));
-const RecoveryDeepDive = lazy(() => import('./pages/RecoveryDeepDive'));
-const HabitDiagnostics = lazy(() => import('./pages/HabitDiagnostics'));
-const InsightFeed = lazy(() => import('./pages/InsightFeed'));
-const BetterReport = lazy(() => import('./pages/BetterReport'));
-const InsightsRoadmap = lazy(() => import('./pages/InsightsRoadmap'));
-const ScoringGuide = lazy(() => import('./pages/ScoringGuide'));
-const StreaksPage = lazy(() => import('./pages/StreaksPage'));
-const StreakMilestonesPage = lazy(() => import('./pages/StreakMilestonesPage'));
+const Analytics = lazyRetry(() => import('./pages/Analytics'));
+const ExperimentalAnalytics = lazyRetry(() => import('./pages/ExperimentalAnalytics'));
+const DeepDive = lazyRetry(() => import('./pages/DeepDive'));
 
-const Profile = lazy(() => import('./pages/Profile'));
-const OnboardingWelcome = lazy(() => import('./pages/OnboardingWelcome'));
-const OnboardingSelect = lazy(() => import('./pages/AdvancedHabitSelector'));
-const OnboardingTargets = lazy(() => import('./pages/OnboardingTargets'));
-const Subscription = lazy(() => import('./pages/Subscription'));
+const DeepDiveIndex = lazyRetry(() => import('./pages/DeepDiveIndex'));
+const RecoveryDeepDive = lazyRetry(() => import('./pages/RecoveryDeepDive'));
+const HabitDiagnostics = lazyRetry(() => import('./pages/HabitDiagnostics'));
+const InsightFeed = lazyRetry(() => import('./pages/InsightFeed'));
+const BetterReport = lazyRetry(() => import('./pages/BetterReport'));
+const InsightsRoadmap = lazyRetry(() => import('./pages/InsightsRoadmap'));
+const ScoringGuide = lazyRetry(() => import('./pages/ScoringGuide'));
+const StreaksPage = lazyRetry(() => import('./pages/StreaksPage'));
+const StreakMilestonesPage = lazyRetry(() => import('./pages/StreakMilestonesPage'));
+
+const Profile = lazyRetry(() => import('./pages/Profile'));
+const OnboardingWelcome = lazyRetry(() => import('./pages/OnboardingWelcome'));
+const OnboardingSelect = lazyRetry(() => import('./pages/AdvancedHabitSelector'));
+const OnboardingTargets = lazyRetry(() => import('./pages/OnboardingTargets'));
+const Subscription = lazyRetry(() => import('./pages/Subscription'));
 
 function Layout({ children }) {
   const { logout } = useAuth();
