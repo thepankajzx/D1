@@ -361,6 +361,39 @@ export default function Profile() {
       </div>
 
 
+            {/* ── HISTORICAL DATA MIGRATION BANNER (PROMINENT TOP) ───────────────── */}
+      <div className="bg-linear-to-r from-indigo-900/90 via-indigo-950 to-slate-900 border border-indigo-500/30 rounded-2xl p-4 sm:p-4.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-400/30 flex items-center justify-center font-black shrink-0 shadow-inner">
+            <Icon name="cloud_download" className="text-2xl text-indigo-400" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-black text-sm text-white tracking-tight">
+                {isHinglish ? 'पुराना डेटा ट्रांसफर (Historical Data Migration)' : 'Historical Data Migration'}
+              </h3>
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Bridge Ready
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 font-medium mt-0.5 leading-snug">
+              {isHinglish ? 'पुराने ऐप (fci-lms) से अपना 2 महीने का इतिहास इस अकाउंट में 1-क्लिक में लोड करें।' : 'Import historical daily logs from fci-lms directly into this account.'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(30);
+            setShowMigrationModal(true);
+          }}
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 group active:scale-95"
+        >
+          <span>{isHinglish ? 'डेटा इंपोर्ट करें' : 'Import Data'}</span>
+          <Icon name="arrow_forward" className="text-sm group-hover:translate-x-0.5 transition-transform" />
+        </button>
+      </div>
+
       {/* ── 1. MY HABITS (TOP ACCORDION COLUMN) ────────────────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <div 
