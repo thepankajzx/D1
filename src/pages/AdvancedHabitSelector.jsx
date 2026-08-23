@@ -759,32 +759,33 @@ export default function AdvancedHabitSelector() {
 
         {viewMode === 'selection' && (
           <div id="view-selection">
-            <header className="ahs-header-main mb-4 sm:mb-5">
-              <div className="ahs-header-left">
+            <header className="mb-2">
+              <div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                   Choose Your Daily Habits
                 </h1>
-                <p className="text-xs text-rose-600 dark:text-rose-400 font-black mt-1 mb-3 flex items-center gap-1">
+                <p className="text-[11.5px] sm:text-xs text-rose-600 dark:text-rose-400 font-black mt-0.5 mb-2 flex items-center gap-1">
                   <span>🔒 Habit will be locked for 30 days once saved</span>
                 </p>
-                <div className="mb-4">
+                <div>
                   <button 
                     type="button"
-                    className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
+                    className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
                     onClick={() => setScoringModal('all')}
                   >
-                    <Icon name="help_outline" className="text-[14px]" /> 
+                    <Icon name="help_outline" className="text-[13px]" /> 
                     <span>How habit scoring logic works</span>
                   </button>
                 </div>
-                <hr className="border-t border-slate-200/80 dark:border-slate-800 w-full mb-4" />
+                <hr className="border-t border-slate-200/80 dark:border-slate-800 w-full my-2.5" />
               </div>
             </header>
 
-            {/* Category Selector Dropdown & Quick Badges */}
+            {/* Top Navigation: 3 Pills (Dropdown, Selected, + Custom) */}
             <div className="relative mb-3.5 z-30">
-              <div className="flex items-center justify-between gap-2.5">
-                {/* Custom Category Dropdown Trigger */}
+              <div className="flex items-center gap-2 flex-wrap">
+                
+                {/* 1. Category Dropdown Pill (Left) */}
                 <div className="relative">
                   <button
                     type="button"
@@ -792,51 +793,29 @@ export default function AdvancedHabitSelector() {
                       if (navigator.vibrate) navigator.vibrate(20);
                       setShowCategoryDropdown(!showCategoryDropdown);
                     }}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 text-slate-900 dark:text-white font-black text-xs sm:text-[13px] shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-2xs border ${
+                      !activeCategories.includes('Selected') && !activeCategories.includes('Custom')
+                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white'
+                        : 'bg-white dark:bg-[#151a26] text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-slate-800 hover:border-slate-300'
+                    }`}
                   >
-                    <Icon name="grid_view" className="text-primary text-[15px]" />
+                    <Icon name="grid_view" className="text-[13px]" />
                     <span>
-                      {activeCategories.includes('Selected')
-                        ? `Selected (${selectedHabits.length + customHabits.length})`
-                        : activeCategories.includes('Custom')
-                          ? '+ Custom Habit'
-                          : activeCategories[0] || 'All Habits'}
+                      {activeCategories.includes('Selected') || activeCategories.includes('Custom')
+                        ? 'All Habits'
+                        : activeCategories[0] || 'All Habits'}
                     </span>
-                    <Icon name="expand_more" className={`text-slate-400 text-sm transition-transform duration-200 ${showCategoryDropdown ? 'rotate-180' : ''}`} />
+                    <Icon name="expand_more" className={`text-xs transition-transform duration-200 ${showCategoryDropdown ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Dropdown Menu Modal / Popover */}
+                  {/* Category Dropdown Menu */}
                   {showCategoryDropdown && (
                     <>
                       <div 
                         className="fixed inset-0 z-40" 
                         onClick={() => setShowCategoryDropdown(false)} 
                       />
-                      <div className="absolute left-0 top-full mt-1.5 w-56 bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 z-50 animate-in zoom-in-95 duration-150 space-y-0.5">
-                        
-                        {/* 1. Selected Option */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveCategories(['Selected']);
-                            setShowCategoryDropdown(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
-                            activeCategories.includes('Selected')
-                              ? 'bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400'
-                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-violet-500" />
-                            Selected Plan
-                          </span>
-                          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-violet-500/15 font-black">
-                            {selectedHabits.length + customHabits.length}
-                          </span>
-                        </button>
-
-                        {/* 2. All Habits */}
+                      <div className="absolute left-0 top-full mt-1.5 w-52 bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 z-50 animate-in zoom-in-95 duration-150 space-y-0.5">
                         <button
                           type="button"
                           onClick={() => {
@@ -849,18 +828,12 @@ export default function AdvancedHabitSelector() {
                               : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                           }`}
                         >
-                          <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-slate-400" />
-                            All Habits
-                          </span>
-                          <span className="text-[10px] opacity-75">
-                            {habitLibrary.length}
-                          </span>
+                          <span>All Habits</span>
+                          <span className="text-[10px] opacity-75">{habitLibrary.length}</span>
                         </button>
 
                         <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
 
-                        {/* 3. Predefined Categories */}
                         {[...new Set(habitLibrary.map(h => h.category))].map(cat => {
                           const isCatActive = activeCategories.length === 1 && activeCategories[0] === cat;
                           const catCount = habitLibrary.filter(h => h.category === cat).length;
@@ -883,39 +856,44 @@ export default function AdvancedHabitSelector() {
                             </button>
                           );
                         })}
-
-                        <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
-
-                        {/* 4. Custom Habit Option */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveCategories(['Custom']);
-                            setShowCategoryDropdown(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
-                            activeCategories.includes('Custom')
-                              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
-                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Icon name="add_circle" className="text-emerald-600 text-sm" />
-                            Create Custom
-                          </span>
-                          <span className="text-[10px] text-emerald-600 font-black">Free/Pro</span>
-                        </button>
-
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* Right Status Pill */}
-                <div className="text-[11px] font-black text-slate-500 dark:text-slate-400">
-                  <span>Selected: </span>
-                  <span className="text-primary dark:text-white font-extrabold">{selectedHabits.length + customHabits.length} / 9</span>
-                </div>
+                {/* 2. Selected Pill (Middle) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    setActiveCategories(['Selected']);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-2xs border ${
+                    activeCategories.includes('Selected')
+                      ? 'bg-violet-600 text-white border-violet-600 shadow-violet-500/20'
+                      : 'bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800 hover:bg-violet-100'
+                  }`}
+                >
+                  <Icon name="check" className="text-[13px]" />
+                  <span>Selected ({selectedHabits.length + customHabits.length})</span>
+                </button>
+
+                {/* 3. + Custom Pill (Right) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    setActiveCategories(['Custom']);
+                  }}
+                  className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-2xs border ${
+                    activeCategories.includes('Custom')
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-500/20'
+                      : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                  }`}
+                >
+                  <span>+ Custom</span>
+                </button>
+
               </div>
             </div>
 
