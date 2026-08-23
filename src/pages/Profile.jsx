@@ -346,15 +346,15 @@ export default function Profile() {
     <div className="max-w-4xl mx-auto w-full pb-24 space-y-2.5 animate-in fade-in duration-200">
       
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-black shrink-0 shadow-2xs">
+      <div className="flex items-start sm:items-center gap-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-black shrink-0 shadow-2xs mt-0.5 sm:mt-0">
           <Icon name="person" className="text-[18px]" />
         </div>
-        <div className="min-w-0">
-          <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight">
             {isHinglish ? 'खाता एवं आदतें (Account & Habits)' : 'Account & Habits'}
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight truncate mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-snug mt-0.5">
             {isHinglish ? 'अपनी सक्रिय आदतें, इनसाइट अनलॉक, रिपोर्ट्स और प्लान प्रबंधित करें।' : 'Manage your habits, insight unlocks, reports, and membership.'}
           </p>
         </div>
