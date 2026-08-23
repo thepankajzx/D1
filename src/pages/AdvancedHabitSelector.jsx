@@ -316,6 +316,7 @@ export default function AdvancedHabitSelector() {
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [customHabits, setCustomHabits] = useState([]);
   const [activeCategories, setActiveCategories] = useState(['Selected']);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallSource, setPaywallSource] = useState("");
