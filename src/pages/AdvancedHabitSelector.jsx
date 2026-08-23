@@ -757,16 +757,25 @@ export default function AdvancedHabitSelector() {
 
         {viewMode === 'selection' && (
           <div id="view-selection">
-            <header className="ahs-header-main">
+            <header className="ahs-header-main mb-4 sm:mb-5">
               <div className="ahs-header-left">
-                <h1>Choose Your Daily Habits</h1>
-                <p className="text-red-500 font-bold mb-4">Habit will be locked for 30 days once saved</p>
-                <div className="mb-6">
-                    <button className="flex items-center gap-2 py-2 px-4 border border-outline-variant rounded-full font-bold text-on-surface hover:bg-surface-variant transition-colors" onClick={() => setScoringModal('all')}>
-                        <Icon name="help_outline" /> How habit scoring logics works
-                    </button>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                  Choose Your Daily Habits
+                </h1>
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-black mt-1 mb-3 flex items-center gap-1">
+                  <span>🔒 Habit will be locked for 30 days once saved</span>
+                </p>
+                <div className="mb-4">
+                  <button 
+                    type="button"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
+                    onClick={() => setScoringModal('all')}
+                  >
+                    <Icon name="help_outline" className="text-[14px]" /> 
+                    <span>How habit scoring logic works</span>
+                  </button>
                 </div>
-                <hr className="border-t-2 border-dashed border-gray-400 w-full mb-6" />
+                <hr className="border-t border-slate-200/80 dark:border-slate-800 w-full mb-4" />
               </div>
             </header>
 
@@ -839,13 +848,13 @@ export default function AdvancedHabitSelector() {
                     {activeCategories.includes('Selected') && !activeCategories.includes('Custom') && (
                       <button 
                         onClick={() => setActiveCategories(['Custom'])}
-                        className="w-full bg-black text-white rounded-xl py-4 px-5 font-bold flex justify-between items-center mb-6 shadow-md hover:bg-gray-800 transition-colors"
+                        className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl py-2.5 px-4 font-black flex justify-between items-center mb-4 shadow-sm hover:opacity-90 transition-all cursor-pointer text-xs sm:text-sm active:scale-98"
                       >
-                        <div className="flex items-center gap-3">
-                          <Icon name="add_circle" className="text-2xl" />
-                          <span className="text-base">Create Custom Habit</span>
+                        <div className="flex items-center gap-2">
+                          <Icon name="add_circle" className="text-lg" />
+                          <span>Create Custom Habit</span>
                         </div>
-                        <Icon name="chevron_right" />
+                        <Icon name="chevron_right" className="text-sm" />
                       </button>
                     )}
 

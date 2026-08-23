@@ -53,8 +53,8 @@
 .ahs-header-top { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; cursor: pointer; color: var(--ahs-text-main); font-weight: 600; padding: 8px 12px 8px 0; }
 .ahs-header-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
 .ahs-header-left { flex: 1; min-width: min(100%, 300px); }
-.ahs-header-left h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; color: var(--ahs-text-main); line-height: 1.2; }
-.ahs-header-left p { color: var(--ahs-text-sub); font-size: 0.95rem; margin-bottom: 20px; font-weight: 500; }
+.ahs-header-left h1 { font-size: 1.35rem; font-weight: 900; margin-bottom: 4px; letter-spacing: -0.02em; color: var(--ahs-text-main); line-height: 1.2; }
+.ahs-header-left p { color: var(--ahs-text-sub); font-size: 0.75rem; margin-bottom: 10px; font-weight: 600; }
 
 .ahs-badges-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 .ahs-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; border: 1px solid var(--ahs-border-light); font-size: 0.8rem; font-weight: 600; color: var(--ahs-text-sub); background: var(--ahs-bg-card); box-shadow: var(--ahs-shadow-sm); }
