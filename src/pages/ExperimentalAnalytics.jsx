@@ -112,6 +112,7 @@ export default function ExperimentalAnalytics() {
   const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
   const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
+  const [showResilienceLockModal, setShowResilienceLockModal] = useState(false);
   const dateSelectorRef = useRef(null);
   const [showHabitSheet, setShowHabitSheet] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
@@ -1501,26 +1502,39 @@ export default function ExperimentalAnalytics() {
 
           {/* 3-Column Micro KPI Stat Strip (Resilience Score, Consistency, Target Hit Rate) */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {/* Card 1: Resilience Score (Clickable Link to Recovery Hub) */}
-            <Link
-              to={selectedHabitId === 'all' ? '/analytics/recovery' : `/analytics/recovery?habitId=${selectedHabitId}`}
-              className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col justify-center min-w-0 hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-xs transition-all group cursor-pointer"
+            {/* Card 1: Resilience Score (Clickable Link / Lock Modal if < 14d) */}
+            <div
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                if ((realSummaries?.length || 0) < 14) {
+                  setShowResilienceLockModal(true);
+                } else {
+                  navigate(selectedHabitId === 'all' ? '/analytics/recovery' : `/analytics/recovery?habitId=${selectedHabitId}`);
+                }
+              }}
+              className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col justify-center min-w-0 hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-xs transition-all group cursor-pointer relative"
               title="Tap to open Resilience & Recovery Deep Dive"
             >
               <span className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-black uppercase tracking-tight text-emerald-700 dark:text-emerald-300 leading-none whitespace-nowrap flex items-center justify-between">
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 truncate">
                   <ShieldCheck size={11} weight="fill" className="text-emerald-500 shrink-0" />
-                  {isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience'}
+                  {isHinglish ? 'रेज़िलिएंस' : 'Resilience'}
                 </span>
-                <CaretRight size={10} weight="bold" className="text-emerald-500 group-hover:translate-x-0.5 transition-transform" />
+                {(realSummaries?.length || 0) < 14 ? (
+                  <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[8px] font-black tracking-wider shrink-0 flex items-center gap-0.5">
+                    <Lock size={8} weight="bold" /> 14D
+                  </span>
+                ) : (
+                  <CaretRight size={10} weight="bold" className="text-emerald-500 group-hover:translate-x-0.5 transition-transform" />
+                )}
               </span>
               <div className="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight my-0.5 tracking-tight">
                 {resilienceScore}%
               </div>
               <span className="text-[8.5px] xs:text-[9px] sm:text-[9.5px] font-semibold text-emerald-700/75 dark:text-emerald-400/75 whitespace-nowrap leading-none truncate">
-                {isHinglish ? 'रिकवरी हब ➔' : 'Bounce-back ➔'}
+                {(realSummaries?.length || 0) < 14 ? (isHinglish ? 'प्रीव्यू देखें ➔' : 'Preview ➔') : (isHinglish ? 'रिकवरी हब ➔' : 'Bounce-back ➔')}
               </span>
-            </Link>
+            </div>
 
             {/* Card 2: Consistency Rate */}
             <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-900/40 flex flex-col justify-center min-w-0">
@@ -3586,6 +3600,77 @@ export default function ExperimentalAnalytics() {
               </div>
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── RESILIENCE HUB 14-DAY LOCK MODAL ── */}
+      {showResilienceLockModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150">
+            
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Lock size={16} weight="fill" />
+                </div>
+                <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                  {isHinglish ? '14 दिन का डेटा आवश्यक' : '14 Days of Data Required'}
+                </h4>
+              </div>
+              <button 
+                onClick={() => setShowResilienceLockModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X size={14} weight="bold" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {isHinglish 
+                ? 'आपकी आदतों में आने वाली रुकावटों (Slumps) और उनके बाद वापसी (Bounce-Back) का सटीक पैटर्न पहचानने के लिए कम से कम 14 दिनों का डेटा आवश्यक है।'
+                : 'Recognizing your true habit slump recovery and bounce-back speed requires at least 14 days of tracked logs.'}
+            </p>
+
+            {/* Progress counter */}
+            <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <span>{isHinglish ? 'आपकी प्रोग्रेस' : 'Your Progress'}</span>
+                <span className="text-amber-600 dark:text-amber-400">
+                  {realSummaries?.length || 0} / 14 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 14 - (realSummaries?.length || 0))} {isHinglish ? 'दिन शेष' : 'days left'})
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                  style={{ width: `${Math.max(5, Math.min(100, Math.round(((realSummaries?.length || 0) / 14) * 100)))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowResilienceLockModal(false);
+                  navigate(selectedHabitId === 'all' ? '/analytics/recovery' : `/analytics/recovery?habitId=${selectedHabitId}`);
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <Sparkle size={13} weight="fill" />
+                <span>{isHinglish ? 'सैंपल प्रीव्यू देखें (Peek Preview)' : 'Explore Sample Preview'}</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowResilienceLockModal(false)}
+                className="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+              >
+                {isHinglish ? 'बंद करें' : 'Close'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
