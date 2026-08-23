@@ -145,7 +145,7 @@ function HabitDetailSheet({ habit, allSummaries, onClose }) {
   );
 }
 
-export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
+export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSaved = false }) {
   // For binary habits: null = not answered, 1 = yes/done, 0 = no/not done
   const getInitialVal = () => {
     if (entry && entry.rawValue !== undefined) return entry.rawValue;
@@ -231,11 +231,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
 
             {/* Clickable halves */}
             <div className="absolute inset-0 flex">
-              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(1); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+              <button disabled={isSaved} onClick={(e) => { if (isSaved) return; e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(1); }} className={`flex-1 flex items-center justify-center z-10 ${isSaved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}>
                 <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
               </button>
               <div className="w-[1px] bg-outline-variant/30 z-10" />
-              <button onClick={(e) => { e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(0); }} className="flex-1 flex items-center justify-center z-10 cursor-pointer">
+              <button disabled={isSaved} onClick={(e) => { if (isSaved) return; e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(0); }} className={`flex-1 flex items-center justify-center z-10 ${isSaved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}>
                 <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
               </button>
             </div>
@@ -329,7 +329,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     }}
                     onPointerUp={(e) => handleChange(Number(e.target.value))}
                     onTouchEnd={(e) => handleChange(Number(e.target.value))}
-                    className="subjective-slider w-full m-0 !h-[6px]" 
+                    disabled={isSaved} className={`subjective-slider w-full m-0 !h-[6px] ${isSaved ? "cursor-not-allowed opacity-75" : ""}`} 
                   />
                 </div>
                 <button
@@ -464,7 +464,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries }) {
                     }}
                     onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
                     onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                    className="custom-slider w-full m-0 !h-[6px]" 
+                    disabled={isSaved} className={`custom-slider w-full m-0 !h-[6px] ${isSaved ? "cursor-not-allowed opacity-75" : ""}`} 
                   />
                 </div>
 

@@ -48,6 +48,7 @@ export default function Dashboard() {
   });
   
   const [entries, setEntries] = useState([]);
+  const [savedEntries, setSavedEntries] = useState([]);
   const [dailySummary, setDailySummary] = useState(null);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [pendingChanges, setPendingChanges] = useState(false);
