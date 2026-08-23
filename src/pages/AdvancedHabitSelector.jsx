@@ -405,7 +405,7 @@ export default function AdvancedHabitSelector() {
       setViewMode('summary');
       window.scrollTo(0, 0);
     } else if (viewMode === 'summary') {
-      const isSuperAdmin = currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+      const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
       if (isSuperAdmin) {
         executeSave();
       } else {
@@ -894,7 +894,7 @@ export default function AdvancedHabitSelector() {
                     )}
 
                     {activeCategories.includes('Custom') && (() => {
-                      const isSuperAdmin = import.meta.env.DEV || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+                      const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
                       const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
                       const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
                       const totalCustoms = customHabits.length + existingCustomsCount;

@@ -88,7 +88,7 @@ export function DataProvider({ children }) {
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
 
   // Grant pro to demo/dev accounts immediately, before Firestore loads
-  const DEV_PRO_EMAILS = ['dummytest2025@example.com', 'test2025@gmail.com'];
+  const DEV_PRO_EMAILS = ['dummytest2025@example.com', 'test2025@gmail.com', 'zxofficial84@gmail.com'];
   const isDevPro = import.meta.env.DEV || DEV_PRO_EMAILS.includes(user?.email?.toLowerCase() ?? '');
   const [userDocData, setUserDocData] = useState(isDevPro ? { isPro: true } : null);
   const [loadingData, setLoadingData] = useState(() => {

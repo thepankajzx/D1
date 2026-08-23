@@ -105,7 +105,7 @@ export default function Profile() {
     const setDate = new Date(prioritySetHabit.prioritySetAt || prioritySetHabit.createdAt || Date.now());
     const diffDays = Math.ceil((new Date() - setDate) / (1000 * 60 * 60 * 24));
     const remaining = 30 - diffDays;
-    const isSuperAdmin = currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+    const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
     if (remaining > 0 && !isSuperAdmin) return { locked: true, daysRemaining: remaining };
     return { locked: false, daysRemaining: 0 };
   };
@@ -292,7 +292,7 @@ export default function Profile() {
     if (habitToDelete && habitToDelete.createdAt) {
       const createdDate = new Date(habitToDelete.createdAt);
       const diffDays = Math.ceil((new Date() - createdDate) / (1000 * 60 * 60 * 24));
-      const isSuperAdmin = import.meta.env.DEV || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
+      const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
       if (diffDays <= 30 && !isSuperAdmin) {
         setDeleteLockDays(Math.max(1, 30 - diffDays));
         setShowDeleteLockedModal(true);
@@ -820,7 +820,7 @@ export default function Profile() {
               </button>
 
 
-              {currentUser?.email === 'dummytest2025@example.com' && (
+              {['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email) && (
                 <button 
                   onClick={async () => {
                     try { 
