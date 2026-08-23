@@ -902,54 +902,68 @@ export default function Profile() {
 
       {/* ── PRIORITY SELECTION MODAL ─────────────────────────────────────────── */}
       {showPriorityModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in" onClick={() => setShowPriorityModal(false)}>
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in" onClick={() => setShowPriorityModal(false)}>
+          <div className="bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl max-w-sm w-full p-4 sm:p-5 shadow-2xl flex flex-col gap-3 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
               <div>
-                <h3 className="text-lg font-black text-slate-900">Set Core Priorities</h3>
-                <p className="text-xs text-slate-500">Pick up to 3 core habits to prioritize for your insights.</p>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">Set Core Priorities</h3>
+                <p className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">Pick up to 3 core habits for priority insights.</p>
               </div>
-              <button onClick={() => setShowPriorityModal(false)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer">
-                <Icon name="close" className="text-[18px]" />
+              <button onClick={() => setShowPriorityModal(false)} className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors cursor-pointer">
+                <Icon name="close" className="text-[14px]" />
               </button>
             </div>
 
-            <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
-              {habits.map(habit => (
-                <div 
-                  key={habit.id}
-                  onClick={() => togglePriorityRank(habit.id)}
-                  className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                    priorityRanks[habit.id] 
-                      ? 'border-violet-400 bg-violet-50 text-violet-900' 
-                      : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} />
-                    <span className="font-bold text-sm">{habit.name}</span>
-                  </div>
-                  <div>
-                    {priorityRanks[habit.id] ? (
-                      <span className="flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-100 px-2.5 py-1 rounded-full">
-                        Priority #{priorityRanks[habit.id]}
+            <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-0.5">
+              {habits.map(habit => {
+                const isSelected = !!priorityRanks[habit.id];
+                const rank = priorityRanks[habit.id];
+                return (
+                  <div 
+                    key={habit.id}
+                    onClick={() => togglePriorityRank(habit.id)}
+                    className={`px-2.5 py-2 rounded-xl border flex items-center justify-between gap-2 cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-2xs' 
+                        : 'border-slate-100 dark:border-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={15} className="!w-7 !h-7 !rounded-lg shrink-0" />
+                      <span className={`font-bold text-xs truncate ${isSelected ? 'text-primary dark:text-primary-light font-black' : 'text-slate-800 dark:text-slate-200'}`}>
+                        {habit.name}
                       </span>
-                    ) : (
-                      <span className="text-xs font-bold text-slate-400">+ Select</span>
-                    )}
+                    </div>
+                    <div className="shrink-0">
+                      {isSelected ? (
+                        <div className="flex items-center gap-1 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-2xs">
+                          <span className="opacity-80">PRIORITY</span>
+                          <span>#{rank}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10.5px] font-bold text-slate-400 hover:text-primary transition-colors">
+                          + Select
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
-              <button onClick={() => setPriorityRanks({})} className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">
+            <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800">
+              <button 
+                type="button"
+                onClick={() => setPriorityRanks({})} 
+                className="text-[11px] font-bold text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer px-1 py-1"
+              >
                 Clear All
               </button>
               <button
+                type="button"
                 disabled={isSavingPriority}
                 onClick={handleSavePriorities}
-                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm shadow-xs transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-2xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSavingPriority ? 'Saving...' : 'Save Priorities'}
               </button>
