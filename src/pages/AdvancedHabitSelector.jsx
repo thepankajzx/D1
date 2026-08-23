@@ -786,7 +786,7 @@ export default function AdvancedHabitSelector() {
             </div>
 
             {/* ── 3 Main View Tabs (All Habits, Selected, + Custom) ── */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
               
               {/* Tab 1: All Habits */}
               <button
@@ -795,13 +795,13 @@ export default function AdvancedHabitSelector() {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['All']);
                 }}
-                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                   !activeCategories.includes('Selected') && !activeCategories.includes('Custom')
                     ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Icon name="grid_view" className="text-[14px]" />
+                <Icon name="grid_view" className="text-[13px] shrink-0" />
                 <span>All ({habitLibrary.length})</span>
               </button>
 
@@ -812,31 +812,31 @@ export default function AdvancedHabitSelector() {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['Selected']);
                 }}
-                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                   activeCategories.includes('Selected')
                     ? 'bg-violet-600 text-white shadow-xs shadow-violet-500/30'
                     : 'text-violet-700 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30'
                 }`}
               >
-                <Icon name="check" className="text-[14px]" />
+                <Icon name="check" className="text-[13px] shrink-0" />
                 <span>Selected ({selectedHabits.length + customHabits.length})</span>
               </button>
 
-              {/* Tab 3: + Custom */}
+              {/* Tab 3: Custom */}
               <button
                 type="button"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['Custom']);
                 }}
-                className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                   activeCategories.includes('Custom')
                     ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/30'
                     : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
                 }`}
               >
-                <Icon name="add" className="text-[14px]" />
-                <span>+ Custom</span>
+                <Icon name="add" className="text-[13px] shrink-0" />
+                <span>Custom</span>
               </button>
             </div>
 
