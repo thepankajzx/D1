@@ -48,6 +48,7 @@ export default function Dashboard() {
   });
   
   const [entries, setEntries] = useState([]);
+  const [savedHabitIds, setSavedHabitIds] = useState(new Set());
   const [savedEntries, setSavedEntries] = useState([]);
   const [dailySummary, setDailySummary] = useState(null);
   const [loadingEntries, setLoadingEntries] = useState(true);
