@@ -38,6 +38,7 @@ import {
   Warning,
   Lightning,
   Crown,
+  RocketLaunch,
   Lock
 } from '@phosphor-icons/react';
 import { calculateStreakData, calculateConsistencyRate, getNextMilestone, getCurrentMilestone } from '../lib/streakEngine';
@@ -2339,7 +2340,7 @@ export default function ExperimentalAnalytics() {
             title="Tap to view Milestone Trophies"
           >
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500/15 to-indigo-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-inner border border-purple-500/20 group-hover:scale-105 transition-transform">
-              <Crown size={20} weight="fill" className="text-purple-500" />
+              {getMilestoneTierIcon(currentMilestoneTier.title)}
             </div>
             <div className="min-w-0">
               <div className="flex items-center justify-center sm:justify-start gap-1">

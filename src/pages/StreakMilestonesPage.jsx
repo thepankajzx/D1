@@ -156,6 +156,34 @@ export default function StreakMilestonesPage() {
   const unlockedCount = DEDICATED_MILESTONES.filter(m => bestStreak >= m.target).length;
   const milestoneInfo = getNextMilestone(streakData.currentStreak);
 
+  const [celebratedMilestone, setCelebratedMilestone] = useState(null);
+
+  useEffect(() => {
+    if (bestStreak >= 3) {
+      try {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+      } catch (e) {}
+    }
+  }, [bestStreak]);
+
+  const handleMilestoneClick = (m, isUnlocked) => {
+    if (navigator.vibrate) navigator.vibrate(30);
+    if (isUnlocked) {
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (e) {}
+      setCelebratedMilestone(m);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 pb-24 pt-2">
       <div className="max-w-4xl mx-auto px-3 sm:px-6 space-y-5">
