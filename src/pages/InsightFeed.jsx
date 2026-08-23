@@ -30,6 +30,9 @@ function getBadgeIcon(badgeLabel = '') {
 }
 
 export default function InsightFeed() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const navigate = useNavigate();
   const { habits, allSummaries } = useData();
   const { isHinglish, t } = useLanguage();

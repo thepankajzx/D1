@@ -55,6 +55,7 @@ export default function Dashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showKpiHelp, setShowKpiHelp] = useState(false);
   const [showPartialSaveModal, setShowPartialSaveModal] = useState(false);
+  const [showKpiLockModal, setShowKpiLockModal] = useState(false);
   const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
 
   // Calculate all-time weakest and strongest habits
