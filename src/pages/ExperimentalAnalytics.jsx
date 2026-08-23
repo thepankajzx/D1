@@ -1696,22 +1696,8 @@ export default function ExperimentalAnalytics() {
               </div>
             </div>
 
-            {/* Right Cluster: Timeframe Pill (Clickable) + Filter Trigger Button */}
+            {/* Right Cluster: Filter Trigger Button */}
             <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-              {/* Timeframe / View Pill with matching size and height */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(30);
-                  setShowTimeframeModal(true);
-                }}
-                className="flex items-center justify-center gap-1 px-2.5 h-[32px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs select-none text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide cursor-pointer transition-all active:scale-95 group"
-                title="Change Timeframe (7, 14, 30, 90 Days)"
-              >
-                <span>{heatmapGranularity === 'day' ? timeframeLabel : `${heatmapGranularity} View`}</span>
-                <CaretDown size={10} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
-              </button>
-
               {/* Filter Trigger Button with Optional Green Dot */}
               <div className="relative">
                 <button

@@ -509,19 +509,7 @@ export default function HabitDiagnostics() {
             <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
           </button>
 
-          {/* Timeframe Selector Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(30);
-              setShowTimeframeModal(true);
-            }}
-            className="flex items-center justify-center gap-1 px-2.5 h-[32px] rounded-full bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 shadow-2xs text-[11px] font-black text-slate-700 dark:text-slate-300 cursor-pointer select-none group"
-            title="Change Window"
-          >
-            <span>{periodDays}d</span>
-            <CaretDown size={10} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
-          </button>
+
         </div>
       </nav>
 
