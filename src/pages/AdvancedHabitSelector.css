@@ -50,8 +50,8 @@
 }
 
 /* HEADER */
-.ahs-header-top { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; cursor: pointer; color: var(--ahs-text-main); font-weight: 600; padding: 8px 12px 8px 0; }
-.ahs-header-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
+.ahs-header-top { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; cursor: pointer; color: var(--ahs-text-main); font-weight: 700; font-size: 0.85rem; padding: 4px 0; }
+.ahs-header-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .ahs-header-left { flex: 1; min-width: min(100%, 300px); }
 .ahs-header-left h1 { font-size: 1.35rem; font-weight: 900; margin-bottom: 4px; letter-spacing: -0.02em; color: var(--ahs-text-main); line-height: 1.2; }
 .ahs-header-left p { color: var(--ahs-text-sub); font-size: 0.75rem; margin-bottom: 10px; font-weight: 600; }

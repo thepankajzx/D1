@@ -780,63 +780,141 @@ export default function AdvancedHabitSelector() {
               </div>
             </header>
 
-            {/* Category Carousel Pills - Compact & Hidden Scrollbar */}
-            <div className="w-full max-w-full min-w-0 overflow-hidden mb-6">
-              <div className="flex items-center gap-2 overflow-x-auto py-1 px-1 ahs-carousel-pills scroll-smooth hide-scrollbar no-scrollbar">
-                {/* 1. Selected Pill - Distinct Violet Theme */}
-                <button
-                  onClick={() => setActiveCategories(["Selected"])}
-                  className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    activeCategories.includes("Selected")
-                      ? "bg-[#7c3aed] text-white shadow-sm shadow-violet-500/30"
-                      : "bg-[#f5f3ff] text-[#7c3aed] border border-[#ddd6fe] hover:bg-[#ede9fe]"
-                  }`}
-                >
-                  <Icon name="check" className="text-[14px]" />
-                  <span>Selected ({selectedHabits.length + customHabits.length})</span>
-                </button>
+            {/* Category Selector Dropdown & Quick Badges */}
+            <div className="relative mb-3.5 z-30">
+              <div className="flex items-center justify-between gap-2.5">
+                {/* Custom Category Dropdown Trigger */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(20);
+                      setShowCategoryDropdown(!showCategoryDropdown);
+                    }}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 text-slate-900 dark:text-white font-black text-xs sm:text-[13px] shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer"
+                  >
+                    <Icon name="grid_view" className="text-primary text-[15px]" />
+                    <span>
+                      {activeCategories.includes('Selected')
+                        ? `Selected (${selectedHabits.length + customHabits.length})`
+                        : activeCategories.includes('Custom')
+                          ? '+ Custom Habit'
+                          : activeCategories[0] || 'All Habits'}
+                    </span>
+                    <Icon name="expand_more" className={`text-slate-400 text-sm transition-transform duration-200 ${showCategoryDropdown ? 'rotate-180' : ''}`} />
+                  </button>
 
-                {/* 2. All Pill */}
-                <button
-                  onClick={() => setActiveCategories(["All"])}
-                  className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                    activeCategories.includes("All") && !activeCategories.includes("Selected") && !activeCategories.includes("Custom")
-                      ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm"
-                      : "bg-surface-container-low text-on-surface border border-outline-variant/40 hover:bg-surface-container"
-                  }`}
-                >
-                  All
-                </button>
+                  {/* Dropdown Menu Modal / Popover */}
+                  {showCategoryDropdown && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setShowCategoryDropdown(false)} 
+                      />
+                      <div className="absolute left-0 top-full mt-1.5 w-56 bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 z-50 animate-in zoom-in-95 duration-150 space-y-0.5">
+                        
+                        {/* 1. Selected Option */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCategories(['Selected']);
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            activeCategories.includes('Selected')
+                              ? 'bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-violet-500" />
+                            Selected Plan
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-violet-500/15 font-black">
+                            {selectedHabits.length + customHabits.length}
+                          </span>
+                        </button>
 
-                {/* 3. Predefined Category Pills (Morning, Fitness, Nutrition, Focus, Mind, Lifestyle) */}
-                {[...new Set(habitLibrary.map(h => h.category))].map(cat => {
-                  const isActive = activeCategories.length === 1 && activeCategories[0] === cat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCategories([cat])}
-                      className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm"
-                          : "bg-surface-container-low text-on-surface border border-outline-variant/40 hover:bg-surface-container"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
+                        {/* 2. All Habits */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCategories(['All']);
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            activeCategories.includes('All') && !activeCategories.includes('Selected') && !activeCategories.includes('Custom')
+                              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-slate-400" />
+                            All Habits
+                          </span>
+                          <span className="text-[10px] opacity-75">
+                            {habitLibrary.length}
+                          </span>
+                        </button>
 
-                {/* 4. Custom Pill - Distinct Emerald Theme */}
-                <button
-                  onClick={() => setActiveCategories(["Custom"])}
-                  className={`shrink-0 flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    activeCategories.includes("Custom")
-                      ? "bg-[#059669] text-white shadow-sm shadow-emerald-500/30"
-                      : "bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0] hover:bg-[#d1fae5]"
-                  }`}
-                >
-                  <span>+ Custom</span>
-                </button>
+                        <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+
+                        {/* 3. Predefined Categories */}
+                        {[...new Set(habitLibrary.map(h => h.category))].map(cat => {
+                          const isCatActive = activeCategories.length === 1 && activeCategories[0] === cat;
+                          const catCount = habitLibrary.filter(h => h.category === cat).length;
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => {
+                                setActiveCategories([cat]);
+                                setShowCategoryDropdown(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                                isCatActive
+                                  ? 'bg-slate-100 dark:bg-slate-800 text-primary dark:text-white'
+                                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                              }`}
+                            >
+                              <span>{cat}</span>
+                              <span className="text-[10px] text-slate-400 font-bold">{catCount}</span>
+                            </button>
+                          );
+                        })}
+
+                        <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+
+                        {/* 4. Custom Habit Option */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCategories(['Custom']);
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            activeCategories.includes('Custom')
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Icon name="add_circle" className="text-emerald-600 text-sm" />
+                            Create Custom
+                          </span>
+                          <span className="text-[10px] text-emerald-600 font-black">Free/Pro</span>
+                        </button>
+
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Right Status Pill */}
+                <div className="text-[11px] font-black text-slate-500 dark:text-slate-400">
+                  <span>Selected: </span>
+                  <span className="text-primary dark:text-white font-extrabold">{selectedHabits.length + customHabits.length} / 9</span>
+                </div>
               </div>
             </div>
 
