@@ -2390,8 +2390,9 @@ export default function ExperimentalAnalytics() {
           </svg>
         </div>
 
-        {/* ── 3 INSIGHT CARDS GRID ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* ── 3 INSIGHT CARDS GRID WITH 30-DAY BLUR & LOCK OVERLAY ── */}
+        <div className="relative">
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${(realSummaries?.length || 0) < 30 ? 'filter blur-[3px] select-none pointer-events-none opacity-50' : ''}`}>
           
           {/* Card 1: Best Day */}
           <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-200/70 dark:border-slate-800 flex flex-col justify-between gap-3">
@@ -2519,7 +2520,41 @@ export default function ExperimentalAnalytics() {
               </div>
             </div>
           </div>
+        </div>
 
+          {/* 30-Day Lock Overlay for Streak Insights */}
+          {(realSummaries?.length || 0) < 30 && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center bg-white/70 dark:bg-[#131722]/85 backdrop-blur-xs rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-md space-y-2 animate-in fade-in duration-150">
+              <div className="w-9 h-9 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
+                <Lock size={18} weight="fill" />
+              </div>
+              <div>
+                <h4 className="font-black text-sm text-slate-900 dark:text-white leading-tight">
+                  {isHinglish ? '30 दिन के बाद अनलॉक होगा' : 'Unlocks After 30 Days'}
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mt-1 leading-relaxed">
+                  {isHinglish 
+                    ? 'आपकी आदतों का असली Best Day, Vulnerable Day और वीकेंड बनाम वीकडे पैटर्न 30 दिनों का डेटा पूरा होने के बाद अनलॉक होगा।'
+                    : 'Authentic Best Day, Vulnerable Day, and Weekend vs Weekday rhythm anomalies unlock after 30 total logged days.'}
+                </p>
+              </div>
+
+              <div className="w-48 sm:w-56 space-y-1 pt-1">
+                <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-700 dark:text-slate-300">
+                  <span>{isHinglish ? 'प्रोग्रेस' : 'Progress'}</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-black">
+                    {realSummaries?.length || 0} / 30 {isHinglish ? 'दिन' : 'Days'} ({Math.max(1, 30 - (realSummaries?.length || 0))} {isHinglish ? 'दिन बाकी' : 'days left'})
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                    style={{ width: `${Math.max(5, Math.round(((realSummaries?.length || 0) / 30) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
