@@ -1092,26 +1092,29 @@ export default function AdvancedHabitSelector() {
 
                       if (isSelectedView) {
                          return (
-                          <div key={habit.id} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 flex flex-col gap-3 shadow-sm mb-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                 <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={20} className="!w-10 !h-10 !rounded-xl shrink-0" />
-                                 <span className="font-bold text-on-surface text-sm sm:text-base">{habit.name}</span>
+                          <div key={habit.id} className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs">
+                            <div className="flex items-center justify-between gap-2.5">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                 <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-lg shrink-0" />
+                                 <div className="min-w-0 flex-1">
+                                   <div className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate">{habit.name}</div>
+                                   <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">{habit.category}</div>
+                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                 <button onClick={(e) => { e.stopPropagation(); setExpandedSelectedHabits(prev => prev.includes(habit.id) ? prev.filter(id => id !== habit.id) : [...prev, habit.id]) }} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-800 transition-colors">
-                                    <Icon name="edit" className="text-[16px]" />
-                                 </button>
-                                 <button onClick={(e) => handleDeleteConfig(e, habit.id)} className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 transition-colors">
-                                    <Icon name="close" className="text-[16px]" />
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                 <button 
+                                   type="button"
+                                   onClick={(e) => handleDeleteConfig(e, habit.id)} 
+                                   className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                                   title="Remove habit"
+                                 >
+                                    <Icon name="close" className="text-[14px]" />
                                  </button>
                               </div>
                             </div>
-                            {isExpanded && (
-                               <div className="pt-3 border-t border-outline-variant/30 mt-1 ahs-habit-card-expanded">
-                                  {renderHabitInputs(habit)}
-                               </div>
-                            )}
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 ahs-habit-card-expanded">
+                               {renderHabitInputs(habit)}
+                            </div>
                           </div>
                          );
                       }
