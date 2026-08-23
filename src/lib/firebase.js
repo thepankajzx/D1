@@ -3,13 +3,13 @@ import { initializeAuth, browserLocalPersistence, browserPopupRedirectResolver, 
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCbnlNA0Sw91yArHWLJdk892ZPIVn-RX7I",
-  authDomain: "d2-01-0001.firebaseapp.com",
-  projectId: "d2-01-0001",
-  storageBucket: "d2-01-0001.firebasestorage.app",
-  messagingSenderId: "404376718009",
-  appId: "1:404376718009:web:8bc13011ffd9b2a6582968",
-  measurementId: "G-FDED9Q441P"
+  apiKey: "AIzaSyBl9DfgHBCqykkR8WPNIuKZCZ7UQIzM4ho",
+  authDomain: "d1-core.firebaseapp.com",
+  projectId: "d1-core",
+  storageBucket: "d1-core.firebasestorage.app",
+  messagingSenderId: "223282254697",
+  appId: "1:223282254697:web:7d4b0f1bc0bf18049723f8",
+  measurementId: "G-V62TNVP485"
 };
 
 const app = initializeApp(firebaseConfig);
