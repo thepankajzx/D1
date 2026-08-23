@@ -533,17 +533,14 @@ export default function HabitDiagnostics() {
               <Lock size={14} weight="fill" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 whitespace-nowrap">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10.5px] sm:text-[11.5px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 whitespace-nowrap">
                   {isHinglish ? 'सैंपल प्रीव्यू' : 'Sample Preview'}
-                </span>
-                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-200 border border-amber-500/30 whitespace-nowrap shrink-0">
-                  14d Tier
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium truncate mt-0.5">
                 {isHinglish 
-                  ? `अनलॉक करने के लिए ${daysRemaining} दिन और ट्रैक करें`
+                  ? `लाइव डायग्नोस्टिक्स अनलॉक करने के लिए ${daysRemaining} दिन और ट्रैक करें`
                   : `${daysRemaining} days left to unlock live diagnostics`}
               </p>
             </div>
