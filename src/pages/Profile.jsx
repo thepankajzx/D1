@@ -33,6 +33,7 @@ export default function Profile() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
   const navigate = useNavigate();
 
   // Streak & Milestone Calculations
@@ -538,23 +539,23 @@ export default function Profile() {
       <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
         <div 
           onClick={() => toggleSection('betterReport')}
-          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors"
+          className="w-full p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors gap-3"
         >
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black shrink-0">
               <Icon name="auto_stories" filled={true} className="text-[22px]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-slate-900">30-Day Better Report</h2>
-                <span className="text-xs font-black text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-black text-slate-900 truncate">30-Day Better Report</h2>
+                <span className="text-[10px] font-black text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
                   {trackedDays >= 30 ? 'Ready' : 'In Progress'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Your personal 30-day habit documentary &amp; growth story</p>
+              <p className="text-xs text-slate-500 font-medium truncate">Your personal 30-day habit documentary &amp; growth story</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Icon name={openSections.betterReport ? "expand_less" : "expand_more"} className="text-slate-400 text-2xl" />
           </div>
         </div>
@@ -569,8 +570,15 @@ export default function Profile() {
                 </p>
               </div>
               <button 
-                onClick={() => navigate('/better-report')}
-                className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(30);
+                  if (trackedDays < 30) {
+                    setShowBetterReportLockModal(true);
+                  } else {
+                    navigate('/better-report');
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
               >
                 <span>Read Story</span>
                 <Icon name="arrow_forward" className="text-[14px]" />
