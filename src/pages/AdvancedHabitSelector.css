@@ -41,7 +41,7 @@
   margin: 0 auto; 
   padding: 16px 12px; 
   box-sizing: border-box; 
-  overflow-x: hidden; 
+  overflow: visible; 
 }
 @media (min-width: 640px) {
   .ahs-container {
