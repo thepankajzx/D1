@@ -2173,8 +2173,10 @@ export default function ExperimentalAnalytics() {
               You’ve logged <strong>{weakestHabit.daysRecorded} of {dateSeries.length} days</strong> for this habit. Focus on logging this consistently to lift your overall trajectory.
             </p>
 
-            <div className="pt-2 border-t border-rose-200/50 dark:border-rose-900/40 flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-500">Need recovery insights?</span>
+            <div className="pt-2.5 border-t border-rose-200/50 dark:border-rose-900/40 flex flex-wrap items-center justify-between gap-2.5">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                {isHinglish ? 'रिकवरी इनसाइट्स चाहिए?' : 'Need recovery insights?'}
+              </span>
               {(realSummaries?.length || 0) < 14 ? (
                 <button
                   type="button"
