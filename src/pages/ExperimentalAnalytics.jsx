@@ -37,7 +37,8 @@ import {
   Lightbulb,
   Warning,
   Lightning,
-  Crown
+  Crown,
+  Lock
 } from '@phosphor-icons/react';
 import { calculateStreakData, calculateConsistencyRate, getNextMilestone, getCurrentMilestone } from '../lib/streakEngine';
 import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
