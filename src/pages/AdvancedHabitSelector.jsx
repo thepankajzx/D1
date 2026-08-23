@@ -293,7 +293,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
 };
 
 const MAX_FREE_HABITS = 8;
-const MAX_CUSTOM_HABITS = 1;
+const MAX_CUSTOM_HABITS = 5;
 
 export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
@@ -896,8 +896,10 @@ export default function AdvancedHabitSelector() {
                     {activeCategories.includes('Custom') && (() => {
                       const isSuperAdmin = import.meta.env.DEV || currentUser?.email?.toLowerCase() === 'dummytest2025@example.com';
                       const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
-                      const isFreeUsed = customHabits.length >= 1;
-                      const showProLocked = isFreeUsed && !isPro;
+                      const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
+                      const totalCustoms = customHabits.length + existingCustomsCount;
+                      const isFreeLimitReached = totalCustoms >= MAX_CUSTOM_HABITS;
+                      const showProLocked = isFreeLimitReached && !isPro;
 
                       if (showProLocked) {
                         return (
@@ -910,7 +912,7 @@ export default function AdvancedHabitSelector() {
                               <span className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5"><Icon name="add" className="text-base"/> Unlimited Custom Habits</span>
                               <span className="text-[10px] font-black bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">PRO</span>
                             </div>
-                            <p className="text-slate-500 text-xs max-w-[280px] mb-4 font-medium">You have added 1 Free Custom Habit. Upgrade to Pro to add unlimited custom habits.</p>
+                            <p className="text-slate-500 text-xs max-w-[280px] mb-4 font-medium">You have added 5 Free Custom Habits. Upgrade to Pro to add unlimited custom habits.</p>
                             <button className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full px-5 py-2 font-black text-xs hover:opacity-90 transition-all cursor-pointer shadow-xs">
                               <Icon name="lock" className="text-sm" /> Upgrade to Pro
                             </button>
@@ -926,7 +928,7 @@ export default function AdvancedHabitSelector() {
                                 Create Custom Habit
                               </h3>
                               <span className="text-[9.5px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md shrink-0">
-                                {isPro ? 'PRO' : '1 Free'}
+                                {isPro ? 'PRO' : `${Math.max(0, MAX_CUSTOM_HABITS - totalCustoms)} Free Left`}
                               </span>
                             </div>
                             <button 
