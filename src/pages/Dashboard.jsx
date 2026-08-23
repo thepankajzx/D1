@@ -140,6 +140,9 @@ export default function Dashboard() {
         setEntries(fetchedEntries);
         localStorage.setItem(cacheKey, JSON.stringify(fetchedEntries));
         
+        // Track already saved habits in Firestore for locking
+        setSavedHabitIds(new Set(fetchedEntries.map(e => e.habitId)));
+        
         // Get today's summary from the allSummaries array if we have it
         const existingSummary = allSummaries.find(s => s.id === selectedDate);
         if (existingSummary) {
@@ -166,6 +169,14 @@ export default function Dashboard() {
 
   const handleSaveProgress = async (bypassValidation = false) => {
     if (!user || !pendingChanges) return;
+    
+    const today = getTodayDate();
+    if (selectedDate !== today) {
+        alert("You cannot save progress for past or future dates. Only today (" + today + ") is allowed.");
+        setSelectedDate(today);
+        return;
+    }
+    
     setIsSaving(true);
     
     try {
@@ -241,6 +252,7 @@ export default function Dashboard() {
         
         setPendingChanges(false);
         setEntries(finalEntries);
+        setSavedHabitIds(new Set(finalEntries.map(e => e.habitId)));
         
         if (dailySummary) {
             const updatedSummary = { id: selectedDate, ...dailySummary };
@@ -270,15 +282,25 @@ export default function Dashboard() {
   };
 
   const handleDateChange = async (e) => {
-    if (pendingChanges) {
-        await handleSaveProgress(true); // bypass validation when changing dates
+    const today = getTodayDate();
+    if (e.target.value !== today) {
+      alert("Data logging is strictly restricted to today (" + today + "). Past or future dates cannot be logged.");
+      setSelectedDate(today);
+      return;
     }
-    setSelectedDate(e.target.value);
+    if (pendingChanges) {
+      await handleSaveProgress(true);
+    }
+    setSelectedDate(today);
   };
 
   // Handle Entry Update from Card
   const handleEntryUpdate = (habitId, rawValue, computedScore) => {
     if (!user) return;
+    if (savedHabitIds.has(habitId)) {
+      console.log("Blocked: Habit is already saved and locked for today.");
+      return;
+    }
     
     // 1. Optimistically update local entries array
     const entryId = `${habitId}_${selectedDate}`;
@@ -428,6 +450,8 @@ export default function Dashboard() {
             type="date" 
             aria-label="Select Date"
             value={selectedDate} 
+            min={getTodayDate()}
+            max={getTodayDate()}
             onChange={handleDateChange} 
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             style={{ colorScheme: 'dark' }} 
@@ -451,7 +475,8 @@ export default function Dashboard() {
                 <div key={`${habit.id}-${selectedDate}`} className="col-span-1">
                     <HabitCard 
                       habit={habit} 
-                      entry={entry} 
+                      entry={entry}
+                      isSaved={savedHabitIds.has(habit.id)}
                       onUpdate={handleEntryUpdate}
                       allSummaries={allSummaries}
                     />
@@ -470,7 +495,8 @@ export default function Dashboard() {
                 <div key={`${habit.id}-${selectedDate}`} className="col-span-1">
                     <HabitCard 
                       habit={habit} 
-                      entry={entry} 
+                      entry={entry}
+                      isSaved={savedHabitIds.has(habit.id)}
                       onUpdate={handleEntryUpdate}
                       allSummaries={allSummaries}
                     />
