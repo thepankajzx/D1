@@ -11,7 +11,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import ProModal from '../components/ProModal';
-import ProgressiveDataLockWrapper from '../components/ProgressiveDataLockWrapper';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -2303,15 +2302,6 @@ export default function ExperimentalAnalytics() {
 
         </div>
 
-        <ProgressiveDataLockWrapper
-          requiredDays={30}
-          currentDays={realSummaries?.length || 0}
-          titleEn="Unlocks with 30 Days of Tracking"
-          titleHi="30 दिन का डेटा ट्रैक करने पर अनलॉक होगा"
-          descEn="Calculating accurate Best Day, Vulnerable Day, and Weekend patterns requires at least 30 days of data to eliminate one-off coincidences."
-          descHi="Best Day, Vulnerable Day और वीकेंड पैटर्न का सटीक विश्लेषण निकालने के लिए कम से कम 30 दिनों का डेटा आवश्यक है ताकि संयोग के बजाय असली आदत का पता चल सके।"
-          className="mt-2"
-        >
         {/* ── 1ST DASHED DIVIDER LINE (COMPACT & SUBTLE) ── */}
         <div className="w-full pt-0.5 pb-0">
           <svg className="w-full h-[1.5px] text-slate-300 dark:text-slate-700/80" preserveAspectRatio="none">
@@ -2319,14 +2309,24 @@ export default function ExperimentalAnalytics() {
           </svg>
         </div>
 
-        {/* ── YOUR STREAK INSIGHTS TITLE (LEFT-ALIGNED & PROPER SIZE) ── */}
-        <div className="flex items-center justify-start gap-2 py-0.5">
-          <div className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <Lightbulb size={15} weight="fill" />
+        {/* ── YOUR STREAK INSIGHTS TITLE & CLEAN STATIC PREVIEW BADGE ── */}
+        <div className="flex items-center justify-between gap-2 py-0.5 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Lightbulb size={15} weight="fill" />
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
+              {isHinglish ? 'आपकी स्ट्रीक इनसाइट्स (Your Streak Insights)' : 'Your Streak Insights'}
+            </h3>
           </div>
-          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
-            {isHinglish ? 'आपकी स्ट्रीक इनसाइट्स (Your Streak Insights)' : 'Your Streak Insights'}
-          </h3>
+
+          {/* Clean Static Preview Mode Pill (Shown when < 30 days, No blinking, clean & structured) */}
+          {(realSummaries?.length || 0) < 30 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 text-[10px] font-black tracking-wider uppercase select-none">
+              <Lock size={11} weight="bold" className="text-amber-500" />
+              <span>{isHinglish ? 'सैंपल प्रीव्यू • 30 दिन पर अनलॉक' : 'Preview Mode • Unlocks at 30D'}</span>
+            </div>
+          )}
         </div>
 
         {/* ── 2ND DASHED DIVIDER LINE (COMPACT & SUBTLE) ── */}
@@ -2467,7 +2467,6 @@ export default function ExperimentalAnalytics() {
           </div>
 
         </div>
-        </ProgressiveDataLockWrapper>
       </section>
 
 
