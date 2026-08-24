@@ -129,8 +129,22 @@ export default function ExperimentalAnalytics() {
   const { isHinglish, t } = useLanguage();
 
   // Selected scope & timeframe
+  // Timeframe & Granularity State (Persisted in sessionStorage so navigation retains timeframe)
+  const [rangeOption, setRangeOptionState] = useState(() => {
+    try {
+      return sessionStorage.getItem('definite_analytics_tf') || '7';
+    } catch (e) {
+      return '7';
+    }
+  });
+
+  const setRangeOption = (val) => {
+    setRangeOptionState(val);
+    try {
+      sessionStorage.setItem('definite_analytics_tf', val);
+    } catch (e) {}
+  };
   const [selectedHabitId, setSelectedHabitId] = useState('all'); // 'all' or habit.id
-  const [rangeOption, setRangeOption] = useState('7'); // '7', '14', '30', '90', 'custom'
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
@@ -1776,8 +1790,8 @@ export default function ExperimentalAnalytics() {
 
                                 const isLogged = sum != null && (
                                   selectedHabitId === 'all'
-                                    ? (sum.overallScore > 0 || sum.loggedHabitIds?.length > 0)
-                                    : (sum.loggedHabitIds?.includes(selectedHabitId) ?? score > 0)
+                                    ? (sum.overallScore !== undefined)
+                                    : (sum.habitScores?.[selectedHabitId] !== undefined)
                                 );
                                 const bgClass = getPerfBandClass(score);
 
@@ -1864,17 +1878,17 @@ export default function ExperimentalAnalytics() {
                   <div className={gridColsClass}>
                     {dateSeries.map(dStr => {
                       const sum = summaryMap.get(dStr);
-                      let score = 0;
-                      if (selectedHabitId === 'all') {
-                        score = sum?.overallScore ?? 0;
-                      } else {
-                        score = sum?.habitScores?.[selectedHabitId] ?? 0;
+                      let score = null;
+                      if (sum) {
+                        score = selectedHabitId === 'all'
+                          ? (sum.overallScore ?? 0)
+                          : (sum.habitScores?.[selectedHabitId] ?? 0);
                       }
 
                       const isLogged = sum != null && (
                         selectedHabitId === 'all'
-                          ? (sum.overallScore > 0 || sum.loggedHabitIds?.length > 0)
-                          : (sum.loggedHabitIds?.includes(selectedHabitId) ?? score > 0)
+                          ? (sum.overallScore !== undefined)
+                          : (sum.habitScores?.[selectedHabitId] !== undefined)
                       );
                       const bgClass = getPerfBandClass(score);
 
