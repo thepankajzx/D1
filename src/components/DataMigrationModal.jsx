@@ -109,7 +109,9 @@ function mapOldRecordToNew(docData) {
   };
 
   const allScores = Object.values(habitScores);
-  const overallScore = Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length);
+  const weightedScore = Math.round((studyScore * 0.25) + (workoutScore * 0.15) + (screenScore * 0.15) + (wakeScore * 0.15) + (sleepScore * 0.10) + (mastScore * 0.10) + (pornScore * 0.10));
+  const rawOverall = docData.overallScore ?? docData.totalScore ?? docData.score;
+  const overallScore = rawOverall !== undefined ? Math.round(Number(rawOverall)) : weightedScore;
   const habitsCompleted = allScores.filter(s => s >= 60).length;
   const loggedHabitIds = ['study', 'screentime', 'workout', 'sleep', 'wakeup', 'custom_masturbation_free', 'custom_porn_free'];
 
