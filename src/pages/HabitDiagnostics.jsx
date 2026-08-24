@@ -713,7 +713,7 @@ export default function HabitDiagnostics() {
           {/* Card 2: Best Streak */}
           <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1322]/80 border border-slate-800/90 flex items-center gap-2.5 shadow-2xs hover:border-slate-700 transition-all">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
-              <Trophy size={16} weight="bold" />
+              <Crown size={16} weight="fill" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[10px] font-bold text-slate-400 block truncate uppercase tracking-wider">
