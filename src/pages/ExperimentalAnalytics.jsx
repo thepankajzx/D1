@@ -1804,7 +1804,7 @@ export default function ExperimentalAnalytics() {
                                 const isFullMatch = isScoreMatch && isDayTypeMatch;
                                 const filterEffectClass = isFullMatch ? 'opacity-100' : 'opacity-15 grayscale scale-95';
 
-                                const recorded = sum?.habitsCompleted || 0;
+                                const recorded = sum?.loggedHabitIds?.length ?? (sum ? (sum.habitsTotal || activeHabits.length) : 0);
                                 const expected = sum?.habitsTotal || activeHabits.length;
                                 const isPartial = selectedHabitId === 'all' && isLogged && recorded > 0 && recorded < expected;
 
@@ -1903,7 +1903,7 @@ export default function ExperimentalAnalytics() {
                         ? 'opacity-100'
                         : 'opacity-15 grayscale scale-95';
 
-                      const recorded = sum?.habitsCompleted || 0;
+                      const recorded = sum?.loggedHabitIds?.length ?? (sum ? (sum.habitsTotal || activeHabits.length) : 0);
                       const expected = sum?.habitsTotal || activeHabits.length;
                       const isPartial = selectedHabitId === 'all' && isLogged && recorded > 0 && recorded < expected;
 
@@ -2680,43 +2680,90 @@ export default function ExperimentalAnalytics() {
               {(() => {
                 const dates = selectedPeriod.dates;
                 const summaries = dates.map(dStr => summaryMap.get(dStr)).filter(Boolean);
-                const overallScores = summaries
-                  .map(s => s.overallScore)
-                  .filter(score => score !== undefined && score !== null && score > 0);
+                const isSelectedHabit = selectedHabitId !== 'all';
+                const currentHabitObj = activeHabits.find(h => h.id === selectedHabitId);
 
-                if (overallScores.length === 0) {
+                const overallScores = summaries
+                  .map(s => isSelectedHabit ? s.habitScores?.[selectedHabitId] : s.overallScore)
+                  .filter(score => score !== undefined && score !== null);
+
+                if (summaries.length === 0) {
                   return (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
                         <Icon name="event_busy" className="text-[22px] text-slate-400" />
                       </div>
-                      <p className="text-slate-900 dark:text-white font-bold text-sm">No Data Filled</p>
-                      <p className="text-slate-400 text-xs mt-0.5">You didn't log any data in this period.</p>
+                      <p className="text-slate-900 dark:text-white font-bold text-sm">No Data Logged</p>
+                      <p className="text-slate-400 text-xs mt-0.5">You didn't log any data on this date.</p>
                     </div>
                   );
                 }
 
-                const mainScore = Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length);
+                const mainScore = overallScores.length > 0 
+                  ? Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length)
+                  : 0;
                 const isMultiDay = dates.length > 1;
+
+                // Format raw unit value for single date
+                const singleSummary = summaries[0];
+                let formattedRawVal = '';
+                if (isSelectedHabit && currentHabitObj && singleSummary) {
+                  const rawVal = singleSummary.habitValues?.[selectedHabitId];
+                  if (currentHabitObj.scoringType === 'time') {
+                    formattedRawVal = formatTimeMinutes(rawVal);
+                  } else if (currentHabitObj.scoringType === 'duration') {
+                    formattedRawVal = formatDurationMinutes(rawVal);
+                  } else if (currentHabitObj.scoringType === 'binary') {
+                    formattedRawVal = rawVal === 1 ? 'Free / Done' : 'Missed';
+                  } else if (rawVal !== undefined && rawVal !== null) {
+                    formattedRawVal = `${rawVal} ${currentHabitObj.unit || ''}`;
+                  }
+                }
 
                 return (
                   <div className="flex flex-col gap-3">
                     {/* Top Score Banner */}
-                    <div className="p-2.5 sm:p-3 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 flex items-center justify-between">
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        {isMultiDay ? 'Period Average Score' : 'Overall Score'}
-                      </span>
-                      <span className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
-                        {mainScore}%
-                      </span>
+                    <div className={`p-3 rounded-2xl border flex items-center justify-between ${
+                      isSelectedHabit 
+                        ? 'bg-indigo-50/90 dark:bg-indigo-950/40 border-indigo-200/80 dark:border-indigo-900/50'
+                        : 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-900/40'
+                    }`}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {isSelectedHabit && currentHabitObj && (
+                          <div className="w-7 h-7 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: currentHabitObj.color }}>
+                            <HabitIcon name={currentHabitObj.icon} size={14} className="text-white" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <span className="text-xs font-black text-slate-900 dark:text-white block truncate">
+                            {isSelectedHabit ? (currentHabitObj?.name || 'Selected Habit') : (isMultiDay ? 'Period Average' : 'Overall Performance')}
+                          </span>
+                          {formattedRawVal && (
+                            <span className="text-[10.5px] font-bold text-indigo-600 dark:text-indigo-400 block mt-0.5">
+                              {formattedRawVal}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className={`text-xl font-black leading-none ${
+                          isSelectedHabit ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          {mainScore}%
+                        </span>
+                        <span className="text-[9.5px] font-bold text-slate-400 block mt-0.5">
+                          {mainScore >= 80 ? 'Target Hit' : mainScore >= 50 ? 'Passing' : 'Needs Focus'}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Habits List */}
+                    {/* Habits List Breakdown */}
                     <div>
                       <div className="flex items-center justify-between mb-2 px-0.5">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Habit Breakdown</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">All 7 Habits Breakdown</span>
                         <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-                          {activeHabits.length} Habits Tracked
+                          {summaries.length} Day Logged
                         </span>
                       </div>
 
@@ -2724,13 +2771,24 @@ export default function ExperimentalAnalytics() {
                         {activeHabits.map(h => {
                           const habitScores = summaries
                             .map(s => s.habitScores?.[h.id])
-                            .filter(score => score !== undefined && score !== null && score > 0);
+                            .filter(score => score !== undefined && score !== null);
                           const isRecorded = habitScores.length > 0;
-                          const avgScore = isRecorded ? Math.round(habitScores.reduce((a, b) => a + b, 0) / habitScores.length) : 0;
+                          const avgScore = isRecorded ? Math.round(habitScores.reduce((a, b) => a + b, 0) / habitScores.length) : null;
+                          const isSelected = h.id === selectedHabitId;
 
-                          if (!isRecorded) {
+                          // Raw value formatting for list item
+                          const singleVal = singleSummary?.habitValues?.[h.id];
+                          let valStr = '';
+                          if (singleVal !== undefined && singleVal !== null) {
+                            if (h.scoringType === 'time') valStr = formatTimeMinutes(singleVal);
+                            else if (h.scoringType === 'duration') valStr = formatDurationMinutes(singleVal);
+                            else if (h.scoringType === 'binary') valStr = singleVal === 1 ? 'Free' : 'Missed';
+                            else valStr = `${singleVal}`;
+                          }
+
+                          if (!isRecorded || avgScore === null) {
                             return (
-                              <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5 opacity-70">
+                              <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5 opacity-60">
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
                                     <HabitIcon name={h.icon} size={12} className="text-white" />
@@ -2748,23 +2806,33 @@ export default function ExperimentalAnalytics() {
                           }
 
                           return (
-                            <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5">
+                            <div key={h.id} className={`py-2 px-1 flex items-center justify-between gap-2.5 rounded-xl transition-all ${
+                              isSelected ? 'bg-indigo-50/60 dark:bg-indigo-950/30 px-2 my-0.5 border border-indigo-200/50 dark:border-indigo-900/40' : ''
+                            }`}>
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
                                   <HabitIcon name={h.icon} size={12} className="text-white" />
                                 </div>
-                                <span className="text-xs font-black text-slate-900 dark:text-white truncate">{h.name}</span>
+                                <div className="min-w-0">
+                                  <span className={`text-xs truncate block ${isSelected ? 'font-black text-indigo-900 dark:text-indigo-200' : 'font-bold text-slate-900 dark:text-white'}`}>
+                                    {h.name} {isSelected && <span className="text-[9px] font-black uppercase text-indigo-500 ml-1">(Selected)</span>}
+                                  </span>
+                                  {valStr && (
+                                    <span className="text-[9.5px] font-semibold text-slate-400 block">
+                                      {valStr}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                {isMultiDay && (
-                                  <span className="text-[9.5px] font-bold opacity-60">
-                                    {habitScores.length}/{dates.length}d
-                                  </span>
-                                )}
                                 <div className="w-12 sm:w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${avgScore}%` }}></div>
+                                  <div className={`h-full rounded-full ${
+                                    avgScore >= 70 ? 'bg-emerald-500' : avgScore >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                                  }`} style={{ width: `${Math.max(5, avgScore)}%` }}></div>
                                 </div>
-                                <span className="text-xs font-black text-slate-900 dark:text-white w-8 text-right">{avgScore}%</span>
+                                <span className={`text-xs font-black w-8 text-right ${
+                                  avgScore >= 70 ? 'text-emerald-600 dark:text-emerald-400' : avgScore >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
+                                }`}>{avgScore}%</span>
                               </div>
                             </div>
                           );
