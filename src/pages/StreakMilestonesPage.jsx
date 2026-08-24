@@ -157,35 +157,35 @@ export default function StreakMilestonesPage() {
   const milestoneInfo = getNextMilestone(streakData.currentStreak);
 
   const [celebratedMilestone, setCelebratedMilestone] = useState(null);
-
-  useEffect(() => {
-    // Only auto-burst celebratory confetti once when new milestones are unlocked
+  const [celebratedTargets, setCelebratedTargets] = useState(() => {
     try {
-      const lastCelebrated = parseInt(localStorage.getItem('definite_last_celebrated_streak') || '0', 10);
-      if (bestStreak >= 3 && bestStreak > lastCelebrated) {
-        localStorage.setItem('definite_last_celebrated_streak', String(bestStreak));
-        confetti({
-          particleCount: 80,
-          spread: 75,
-          origin: { y: 0.55 },
-          zIndex: 9999
-        });
-      }
-    } catch (e) {}
-  }, [bestStreak]);
+      const saved = localStorage.getItem('definite_celebrated_milestones');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const handleMilestoneClick = (m, isUnlocked) => {
     if (navigator.vibrate) navigator.vibrate(30);
     if (isUnlocked) {
       setCelebratedMilestone(m);
-      try {
-        confetti({
-          particleCount: 90,
-          spread: 80,
-          origin: { y: 0.5 },
-          zIndex: 9999
-        });
-      } catch (e) {}
+
+      // Only burst confetti on the very first time the user taps and views this unlocked milestone
+      const alreadyCelebrated = celebratedTargets.includes(m.target);
+      if (!alreadyCelebrated) {
+        const updated = [...celebratedTargets, m.target];
+        setCelebratedTargets(updated);
+        try {
+          localStorage.setItem('definite_celebrated_milestones', JSON.stringify(updated));
+          confetti({
+            particleCount: 90,
+            spread: 80,
+            origin: { y: 0.5 },
+            zIndex: 9999
+          });
+        } catch (e) {}
+      }
     }
   };
 
