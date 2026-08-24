@@ -87,7 +87,7 @@ function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background pb-16 md:pb-0 w-full max-w-full overflow-x-hidden">
       {/* Top Navbar */}
-      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] box-border">
+      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] box-border">
         <div className="flex items-center gap-6 md:gap-8 min-w-0">
           <Link to="/" className="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2 flex-shrink-0">
             <Icon name="rocket_launch" className="" />
@@ -116,14 +116,14 @@ function Layout({ children }) {
       <div className="h-[3.25rem] pt-[env(safe-area-inset-top)] shrink-0"></div>
 
       {/* Main App Container */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 md:px-8 pt-1.5 pb-4 sm:py-5 md:py-6 min-w-0">
+      <main className="flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 pt-1.5 pb-4 sm:py-5 md:py-6 min-w-0">
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
       </main>
 
       {/* Footer */}
-      <footer className="hidden md:flex bg-surface border-t border-outline-variant/30 py-6 px-8 justify-between items-center text-body-sm font-body-sm text-on-surface-variant mt-auto">
+      <footer className="hidden md:flex bg-surface border-t border-outline-variant/30 py-6 px-8 lg:px-10 2xl:px-12 justify-between items-center text-body-sm font-body-sm text-on-surface-variant mt-auto">
         <div>
           © 2026 Definite Habit Tracker. Built for champions.
         </div>
