@@ -92,7 +92,11 @@ function mapOldRecordToNew(docData) {
   const overallScore = Math.round(docData.overallScore ?? (Object.values(habitScores).reduce((a, b) => a + b, 0) / 7));
   const habitsCompleted = Object.values(habitScores).filter(s => s >= 60).length;
 
-  return { habitScores, habitValues, overallScore, habitsCompleted };
+  // Track which habits were actually present in old data (screentime was NOT tracked in old app)
+  const loggedHabitIds = ['study', 'workout', 'sleep', 'wakeup', 'custom_masturbation_free', 'custom_porn_free'];
+  // screentime not in old data - mark as unlogged so app shows honest "—" not 100%
+
+  return { habitScores, habitValues, overallScore, habitsCompleted, loggedHabitIds };
 }
 
 export default function DataMigrationModal({ isOpen, onClose }) {
@@ -175,11 +179,12 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           const date = docData.id || docData.date;
           if (!date) return;
 
-          const { habitScores, habitValues, overallScore, habitsCompleted } = mapOldRecordToNew(docData);
+          const { habitScores, habitValues, overallScore, habitsCompleted, loggedHabitIds } = mapOldRecordToNew(docData);
           const updatedAt = new Date(docData.timestamp || Date.now()).toISOString();
 
-          // Individual Entries
-          Object.entries(habitScores).forEach(([hId, sVal]) => {
+          // Individual Entries — only write entries for habits that were actually logged
+          loggedHabitIds.forEach((hId) => {
+            const sVal = habitScores[hId];
             const entryRef = doc(db, `users/${user.uid}/entries`, `${hId}_${date}`);
             batch.set(entryRef, {
               id: `${hId}_${date}`,
@@ -187,18 +192,24 @@ export default function DataMigrationModal({ isOpen, onClose }) {
               entryDate: date,
               rawValue: habitValues[hId],
               computedScore: sVal,
+              isLogged: true,
               updatedAt
             }, { merge: true });
           });
 
-          // Daily Summary
+          // Daily Summary — include loggedHabitIds so app knows which were actually tracked
+          // overallScore: use ONLY logged habits' scores (exclude screentime which wasn't tracked)
+          const loggedScores = loggedHabitIds.map(id => habitScores[id]);
+          const adjustedOverallScore = Math.round(loggedScores.reduce((a, b) => a + b, 0) / loggedScores.length);
+
           const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, date);
           batch.set(summaryRef, {
             id: date,
             date: date,
-            overallScore,
+            overallScore: adjustedOverallScore,
             habitsCompleted,
-            habitsTotal: 7,
+            habitsTotal: loggedHabitIds.length, // 6 habits (no screentime)
+            loggedHabitIds, // ← KEY: tells app which habits were actually tracked
             habitScores,
             habitValues,
             legacyRaw: docData,

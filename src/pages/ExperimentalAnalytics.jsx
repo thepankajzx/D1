@@ -1774,7 +1774,11 @@ export default function ExperimentalAnalytics() {
                                   score = sum?.habitScores?.[selectedHabitId] ?? 0;
                                 }
 
-                                const isLogged = score > 0;
+                                const isLogged = sum != null && (
+                                  selectedHabitId === 'all'
+                                    ? (sum.overallScore > 0 || sum.loggedHabitIds?.length > 0)
+                                    : (sum.loggedHabitIds?.includes(selectedHabitId) ?? score > 0)
+                                );
                                 const bgClass = getPerfBandClass(score);
 
                                 // Score Match
@@ -1867,7 +1871,11 @@ export default function ExperimentalAnalytics() {
                         score = sum?.habitScores?.[selectedHabitId] ?? 0;
                       }
 
-                      const isLogged = score > 0;
+                      const isLogged = sum != null && (
+                        selectedHabitId === 'all'
+                          ? (sum.overallScore > 0 || sum.loggedHabitIds?.length > 0)
+                          : (sum.loggedHabitIds?.includes(selectedHabitId) ?? score > 0)
+                      );
                       const bgClass = getPerfBandClass(score);
 
                       // Evaluate Score Filter Match
@@ -1941,7 +1949,7 @@ export default function ExperimentalAnalytics() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                     {weeklyHeatmapData.map((w) => {
                       const score = w.average;
-                      const isLogged = score > 0;
+                      const isLogged = w.daysLogged > 0;
                       const bgClass = getPerfBandClass(score);
 
                       let isMatch = true;
@@ -1998,7 +2006,7 @@ export default function ExperimentalAnalytics() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {monthlyHeatmapData.map((m) => {
                     const score = m.average;
-                    const isLogged = score > 0;
+                    const isLogged = m.daysLogged > 0;
                     const bgClass = getPerfBandClass(score);
 
                     let isMatch = true;
