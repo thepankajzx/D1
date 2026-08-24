@@ -943,22 +943,28 @@ export default function ExperimentalAnalytics() {
     return dateSeries.map(dateStr => {
       const summary = summaryMap.get(dateStr);
       const dataPoint = { date: dateStr };
-      if (!summary) {
+      const hasLoggedHabits = summary && (
+        (summary.habitScores && Object.keys(summary.habitScores).length > 0) ||
+        (summary.habitsCompleted > 0) ||
+        summary.legacyRaw
+      );
+
+      if (!summary || !hasLoggedHabits) {
         dataPoint.overallScore = null;
         dataPoint.meta = {
            recordedCount: 0,
            expectedCount: activeHabits.length
         };
       } else {
-        dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : null;
+        dataPoint.overallScore = summary.overallScore !== undefined && summary.overallScore !== null ? summary.overallScore : null;
         dataPoint.meta = {
-           recordedCount: summary.habitsCompleted || 0,
+           recordedCount: summary.habitsCompleted || (summary.loggedHabitIds?.length || Object.keys(summary.habitScores || {}).length),
            expectedCount: summary.habitsTotal || activeHabits.length
         };
       }
       
       activeHabits.forEach(h => {
-        if (!summary || summary.habitScores?.[h.id] === undefined) {
+        if (!summary || !hasLoggedHabits || summary.habitScores?.[h.id] === undefined || summary.habitScores?.[h.id] === null) {
           dataPoint[h.id] = null;
         } else {
           dataPoint[h.id] = summary.habitScores[h.id];
@@ -1065,16 +1071,7 @@ export default function ExperimentalAnalytics() {
     const formattedRawPoints = chartData.map((d, i) => {
       const val = rawScores[i];
       if (val === null || val === undefined) {
-        return {
-          value: 0,
-          symbol: 'circle',
-          symbolSize: 6,
-          itemStyle: { color: '#ffffff', borderColor: '#0f172a', borderWidth: 2 },
-          isUnrecorded: true,
-          meta: d.meta,
-          rawVal: null,
-          maVal: ma7Scores[i]
-        };
+        return null;
       }
       return {
         value: val,
@@ -1106,7 +1103,7 @@ export default function ExperimentalAnalytics() {
           name: isOverall ? 'Daily Score' : (isUnitMode ? `Daily ${habit?.unit || 'Value'}` : habitName),
           type: 'line',
           data: formattedRawPoints,
-          connectNulls: true,
+          connectNulls: false,
           showSymbol: true,
           smooth: false, // Sharp daily fluctuations
           itemStyle: { color: primaryColor },
@@ -1781,18 +1778,25 @@ export default function ExperimentalAnalytics() {
 
                                 const dStr = cell.dStr;
                                 const sum = summaryMap.get(dStr);
+                                const hasLoggedHabits = sum && (
+                                  (sum.habitScores && Object.keys(sum.habitScores).length > 0) ||
+                                  (sum.habitsCompleted > 0) ||
+                                  sum.legacyRaw
+                                );
+
+                                const isLogged = Boolean(hasLoggedHabits && (
+                                  selectedHabitId === 'all'
+                                    ? (sum.overallScore !== undefined && sum.overallScore !== null)
+                                    : (sum.habitScores?.[selectedHabitId] !== undefined && sum.habitScores?.[selectedHabitId] !== null)
+                                ));
+
                                 let score = null;
-                                if (sum) {
+                                if (isLogged) {
                                   score = selectedHabitId === 'all'
-                                    ? (sum.overallScore ?? 0)
-                                    : (sum.habitScores?.[selectedHabitId] ?? 0);
+                                    ? (sum.overallScore ?? null)
+                                    : (sum.habitScores?.[selectedHabitId] ?? null);
                                 }
 
-                                const isLogged = sum != null && (
-                                  selectedHabitId === 'all'
-                                    ? (sum.overallScore !== undefined)
-                                    : (sum.habitScores?.[selectedHabitId] !== undefined)
-                                );
                                 const bgClass = getPerfBandClass(score);
 
                                 // Score Match
@@ -1837,12 +1841,12 @@ export default function ExperimentalAnalytics() {
                                     className={`h-8 sm:h-9 rounded-md ${bgClass} ${isAnyFilterActive ? filterEffectClass : ''} border border-black/5 dark:border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 relative`}
                                   >
                                     {showPercentages ? (
-                                      <span className={`text-[9.5px] sm:text-[10.5px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
-                                        {isLogged ? `${Math.round(score)}%` : '—'}
+                                      <span className={`text-[9.5px] sm:text-[10.5px] font-black leading-none ${(score !== null && (score <= 35 || score >= 60)) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                                        {isLogged && score !== null ? `${Math.round(score)}%` : '—'}
                                       </span>
                                     ) : (
                                       <>
-                                        <span className={`text-[10px] sm:text-[11px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                                        <span className={`text-[10px] sm:text-[11px] font-black leading-none ${(score !== null && (score <= 35 || score >= 60)) ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
                                           {cell.dayNum}
                                         </span>
                                         {isPartial ? (
@@ -1878,18 +1882,25 @@ export default function ExperimentalAnalytics() {
                   <div className={gridColsClass}>
                     {dateSeries.map(dStr => {
                       const sum = summaryMap.get(dStr);
+                      const hasLoggedHabits = sum && (
+                        (sum.habitScores && Object.keys(sum.habitScores).length > 0) ||
+                        (sum.habitsCompleted > 0) ||
+                        sum.legacyRaw
+                      );
+
+                      const isLogged = Boolean(hasLoggedHabits && (
+                        selectedHabitId === 'all'
+                          ? (sum.overallScore !== undefined && sum.overallScore !== null)
+                          : (sum.habitScores?.[selectedHabitId] !== undefined && sum.habitScores?.[selectedHabitId] !== null)
+                      ));
+
                       let score = null;
-                      if (sum) {
+                      if (isLogged) {
                         score = selectedHabitId === 'all'
-                          ? (sum.overallScore ?? 0)
-                          : (sum.habitScores?.[selectedHabitId] ?? 0);
+                          ? (sum.overallScore ?? null)
+                          : (sum.habitScores?.[selectedHabitId] ?? null);
                       }
 
-                      const isLogged = sum != null && (
-                        selectedHabitId === 'all'
-                          ? (sum.overallScore !== undefined)
-                          : (sum.habitScores?.[selectedHabitId] !== undefined)
-                      );
                       const bgClass = getPerfBandClass(score);
 
                       // Evaluate Score Filter Match
@@ -1937,9 +1948,9 @@ export default function ExperimentalAnalytics() {
                         >
                           {showPercentages ? (
                             <span className={`${isLargeTimeframe ? 'text-[7.5px] sm:text-[8.5px]' : 'text-[10px] sm:text-[11px]'} font-black leading-none ${
-                              (score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'
+                              (score !== null && (score <= 35 || score >= 60)) ? 'text-white' : 'text-slate-900 dark:text-white'
                             }`}>
-                              {isLogged ? `${Math.round(score)}%` : '—'}
+                              {isLogged && score !== null ? `${Math.round(score)}%` : '—'}
                             </span>
                           ) : (
                             <>
@@ -2693,7 +2704,10 @@ export default function ExperimentalAnalytics() {
             <div className="p-3.5 sm:p-4 overflow-y-auto max-h-[58vh] custom-scrollbar flex-grow space-y-3">
               {(() => {
                 const dates = selectedPeriod.dates;
-                const summaries = dates.map(dStr => summaryMap.get(dStr)).filter(Boolean);
+                const summaries = dates.map(dStr => summaryMap.get(dStr)).filter(s => {
+                  if (!s) return false;
+                  return (s.habitScores && Object.keys(s.habitScores).length > 0) || (s.habitsCompleted > 0) || s.legacyRaw;
+                });
                 const isSelectedHabit = selectedHabitId !== 'all';
                 const currentHabitObj = activeHabits.find(h => h.id === selectedHabitId);
 
@@ -2701,21 +2715,23 @@ export default function ExperimentalAnalytics() {
                   .map(s => isSelectedHabit ? s.habitScores?.[selectedHabitId] : s.overallScore)
                   .filter(score => score !== undefined && score !== null);
 
-                if (summaries.length === 0) {
+                if (summaries.length === 0 || overallScores.length === 0) {
                   return (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
                         <Icon name="event_busy" className="text-[22px] text-slate-400" />
                       </div>
-                      <p className="text-slate-900 dark:text-white font-bold text-sm">No Data Logged</p>
-                      <p className="text-slate-400 text-xs mt-0.5">You didn't log any data on this date.</p>
+                      <p className="text-slate-900 dark:text-white font-bold text-sm">
+                        {isHinglish ? 'डेटा अभी तक नहीं भरा गया है' : 'No Data Logged'}
+                      </p>
+                      <p className="text-slate-400 text-xs mt-1 max-w-[250px] leading-relaxed">
+                        {isHinglish ? 'इस तारीख का कोई डेटा नहीं है। डैशबोर्ड पर जाकर आदतें पूरी करें।' : "You haven't logged any data for this date yet. Check off habits on the Dashboard."}
+                      </p>
                     </div>
                   );
                 }
 
-                const mainScore = overallScores.length > 0 
-                  ? Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length)
-                  : 0;
+                const mainScore = Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length);
                 const isMultiDay = dates.length > 1;
 
                 // Format raw unit value for single date
