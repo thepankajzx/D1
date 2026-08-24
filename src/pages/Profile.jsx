@@ -345,7 +345,7 @@ export default function Profile() {
   const trackedDays = allSummaries.length;
 
   return (
-    <div className="max-w-4xl mx-auto w-full pb-24 space-y-2.5 animate-in fade-in duration-200">
+    <div className="w-full pb-24 space-y-2.5 animate-in fade-in duration-200">
       
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
       <div className="flex items-start sm:items-center gap-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-800">

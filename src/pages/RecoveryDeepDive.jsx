@@ -139,7 +139,7 @@ export default function RecoveryDeepDive() {
   const handleBackToDeepDive = () => { if (navigator.vibrate) navigator.vibrate(30); navigate('/analytics/deep-dive?habitId=' + habit.id); };
 
   return (
-    <div className="max-w-[1100px] mx-auto w-full space-y-4 md:space-y-6 px-1 sm:px-3 md:px-0 pb-16">
+    <div className="w-full space-y-4 md:space-y-6 px-1 sm:px-3 md:px-0 pb-16">
       
       {/* ── 1. TOP NAV BAR ── */}
       <nav className="flex items-center justify-between gap-3 w-full pb-2 border-b border-slate-200/80">

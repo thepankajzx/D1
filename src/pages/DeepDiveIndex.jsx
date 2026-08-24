@@ -97,7 +97,7 @@ export default function DeepDiveIndex() {
   };
 
   return (
-    <div className="max-w-[800px] mx-auto w-full space-y-4 pb-12 animate-in fade-in duration-200">
+    <div className="w-full space-y-4 pb-12 animate-in fade-in duration-200">
       
       {/* ── TOP COMPACT HEADER ── */}
       <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">

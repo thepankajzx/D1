@@ -471,7 +471,7 @@ export default function HabitDiagnostics() {
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto w-full space-y-4 md:space-y-6 px-1.5 sm:px-3 md:px-0 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-4 md:space-y-6 px-1.5 sm:px-3 md:px-0 pb-20 animate-in fade-in duration-200">
       
       {/* ── 1. TOP NAVIGATION & CONTROLS ── */}
       <nav className="flex items-center justify-between gap-2.5 pb-2 border-b border-slate-200/80 dark:border-slate-800">

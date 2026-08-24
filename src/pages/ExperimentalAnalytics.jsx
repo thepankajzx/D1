@@ -1316,7 +1316,7 @@ export default function ExperimentalAnalytics() {
   };
 
   return (
-    <div className="max-w-[720px] lg:max-w-6xl xl:max-w-7xl mx-auto w-full pb-20 space-y-2.5 sm:space-y-3.5 px-0 sm:px-2 lg:px-6 animate-in fade-in duration-300">
+    <div className="w-full pb-20 space-y-2.5 sm:space-y-3.5 px-0 animate-in fade-in duration-300">
       
       {/* ── PREVIEW NOTICE BANNER - only shown when zero habits configured ─── */}
       {isPreviewMode && (

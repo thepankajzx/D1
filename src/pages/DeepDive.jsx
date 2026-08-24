@@ -137,7 +137,7 @@ export default function DeepDive() {
   const isImplemented = isBinary || isHigher || isLower || isEarlier || isLater;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full space-y-3 md:space-y-5 px-1 sm:px-2 md:px-0">
+    <div className="w-full space-y-3 md:space-y-5 px-1 sm:px-2 md:px-0">
       {/* ── Sample Preview Mode (Separate Pill + Dark Card) ── */}
       {isSamplePreview && (
         <div className="space-y-2">

@@ -85,7 +85,7 @@ export default function StreaksPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 pb-24 pt-2">
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 space-y-5">
+      <div className="w-full mx-auto px-3 sm:px-6 space-y-5">
 
         {/* ── TOP NAVIGATION BAR ────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-3 pt-2">
