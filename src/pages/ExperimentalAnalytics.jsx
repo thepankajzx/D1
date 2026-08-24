@@ -39,7 +39,8 @@ import {
   Lightning,
   Crown,
   RocketLaunch,
-  Lock
+  Lock,
+  Info
 } from '@phosphor-icons/react';
 import { calculateStreakData, calculateConsistencyRate, getNextMilestone, getCurrentMilestone } from '../lib/streakEngine';
 import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
@@ -153,6 +154,8 @@ export default function ExperimentalAnalytics() {
   const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
   const [showResilienceLockModal, setShowResilienceLockModal] = useState(false);
   const [showDiagnoseLockModal, setShowDiagnoseLockModal] = useState(false);
+  const [showFocusAreaExplainer, setShowFocusAreaExplainer] = useState(false);
+  const [focusExplainerTab, setFocusExplainerTab] = useState('how_it_works');
   const dateSelectorRef = useRef(null);
   const [showHabitSheet, setShowHabitSheet] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
@@ -2196,9 +2199,23 @@ export default function ExperimentalAnalytics() {
                   <WarningCircle size={18} weight="fill" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600">
-                    Focus Area Required
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600">
+                      Focus Area Required
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) navigator.vibrate(25);
+                        setShowFocusAreaExplainer(true);
+                      }}
+                      className="w-4 h-4 rounded-full bg-rose-200/80 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 hover:bg-rose-300 dark:hover:bg-rose-800 flex items-center justify-center transition-colors cursor-pointer"
+                      title={isHinglish ? 'फोकस एरिया क्या है?' : 'What is Focus Area?'}
+                    >
+                      <Info size={11} weight="bold" />
+                    </button>
+                  </div>
                   <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight">
                     {weakestHabit.name}
                   </h4>
@@ -4057,6 +4074,173 @@ export default function ExperimentalAnalytics() {
                   <span>{isHinglish ? 'Pro अनलॉक करें (Unlock Custom)' : 'Unlock Custom with Pro'}</span>
                 </button>
               )}
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* ── FOCUS AREA EXPLAINER MODAL ── */}
+      {showFocusAreaExplainer && (
+        <div 
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setShowFocusAreaExplainer(false)}
+        >
+          <div 
+            className="w-full max-w-md bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[85vh] overflow-y-auto custom-scrollbar"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <WarningCircle size={20} weight="fill" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
+                    {isHinglish ? 'फोकस एरिया क्या है?' : 'What is Focus Area?'}
+                  </h3>
+                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                    {isHinglish ? 'कमज़ोर आदत की पहचान और सुधार' : 'Weakest Habit Detection & Lift'}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowFocusAreaExplainer(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X size={14} weight="bold" />
+              </button>
+            </div>
+
+            {/* Interactive Toggle Button Tabs */}
+            <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  setFocusExplainerTab('how_it_works');
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  focusExplainerTab === 'how_it_works'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <Lightning size={13} weight="fill" className="text-amber-500" />
+                <span>{isHinglish ? 'यह क्या करता है?' : 'How It Works'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  setFocusExplainerTab('calculation');
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  focusExplainerTab === 'calculation'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <Target size={13} weight="fill" className="text-rose-500" />
+                <span>{isHinglish ? 'गणना नियम' : 'Calculation Rules'}</span>
+              </button>
+            </div>
+
+            {/* Tab 1: How It Works */}
+            {focusExplainerTab === 'how_it_works' && (
+              <div className="space-y-3 animate-in fade-in duration-150">
+                <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/40 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <h4 className="text-xs font-black text-rose-800 dark:text-rose-300">
+                      {isHinglish ? '1. कमज़ोर कड़ी (Weakest Link) को ढूंढना' : '1. Pinpointing the Single Weakest Link'}
+                    </h4>
+                  </div>
+                  <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed pl-4">
+                    {isHinglish ? (
+                      <>सिस्टम आपकी सभी एक्टिव आदतों को स्कैन करता है और <span className="font-bold text-rose-600 dark:text-rose-400">वह एक आदत सामने लाता है</span> जो आपके 100% ओवरऑल स्कोर को सबसे ज्यादा नीचे गिरा रही है।</>
+                    ) : (
+                      <>The algorithm scans all your active habits to identify the <span className="font-bold text-rose-600 dark:text-rose-400">single habit causing the biggest drag</span> on your daily overall composite score.</>
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/40 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <h4 className="text-xs font-black text-blue-800 dark:text-blue-300">
+                      {isHinglish ? '2. गिरावट और चेतावनी (Drop Alert)' : '2. Rapid Decline & Warning Triggers'}
+                    </h4>
+                  </div>
+                  <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed pl-4">
+                    {isHinglish ? (
+                      <>अगर किसी आदत का स्कोर हाल के दिनों में <span className="font-bold text-blue-600 dark:text-blue-400">8% या उससे ज्यादा गिर जाता है</span> या उसका औसत 50% से कम रहता है, तो यह तुरंत रेड अलर्ट जारी कर देता है।</>
+                    ) : (
+                      <>Triggers an immediate warning if a habit experiences an <span className="font-bold text-blue-600 dark:text-blue-400">≥8% sudden drop</span> compared to previous weeks or lingers below 50%.</>
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/40 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <h4 className="text-xs font-black text-emerald-800 dark:text-emerald-300">
+                      {isHinglish ? '3. अधिकतम लाभ (Highest ROI Lift)' : '3. Maximum ROI on Habit Rebound'}
+                    </h4>
+                  </div>
+                  <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed pl-4">
+                    {isHinglish ? (
+                      <>जब आप इस एक आदत को ठीक कर लेते हैं, तो आपका <span className="font-bold text-emerald-600 dark:text-emerald-400">ओवरऑल स्कोर सबसे तेज़ी से ऊपर जाता है</span> और स्ट्रीक टूटने का ख़तरा खत्म हो जाता है।</>
+                    ) : (
+                      <>Fixing this single weak habit produces the <span className="font-bold text-emerald-600 dark:text-emerald-400">fastest positive bump</span> in your overall score and stops streak decay.</>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Calculation Rules */}
+            {focusExplainerTab === 'calculation' && (
+              <div className="space-y-3 animate-in fade-in duration-150">
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <h4 className="text-xs font-black text-amber-800 dark:text-amber-300">
+                      {isHinglish ? 'औसत स्कोर vs लॉगिंग कंसिस्टेंसी' : 'Average Score vs Logged Consistency'}
+                    </h4>
+                  </div>
+                  <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed pl-4">
+                    {isHinglish ? (
+                      <>अगर आपने 30 में से सिर्फ 10 दिन लॉग किया और 9 दिन फेल रहे (0% या 2%), तो <span className="font-bold text-amber-700 dark:text-amber-400">सिस्टम उन 10 दिनों का रियल औसत निकालता है</span> और कम स्कोर होने पर उसे फोकस एरिया बनाता है।</>
+                    ) : (
+                      <>If you logged 10 of 30 days and scored poorly (e.g. 0%-5%), the system averages your <span className="font-bold text-amber-700 dark:text-amber-400">active attempts</span> and flags the acute failure rate.</>
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 space-y-2">
+                  <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                    {isHinglish ? 'फोकस एरिया चुनने की प्राथमिकता (Hierarchy):' : 'Evaluation Hierarchy:'}
+                  </h4>
+                  <ul className="text-[11.5px] text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
+                    <li><span className="font-bold text-rose-600">Priority 1:</span> {isHinglish ? 'तेज़ गिरावट (Drop ≥ 8% या Avg < 50%)' : 'Steep Drop (≥ 8% or Avg < 50%)'}</li>
+                    <li><span className="font-bold text-blue-600">Priority 2:</span> {isHinglish ? 'सेलेक्टेड टाइमफ्रेम में सबसे कम औसत स्कोर' : 'Lowest Average Score in timeframe'}</li>
+                    <li><span className="font-bold text-emerald-600">Priority 3:</span> {isHinglish ? 'लॉगिंग नियमितता और रिकवरी सुझाव' : 'Logging regularity & diagnostic insights'}</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Close / Action Button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowFocusAreaExplainer(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs"
+              >
+                {isHinglish ? 'समझ गया (Got It)' : 'Got It'}
+              </button>
             </div>
 
           </div>
