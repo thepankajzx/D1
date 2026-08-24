@@ -51,28 +51,33 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
     const chartData = dates.map(dateStr => {
       const summary = allSummaries.find(s => s.id === dateStr);
       let score = null;
+      let isUntracked = true;
       if (dateStr <= todayStr) {
         if (summary && summary.habitScores && summary.habitScores[habit.id] !== undefined) {
           score = summary.habitScores[habit.id];
+          isUntracked = false;
+        } else if (summary) {
+          score = 0;
+          isUntracked = false;
         } else {
-          score = 0; // Missed
+          score = null;
+          isUntracked = true;
         }
       }
       return {
         date: dateStr,
-        score
+        score,
+        isUntracked
       };
     });
 
-    // Series data: Normal line with Black Ring ONLY on Missed days (score === 0 or null)
+    // Series data: Normal line with Black Ring ONLY on truly untracked days
     const seriesData = chartData.map((d) => {
-      if (d.score === null) return null;
-      const isMissed = d.score === 0;
-      if (isMissed) {
+      if (d.isUntracked || d.score === null) {
         return {
           value: 0,
           symbol: 'circle',
-          symbolSize: 7,
+          symbolSize: 6,
           itemStyle: {
             color: '#ffffff',
             borderColor: '#0f172a',
@@ -106,7 +111,7 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
           let html = `<div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); border: 1px solid #f1f5f9; padding: 10px 14px; font-family: system-ui, -apple-system, sans-serif; min-width: 150px;">`;
           html += `<div style="font-size: 11px; color: #64748b; margin-bottom: 7px; font-weight: 600; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">${dateStr}</div>`;
           
-          if (pointData.score === null || pointData.score === 0) {
+          if (pointData.isUntracked || pointData.score === null) {
             html += `
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 6px;">

@@ -244,13 +244,13 @@ export default function Analytics() {
       const dataPoint = { date: dateStr };
       const summary = summaries.find(s => s.id === dateStr);
       
-      if (dateStr > todayStr || !summary || summary.habitsCompleted === 0) {
+      if (dateStr > todayStr || !summary) {
         dataPoint.overallScore = null;
         dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: habits.length };
       } else {
-        dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : null;
+        dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : 0;
         dataPoint.meta = {
-           recordedCount: summary.habitsCompleted || 0,
+           recordedCount: summary.loggedHabitIds?.length || summary.habitsCompleted || 0,
            expectedCount: summary.habitsTotal || habits.length
         };
       }
@@ -883,7 +883,7 @@ export default function Analytics() {
                               <div className="grid-heatmap">
                                   {monthData.cells.map((cell, i) => {
                                     const isOverall = selectedHabit === 'overall';
-                                    const recorded = cell.meta ? (cell.meta.habitsCompleted || 0) : 0;
+                                    const recorded = cell.meta ? (cell.meta.loggedHabitIds?.length || cell.meta.habitsCompleted || 0) : 0;
                                     const expected = cell.meta ? (cell.meta.habitsTotal || habits.length) : (isOverall ? habits.length : 1);
                                     const isPartial = isOverall && recorded > 0 && recorded < expected;
                                     

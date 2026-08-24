@@ -124,14 +124,14 @@ export default function DeepDiveAdvancedHeatmap({
 
   // Color gradient helper for score bands
   const getPerfBandClass = (score) => {
-    if (!score || score <= 0) return 'bg-slate-100 dark:bg-slate-800/60 text-slate-400';
-    if (score >= 90) return 'bg-emerald-700 text-white';
-    if (score >= 80) return 'bg-emerald-600 text-white';
-    if (score >= 65) return 'bg-emerald-500 text-white';
-    if (score >= 50) return 'bg-emerald-300 dark:bg-emerald-400/80 text-emerald-950';
-    if (score >= 35) return 'bg-rose-400 text-white';
-    if (score >= 20) return 'bg-rose-600 text-white';
-    return 'bg-red-800 text-white';
+    if (score === null || score === undefined) return 'bg-slate-100 dark:bg-slate-800/60 text-slate-400';
+    if (score <= 10) return 'bg-red-800 text-white';
+    if (score <= 20) return 'bg-rose-600 text-white';
+    if (score <= 35) return 'bg-rose-400 text-white';
+    if (score <= 50) return 'bg-emerald-300 dark:bg-emerald-400/80 text-emerald-950';
+    if (score <= 65) return 'bg-emerald-500 text-white';
+    if (score <= 80) return 'bg-emerald-600 text-white';
+    return 'bg-emerald-700 text-white';
   };
 
   // Month-blocks grouping
@@ -266,8 +266,8 @@ export default function DeepDiveAdvancedHeatmap({
                     if (cell.isPad) return <div key={cell.id} className="h-8 sm:h-9 rounded-md bg-transparent" />;
                     const dStr = cell.dStr;
                     const sum = summaryMap.get(dStr);
-                    const score = habit?.id ? (sum?.habitScores?.[habit.id] ?? 0) : (sum?.overallScore ?? 0);
-                    const isLogged = score > 0;
+                    const isLogged = sum != null && (habit?.id ? sum?.habitScores?.[habit.id] !== undefined : sum?.overallScore !== undefined);
+                    const score = isLogged ? (habit?.id ? (sum?.habitScores?.[habit.id] ?? 0) : (sum?.overallScore ?? 0)) : null;
                     const bgClass = getPerfBandClass(score);
 
                     return (
@@ -281,7 +281,9 @@ export default function DeepDiveAdvancedHeatmap({
                       >
                         {!isLogged && <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />}
                         {showPercentages && isLogged && (
-                          <span className="text-[9.5px] font-black">{Math.round(score)}%</span>
+                          <span className={`text-[9.5px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                            {Math.round(score)}%
+                          </span>
                         )}
                       </div>
                     );
@@ -295,8 +297,8 @@ export default function DeepDiveAdvancedHeatmap({
           <div className="grid grid-cols-6 sm:grid-cols-7 md:grid-cols-10 gap-1.5 sm:gap-2">
             {datesList.map(dStr => {
               const sum = summaryMap.get(dStr);
-              const score = habit?.id ? (sum?.habitScores?.[habit.id] ?? 0) : (sum?.overallScore ?? 0);
-              const isLogged = score > 0;
+              const isLogged = sum != null && (habit?.id ? sum?.habitScores?.[habit.id] !== undefined : sum?.overallScore !== undefined);
+              const score = isLogged ? (habit?.id ? (sum?.habitScores?.[habit.id] ?? 0) : (sum?.overallScore ?? 0)) : null;
               const bgClass = getPerfBandClass(score);
 
               // Filter match
@@ -304,9 +306,9 @@ export default function DeepDiveAdvancedHeatmap({
               if (heatmapFilter === 'elite_90') isScoreMatch = score >= 90;
               else if (heatmapFilter === 'target_80') isScoreMatch = score >= 80;
               else if (heatmapFilter === 'passing_50') isScoreMatch = score >= 50;
-              else if (heatmapFilter === 'struggle_below_50') isScoreMatch = score > 0 && score < 50;
-              else if (heatmapFilter === 'critical_below_30') isScoreMatch = score > 0 && score < 30;
-              else if (heatmapFilter === 'skipped') isScoreMatch = score === 0 || score === null;
+              else if (heatmapFilter === 'struggle_below_50') isScoreMatch = score !== null && score < 50;
+              else if (heatmapFilter === 'critical_below_30') isScoreMatch = score !== null && score < 30;
+              else if (heatmapFilter === 'skipped') isScoreMatch = !isLogged || score === 0;
 
               const isAnyFilterActive = heatmapFilter !== 'all' || dayTypeFilter !== 'all';
               const filterEffectClass = isScoreMatch ? 'opacity-100' : 'opacity-15 grayscale scale-95';
@@ -322,7 +324,9 @@ export default function DeepDiveAdvancedHeatmap({
                 >
                   {!isLogged && <span className="w-1.5 h-1.5 rounded-full bg-slate-400/80 dark:bg-slate-500" />}
                   {showPercentages && isLogged && (
-                    <span className="text-[10px] font-black">{Math.round(score)}%</span>
+                    <span className={`text-[10px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                      {Math.round(score)}%
+                    </span>
                   )}
                 </div>
               );
