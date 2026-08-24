@@ -325,6 +325,7 @@ export default function ExperimentalAnalytics() {
       return {
         ...h,
         avgScore,
+        daysRecorded: validScores.length,
         sparklineTimeframe,
         delta,
         isWarning
