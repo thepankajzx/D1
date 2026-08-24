@@ -32,21 +32,21 @@ export default function TodayInsightHighlightCard({ habits = [], allSummaries = 
             if (navigator.vibrate) navigator.vibrate(25);
             setShowLockModal(true);
           }}
-          className="w-full bg-[#111420] hover:bg-[#161a29] text-white rounded-xl border border-slate-800/80 shadow-xs relative overflow-hidden transition-all hover:border-amber-500/40 cursor-pointer px-3 py-2 flex items-center justify-between gap-2 select-none"
+          className="w-full bg-white dark:bg-[#151926] hover:bg-slate-50/80 dark:hover:bg-[#1c2233] text-slate-900 dark:text-white rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden transition-all hover:border-amber-400/50 cursor-pointer px-3.5 py-2.5 flex items-center justify-between gap-2 select-none"
         >
           {/* Left: Sparkle + All Insights */}
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
-              <Sparkle size={12} weight="fill" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+              <Sparkle size={13} weight="fill" />
             </div>
-            <span className="font-black text-xs text-slate-100 tracking-wide truncate">
+            <span className="font-black text-xs text-slate-900 dark:text-slate-100 tracking-wide truncate">
               {isHinglish ? 'दैनिक इनसाइट्स (All Insights)' : 'All Insights'}
             </span>
           </div>
 
           {/* Right: Lock + Days Left + Arrow */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/70 dark:border-amber-800/50 px-2.5 py-0.5 rounded-full flex items-center gap-1">
               <Lock size={10} weight="fill" />
               <span>{daysRemaining}d left</span>
             </span>
@@ -140,27 +140,27 @@ export default function TodayInsightHighlightCard({ habits = [], allSummaries = 
   return (
     <div 
       onClick={() => navigate('/insights')}
-      className="w-full bg-[#111420] hover:bg-[#161a29] text-white rounded-xl border border-slate-800/80 shadow-xs relative overflow-hidden transition-all hover:border-indigo-500/40 cursor-pointer p-3.5 flex items-center justify-between gap-3"
+      className="w-full bg-white dark:bg-[#151926] hover:bg-indigo-50/40 dark:hover:bg-[#1c2233] text-slate-900 dark:text-white rounded-2xl border border-indigo-100 dark:border-indigo-900/40 shadow-xs hover:shadow-sm relative overflow-hidden transition-all cursor-pointer p-3.5 flex items-center justify-between gap-3"
     >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-400/25 text-indigo-400 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/70 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
           <Sparkle size={16} weight="fill" />
         </div>
         <div className="min-w-0">
-          <span className="font-bold text-xs sm:text-[13px] text-white block truncate">
+          <span className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white block truncate">
             {topInsight.title || 'Daily Insight'}
           </span>
-          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
             {topInsight.text || topInsight.body}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className="text-[10px] font-bold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-md">
-          {insights.length} Insights
+        <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/70 dark:border-indigo-800/40 px-2.5 py-1 rounded-full flex items-center gap-1">
+          <span>{insights.length} Insights</span>
+          <CaretRight size={11} weight="bold" className="text-indigo-500" />
         </span>
-        <CaretRight size={12} weight="bold" className="text-slate-400" />
       </div>
     </div>
   );

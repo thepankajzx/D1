@@ -403,49 +403,49 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full pb-24">
-            {/* 1. Top KPI Pills (Focus & Streak) */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full">
-        {/* Focus Action Pill */}
-        <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-amber-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Target weight="fill" size={13} className="text-amber-400" />
+            {/* 1. Top KPI Pills (Focus & Streak) - Clean White / Light Theme Redesign */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 w-full">
+        {/* Focus Action Card */}
+        <div className="bg-white dark:bg-[#151926] text-slate-900 dark:text-white rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between overflow-hidden border border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:shadow-sm transition-all">
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <span className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-800/40 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+              <Target weight="fill" size={12} className="text-amber-600 dark:text-amber-400" />
               Focus
             </span>
-            <span className="text-[12px] font-bold text-amber-400/90">
+            <span className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-400">
               {hasLoggedData && weakestHabit ? `${weakestHabit.score}%` : '--'}
             </span>
           </div>
-          <div className="text-[13px] font-bold text-slate-100 truncate">
+          <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
             {hasLoggedData && weakestHabit ? weakestHabit.name : (isHinglish ? 'आज की आदतें भरें' : 'Log Today\'s Habits')}
           </div>
-          <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
+          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
             {hasLoggedData && weakestHabit
               ? (weakestHabit.score < 50 
                   ? (isHinglish ? 'Rebound ki zaroorat hai' : 'Needs rebound') 
                   : (isHinglish ? 'Pehle complete karo' : 'Execute early'))
-              : (isHinglish ? 'Day 1 डेटा दर्ज करें' : 'Track Day 1 to start')}
+              : (isHinglish ? 'डेटा दर्ज करें' : 'Track to start')}
           </div>
         </div>
 
-        {/* Momentum Streak Pill */}
-        <div className="bg-[#141721] text-white rounded-xl p-3 flex flex-col justify-between overflow-hidden border border-white/5 shadow-xs">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-emerald-400 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Flame weight="fill" size={13} className="text-emerald-400" />
+        {/* Momentum Streak Card */}
+        <div className="bg-white dark:bg-[#151926] text-slate-900 dark:text-white rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between overflow-hidden border border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:shadow-sm transition-all">
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/40 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+              <Flame weight="fill" size={12} className="text-emerald-600 dark:text-emerald-400" />
               Streak
             </span>
-            <span className="text-[12px] font-bold text-emerald-400/90">
+            <span className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-400">
               {hasLoggedData && strongestHabit ? `${strongestHabit.score}%` : '0d'}
             </span>
           </div>
-          <div className="text-[13px] font-bold text-slate-100 truncate">
+          <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
             {hasLoggedData && strongestHabit ? strongestHabit.name : (isHinglish ? 'स्ट्रीक इग्निशन' : 'Day 1 Ignition')}
           </div>
-          <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
+          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
             {hasLoggedData && strongestHabit
               ? (isHinglish ? 'Streak tootne mat dena' : 'Keep unbroken')
-              : (isHinglish ? 'पहला स्ट्रीक शुरू करें' : 'Complete habits to ignite')}
+              : (isHinglish ? 'पहला स्ट्रीक शुरू करें' : 'Complete to ignite')}
           </div>
         </div>
       </div>
