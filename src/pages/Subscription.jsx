@@ -21,10 +21,10 @@ export default function Subscription() {
                     <div className="hero-left">
                         <button 
                             onClick={() => navigate(-1)}
-                            className="w-10 h-10 rounded-full flex items-center justify-center bg-on-surface text-surface hover:opacity-80 transition-opacity shadow-sm mb-6 shrink-0"
+                            className="w-9 h-9 rounded-full flex items-center justify-center bg-on-surface text-surface hover:opacity-80 transition-opacity shadow-sm mb-3 shrink-0"
                             aria-label="Go back"
                         >
-                            <Icon name="arrow_back" className="text-xl" />
+                            <Icon name="arrow_back" className="text-lg" />
                         </button>
                         
                         <div className="top-badge">
@@ -34,12 +34,12 @@ export default function Subscription() {
                         
                         <h1>
                             Don't Just Build Habits.
-                            <span className="gradient-text">Understand Your Progress.</span>
+                            <span className="gradient-text">Master Your Consistency.</span>
                         </h1>
                         
                         <p className="desc">
-                            Consistency is easier when you can see how far you've come. 
-                            Give yourself a longer runway to build momentum, measure your performance, and turn daily actions into lasting routines.
+                            Consistency becomes effortless when every metric is transparent. 
+                            Track daily routines, analyze behavioral bottlenecks, and unlock deep performance diagnostics.
                         </p>
 
                         <div className="hero-bullets">
@@ -47,13 +47,13 @@ export default function Subscription() {
                                 <div className="hero-bullet-icon icon-green">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                                 </div>
-                                <div><strong>Free</strong> gives you everything you need to start tracking your habits.</div>
+                                <div><strong>Free</strong> gives you core tracking for up to 8 habits, daily check-offs, 7D/14D stats, and streaks.</div>
                             </div>
                             <div className="hero-bullet">
                                 <div className="hero-bullet-icon icon-purple">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="15.5"></line><polyline points="22 8.5 12 15.5 2 8.5"></polyline><polyline points="2 15.5 12 8.5 22 15.5"></polyline><line x1="12" y1="2" x2="12" y2="8.5"></line></svg>
                                 </div>
-                                <div><strong>Pro</strong> is for those who want more from their data — advanced analytics, detailed reports, unlimited history, custom scoring, and data exports.</div>
+                                <div><strong>Pro</strong> unlocks unlimited habits, custom date ranges, deep dive trend analytics, recovery resilience scores, and pro behavioral action plans.</div>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@ export default function Subscription() {
                                     <div className="mc-header">
                                         <div>
                                             <div className="mc-title">Long-term Trends</div>
-                                            <div className="mc-sub">+24% vs last year</div>
+                                            <div className="mc-sub">+24% vs last month</div>
                                         </div>
                                         <div className="pro-badge">PRO</div>
                                     </div>
@@ -186,17 +186,17 @@ export default function Subscription() {
                         </div>
                         
                         <h2>Free</h2>
-                        <p className="sub">Perfect for getting started.</p>
+                        <p className="sub">Essential tracking to build daily discipline.</p>
                         
                         <div className="price-wrap">
-                            <div className="price">$0</div>
+                            <div className="price">₹0</div>
                             <div className="price-span">Forever free</div>
                         </div>
 
                         <ul className="card-list">
-                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Track your daily habits</li>
-                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Build consistency</li>
-                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Stay accountable</li>
+                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Track up to 8 habits daily</li>
+                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> 7-Day & 14-Day analytics views</li>
+                            <li><svg className="check-green" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Streaks & milestone badges</li>
                         </ul>
 
                         <button className="btn btn-outline cursor-default">Current Plan <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
@@ -210,18 +210,18 @@ export default function Subscription() {
                             </div>
                             <div>
                                 <div className="fc-title">What's included in Free</div>
-                                <div className="fc-sub">Everything you need to build strong habits.</div>
+                                <div className="fc-sub">Core capabilities for daily habit building.</div>
                             </div>
                         </div>
                         
                         <div className="pills-container">
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Up to 8 Habits</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> 1 Custom Habit</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Daily Habit Tracking</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Daily Score</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Smart Scoring Engine</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Up to 5 Custom Habits</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Daily Scoring Engine</span>
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Streak Tracking</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Basic Dashboard</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> 9 Milestone Badges (Up to 365D)</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> 7D & 14D Heatmap Views</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Core Diagnostics Overview</span>
                         </div>
                     </div>
 
@@ -238,7 +238,7 @@ export default function Subscription() {
                         </div>
                         
                         <h2>Pro</h2>
-                        <p className="sub">Unlock advanced insights and powerful tracking.</p>
+                        <p className="sub">Full analytics suite, diagnostics, and unlimited power.</p>
 
                         <div className="radio-group">
                             <label className={`radio-label ${selectedPlan === 'quarterly' ? 'active' : ''}`} onClick={() => setSelectedPlan('quarterly')}>
@@ -271,9 +271,9 @@ export default function Subscription() {
 
                         <ul className="card-list" style={{marginBottom: '24px'}}>
                             <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Everything in Free</li>
-                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Advanced analytics & insights</li>
-                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Detailed reports & exports</li>
-                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M8 8v8H4V8h4zm2 0h4v8h-4V8zm6 0h4v8h-4V8z"></path></svg> Unlimited history & more</li>
+                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Unlimited habits & custom habits</li>
+                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Custom date ranges & 30D/90D/All stats</li>
+                            <li><svg className="check-purple" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M8 8v8H4V8h4zm2 0h4v8h-4V8zm6 0h4v8h-4V8z"></path></svg> Recovery Hub & Pro Action Plans</li>
                         </ul>
 
                         <button className="btn btn-primary" onClick={handleUpgrade}>
@@ -281,7 +281,7 @@ export default function Subscription() {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         </button>
                         <div className="secure-text">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Secure checkout via WhatsApp
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Instant activation via WhatsApp
                         </div>
                     </article>
 
@@ -293,20 +293,22 @@ export default function Subscription() {
                             </div>
                             <div>
                                 <div className="fc-title">What Pro unlocks</div>
-                                <div className="fc-sub">Everything in Free, plus powerful extras.</div>
+                                <div className="fc-sub">Everything in Free, plus the complete diagnostic suite.</div>
                             </div>
                         </div>
                         
                         <div className="pills-container">
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 2 13 9 20 9"></polyline><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path></svg> Up to 20 Habits</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 2 13 9 20 9"></polyline><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path></svg> Unlimited Habits</span>
                             <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Unlimited Custom Habits</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Advanced Analytics</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Advanced Performance Reports</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Unlimited History</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Charts & Progress Graphs</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Heatmap Analytics</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg> Custom Scoring Logic</span>
-                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg> Export PDF & CSV</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Custom Date Range Picker</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> 30D, 90D & All-Time Analytics</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Full Habit Deep Dive Suite</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Recovery Hub & Resilience Scores</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg> Pro Behavioral Action Plans</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Advanced Multi-Year Heatmaps</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg> Priority Mode & Habit Weighting</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Historical Data Migration Tool</span>
+                            <span className="pill pill-pro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Pro Member Badge & Priority Support</span>
                         </div>
                     </div>
 

@@ -37,7 +37,7 @@
     color: var(--sub-text-main);
     font-family: 'Inter', sans-serif;
     line-height: 1.5;
-    padding: 32px 16px; 
+    padding: 6px 16px 32px; 
     min-height: 100vh;
 }
 
@@ -54,8 +54,8 @@
 .subscription-page .hero {
     display: flex;
     flex-direction: column; 
-    gap: 40px;
-    margin-bottom: 48px;
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
 .subscription-page .hero-left {
@@ -72,9 +72,9 @@
     text-transform: uppercase;
     color: var(--sub-brand-blue);
     letter-spacing: 0.05em;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     background: #EEF2FF;
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 100px;
     border: 1px solid #C7D2FE;
 }
