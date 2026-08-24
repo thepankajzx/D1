@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBl9DfgHBCqykkR8WPNIuKZCZ7UQIzM4ho",
-  authDomain: "d1-core.firebaseapp.com",
+  authDomain: "d1.thedefinite.one",
   projectId: "d1-core",
   storageBucket: "d1-core.firebasestorage.app",
   messagingSenderId: "223282254697",
