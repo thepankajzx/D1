@@ -79,7 +79,7 @@ function generateSmoothPath(points) {
 }
 
 const getPerfBandClass = (score) => {
-  if (score === null || score === undefined || score === 0) return 'bg-surface-container-high dark:bg-[#202532]';
+  if (score === null || score === undefined) return 'bg-surface-container-high dark:bg-[#202532]';
   if (score <= 10) return 'bg-perf-1 text-white';
   if (score <= 20) return 'bg-perf-2 text-white';
   if (score <= 30) return 'bg-perf-3 text-white';
@@ -1767,11 +1767,11 @@ export default function ExperimentalAnalytics() {
 
                                 const dStr = cell.dStr;
                                 const sum = summaryMap.get(dStr);
-                                let score = 0;
-                                if (selectedHabitId === 'all') {
-                                  score = sum?.overallScore ?? 0;
-                                } else {
-                                  score = sum?.habitScores?.[selectedHabitId] ?? 0;
+                                let score = null;
+                                if (sum) {
+                                  score = selectedHabitId === 'all'
+                                    ? (sum.overallScore ?? 0)
+                                    : (sum.habitScores?.[selectedHabitId] ?? 0);
                                 }
 
                                 const isLogged = sum != null && (

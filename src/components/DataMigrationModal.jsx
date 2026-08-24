@@ -16,7 +16,6 @@ const OLD_FIREBASE_CONFIG = {
   appId: "1:180801083177:web:3a9c3b02728749d2420938"
 };
 
-// Old source user ID in fci-lms
 const OLD_USER_ID = 'Pankaj@2026';
 
 function getOldFirestore() {
@@ -25,10 +24,18 @@ function getOldFirestore() {
   return getFirestore(app);
 }
 
-// User's custom targets
+function timeStringToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return 360;
+  const parts = timeStr.trim().split(':');
+  if (parts.length < 2) return 360;
+  const h = parseInt(parts[0], 10) || 0;
+  const m = parseInt(parts[1], 10) || 0;
+  return h * 60 + m;
+}
+
 const TARGET_HABITS_CONFIG = [
   { id: 'study', name: 'Study', category: 'Focus', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 240, target0: 0, userTarget100: 240, userTarget0: 0, icon: 'school', priorityRank: 1 },
-  { id: 'screentime', name: 'Screen Time', category: 'Lifestyle', scoringType: 'duration', direction: 'lower_is_better', defaultUnit: 'hours', unit: 'hours', target100: 0, target0: 1, userTarget100: 0, userTarget0: 1, icon: 'smartphone', priorityRank: 2 },
+  { id: 'screentime', name: 'Screen Time (Music + Phone)', category: 'Lifestyle', scoringType: 'duration', direction: 'lower_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 0, target0: 60, userTarget100: 0, userTarget0: 60, icon: 'smartphone', priorityRank: 2 },
   { id: 'workout', name: 'Workout', category: 'Fitness', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', unit: 'minutes', target100: 30, target0: 0, userTarget100: 30, userTarget0: 0, icon: 'fitness_center', priorityRank: 3 },
   { id: 'sleep', name: 'Sleep Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 1320, target0: 1440, userTarget100: 1320, userTarget0: 1440, icon: 'bedtime' },
   { id: 'wakeup', name: 'Wake Up Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 360, target0: 480, userTarget100: 360, userTarget0: 480, icon: 'alarm' },
@@ -36,36 +43,36 @@ const TARGET_HABITS_CONFIG = [
   { id: 'custom_porn_free', name: 'Porn Free', category: 'Lifestyle', scoringType: 'binary', direction: 'higher_is_better', defaultUnit: '', unit: '', target100: 1, target0: 0, userTarget100: 1, userTarget0: 0, icon: 'smoke_free' }
 ];
 
-// Map old schema (users/Pankaj@2026/records) to new schema
 function mapOldRecordToNew(docData) {
   const inputs = docData.inputs || {};
   const scores = docData.scores || {};
 
-  // --- Study ---
-  const studyMins = inputs.studyMins ?? 0;
+  // 1. Study (in minutes) - Target 240 mins (4 hrs)
+  const studyMins = Number(inputs.studyMins) || 0;
   const studyScore = Math.min(100, Math.round((studyMins / 240) * 100));
 
-  // --- Workout ---
-  const workoutMins = inputs.workoutMins ?? 0;
-  const workoutScore = workoutMins >= 30 ? 100 : Math.round((workoutMins / 30) * 100);
+  // 2. Workout (in minutes) - Target 30 mins
+  const workoutMins = Number(inputs.workoutMins) || 0;
+  const workoutScore = Math.min(100, Math.round((workoutMins / 30) * 100));
 
-  // --- Screen Time (not in old schema, default to best) ---
-  const screenHours = inputs.phoneMins ? (inputs.phoneMins / 60) : (inputs.phoneHours ?? 0);
-  const screenScore = screenHours <= 0 ? 100 : Math.max(0, Math.round((1 - screenHours) * 100));
+  // 3. Screen Time ("Music + Phone" in old app) - Target max 60 mins (1 hr)
+  const musicMins = Number(inputs.musicMins) || 0;
+  const screenScore = Math.max(0, Math.min(100, Math.round((1 - (musicMins / 60)) * 100)));
 
-  // --- Sleep (use old sleepScore as-is, normalized to 0-100) ---
-  const rawSleepScore = scores.sleepScore ?? 0;
-  // old sleepScore was 0-10 range, normalize to 0-100
-  const sleepScore = rawSleepScore > 10 ? rawSleepScore : Math.round(rawSleepScore * 10);
+  // 4. Wake Up Time (in minutes from midnight)
+  const wakeMins = timeStringToMinutes(inputs.wake);
+  const wakeScore = Math.min(100, Math.max(0, Math.round(((scores.wakeScore ?? 0) / 15) * 100)));
 
-  // --- Wake Up ---
-  const rawWakeScore = scores.wakeScore ?? 0;
-  const wakeScore = rawWakeScore > 10 ? rawWakeScore : Math.round(rawWakeScore * 10);
+  // 5. Sleep Time (in minutes from midnight)
+  const sleepMins = timeStringToMinutes(inputs.sleep);
+  const sleepScore = Math.min(100, Math.max(0, Math.round(((scores.sleepScore ?? 0) / 10) * 100)));
 
-  // --- Masturbation & Porn (binary) ---
+  // 6. No Masturbation
   const isMastFree = inputs.masturbation === 'No' || inputs.masturbation === 0 || inputs.masturbation === false;
-  const isPornFree = inputs.porn === 'No' || inputs.porn === 0 || inputs.porn === false;
   const mastScore = isMastFree ? 100 : 0;
+
+  // 7. Porn Free
+  const isPornFree = inputs.porn === 'No' || inputs.porn === 0 || inputs.porn === false;
   const pornScore = isPornFree ? 100 : 0;
 
   const habitScores = {
@@ -80,21 +87,18 @@ function mapOldRecordToNew(docData) {
 
   const habitValues = {
     study: studyMins,
-    screentime: screenHours,
+    screentime: musicMins,
     workout: workoutMins,
-    sleep: inputs.sleep || '23:00',
-    wakeup: inputs.wake || '06:00',
+    sleep: sleepMins,
+    wakeup: wakeMins,
     custom_masturbation_free: isMastFree ? 1 : 0,
     custom_porn_free: isPornFree ? 1 : 0
   };
 
-  // Use original overallScore if available (it was already computed)
-  const overallScore = Math.round(docData.overallScore ?? (Object.values(habitScores).reduce((a, b) => a + b, 0) / 7));
-  const habitsCompleted = Object.values(habitScores).filter(s => s >= 60).length;
-
-  // Track which habits were actually present in old data (screentime was NOT tracked in old app)
-  const loggedHabitIds = ['study', 'workout', 'sleep', 'wakeup', 'custom_masturbation_free', 'custom_porn_free'];
-  // screentime not in old data - mark as unlogged so app shows honest "—" not 100%
+  const allScores = Object.values(habitScores);
+  const overallScore = Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length);
+  const habitsCompleted = allScores.filter(s => s >= 60).length;
+  const loggedHabitIds = ['study', 'screentime', 'workout', 'sleep', 'wakeup', 'custom_masturbation_free', 'custom_porn_free'];
 
   return { habitScores, habitValues, overallScore, habitsCompleted, loggedHabitIds };
 }
@@ -123,7 +127,6 @@ export default function DataMigrationModal({ isOpen, onClose }) {
     setErrorMessage('');
     try {
       const oldDb = getOldFirestore();
-      // Read from users/Pankaj@2026/records
       const snap = await getDocs(collection(oldDb, 'users', OLD_USER_ID, 'records'));
       const docs = [];
       snap.forEach(d => {
@@ -182,7 +185,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           const { habitScores, habitValues, overallScore, habitsCompleted, loggedHabitIds } = mapOldRecordToNew(docData);
           const updatedAt = new Date(docData.timestamp || Date.now()).toISOString();
 
-          // Individual Entries — only write entries for habits that were actually logged
+          // Individual Entries
           loggedHabitIds.forEach((hId) => {
             const sVal = habitScores[hId];
             const entryRef = doc(db, `users/${user.uid}/entries`, `${hId}_${date}`);
@@ -197,19 +200,15 @@ export default function DataMigrationModal({ isOpen, onClose }) {
             }, { merge: true });
           });
 
-          // Daily Summary — include loggedHabitIds so app knows which were actually tracked
-          // overallScore: use ONLY logged habits' scores (exclude screentime which wasn't tracked)
-          const loggedScores = loggedHabitIds.map(id => habitScores[id]);
-          const adjustedOverallScore = Math.round(loggedScores.reduce((a, b) => a + b, 0) / loggedScores.length);
-
+          // Daily Summary
           const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, date);
           batch.set(summaryRef, {
             id: date,
             date: date,
-            overallScore: adjustedOverallScore,
+            overallScore,
             habitsCompleted,
-            habitsTotal: loggedHabitIds.length, // 6 habits (no screentime)
-            loggedHabitIds, // ← KEY: tells app which habits were actually tracked
+            habitsTotal: 7,
+            loggedHabitIds,
             habitScores,
             habitValues,
             legacyRaw: docData,
@@ -328,14 +327,14 @@ export default function DataMigrationModal({ isOpen, onClose }) {
               <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
                 <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">📚 Study: <strong className="text-indigo-500">4 Hours</strong></span>
                 <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">💪 Workout: <strong className="text-indigo-500">30 Mins</strong></span>
-                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">📱 Screen: <strong className="text-indigo-500">0-1 Hr</strong></span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">📱 Music + Phone: <strong className="text-indigo-500">0-1 Hr</strong></span>
                 <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">🛡️ Retention & Porn Free</span>
               </div>
             </div>
 
             <div className="flex items-center gap-3 text-[10.5px] font-bold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1"><ShieldCheck size={14} weight="fill" className="text-emerald-500" />Original Untouched</span>
-              <span className="flex items-center gap-1"><Sparkle size={14} weight="fill" className="text-indigo-500" />Idempotent Merge</span>
+              <span className="flex items-center gap-1"><Sparkle size={14} weight="fill" className="text-indigo-500" />All 7 Habits Mapped</span>
             </div>
           </div>
         )}
