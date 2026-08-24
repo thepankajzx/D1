@@ -48,33 +48,44 @@ function mapOldRecordToNew(docData) {
   const scores = docData.scores || {};
 
   // 1. Study (in minutes) - Target 240 mins (4 hrs)
-  const studyMins = Number(inputs.studyMins) || 0;
+  const studyMins = Number(docData.studyMins ?? inputs.studyMins ?? 0);
   const studyScore = Math.min(100, Math.round((studyMins / 240) * 100));
 
   // 2. Workout (in minutes) - Target 30 mins
-  const workoutMins = Number(inputs.workoutMins) || 0;
+  const workoutMins = Number(docData.workoutMins ?? inputs.workoutMins ?? 0);
   const workoutScore = Math.min(100, Math.round((workoutMins / 30) * 100));
 
   // 3. Screen Time ("Music + Phone" in old app) - Exact old musicScore (0-15 scale mapped to 0-100%)
-  const musicMins = Number(inputs.musicMins) || 0;
-  const screenScore = scores.musicScore !== undefined 
-    ? Math.min(100, Math.max(0, Math.round((scores.musicScore / 15) * 100)))
-    : Math.max(0, Math.min(100, Math.round((1 - (musicMins / 60)) * 100)));
+  const musicScoreRaw = docData.musicScore ?? scores.musicScore;
+  const musicMins = Number(docData.musicMins ?? inputs.musicMins ?? 0);
+  const screenScore = musicScoreRaw !== undefined 
+    ? Math.min(100, Math.max(0, Math.round((Number(musicScoreRaw) / 15) * 100)))
+    : (musicMins > 0 ? Math.max(0, Math.min(100, Math.round((1 - (musicMins / 60)) * 100))) : 0);
 
   // 4. Wake Up Time (in minutes from midnight)
-  const wakeMins = timeStringToMinutes(inputs.wake);
-  const wakeScore = Math.min(100, Math.max(0, Math.round(((scores.wakeScore ?? 0) / 15) * 100)));
+  const wakeStr = docData.wake ?? inputs.wake;
+  const wakeMins = timeStringToMinutes(wakeStr);
+  const wakeScoreRaw = docData.wakeScore ?? scores.wakeScore;
+  const wakeScore = wakeScoreRaw !== undefined
+    ? Math.min(100, Math.max(0, Math.round((Number(wakeScoreRaw) / 15) * 100)))
+    : (wakeMins > 0 ? Math.min(100, Math.max(0, Math.round(((480 - wakeMins) / 120) * 100))) : 0);
 
   // 5. Sleep Time (in minutes from midnight)
-  const sleepMins = timeStringToMinutes(inputs.sleep);
-  const sleepScore = Math.min(100, Math.max(0, Math.round(((scores.sleepScore ?? 0) / 10) * 100)));
+  const sleepStr = docData.sleep ?? inputs.sleep;
+  const sleepMins = timeStringToMinutes(sleepStr);
+  const sleepScoreRaw = docData.sleepScore ?? scores.sleepScore;
+  const sleepScore = sleepScoreRaw !== undefined
+    ? Math.min(100, Math.max(0, Math.round((Number(sleepScoreRaw) / 10) * 100)))
+    : 0;
 
   // 6. No Masturbation
-  const isMastFree = inputs.masturbation === 'No' || inputs.masturbation === 0 || inputs.masturbation === false;
+  const mast = docData.masturbation ?? inputs.masturbation;
+  const isMastFree = mast === 'No' || mast === 0 || mast === false || mast === 'no';
   const mastScore = isMastFree ? 100 : 0;
 
   // 7. Porn Free
-  const isPornFree = inputs.porn === 'No' || inputs.porn === 0 || inputs.porn === false;
+  const porn = docData.porn ?? inputs.porn;
+  const isPornFree = porn === 'No' || porn === 0 || porn === false || porn === 'no';
   const pornScore = isPornFree ? 100 : 0;
 
   const habitScores = {
@@ -249,6 +260,11 @@ export default function DataMigrationModal({ isOpen, onClose }) {
 
       setProgress(100);
       setMigrationStatus('success');
+
+      try {
+        localStorage.removeItem(`habits_${user.uid}`);
+        localStorage.removeItem(`summaries_${user.uid}`);
+      } catch (e) {}
 
       if (refreshData) await refreshData();
     } catch (err) {
