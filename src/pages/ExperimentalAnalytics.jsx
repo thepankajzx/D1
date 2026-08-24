@@ -1823,12 +1823,12 @@ export default function ExperimentalAnalytics() {
                                     className={`h-8 sm:h-9 rounded-md ${bgClass} ${isAnyFilterActive ? filterEffectClass : ''} border border-black/5 dark:border-white/5 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 relative`}
                                   >
                                     {showPercentages ? (
-                                      <span className={`text-[9.5px] sm:text-[10.5px] font-black leading-none ${score >= 65 ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                                      <span className={`text-[9.5px] sm:text-[10.5px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
                                         {isLogged ? `${Math.round(score)}%` : '—'}
                                       </span>
                                     ) : (
                                       <>
-                                        <span className={`text-[10px] sm:text-[11px] font-black leading-none ${score >= 60 ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                                        <span className={`text-[10px] sm:text-[11px] font-black leading-none ${(score <= 35 || score >= 60) ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
                                           {cell.dayNum}
                                         </span>
                                         {isPartial ? (
@@ -1923,7 +1923,7 @@ export default function ExperimentalAnalytics() {
                         >
                           {showPercentages ? (
                             <span className={`${isLargeTimeframe ? 'text-[7.5px] sm:text-[8.5px]' : 'text-[10px] sm:text-[11px]'} font-black leading-none ${
-                              score >= 65 ? 'text-white' : 'text-slate-900 dark:text-white'
+                              (score <= 35 || score >= 60) ? 'text-white' : 'text-slate-900 dark:text-white'
                             }`}>
                               {isLogged ? `${Math.round(score)}%` : '—'}
                             </span>

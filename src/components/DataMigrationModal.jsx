@@ -55,9 +55,11 @@ function mapOldRecordToNew(docData) {
   const workoutMins = Number(inputs.workoutMins) || 0;
   const workoutScore = Math.min(100, Math.round((workoutMins / 30) * 100));
 
-  // 3. Screen Time ("Music + Phone" in old app) - Target max 60 mins (1 hr)
+  // 3. Screen Time ("Music + Phone" in old app) - Exact old musicScore (0-15 scale mapped to 0-100%)
   const musicMins = Number(inputs.musicMins) || 0;
-  const screenScore = Math.max(0, Math.min(100, Math.round((1 - (musicMins / 60)) * 100)));
+  const screenScore = scores.musicScore !== undefined 
+    ? Math.min(100, Math.max(0, Math.round((scores.musicScore / 15) * 100)))
+    : Math.max(0, Math.min(100, Math.round((1 - (musicMins / 60)) * 100)));
 
   // 4. Wake Up Time (in minutes from midnight)
   const wakeMins = timeStringToMinutes(inputs.wake);
