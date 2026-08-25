@@ -300,10 +300,7 @@ export default function Dashboard() {
   // Handle Entry Update from Card
   const handleEntryUpdate = (habitId, rawValue, computedScore) => {
     if (!user) return;
-    if (savedHabitIds.has(habitId)) {
-      console.log("Blocked: Habit is already saved and locked for today.");
-      return;
-    }
+    // Lock removed - allow editing anytime
     
     // 1. Optimistically update local entries array
     const entryId = `${habitId}_${selectedDate}`;
@@ -460,7 +457,6 @@ export default function Dashboard() {
             type="date" 
             aria-label="Select Date"
             value={selectedDate} 
-            min={getTodayDate()}
             max={getTodayDate()}
             onChange={handleDateChange} 
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -486,7 +482,6 @@ export default function Dashboard() {
                     <HabitCard 
                       habit={habit} 
                       entry={entry}
-                      isSaved={savedHabitIds.has(habit.id)}
                       onUpdate={handleEntryUpdate}
                       allSummaries={allSummaries}
                     />
@@ -506,7 +501,6 @@ export default function Dashboard() {
                     <HabitCard 
                       habit={habit} 
                       entry={entry}
-                      isSaved={savedHabitIds.has(habit.id)}
                       onUpdate={handleEntryUpdate}
                       allSummaries={allSummaries}
                     />
