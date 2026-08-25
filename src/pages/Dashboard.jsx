@@ -286,16 +286,12 @@ export default function Dashboard() {
   };
 
   const handleDateChange = async (e) => {
-    const today = getTodayDate();
-    if (e.target.value !== today) {
-      alert("Data logging is strictly restricted to today (" + today + "). Past or future dates cannot be logged.");
-      setSelectedDate(today);
-      return;
-    }
+    const newDate = e.target.value;
+    if (!newDate) return;
     if (pendingChanges) {
       await handleSaveProgress(true);
     }
-    setSelectedDate(today);
+    setSelectedDate(newDate);
   };
 
   // Handle Entry Update from Card
