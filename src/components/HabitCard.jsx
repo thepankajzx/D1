@@ -209,12 +209,15 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
       adjustedVal += 1440;
     }
 
+    const target100 = habit.target100 !== undefined && habit.target100 !== null ? habit.target100 : (habit.userTarget100 !== undefined && habit.userTarget100 !== null ? habit.userTarget100 : (habit.target ?? 10));
+    const target0 = habit.target0 !== undefined && habit.target0 !== null ? habit.target0 : (habit.userTarget0 !== undefined && habit.userTarget0 !== null ? habit.userTarget0 : (habit.floor ?? 0));
+
     const computedScore = calculateScore(
       habit.scoringType, 
       habit.direction, 
       adjustedVal, 
-      habit.target100, 
-      habit.target0
+      target100, 
+      target0
     );
     
     const finalScore = computedScore !== null ? Math.max(0, Math.min(100, Math.round(computedScore))) : null;

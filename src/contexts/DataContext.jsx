@@ -30,7 +30,9 @@ const normalizeHabits = (habits) => {
     const seed = HABITS_SEED_DATA.find(s => s.id === h.id || s.name === h.name);
     let unit = h.unit || h.defaultUnit || h.customUnit || (seed ? seed.defaultUnit : '') || '';
     if (unit === 'time' || unit === 'Time') unit = '';
-    return { ...h, unit, defaultUnit: h.defaultUnit || (seed ? seed.defaultUnit : unit), icon };
+    const target100 = h.target100 !== undefined && h.target100 !== null ? h.target100 : (h.userTarget100 !== undefined && h.userTarget100 !== null ? h.userTarget100 : (h.target !== undefined && h.target !== null ? h.target : (seed?.target100 ?? 10)));
+    const target0 = h.target0 !== undefined && h.target0 !== null ? h.target0 : (h.userTarget0 !== undefined && h.userTarget0 !== null ? h.userTarget0 : (h.floor !== undefined && h.floor !== null ? h.floor : (seed?.target0 ?? 0)));
+    return { ...h, unit, defaultUnit: h.defaultUnit || (seed ? seed.defaultUnit : unit), icon, target100, target0, userTarget100: target100, userTarget0: target0 };
   });
 };
 

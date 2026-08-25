@@ -256,8 +256,12 @@ export default function Dashboard() {
         if (dailySummary) {
             const updatedSummary = { id: selectedDate, ...dailySummary };
             updatedSummary.habitScores = {};
+            updatedSummary.habitValues = {};
             finalEntries.forEach(e => {
                 updatedSummary.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+                if (e.rawValue !== undefined && e.rawValue !== null) {
+                    updatedSummary.habitValues[e.habitId] = e.rawValue;
+                }
             });
             
             setAllSummaries(prev => {
