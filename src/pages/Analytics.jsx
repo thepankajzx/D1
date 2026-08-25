@@ -127,11 +127,17 @@ export default function Analytics() {
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
 
+function formatLocalYMD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
   // Compute actual start/end based on option
   const { startDate, endDate, isFutureOnly } = useMemo(() => {
     const today = new Date();
-    const tzoffset = today.getTimezoneOffset() * 60000;
-    const end = new Date(today.getTime() - tzoffset).toISOString().split('T')[0];
+    const end = formatLocalYMD(today);
     
     if (rangeOption === 'custom' && appliedCustomStart && appliedCustomEnd) {
       const futureOnly = appliedCustomStart > end;
@@ -143,9 +149,9 @@ export default function Analytics() {
     if (rangeOption === 'custom') {
       let days = 7;
       const startObj = new Date();
-      startObj.setDate(startObj.getDate() - days + 1);
+      startObj.setDate(today.getDate() - days + 1);
       return {
-        startDate: startObj.toISOString().split('T')[0],
+        startDate: formatLocalYMD(startObj),
         endDate: end,
         isFutureOnly: false
       };
@@ -153,10 +159,10 @@ export default function Analytics() {
     
     let days = parseInt(rangeOption) || 30;
     const startObj = new Date();
-    startObj.setDate(startObj.getDate() - days + 1); // +1 because inclusive of today
+    startObj.setDate(today.getDate() - days + 1); // +1 because inclusive of today
     
     return {
-      startDate: startObj.toISOString().split('T')[0],
+      startDate: formatLocalYMD(startObj),
       endDate: end,
       isFutureOnly: false
     };

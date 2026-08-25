@@ -25,11 +25,17 @@ export default function DeepDiveAdvancedHeatmap({
   const [showPercentages, setShowPercentages] = useState(false);
   const [showHeatmapControlModal, setShowHeatmapControlModal] = useState(false);
 
+function formatLocalYMD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
   // Timeframe date computation
   const { startDateStr, endDateStr, timeframeDays, timeframeLabel } = useMemo(() => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endStr = today.toISOString().split('T')[0];
+    const endStr = formatLocalYMD(today);
 
     let days = 30;
     let label = '30D';
@@ -40,9 +46,9 @@ export default function DeepDiveAdvancedHeatmap({
     else if (timeframe === '1y') { days = 365; label = '1Y'; }
     else if (timeframe === 'all') { days = 365; label = 'ALL'; }
 
-    const startObj = new Date(today);
-    startObj.setDate(startObj.getDate() - (days - 1));
-    const startStr = startObj.toISOString().split('T')[0];
+    const startObj = new Date();
+    startObj.setDate(today.getDate() - (days - 1));
+    const startStr = formatLocalYMD(startObj);
 
     return {
       startDateStr: startStr,
@@ -66,11 +72,13 @@ export default function DeepDiveAdvancedHeatmap({
   // List of all dates in the selected timeframe
   const datesList = useMemo(() => {
     const arr = [];
-    const curr = new Date(startDateStr + 'T00:00:00');
-    const end = new Date(endDateStr + 'T00:00:00');
+    const [sY, sM, sD] = startDateStr.split('-').map(Number);
+    const [eY, eM, eD] = endDateStr.split('-').map(Number);
+    const curr = new Date(sY, sM - 1, sD);
+    const end = new Date(eY, eM - 1, eD);
 
     while (curr <= end) {
-      arr.push(curr.toISOString().split('T')[0]);
+      arr.push(formatLocalYMD(curr));
       curr.setDate(curr.getDate() + 1);
     }
     return arr;

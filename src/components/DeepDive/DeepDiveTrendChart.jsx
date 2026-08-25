@@ -38,17 +38,25 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
   const chartOption = useMemo(() => {
     if (!habit || !dateRange) return null;
     
+function formatLocalYMD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
     // Generate dates array from dateRange.start to dateRange.end
     const dates = [];
-    let current = new Date(dateRange.start + 'T00:00:00');
-    const end = new Date(dateRange.end + 'T00:00:00');
+    const [sY, sM, sD] = dateRange.start.split('-').map(Number);
+    const [eY, eM, eD] = dateRange.end.split('-').map(Number);
+    let current = new Date(sY, sM - 1, sD);
+    const end = new Date(eY, eM - 1, eD);
     while (current <= end) {
-      dates.push(current.toISOString().split('T')[0]);
+      dates.push(formatLocalYMD(current));
       current.setDate(current.getDate() + 1);
     }
 
-    const todayDate = new Date();
-    const todayStr = new Date(todayDate.getTime() - todayDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const todayStr = formatLocalYMD(new Date());
 
     const chartData = dates.map(dateStr => {
       const summary = allSummaries.find(s => s.id === dateStr);
