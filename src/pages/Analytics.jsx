@@ -223,19 +223,21 @@ function formatLocalYMD(d) {
   // Chart Data Prep
   const chartData = useMemo(() => {
     const dates = [];
-    let current = new Date(effectiveStartDate);
-    const end = new Date(endDate);
+    const [sY, sM, sD] = effectiveStartDate.split('-').map(Number);
+    const [eY, eM, eD] = endDate.split('-').map(Number);
+    let current = new Date(sY, sM - 1, sD);
+    const end = new Date(eY, eM - 1, eD);
+    
     while (current <= end) {
-      dates.push(current.toISOString().split('T')[0]);
+      dates.push(formatLocalYMD(current));
       current.setDate(current.getDate() + 1);
     }
 
-    const todayDate = new Date();
-    const todayStr = new Date(todayDate.getTime() - todayDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const todayStr = formatLocalYMD(new Date());
 
     return dates.map(dateStr => {
       const dataPoint = { date: dateStr };
-      const summary = summaries.find(s => s.id === dateStr);
+      const summary = summaries.find(s => (s.id === dateStr || s.date === dateStr));
       
       if (dateStr > todayStr || !summary) {
         dataPoint.overallScore = null;

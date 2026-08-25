@@ -176,16 +176,20 @@ export function generateHeatmapGrid(summaries, filterMode, selectedHabitId, star
   const scoreMap = new Map();
   if (filterMode === 'overall') {
     summaries.forEach(s => {
-      scoreMap.set(s.id, {
-          score: s.overallScore,
-          meta: s
-      });
+      const key = s.id || s.date;
+      if (key) {
+        scoreMap.set(key, {
+            score: s.overallScore,
+            meta: s
+        });
+      }
     });
   } else {
     // Per-habit filter
     summaries.forEach(s => {
-      if (s.habitScores && s.habitScores[selectedHabitId] !== undefined) {
-        scoreMap.set(s.id, {
+      const key = s.id || s.date;
+      if (key && s.habitScores && s.habitScores[selectedHabitId] !== undefined) {
+        scoreMap.set(key, {
             score: s.habitScores[selectedHabitId],
             meta: s
         });
