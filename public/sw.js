@@ -9,7 +9,7 @@
  * - Network-First navigation with offline index.html fallback
  */
 
-const CACHE_VERSION = 'v1.0.3';
+const CACHE_VERSION = 'v1.0.5';
 const STATIC_CACHE = `definite-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `definite-runtime-${CACHE_VERSION}`;
 
@@ -114,8 +114,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Vite Hashed Chunks (/assets/*): Cache-First with Background Revalidation
+  // 3. Vite Hashed Chunks (/assets/*): Cache-First, but always bypass cache on hard-refresh
   if (url.pathname.startsWith('/assets/')) {
+    // If the browser explicitly wants a fresh copy (hard refresh), go to network
+    if (request.cache === 'reload' || request.cache === 'no-store') {
+      event.respondWith(
+        fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+      );
+      return;
+    }
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {

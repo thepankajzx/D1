@@ -134,6 +134,17 @@ function formatLocalYMD(d) {
   return `${year}-${month}-${day}`;
 }
 
+  // Tracks today's local date string — refreshes every minute so endDate stays current after midnight
+  const [todayStr, setTodayStr] = useState(() => formatLocalYMD(new Date()));
+  useEffect(() => {
+    const tick = () => {
+      const next = formatLocalYMD(new Date());
+      setTodayStr(prev => (prev !== next ? next : prev));
+    };
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+
   // Compute actual start/end based on option
   const { startDate, endDate, isFutureOnly } = useMemo(() => {
     const today = new Date();
@@ -166,7 +177,8 @@ function formatLocalYMD(d) {
       endDate: end,
       isFutureOnly: false
     };
-  }, [rangeOption, appliedCustomStart, appliedCustomEnd]);
+  }, [rangeOption, appliedCustomStart, appliedCustomEnd, todayStr]);
+
 
   // Reactive summaries for the date range directly from DataContext
   useEffect(() => {
