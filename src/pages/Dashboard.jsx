@@ -174,12 +174,7 @@ export default function Dashboard() {
   const handleSaveProgress = async (bypassValidation = false) => {
     if (!user || !pendingChanges) return;
     
-    const today = getTodayDate();
-    if (selectedDate !== today) {
-        alert("You cannot save progress for past or future dates. Only today (" + today + ") is allowed.");
-        setSelectedDate(today);
-        return;
-    }
+    // Allow saving past dates (restriction removed)
     
     setIsSaving(true);
     
