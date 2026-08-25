@@ -162,34 +162,21 @@ export default function Analytics() {
     };
   }, [rangeOption, appliedCustomStart, appliedCustomEnd]);
 
-  // Fetch summaries for the date range
+  // Reactive summaries for the date range directly from DataContext
   useEffect(() => {
-    if (!user || !startDate || !endDate || loadingData) return;
+    if (!startDate || !endDate) return;
     
-    async function loadRangeData() {
-      try {
-        // Fetch summaries for the date range to cover BOTH current and comparison periods.
-        // We fetch from previousStartDate to endDate to completely eliminate the need for entries fetching!
-        const days = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-        const prevStartObj = new Date(startDate);
-        prevStartObj.setDate(prevStartObj.getDate() - days);
-        const previousStartDate = prevStartObj.toISOString().split('T')[0];
+    const days = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+    const prevStartObj = new Date(startDate);
+    prevStartObj.setDate(prevStartObj.getDate() - days);
+    const previousStartDate = prevStartObj.toISOString().split('T')[0];
 
-        const summariesSnap = await getDocs(
-          query(
-            collection(db, `users/${user.uid}/dailySummaries`),
-            where(documentId(), '>=', previousStartDate),
-            where(documentId(), '<=', endDate)
-          )
-        );
-        const rangeSummaries = summariesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setSummaries(rangeSummaries);
-      } catch (e) {
-        console.error("Failed to load analytics summaries:", e);
-      }
-    }
-    loadRangeData();
-  }, [user, startDate, endDate, loadingData]);
+    const rangeSummaries = (allSummaries || []).filter(s => {
+      const d = s.id || s.date;
+      return d && d >= previousStartDate && d <= endDate;
+    });
+    setSummaries(rangeSummaries);
+  }, [allSummaries, startDate, endDate]);
 
   // Computations
   const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate, allSummaries), [summaries, startDate, endDate, allSummaries]);

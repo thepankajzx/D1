@@ -57,7 +57,8 @@ export default function DeepDiveAdvancedHeatmap({
     const map = new Map();
     if (!allSummaries || !allSummaries.length) return map;
     allSummaries.forEach(s => {
-      if (s && s.date) map.set(s.date, s);
+      const dateKey = s?.date || s?.id;
+      if (dateKey) map.set(dateKey, s);
     });
     return map;
   }, [allSummaries]);
