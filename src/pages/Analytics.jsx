@@ -172,10 +172,16 @@ function formatLocalYMD(d) {
   useEffect(() => {
     if (!startDate || !endDate) return;
     
-    const days = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-    const prevStartObj = new Date(startDate);
-    prevStartObj.setDate(prevStartObj.getDate() - days);
-    const previousStartDate = prevStartObj.toISOString().split('T')[0];
+    // Use local date parsing to avoid UTC midnight shift bug (IST = UTC+5:30)
+    const [sY, sM, sD] = startDate.split('-').map(Number);
+    const [eY, eM, eD] = endDate.split('-').map(Number);
+    const startLocal = new Date(sY, sM - 1, sD);
+    const endLocal = new Date(eY, eM - 1, eD);
+    const days = Math.round((endLocal - startLocal) / (1000 * 60 * 60 * 24)) + 1;
+    
+    const prevStartLocal = new Date(sY, sM - 1, sD);
+    prevStartLocal.setDate(prevStartLocal.getDate() - days);
+    const previousStartDate = formatLocalYMD(prevStartLocal);
 
     const rangeSummaries = (allSummaries || []).filter(s => {
       const d = s.id || s.date;
