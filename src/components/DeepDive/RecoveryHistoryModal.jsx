@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   X, 
   Trophy, 
@@ -228,7 +228,7 @@ export default function RecoveryHistoryModal({
                     </div>
                     <div>
                       <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-900">
-                        <span>Missed {formatDateShort(m.missDate)}</span>
+                        <span>Off-Target {formatDateShort(m.missDate)}</span>
                         <ArrowRight size={12} weight="bold" className="text-slate-400" />
                         <span className={m.recovered ? 'text-emerald-700' : 'text-slate-600'}>
                           {m.recovered ? `Bounced Back by ${formatDateShort(m.endDate)}` : `Window ended ${formatDateShort(m.endDate)}`}
@@ -256,7 +256,7 @@ export default function RecoveryHistoryModal({
                       {m.recoveryRate}% Rate
                     </span>
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-1">
-                      {m.recovered ? '🎉 Comeback' : m.isInProgress ? '⏳ In Progress' : 'Unrecovered'}
+                      {m.recovered ? 'Comeback' : m.isInProgress ? 'In Progress' : 'Unrecovered'}
                     </span>
                   </div>
                 </div>

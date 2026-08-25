@@ -94,24 +94,24 @@ const StreakWidget = ({ allSummaries }) => {
 
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowModal(false)}>
-                    <div className="bg-[#1c1c1c] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-[#131722] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10" onClick={e => e.stopPropagation()}>
                         <div className="p-6 text-center">
                             <div className="w-24 h-24 mx-auto mb-4 bg-black rounded-full flex items-center justify-center border-[4px]" style={{ borderColor }}>
                                 <img src={brandSvg} alt="Streak" className="w-[120%] h-[120%] object-cover scale-[1.35] translate-y-[2px]" />
                             </div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Your Streak</h2>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Your Streak</h2>
                             <p className="text-[#a0a0a0] text-sm mb-6">Keep it up! Consistency is the key.</p>
                             
                             <div className="grid grid-cols-3 gap-3">
-                                <div className="bg-[#2a2a2a] p-3 rounded-2xl flex flex-col items-center justify-center">
+                                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-3 rounded-2xl flex flex-col items-center justify-center">
                                     <div className="text-[10px] text-[#888] font-bold uppercase tracking-wider mb-1">Streak</div>
-                                    <div className="text-xl font-black text-white">{stats.currentStreak} <span className="text-xs font-semibold text-[#888]">d</span></div>
+                                    <div className="text-xl font-black text-slate-900 dark:text-white">{stats.currentStreak} <span className="text-xs font-semibold text-[#888]">d</span></div>
                                 </div>
-                                <div className="bg-[#2a2a2a] p-3 rounded-2xl flex flex-col items-center justify-center">
+                                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-3 rounded-2xl flex flex-col items-center justify-center">
                                     <div className="text-[10px] text-[#888] font-bold uppercase tracking-wider mb-1">Last 7d</div>
                                     <div className="text-xl font-black" style={{ color: getScoreColor(stats.last7Days) }}>{stats.last7Days}%</div>
                                 </div>
-                                <div className="bg-[#2a2a2a] p-3 rounded-2xl flex flex-col items-center justify-center">
+                                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-3 rounded-2xl flex flex-col items-center justify-center">
                                     <div className="text-[10px] text-[#888] font-bold uppercase tracking-wider mb-1">Last 30d</div>
                                     <div className="text-xl font-black" style={{ color: getScoreColor(stats.last30Days) }}>{stats.last30Days}%</div>
                                 </div>
@@ -120,7 +120,7 @@ const StreakWidget = ({ allSummaries }) => {
                         <div className="p-4 border-t border-white/5">
                             <button 
                                 onClick={() => setShowModal(false)}
-                                className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold transition-colors"
+                                className="w-full py-3.5 rounded-2xl bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/15 font-bold transition-colors"
                             >
                                 Close
                             </button>

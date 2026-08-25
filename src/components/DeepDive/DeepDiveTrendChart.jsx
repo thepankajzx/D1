@@ -5,10 +5,12 @@ import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, DataZoomComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { useTheme } from '../../contexts/ThemeContext';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
 
 export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange }) {
+  const { isDark } = useTheme();
   const colors = ['#8b5cf6', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
   const colorIndex = Math.abs((habit?.id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)) % colors.length;
   const color = colors[colorIndex];
@@ -71,7 +73,7 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
       };
     });
 
-    // Series data: Normal line with Black Ring ONLY on truly untracked days
+    // Series data: Normal line with Black/White Ring ONLY on truly untracked days
     const seriesData = chartData.map((d) => {
       if (d.isUntracked || d.score === null) {
         return {
@@ -79,8 +81,8 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
           symbol: 'circle',
           symbolSize: 6,
           itemStyle: {
-            color: '#ffffff',
-            borderColor: '#0f172a',
+            color: isDark ? '#111215' : '#ffffff',
+            borderColor: isDark ? '#ffffff' : '#0f172a',
             borderWidth: 2
           }
         };
@@ -90,6 +92,12 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
         symbol: 'none'
       };
     });
+
+    const tooltipBg = isDark ? '#2a2e37' : '#ffffff';
+    const tooltipBorder = isDark ? '#4A5160' : '#f1f5f9';
+    const textColor = isDark ? '#F1F3F7' : '#0f172a';
+    const secondaryTextColor = isDark ? '#9BA3AF' : '#64748b';
+    const gridLineColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(150, 150, 150, 0.15)';
 
     return {
       tooltip: {
@@ -108,17 +116,17 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
           const dateObj = new Date(pointData.date + 'T00:00:00');
           const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
           
-          let html = `<div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); border: 1px solid #f1f5f9; padding: 10px 14px; font-family: system-ui, -apple-system, sans-serif; min-width: 150px;">`;
-          html += `<div style="font-size: 11px; color: #64748b; margin-bottom: 7px; font-weight: 600; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">${dateStr}</div>`;
+          let html = `<div style="background: ${tooltipBg}; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 1px solid ${tooltipBorder}; padding: 10px 14px; font-family: system-ui, -apple-system, sans-serif; min-width: 150px;">`;
+          html += `<div style="font-size: 11px; color: ${secondaryTextColor}; margin-bottom: 7px; font-weight: 600; border-bottom: 1px solid ${tooltipBorder}; padding-bottom: 5px;">${dateStr}</div>`;
           
           if (pointData.isUntracked || pointData.score === null) {
             html += `
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #0f172a; background: #ffffff; display: inline-block;"></span>
-                  <span style="font-size: 13px; font-weight: 700; color: #0f172a;">Not Recorded</span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid ${textColor}; background: ${tooltipBg}; display: inline-block;"></span>
+                  <span style="font-size: 13px; font-weight: 700; color: ${textColor};">Not Recorded</span>
                 </div>
-                <span style="font-size: 11px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">No Data</span>
+                <span style="font-size: 11px; font-weight: 600; color: ${secondaryTextColor}; background: ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}; padding: 2px 6px; border-radius: 4px;">No Data</span>
               </div>
             `;
           } else {
@@ -127,9 +135,9 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <span style="width: 6px; height: 6px; border-radius: 50%; background: ${color}; display: inline-block;"></span>
-                  <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${habit.name}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: ${textColor};">${habit.name}</span>
                 </div>
-                <strong style="font-size: 14px; font-weight: 800; color: #0f172a;">${score}%</strong>
+                <strong style="font-size: 14px; font-weight: 800; color: ${textColor};">${score}%</strong>
               </div>
             `;
           }
@@ -152,7 +160,7 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
           const date = new Date(d.date + 'T00:00:00');
           return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }),
-        axisLabel: { color: '#868381', fontSize: 10, fontWeight: 500 },
+        axisLabel: { color: secondaryTextColor, fontSize: 10, fontWeight: 500 },
         axisLine: { show: false },
         axisTick: { show: false }
       },
@@ -160,8 +168,8 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
         type: 'value',
         min: 0,
         max: 100,
-        axisLabel: { color: '#868381', fontSize: 10, formatter: '{value}%' },
-        splitLine: { lineStyle: { type: 'dashed', color: 'rgba(150, 150, 150, 0.15)' } }
+        axisLabel: { color: secondaryTextColor, fontSize: 10, formatter: '{value}%' },
+        splitLine: { lineStyle: { type: 'dashed', color: gridLineColor } }
       },
       series: [
         {
@@ -191,11 +199,11 @@ export default function DeepDiveTrendChart({ habit, allSummaries = [], dateRange
 
   return (
     <div ref={chartContainerRef} className="w-full flex flex-col gap-2">
-      {/* Chart Legend - Exclusively 'Not Recorded' with Black Ring */}
-      <div className="flex items-center justify-end gap-2 text-xs font-medium text-slate-500 mb-1">
+      {/* Chart Legend - Exclusively 'Not Recorded' with Black/White Ring */}
+      <div className="flex items-center justify-end gap-2 text-xs font-medium text-on-surface-variant mb-1">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 bg-white"></span>
-          <span className="text-slate-700 font-semibold">Not Recorded</span>
+          <span className="w-2.5 h-2.5 rounded-full border-2 border-on-surface bg-surface-bright"></span>
+          <span className="text-on-surface font-semibold">Not Recorded</span>
         </div>
       </div>
 

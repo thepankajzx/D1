@@ -360,7 +360,7 @@ export default function BetterReport() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
-                <HabitIcon name={strongestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-2xl !bg-emerald-100 !text-emerald-700 shrink-0" />
+                <HabitIcon name={strongestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-full !bg-emerald-100 !text-emerald-700 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="font-black text-slate-900 text-base sm:text-lg truncate">{strongestHabit.name}</h3>
                   <p className="text-xs text-emerald-800 font-bold">Your Anchor Superpower</p>
@@ -414,7 +414,7 @@ export default function BetterReport() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
-                <HabitIcon name={weakestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-2xl !bg-rose-100 !text-rose-700 shrink-0" />
+                <HabitIcon name={weakestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-full !bg-rose-100 !text-rose-700 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="font-black text-slate-900 text-base sm:text-lg truncate">{weakestHabit.name}</h3>
                   <p className="text-xs text-rose-800 font-bold">Highest Leverage Growth Area</p>
@@ -601,7 +601,7 @@ export default function BetterReport() {
               {/* Left Details: Rank + Icon + Name + Subtitle */}
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className="font-mono text-xs font-bold text-slate-400 w-5 shrink-0">#{idx + 1}</span>
-                <HabitIcon name={item.icon} habitId={item.id} boxed={true} size={20} className="!w-11 !h-11 !rounded-xl shrink-0 shadow-2xs" />
+                <HabitIcon name={item.icon} habitId={item.id} boxed={true} size={20} className="!w-11 !h-11 !rounded-full shrink-0 shadow-2xs" />
                 <div className="min-w-0 flex flex-col">
                   <h4 className="font-black text-sm text-slate-900 truncate leading-tight">{item.name}</h4>
                   <span className="text-[11px] text-slate-500 font-medium truncate mt-0.5">

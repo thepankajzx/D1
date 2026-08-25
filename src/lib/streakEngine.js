@@ -174,11 +174,11 @@ export function getNextMilestone(currentStreak = 0) {
 
   let label = '';
   if (remaining === 0) {
-    label = '🎉 ' + target + '-Day Legend!';
+    label = target + '-Day Milestone Unlocked!';
   } else if (remaining === 1) {
-    label = '🔥 1 day to ' + target + 'd badge';
+    label = '1 day to ' + target + 'd milestone';
   } else {
-    label = '🔥 ' + remaining + ' days to ' + target + 'd badge';
+    label = remaining + ' days to ' + target + 'd milestone';
   }
 
   return {

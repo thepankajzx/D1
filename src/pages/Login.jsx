@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useGuest } from '../contexts/GuestContext';
 import { setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -11,7 +12,14 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { currentUser, login, signup, loginWithGoogle } = useAuth();
+  const { enterGuestMode } = useGuest();
   const navigate = useNavigate();
+
+  function handleGuestMode() {
+    if (navigator.vibrate) navigator.vibrate(20);
+    enterGuestMode();
+    navigate('/');
+  }
 
   useEffect(() => {
     if (currentUser) {
@@ -92,7 +100,10 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop bg-surface-container-low">
       <div className="w-full max-w-md bg-surface border border-outline-variant rounded-xl p-8 shadow-sm">
         <div className="text-center mb-10">
-          <h1 className="font-headline-lg text-headline-lg text-primary mb-2 tracking-tight">Definite</h1>
+          <div className="flex justify-center mb-4">
+            <img src="/logo-black.svg" alt="Definite" className="h-12 sm:h-14 w-auto object-contain dark:hidden" />
+            <img src="/logo-white.svg" alt="Definite" className="h-12 sm:h-14 w-auto object-contain hidden dark:block" />
+          </div>
           <p className="font-body-md text-body-md text-on-surface-variant">Consistent habits, intelligent progress.</p>
         </div>
         
@@ -150,6 +161,28 @@ export default function Login() {
             </svg>
             Continue with Google
           </button>
+        </div>
+
+        {/* Explore Demo separator */}
+        <div className="mt-6 flex items-center gap-4">
+          <div className="h-px bg-outline-variant flex-1"></div>
+          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-[10px]">or</span>
+          <div className="h-px bg-outline-variant flex-1"></div>
+        </div>
+
+        {/* Explore Demo button */}
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={handleGuestMode}
+            className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold text-sm hover:bg-indigo-100/80 dark:hover:bg-indigo-900/40 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 group"
+          >
+            <span className="text-base">👁</span>
+            <span>Explore Demo — No Sign-up Needed</span>
+          </button>
+          <p className="text-center text-[10px] text-on-surface-variant mt-1.5 opacity-70">
+            50 days of sample data · Read-only preview
+          </p>
         </div>
       </div>
     </div>

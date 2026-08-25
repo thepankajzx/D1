@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Crown, Sparkle } from '@phosphor-icons/react';
 import './ProCustomDateModal.css';
 
 export default function ProCustomDateModal({ onClose }) {
@@ -42,8 +43,8 @@ export default function ProCustomDateModal({ onClose }) {
           ×
         </button>
 
-        <div className="pcdm-icon" aria-hidden="true">
-          ♛
+        <div className="pcdm-icon text-amber-500 flex items-center justify-center" aria-hidden="true">
+          <Crown size={32} weight="fill" />
         </div>
 
         <h2 className="pcdm-title" id="proTitle">
@@ -56,11 +57,11 @@ export default function ProCustomDateModal({ onClose }) {
         </p>
 
         <button
-          className="pcdm-button"
+          className="pcdm-button flex items-center justify-center gap-1.5"
           type="button"
           onClick={handleUnlockPro}
         >
-          <span className="pcdm-sparkle">✨</span>
+          <Sparkle size={16} weight="fill" className="text-amber-400" />
           <span>Unlock the Pro</span>
         </button>
 

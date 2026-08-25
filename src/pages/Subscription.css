@@ -369,18 +369,19 @@
 .subscription-page .fc-title { font-weight: 800; font-size: 1.1rem; color: var(--sub-text-main); line-height: 1.2;}
 .subscription-page .fc-sub { font-size: 0.85rem; color: var(--sub-text-muted); font-weight: 500; margin-top: 4px;}
 
-.subscription-page .pills-container { display: flex; flex-wrap: wrap; gap: 8px; }
+.subscription-page .pills-container { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .subscription-page .pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 12px; border-radius: var(--sub-radius-pill);
-    font-size: 0.8rem; font-weight: 700; background: #FFF;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 9px; border-radius: var(--sub-radius-pill);
+    font-size: 0.74rem; font-weight: 700; background: #FFF;
+    line-height: 1.2;
 }
-.subscription-page .pill-free { border: 2px solid var(--sub-free-pill-border); color: var(--sub-text-main); }
-.subscription-page .pill-free svg { color: var(--sub-brand-green); width: 14px; stroke-width: 3;}
+.subscription-page .pill-free { border: 1.5px solid var(--sub-free-pill-border); color: var(--sub-text-main); }
+.subscription-page .pill-free svg { color: var(--sub-brand-green); width: 12px; height: 12px; stroke-width: 3;}
 
-.subscription-page .pill-pro { border: 2px solid var(--sub-pro-pill-border); color: var(--sub-brand-blue); }
-.subscription-page .pill-pro svg { color: var(--sub-brand-blue); width: 14px; stroke-width: 2.5;}
+.subscription-page .pill-pro { border: 1.5px solid var(--sub-pro-pill-border); color: var(--sub-brand-blue); }
+.subscription-page .pill-pro svg { color: var(--sub-brand-blue); width: 12px; height: 12px; stroke-width: 2.5;}
 
 /* --- 4. TRUST FOOTER --- */
 .subscription-page .trust-footer {
@@ -418,8 +419,8 @@
     .subscription-page .pro-features { grid-column: 2; grid-row: 2; }
     
     .subscription-page .card { padding: 40px; }
-    .subscription-page .feature-card { padding: 32px; }
-    .subscription-page .pill { padding: 10px 16px; font-size: 0.85rem; }
+    .subscription-page .feature-card { padding: 24px; }
+    .subscription-page .pill { padding: 6px 11px; font-size: 0.76rem; }
     
     .subscription-page .trust-footer { flex-direction: row; justify-content: space-between; padding-top: 40px;}
     .subscription-page .trust-item { flex: 1; min-width: 250px; }

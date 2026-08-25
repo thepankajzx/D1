@@ -5,6 +5,7 @@ import HabitIcon from '../components/HabitIcon';
 import PriorityIcon from '../components/PriorityIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
+import { useGuest } from '../contexts/GuestContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../lib/firebase';
 import ProModal from '../components/ProModal';
@@ -13,7 +14,9 @@ import { doc, deleteDoc, updateDoc, getDocs, collection, writeBatch } from 'fire
 import { useNavigate } from 'react-router-dom';
 import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
-import { Flame, Trophy, Lock, CheckCircle, Sparkle } from '@phosphor-icons/react';
+import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile } from '@phosphor-icons/react';
+import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
+import { useTheme } from '../contexts/ThemeContext';
 
 const MILESTONE_DEFINITIONS = [
   { target: 3, title: 'Ignition', desc: 'Pehele 3 din ki solid shuruat', icon: 'local_fire_department', color: 'from-amber-500 to-orange-500' },
@@ -29,8 +32,10 @@ const MILESTONE_DEFINITIONS = [
 
 export default function Profile() {
   const { currentUser, logout } = useAuth();
+  const { isGuest, exitGuestMode } = useGuest();
   const { habits, setHabits, allSummaries = [], loadingData, userDoc } = useData();
   const { language, setLanguage, t, isHinglish } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -84,6 +89,16 @@ export default function Profile() {
   const [selectedLang, setSelectedLang] = useState(language);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [langSavedFeedback, setLangSavedFeedback] = useState(false);
+  const [canInstallApp, setCanInstallApp] = useState(false);
+  const [isAppStandalone, setIsAppStandalone] = useState(false);
+
+  useEffect(() => {
+    setIsAppStandalone(isStandaloneMode());
+    const unsub = onInstallableChange((installable) => {
+      setCanInstallApp(installable);
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     setSelectedLang(language);
@@ -290,6 +305,10 @@ export default function Profile() {
 
   const handleDeleteHabit = (habitId) => {
     if (navigator.vibrate) navigator.vibrate(25);
+    if (isGuest) {
+      alert("You are currently exploring in Demo Mode. Habits cannot be deleted in preview.");
+      return;
+    }
     const habitToDelete = habits.find(h => h.id === habitId);
     if (habitToDelete && habitToDelete.createdAt) {
       const createdDate = new Date(habitToDelete.createdAt);
@@ -307,6 +326,11 @@ export default function Profile() {
 
   const confirmExecuteDelete = async () => {
     if (!habitPendingDelete) return;
+    if (isGuest) {
+      setShowDeleteConfirmModal(false);
+      setHabitPendingDelete(null);
+      return;
+    }
     setIsDeletingHabit(true);
     try {
       await deleteDoc(doc(db, 'users', currentUser.uid, 'habits', habitPendingDelete.id));
@@ -322,6 +346,11 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
+    if (isGuest) {
+      exitGuestMode();
+      navigate('/login');
+      return;
+    }
     try {
       await logout();
       navigate('/login');
@@ -333,6 +362,10 @@ export default function Profile() {
 
   const handleAddHabitClick = (e) => {
     e.preventDefault();
+    if (isGuest) {
+      alert("You are currently exploring in Demo Mode. Sign up free to create and track your custom habits!");
+      return;
+    }
     if (habits.length >= 8) {
       setShowPaywall(true);
     } else {
@@ -345,7 +378,7 @@ export default function Profile() {
   const trackedDays = allSummaries.length;
 
   return (
-    <div className="w-full pb-24 space-y-2.5 animate-in fade-in duration-200">
+    <div className="w-full pb-3 sm:pb-4 space-y-2.5 animate-in fade-in duration-200">
       
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
       <div className="flex items-start sm:items-center gap-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-800">
@@ -363,44 +396,13 @@ export default function Profile() {
       </div>
 
 
-            {/* ── HISTORICAL DATA MIGRATION BANNER (PROMINENT TOP) ───────────────── */}
-      <div className="bg-linear-to-r from-indigo-900/90 via-indigo-950 to-slate-900 border border-indigo-500/30 rounded-2xl p-4 sm:p-4.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-400/30 flex items-center justify-center font-black shrink-0 shadow-inner">
-            <Icon name="cloud_download" className="text-2xl text-indigo-400" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-sm text-white tracking-tight">
-                {isHinglish ? 'पुराना डेटा ट्रांसफर (Historical Data Migration)' : 'Historical Data Migration'}
-              </h3>
-              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Bridge Ready
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-300 font-medium mt-0.5 leading-snug">
-              {isHinglish ? 'पुराने ऐप (fci-lms) से अपना 2 महीने का इतिहास इस अकाउंट में 1-क्लिक में लोड करें।' : 'Import historical daily logs from fci-lms directly into this account.'}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(30);
-            setShowMigrationModal(true);
-          }}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 group active:scale-95"
-        >
-          <span>{isHinglish ? 'डेटा इंपोर्ट करें' : 'Import Data'}</span>
-          <Icon name="arrow_forward" className="text-sm group-hover:translate-x-0.5 transition-transform" />
-        </button>
-      </div>
 
       {/* ── 1. MY HABITS (TOP ACCORDION COLUMN) ────────────────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => toggleSection('myHabits')}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
@@ -419,7 +421,7 @@ export default function Profile() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Icon name={openSections.myHabits ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
-        </div>
+        </button>
 
         {openSections.myHabits && (
           <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
@@ -517,12 +519,13 @@ export default function Profile() {
 
       {/* ── 2. STREAK MILESTONES (CARD DIRECTING TO DEDICATED PAGE) ── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(20);
+            try { navigator?.vibrate?.(20); } catch(e) {}
             navigate('/streak-milestones');
           }}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors group text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
@@ -546,14 +549,15 @@ export default function Profile() {
           <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-600 transition-colors shrink-0 shadow-2xs">
             <Icon name="arrow_forward" className="text-[14px]" />
           </div>
-        </div>
+        </button>
       </section>
 
       {/* ── 3. UNLOCK ADVANCED INSIGHTS (THIRD ACCORDION COLUMN) ────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => toggleSection('unlockInsights')}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
@@ -567,7 +571,7 @@ export default function Profile() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Icon name={openSections.unlockInsights ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
-        </div>
+        </button>
 
         {openSections.unlockInsights && (
           <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
@@ -582,7 +586,7 @@ export default function Profile() {
                 <button 
                   type="button"
                   onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(30);
+                    try { navigator?.vibrate?.(30); } catch(e) {}
                     if (trackedDays < 7) {
                       setShowInsightsLockModal(true);
                     } else {
@@ -607,9 +611,10 @@ export default function Profile() {
 
       {/* ── 3. 30-DAY BETTER REPORT (THIRD ACCORDION COLUMN) ────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => toggleSection('betterReport')}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors gap-3"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors gap-3 text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
@@ -628,7 +633,7 @@ export default function Profile() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Icon name={openSections.betterReport ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
-        </div>
+        </button>
 
         {openSections.betterReport && (
           <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
@@ -641,7 +646,7 @@ export default function Profile() {
               </div>
               <button 
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(30);
+                  try { navigator?.vibrate?.(30); } catch(e) {}
                   if (trackedDays < 30) {
                     setShowBetterReportLockModal(true);
                   } else {
@@ -660,9 +665,10 @@ export default function Profile() {
 
       {/* ── 4. MEMBERSHIP (FOURTH ACCORDION COLUMN) ────────────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => toggleSection('membership')}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
@@ -681,7 +687,7 @@ export default function Profile() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Icon name={openSections.membership ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
-        </div>
+        </button>
 
         {openSections.membership && (
           <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
@@ -708,9 +714,10 @@ export default function Profile() {
 
       {/* ── 5. MY PROFILE (FIFTH ACCORDION COLUMN - COLLAPSED BY DEFAULT) ─────────── */}
       <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all">
-        <div 
+        <button 
+          type="button"
           onClick={() => toggleSection('myProfile')}
-          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-black shrink-0 shadow-2xs">
@@ -725,14 +732,15 @@ export default function Profile() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Icon name={openSections.myProfile ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
           </div>
-        </div>
+        </button>
+
 
 
         {openSections.myProfile && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 space-y-5">
-            
+          <div className="p-4 sm:p-5 pt-0 border-t border-outline-variant/30 space-y-5">
+
             {/* Language & Preferences Dropdown */}
-            <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 overflow-hidden transition-all shadow-2xs">
+            <div className="rounded-2xl bg-surface-container border border-outline-variant/50 overflow-hidden transition-all shadow-2xs">
               <button
                 type="button"
                 onClick={() => {
@@ -837,12 +845,61 @@ export default function Profile() {
               <label className="block text-xs font-bold text-slate-500 mb-1">Email Address</label>
               <input 
                 disabled 
-                value={currentUser?.email || ''} 
-                className="w-full sm:max-w-md px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 cursor-not-allowed"
+                value={currentUser?.email || (isGuest ? 'guest@definitetracker.com (Demo Mode)' : '')} 
+                className="w-full sm:max-w-md px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-not-allowed"
               />
             </div>
 
 
+
+            {/* Progressive Web App (PWA) Card */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-200/60 dark:border-amber-900/40 shadow-2xs">
+                  <DeviceMobile size={18} weight="duotone" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">Definite App</h4>
+                    {isAppStandalone ? (
+                      <span className="text-[9.5px] font-black uppercase px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full flex items-center gap-1">
+                        <CheckCircle size={10} weight="fill" />
+                        Installed
+                      </span>
+                    ) : (
+                      <span className="text-[9.5px] font-black uppercase px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full">
+                        PWA Ready
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    {isAppStandalone
+                      ? 'Running in standalone native-feel mode with offline capability.'
+                      : 'Install to your Home Screen for instant launch and offline access.'}
+                  </p>
+                </div>
+              </div>
+
+              {!isAppStandalone && (
+                canInstallApp ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (navigator.vibrate) navigator.vibrate(30);
+                      await promptInstall();
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:opacity-90 font-bold text-xs shadow-xs transition-opacity cursor-pointer shrink-0 flex items-center justify-center gap-1.5"
+                  >
+                    <DownloadSimple size={14} weight="bold" />
+                    <span>Install App</span>
+                  </button>
+                ) : (
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 font-medium shrink-0">
+                    iOS: Tap Share <strong>(⬆)</strong> &amp; <strong>Add to Home Screen</strong>
+                  </div>
+                )
+              )}
+            </div>
 
             {/* Logout & Developer Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
@@ -964,7 +1021,7 @@ export default function Profile() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={15} className="!w-7 !h-7 !rounded-lg shrink-0" />
+                      <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={15} className="!w-7 !h-7 !rounded-full shrink-0" />
                       <span className={`font-bold text-xs truncate ${isSelected ? 'text-primary dark:text-primary-light font-black' : 'text-slate-800 dark:text-slate-200'}`}>
                         {habit.name}
                       </span>

@@ -11,7 +11,8 @@ import {
   Lightning, CalendarCheck, ChartBar, Crown, 
   CaretDown, Sparkle, ArrowLeft, Info, ShareNetwork,
   PlugsConnected, BatteryWarning, BatteryLow, RocketLaunch, TrendUp, 
-  TrendDown, WarningCircle, CalendarBlank, Trophy, Clock, ShieldCheck
+  TrendDown, WarningCircle, CalendarBlank, Trophy, Clock, ShieldCheck,
+  Lightbulb, Target
 } from '@phosphor-icons/react';
 
 function getBadgeIcon(badgeLabel = '') {
@@ -739,104 +740,216 @@ function InsightVisual({ visualType, visualData }) {
 
 function InsightGuideModal({ onClose }) {
   const { isHinglish } = useLanguage();
+  const [activeIdx, setActiveIdx] = useState(0);
 
   const archetypes = [
     {
       id: 'POWER DUO',
-      label: 'POWER DUO',
+      label: isHinglish ? 'पावर डुओ' : 'Power Duo',
+      shortName: 'Power Duo',
       title: isHinglish ? '1. Power Duo & Synergy %' : '1. Power Duo & Synergy %',
-      icon: <PlugsConnected size={14} weight="fill" className="text-sky-600 dark:text-sky-400" />,
-      badgeClass: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
+      icon: PlugsConnected,
+      themeColor: 'sky',
+      gradient: 'from-sky-500 to-blue-600',
+      bgLight: 'bg-sky-50 dark:bg-sky-950/40',
+      borderLight: 'border-sky-200 dark:border-sky-800/80',
+      textAccent: 'text-sky-600 dark:text-sky-400',
+      activeTabClass: 'bg-sky-600 text-white shadow-md shadow-sky-500/25 border-sky-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200 border-sky-300 dark:border-sky-700',
       tag: isHinglish ? 'पॉजिटिव सिनर्जी' : 'Positive Synergy',
-      desc: isHinglish
-        ? 'Jab do habits ek doosre ko reinforce karti hain. Synergy % yeh naapta hai ki jab aapne Habit A complete kiya, to kitni baar Habit B bhi automatically 100% raha.'
-        : 'When two habits mutually reinforce each other. Synergy % measures how often completing Habit A directly coincides with successfully completing Habit B.'
+      coreConcept: isHinglish
+        ? 'जब 2 आदतें एक-दूसरे को स्वाभाविक रूप से बूस्ट और अनलॉक करती हैं।'
+        : 'When two habits mutually reinforce and unlock each other.',
+      rule: isHinglish
+        ? 'Synergy % यह नापता है कि जब Habit A 70%+ रही, तो Habit B भी कितनी बार 100% पूरी हुई।'
+        : 'Synergy % measures the co-occurrence rate: how often doing Habit A directly coincides with completing Habit B.',
+      actionTip: isHinglish
+        ? 'दोनों आदतों को बैक-टू-बैक (Habit Stacking) करके एक साथ पूरा करें।'
+        : 'Pair these habits back-to-back in your daily routine to leverage automatic habit stacking.'
     },
     {
       id: 'FOCUS DRAIN',
-      label: 'FOCUS DRAIN',
-      title: isHinglish ? '2. Focus Drain (Trade-off)' : '2. Focus Drain (Energy Trade-off)',
-      icon: <BatteryWarning size={14} weight="fill" className="text-amber-600 dark:text-amber-400" />,
-      badgeClass: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+      label: isHinglish ? 'फोकस ड्रेन' : 'Focus Drain',
+      shortName: 'Focus Drain',
+      title: isHinglish ? '2. Focus Drain (Energy Trade-off)' : '2. Focus Drain (Energy Trade-off)',
+      icon: BatteryWarning,
+      themeColor: 'amber',
+      gradient: 'from-amber-500 to-orange-600',
+      bgLight: 'bg-amber-50 dark:bg-amber-950/40',
+      borderLight: 'border-amber-200 dark:border-amber-800/80',
+      textAccent: 'text-amber-600 dark:text-amber-400',
+      activeTabClass: 'bg-amber-600 text-white shadow-md shadow-amber-500/25 border-amber-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 border-amber-300 dark:border-amber-700',
       tag: isHinglish ? 'एनर्जी फ्रिक्शन' : 'Energy Friction',
-      desc: isHinglish
-        ? 'Aisi habits jo ek hi willpower/energy ke liye compete karti hain. Jab Habit A peak par hoti hai to Habit B slip ho sakti hai. Inhe din ke alag-alag time par schedule karo.'
-        : 'Identifies habits that compete for the same energy or willpower. When Habit A peaks, Habit B drops. Spacing them across the day restores balance.'
+      coreConcept: isHinglish
+        ? 'विलपॉवर और एनर्जी के लिए आपस में टकराने वाली भारी आदतें।'
+        : 'Habits that compete for the same energy or willpower pool.',
+      rule: isHinglish
+        ? 'जब Habit A में बहुत ज़्यादा मानसिक ऊर्जा लगती है, तो Habit B छूटने का रिस्क बढ़ जाता है।'
+        : 'When Habit A requires high cognitive load, Habit B slips due to shared willpower depletion.',
+      actionTip: isHinglish
+        ? 'दोनों आदतों को दिन के अलग-अलग पहर (Morning vs Evening) में बाँटकर करें।'
+        : 'Space them across the day (Morning vs Evening) so your willpower stays balanced.'
     },
     {
       id: 'KEYSTONE HABIT',
-      label: 'KEYSTONE HABIT',
+      label: isHinglish ? 'कीस्टोन हैबिट' : 'Keystone Habit',
+      shortName: 'Keystone',
       title: isHinglish ? '3. Keystone Habit (Master Catalyst)' : '3. Keystone Habit (Master Catalyst)',
-      icon: <Crown size={14} weight="fill" className="text-purple-600 dark:text-purple-400" />,
-      badgeClass: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+      icon: Crown,
+      themeColor: 'purple',
+      gradient: 'from-purple-500 to-violet-600',
+      bgLight: 'bg-purple-50 dark:bg-purple-950/40',
+      borderLight: 'border-purple-200 dark:border-purple-800/80',
+      textAccent: 'text-purple-600 dark:text-purple-400',
+      activeTabClass: 'bg-purple-600 text-white shadow-md shadow-purple-500/25 border-purple-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200 border-purple-300 dark:border-purple-700',
       tag: isHinglish ? 'मास्टर उत्प्रेरक' : 'Highest Leverage',
-      desc: isHinglish
-        ? 'Aapke poore din ka sabse bada anchor habit. Is ek habit ko complete karne par poore din ka overall score +20% se +40% tak jump karta hai.'
-        : 'The single highest-leverage anchor habit. Completing this master habit naturally elevates your overall daily performance by +20% to +40%.'
+      coreConcept: isHinglish
+        ? 'आपके पूरे दिन की सबसे शक्तिशाली और निर्णायक एंकर आदत।'
+        : 'The single highest-leverage anchor habit for your routine.',
+      rule: isHinglish
+        ? 'इस 1 हैबिट को पूरा करने पर आपके पूरे दिन का ओवरऑल स्कोर +20% से +40% तक बढ़ जाता है।'
+        : 'Completing this master habit naturally lifts your entire daily performance by +20% to +40%.',
+      actionTip: isHinglish
+        ? 'इसे अपने दिन की नॉन-नेगोशिएबल प्रायोरिटी #1 बना लें।'
+        : 'Lock this in as your non-negotiable Priority #1 first thing every day.'
     },
     {
       id: 'COMEBACK HERO',
-      label: 'COMEBACK HERO',
+      label: isHinglish ? 'कमबैक हीरो' : 'Comeback Hero',
+      shortName: 'Comeback Hero',
       title: isHinglish ? '4. Comeback Hero (U-Shape Rebound)' : '4. Comeback Hero (U-Shape Rebound)',
-      icon: <RocketLaunch size={14} weight="fill" className="text-violet-600 dark:text-violet-400" />,
-      badgeClass: 'bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
-      tag: isHinglish ? 'बाउंस-बैक रेजिलिएंस' : 'Bounce-Back Grit',
-      desc: isHinglish
-        ? 'Mid-week slump ko reverse karna celebrate karta hai. Slip hona normal hai — usi hafte me wapas 75%+ par bounce-back karna hi resilience banata hai.'
-        : 'Celebrates reversing a mid-week slump. Slipping is natural — bouncing right back to 75%+ within the same week cements true lifelong grit.'
+      icon: RocketLaunch,
+      themeColor: 'violet',
+      gradient: 'from-violet-500 to-indigo-600',
+      bgLight: 'bg-violet-50 dark:bg-violet-950/40',
+      borderLight: 'border-violet-200 dark:border-violet-800/80',
+      textAccent: 'text-violet-600 dark:text-violet-400',
+      activeTabClass: 'bg-violet-600 text-white shadow-md shadow-violet-500/25 border-violet-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-200 border-violet-300 dark:border-violet-700',
+      tag: isHinglish ? 'बाउंस-बैक ग्रिट' : 'Bounce-Back Grit',
+      coreConcept: isHinglish
+        ? 'मिड-वीक स्लंप से तुरंत वापस पटरी पर लौटने की ताक़त।'
+        : 'Celebrating rapid recovery from mid-week performance dips.',
+      rule: isHinglish
+        ? 'स्लिप होना सामान्य है — उसी हफ़्ते में 75%+ पर बाउंस-बैक करना ही असली रेजिलिएंस है।'
+        : 'Slipping is human; bouncing right back to 75%+ within the same week cements true lifelong grit.',
+      actionTip: isHinglish
+        ? '"Never Miss Twice" का नियम अपनाएँ — 1 दिन छूटे तो अगले दिन तुरंत रीसेट करें।'
+        : 'Apply the "Never Miss Twice" golden rule to protect habit momentum.'
     },
     {
       id: 'RISING STAR',
-      label: 'RISING STAR',
-      title: isHinglish ? '5. Rising Star (7-Day Surge)' : '5. Rising Star (7-Day Momentum)',
-      icon: <TrendUp size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400" />,
-      badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+      label: isHinglish ? 'राइज़िंग स्टार' : 'Rising Star',
+      shortName: 'Rising Star',
+      title: isHinglish ? '5. Rising Star (7-Day Momentum)' : '5. Rising Star (7-Day Momentum)',
+      icon: TrendUp,
+      themeColor: 'emerald',
+      gradient: 'from-emerald-500 to-teal-600',
+      bgLight: 'bg-emerald-50 dark:bg-emerald-950/40',
+      borderLight: 'border-emerald-200 dark:border-emerald-800/80',
+      textAccent: 'text-emerald-600 dark:text-emerald-400',
+      activeTabClass: 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25 border-emerald-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700',
       tag: isHinglish ? 'लगातार ग्रोथ' : 'Upward Momentum',
-      desc: isHinglish
-        ? 'Lagatar 7 dino se performance me steady positive slope dikhata hai. Habit formation ka momentum ban raha hai.'
-        : 'Highlights habits with a continuous 7-day upward trajectory, showing solid habit momentum and friction reduction.'
+      coreConcept: isHinglish
+        ? 'लगातार 7 दिनों की मजबूत और चढ़ती हुई लय (Momentum)।'
+        : 'Continuous 7-day upward trajectory and habit momentum.',
+      rule: isHinglish
+        ? 'यह दिखाता है कि आदत अब दिमाग में पक्की होने लगी है और फ्रिक्शन लगातार घट रहा है।'
+        : 'Highlights positive velocity where daily friction is steadily dropping.',
+      actionTip: isHinglish
+        ? 'मोमेंटम को बनाए रखें और टारगेट को अचानक ज़्यादा भारी न करें।'
+        : 'Protect the upward rhythm; keep daily friction low and stay consistent.'
     },
     {
       id: 'ATTENTION NEEDED',
-      label: 'ATTENTION NEEDED',
-      title: isHinglish ? '6. Attention Needed (Slope Reset)' : '6. Attention Needed (Downward Slope)',
-      icon: <WarningCircle size={14} weight="fill" className="text-rose-600 dark:text-rose-400" />,
-      badgeClass: 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+      label: isHinglish ? 'अटेंशन नीडेड' : 'Attention Needed',
+      shortName: 'Attention',
+      title: isHinglish ? '6. Attention Needed (Downward Slope)' : '6. Attention Needed (Downward Slope)',
+      icon: WarningCircle,
+      themeColor: 'rose',
+      gradient: 'from-rose-500 to-red-600',
+      bgLight: 'bg-rose-50 dark:bg-rose-950/40',
+      borderLight: 'border-rose-200 dark:border-rose-800/80',
+      textAccent: 'text-rose-600 dark:text-rose-400',
+      activeTabClass: 'bg-rose-600 text-white shadow-md shadow-rose-500/25 border-rose-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200 border-rose-300 dark:border-rose-700',
       tag: isHinglish ? 'अलर्ट सिग्नल' : 'Friction Warning',
-      desc: isHinglish
-        ? 'Score me achanak giravat aane par alert karta hai taaki 2-minute rule se friction kam karke habit ko reset kiya ja sake.'
-        : 'Detects a downward slope across recent days, prompting you to lower friction with a micro 2-minute session to reset the habit.'
+      coreConcept: isHinglish
+        ? 'आदत में आ रही लगातार गिरावट का शुरुआती वॉर्निंग सिग्नल।'
+        : 'Early warning detection of downward performance trend.',
+      rule: isHinglish
+        ? 'हाल के दिनों में स्कोर गिरने पर तुरंत अलर्ट करता है ताकि आदत पूरी तरह टूटने से पहले बचाई जा सके।'
+        : 'Detects a multi-day slide so you can intervene before the habit completely breaks.',
+      actionTip: isHinglish
+        ? '2-Minute Rule अपनाएँ — फ्रिक्शन घटाकर सिर्फ़ 2 मिनट का मिनी-वर्जन करें।'
+        : 'Apply the 2-Minute Rule to lower friction and reset the habit effortlessly.'
     },
     {
       id: 'DAY RHYTHM',
-      label: 'DAY RHYTHM',
-      title: isHinglish ? '7. Day Rhythm (Sunday Slump & Monday Champion)' : '7. Day Rhythm (Weekly Anomalies)',
-      icon: <CalendarBlank size={14} weight="fill" className="text-teal-600 dark:text-teal-400" />,
-      badgeClass: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800',
+      label: isHinglish ? 'डे रिदम' : 'Day Rhythm',
+      shortName: 'Day Rhythm',
+      title: isHinglish ? '7. Day Rhythm (Weekly Anomalies)' : '7. Day Rhythm (Weekly Anomalies)',
+      icon: CalendarBlank,
+      themeColor: 'teal',
+      gradient: 'from-teal-500 to-cyan-600',
+      bgLight: 'bg-teal-50 dark:bg-teal-950/40',
+      borderLight: 'border-teal-200 dark:border-teal-800/80',
+      textAccent: 'text-teal-600 dark:text-teal-400',
+      activeTabClass: 'bg-teal-600 text-white shadow-md shadow-teal-500/25 border-teal-600',
+      inactiveTabClass: 'bg-slate-100 dark:bg-[#161a28] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800',
+      badgeClass: 'bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200 border-teal-300 dark:border-teal-700',
       tag: isHinglish ? 'साप्ताहिक रिदम' : 'Rhythm Flow',
-      desc: isHinglish
-        ? 'Monday Fresh Start Effect aur Sunday unstructured friction ko detect karta hai taaki aap pehle se prepared raho.'
-        : 'Detects weekly rhythm variations like the Monday willpower surge or Sunday friction dips, helping you plan your anchor habits.'
+      coreConcept: isHinglish
+        ? 'दिनों के हिसाब से एनर्जी और आदतों के दोहराव वाले पैटर्न।'
+        : 'Weekly rhythm variations and day-specific tendencies.',
+      rule: isHinglish
+        ? 'सोमवार की ऊर्जा या रविवार की सुस्ती जैसे पैटर्न को समझकर तैयारी करने में मदद करता है।'
+        : 'Pinpoints Sunday slumps or Monday surges to help optimize your weekly execution.',
+      actionTip: isHinglish
+        ? 'कमज़ोर दिनों (जैसे संडे) के लिए आसान मिनी-रूटीन तैयार रखें।'
+        : 'Pre-plan lighter versions of tough habits for your high-friction days.'
     }
   ];
+
+  const current = archetypes[activeIdx];
+  const IconComponent = current.icon;
+
+  const handlePrev = () => {
+    if (navigator.vibrate) navigator.vibrate(15);
+    setActiveIdx((prev) => (prev > 0 ? prev - 1 : archetypes.length - 1));
+  };
+
+  const handleNext = () => {
+    if (navigator.vibrate) navigator.vibrate(15);
+    setActiveIdx((prev) => (prev < archetypes.length - 1 ? prev + 1 : 0));
+  };
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="fixed inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#131722] rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#131722] rounded-3xl p-4 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-800 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3.5">
         
-        {/* Header */}
+        {/* Top Header Bar */}
         <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
-              <Sparkle size={18} weight="fill" className="text-purple-600 dark:text-purple-400" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-sm shadow-purple-500/20">
+              <Sparkle size={17} weight="fill" />
             </div>
             <div>
               <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
                 {isHinglish ? 'How Habit Insights Work' : 'How Habit Insights Work'}
               </h4>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-                {isHinglish ? 'Aapka personal behavioral mirror aur archetypes' : 'Your personal behavioral mirror & archetypes explained'}
+                {isHinglish ? 'टॉगल करके सभी 7 व्यवहारिक Archetypes समझें' : 'Toggle through all 7 behavioral archetypes'}
               </p>
             </div>
           </div>
@@ -849,36 +962,138 @@ function InsightGuideModal({ onClose }) {
           </button>
         </div>
 
-        {/* Scrollable Archetypes Content with Dedicated Premium Phosphor Vector Icons */}
-        <div className="space-y-2.5 overflow-y-auto pr-0.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed custom-scrollbar">
-          {archetypes.map((arch) => (
-            <div 
-              key={arch.id}
-              className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-[#161a28] border border-slate-200/80 dark:border-slate-800 space-y-1.5"
-            >
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className={'px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border flex items-center gap-1.5 ' + arch.badgeClass}>
-                    {arch.icon}
-                    <span>{arch.label}</span>
-                  </span>
-                  <strong className="text-slate-900 dark:text-white font-bold text-xs">
-                    {arch.title}
-                  </strong>
-                </div>
-                <span className="text-[9.5px] font-extrabold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md">
-                  {arch.tag}
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                {arch.desc}
-              </p>
-            </div>
-          ))}
+        {/* ── INTERACTIVE TOGGLE PILLS (HORIZONTAL SCROLL) ── */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0 -mx-1 px-1">
+          {archetypes.map((arch, idx) => {
+            const ArchIcon = arch.icon;
+            const isActive = activeIdx === idx;
+            return (
+              <button
+                key={arch.id}
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(15);
+                  setActiveIdx(idx);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all shrink-0 border cursor-pointer ${
+                  isActive ? arch.activeTabClass : arch.inactiveTabClass
+                }`}
+              >
+                <ArchIcon size={13} weight={isActive ? "fill" : "bold"} />
+                <span className="whitespace-nowrap">{arch.shortName}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Footer (Solid Black Button) */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
+        {/* ── SPOTLIGHT SHOWCASE CARD (COMPACT, NO LONG SCROLL) ── */}
+        <div className={`p-4 rounded-2xl ${current.bgLight} border ${current.borderLight} space-y-3 transition-all duration-200 relative overflow-hidden`}>
+          {/* Card Top Title & Tag */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${current.gradient} text-white flex items-center justify-center shrink-0 shadow-sm`}>
+                <IconComponent size={20} weight="fill" />
+              </div>
+              <div className="min-w-0">
+                <h5 className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                  {current.title}
+                </h5>
+                <span className={`inline-block px-2 py-0.5 rounded-md text-[9.5px] font-extrabold border mt-0.5 ${current.badgeClass}`}>
+                  {current.tag}
+                </span>
+              </div>
+            </div>
+
+            {/* Step Counter Badge */}
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-white/70 dark:bg-black/30 px-2 py-1 rounded-lg shrink-0">
+              {activeIdx + 1} / {archetypes.length}
+            </span>
+          </div>
+
+          {/* 3 Structured Highlight Points */}
+          <div className="space-y-2 text-xs">
+            {/* 1. Core Idea */}
+            <div className="flex items-start gap-2.5 bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/60 shadow-2xs">
+              <div className="w-6 h-6 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <Lightbulb size={14} weight="fill" />
+              </div>
+              <div className="min-w-0">
+                <strong className="text-slate-900 dark:text-white font-bold block text-[11px]">
+                  {isHinglish ? 'मूल विचार (Concept):' : 'Core Concept:'}
+                </strong>
+                <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-snug mt-0.5">
+                  {current.coreConcept}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Calculation Rule */}
+            <div className="flex items-start gap-2.5 bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/60 shadow-2xs">
+              <div className="w-6 h-6 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <Lightning size={14} weight="fill" />
+              </div>
+              <div className="min-w-0">
+                <strong className="text-slate-900 dark:text-white font-bold block text-[11px]">
+                  {isHinglish ? 'कैलकुलेशन नियम (Rule):' : 'Calculation Rule:'}
+                </strong>
+                <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-snug mt-0.5">
+                  {current.rule}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Action Tip */}
+            <div className="flex items-start gap-2.5 bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/60 shadow-2xs">
+              <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <Target size={14} weight="fill" />
+              </div>
+              <div className="min-w-0">
+                <strong className="text-slate-900 dark:text-white font-bold block text-[11px]">
+                  {isHinglish ? 'सक्सेस टिप (Action):' : 'Champion Strategy:'}
+                </strong>
+                <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-snug mt-0.5">
+                  {current.actionTip}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Prev / Next Navigator Buttons */}
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-black hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-all shadow-2xs"
+            >
+              <span>← {isHinglish ? 'पिछला' : 'Previous'}</span>
+            </button>
+
+            {/* Dot Indicators */}
+            <div className="flex items-center gap-1">
+              {archetypes.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveIdx(i)}
+                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    activeIdx === i ? 'w-4 bg-slate-800 dark:bg-white' : 'w-1.5 bg-slate-300 dark:bg-slate-700'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-black hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-all shadow-2xs"
+            >
+              <span>{isHinglish ? 'अगला' : 'Next'} →</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Footer (Got it button) */}
+        <div className="pt-1 shrink-0">
           <button 
             type="button" 
             onClick={onClose} 

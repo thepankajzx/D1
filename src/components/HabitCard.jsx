@@ -3,6 +3,7 @@ import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import { useNavigate } from 'react-router-dom';
+import { Check, X } from '@phosphor-icons/react';
 
 
 // Helper to format minutes into HH:MM
@@ -220,37 +221,53 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
     onUpdate(habit.id, newRawVal, finalScore);
   };
 
-  const renderInput = () => {
+  const renderInputInner = () => {
     switch (habit.scoringType) {
       case 'binary': {
+        const isWrongSelected = val === 0;
+        const isRightSelected = val === 1;
+
         return (
-          <div className="relative flex w-full h-[28px] rounded-[8px] bg-surface-container-lowest border border-outline-variant/40 overflow-hidden group">
-            {/* Background fills */}
-            <div className={`absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-all duration-300 ease-out origin-left ${val === 1 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
-            <div className={`absolute inset-y-0 right-0 w-1/2 bg-red-500 transition-all duration-300 ease-out origin-right ${val === 0 ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`} />
+          <div className="flex items-center gap-2">
+            {/* WRONG (Red Cross) Button - Superfast Zero Lag */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleChange(isWrongSelected ? null : 0);
+              }}
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center cursor-pointer select-none active:scale-95 transition-all ${
+                isWrongSelected
+                  ? 'bg-[#ef4444] text-white shadow-sm shadow-red-500/30 ring-2 ring-red-500/40'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 border border-slate-200/80 dark:border-slate-700'
+              }`}
+              title="Mark as Incomplete (0%)"
+              aria-label="No / Wrong"
+            >
+              <X size={16} weight="bold" />
+            </button>
 
-            {/* Clickable halves */}
-            <div className="absolute inset-0 flex">
-              <button disabled={isSaved} onClick={(e) => { if (isSaved) return; e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(1); }} className={`flex-1 flex items-center justify-center z-10 ${isSaved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}>
-                <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 1 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>Yes</span>
-              </button>
-              <div className="w-[1px] bg-outline-variant/30 z-10" />
-              <button disabled={isSaved} onClick={(e) => { if (isSaved) return; e.stopPropagation(); if (navigator.vibrate) navigator.vibrate(50); handleChange(0); }} className={`flex-1 flex items-center justify-center z-10 ${isSaved ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}>
-                <span className={`font-semibold text-[11px] font-black transition-colors duration-300 ${val === 0 ? 'text-white' : 'text-on-surface-variant group-hover:text-on-surface'}`}>No</span>
-              </button>
-            </div>
-
-            {/* Center circle */}
-            <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-white shadow-xs flex items-center justify-center transition-all duration-300 z-20 pointer-events-none ${val !== null ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-              {val === 1 ? (
-                <span className="text-green-600 font-bold text-[12px] leading-none mb-[1px]">✔</span>
-              ) : (
-                <span className="text-red-600 font-bold text-[10px] leading-none mb-[1px]">✖</span>
-              )}
-            </div>
+            {/* RIGHT (Green Checkmark) Button - Superfast Zero Lag */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleChange(isRightSelected ? null : 1);
+              }}
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center cursor-pointer select-none active:scale-95 transition-all ${
+                isRightSelected
+                  ? 'bg-[#10b981] text-white shadow-sm shadow-emerald-500/30 ring-2 ring-emerald-500/40'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-emerald-500 border border-slate-200/80 dark:border-slate-700'
+              }`}
+              title="Mark as Completed (100%)"
+              aria-label="Yes / Right"
+            >
+              <Check size={16} weight="bold" />
+            </button>
           </div>
         );
       }
+
       case 'time':
         return (
           <div className="flex flex-col gap-2 flex-grow justify-end mt-2">
@@ -287,7 +304,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     }
                   } catch (err) {}
                 }}
-                disabled={isSaved} className={`w-full bg-transparent border-none py-1.5 px-3 font-mono text-xs sm:text-[13px] font-bold text-primary focus:ring-0 outline-none ${isSaved ? "cursor-not-allowed opacity-75" : "cursor-pointer"}`} 
+                className="w-full bg-transparent border-none py-1.5 px-3 font-mono text-xs sm:text-[13px] font-bold text-primary focus:ring-0 outline-none cursor-pointer" 
               />
               <div className="absolute right-3 pointer-events-none text-on-surface dark:text-white">
                 <Icon name="schedule_filled" className="text-[20px]" />
@@ -301,7 +318,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
               <div className="flex items-center gap-3 w-full">
                 <button
                   onPointerDown={(e) => {
-                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(-1, 1, 10, 1);
@@ -314,7 +330,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none hover:bg-surface-variant active:scale-90 cursor-pointer"
                 >
                   <Icon name="remove" className="text-[14px]" />
                 </button>
@@ -330,12 +346,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     }}
                     onPointerUp={(e) => handleChange(Number(e.target.value))}
                     onTouchEnd={(e) => handleChange(Number(e.target.value))}
-                    disabled={isSaved} className={`subjective-slider w-full m-0 !h-[6px] ${isSaved ? "cursor-not-allowed opacity-75" : ""}`} 
+                    className="subjective-slider w-full m-0 !h-[6px] cursor-pointer" 
                   />
                 </div>
                 <button
                   onPointerDown={(e) => {
-                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(1, 1, 10, 1);
@@ -348,7 +363,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                   onPointerLeave={(e) => { e.stopPropagation(); stopStepping(); }}
                   onPointerCancel={(e) => { e.stopPropagation(); stopStepping(); }}
                   onContextMenu={(e) => e.preventDefault()}
-                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none hover:bg-surface-variant active:scale-90 cursor-pointer"
                 >
                   <Icon name="add" className="text-[14px]" />
                 </button>
@@ -412,7 +427,6 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                 {/* Minus Button */}
                 <button 
                   onPointerDown={(e) => {
-                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(-1, minSlider, maxSlider, mult);
@@ -431,7 +445,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none hover:bg-surface-variant active:scale-90 cursor-pointer"
                 >
                   <Icon name="remove" className="text-[14px]" />
                 </button>
@@ -467,14 +481,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     }}
                     onPointerUp={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
                     onTouchEnd={(e) => handleChange(Math.round(Number(e.target.value)) / mult)}
-                    disabled={isSaved} className={`custom-slider w-full m-0 !h-[6px] ${isSaved ? "cursor-not-allowed opacity-75" : ""}`} 
+                    className="custom-slider w-full m-0 !h-[6px] cursor-pointer" 
                   />
                 </div>
 
                 {/* Plus Button */}
                 <button 
                   onPointerDown={(e) => {
-                    if (isSaved) return;
                     e.stopPropagation();
                     e.target.setPointerCapture(e.pointerId);
                     startStepping(1, minSlider, maxSlider, mult);
@@ -493,12 +506,13 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     stopStepping();
                   }}
                   onContextMenu={(e) => e.preventDefault()}
-                  disabled={isSaved} className={`w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none ${isSaved ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-variant active:scale-90 cursor-pointer'}`}
+                  className="w-6 h-6 flex items-center justify-center bg-surface-container rounded-full text-on-surface-variant transition-all shrink-0 touch-none select-none hover:bg-surface-variant active:scale-90 cursor-pointer"
                 >
                   <Icon name="add" className="text-[14px]" />
                 </button>
                 
               </div>
+
 
                             {showManualInput && (
                 <div className="relative flex items-center shrink-0 ml-1 gap-1">
@@ -594,6 +608,12 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
     }
   };
 
+  const renderInput = () => (
+    <fieldset disabled={isSaved} className={`m-0 p-0 border-0 ${isSaved ? 'opacity-50 pointer-events-none transition-opacity duration-300' : ''}`}>
+      {renderInputInner()}
+    </fieldset>
+  );
+
   const getScoreDisplay = () => {
     if (habit.scoringType === 'subjective') return null;
     if (habit.scoringType === 'binary' && val === null) return '--';
@@ -640,15 +660,15 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
         <div className="bg-surface premium-border rounded-[16px] p-3 flex flex-row items-center justify-between gap-3 w-full">
           {/* Left: Icon and Title */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={20} className="!rounded-[12px] shrink-0" />
+            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} color={habit.color} size={20} className="!rounded-full shrink-0" />
             <h3 className="font-bold text-[15px] text-on-surface truncate">
               {habit.name}
             </h3>
           </div>
           
           {/* Right: Inline Input and Detail button */}
-          <div className="flex items-center gap-1.5 shrink-0 pl-2">
-            <div className="w-[140px]" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2 shrink-0 pl-2">
+            <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
               {renderInput()}
             </div>
             <button
@@ -677,7 +697,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
         <div className="flex justify-between items-center w-full">
           {/* Left side: Icon, Name, Pill, Value */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={18} className="!rounded-[8px] shrink-0" />
+            <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} color={habit.color} size={18} className="!rounded-full shrink-0" />
             <h3 className="font-bold text-[14px] text-on-surface truncate shrink">{habit.name}</h3>
             
             {(() => {

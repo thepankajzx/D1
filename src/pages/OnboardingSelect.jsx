@@ -152,7 +152,7 @@ export default function OnboardingSelect() {
                       : 'bg-surface-container-low border border-outline-variant hover:border-primary'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${
                     isSelected ? 'bg-surface-container-low text-primary' : 'bg-surface text-on-surface-variant'
                   }`}>
                     <Icon name={habit.icon}  style={isSelected ? {fontVariationSettings: "'FILL' 1"} : {}} />

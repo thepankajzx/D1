@@ -345,10 +345,10 @@ export default function DataMigrationModal({ isOpen, onClose }) {
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Ready</span>
               </div>
               <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
-                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">📚 Study: <strong className="text-indigo-500">4 Hours</strong></span>
-                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">💪 Workout: <strong className="text-indigo-500">30 Mins</strong></span>
-                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">📱 Music + Phone: <strong className="text-indigo-500">0-1 Hr</strong></span>
-                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">🛡️ Retention & Porn Free</span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">Study: <strong className="text-indigo-500">4 Hours</strong></span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">Workout: <strong className="text-indigo-500">30 Mins</strong></span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">Music + Phone: <strong className="text-indigo-500">0-1 Hr</strong></span>
+                <span className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">Retention & Discipline</span>
               </div>
             </div>
 
@@ -377,7 +377,7 @@ export default function DataMigrationModal({ isOpen, onClose }) {
           <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-center gap-3">
             <CheckCircle size={24} weight="fill" className="text-emerald-500 shrink-0" />
             <div>
-              <h4 className="font-black text-xs sm:text-sm">Migration Complete! 🎉</h4>
+              <h4 className="font-black text-xs sm:text-sm">Migration Complete!</h4>
               <p className="text-[11px] font-medium opacity-90">All {dateRange.count} days imported. Your Heatmap, Streaks & Analytics are now active!</p>
             </div>
           </div>

@@ -409,7 +409,7 @@ export default function Icon({ name, className = '', style = {}, filled = false,
   if (PhosphorComponent) {
     return (
       <span 
-        className={`inline-flex items-center justify-center leading-none select-none shrink-0 ${className}`} 
+        className={`inline-flex items-center justify-center leading-none select-none shrink-0 pointer-events-none ${className}`} 
         style={{
           fontSize: 'inherit',
           width: size ? `${size}px` : '1em',
@@ -426,7 +426,7 @@ export default function Icon({ name, className = '', style = {}, filled = false,
   if (!inner) {
     return (
       <span 
-        className={`material-symbols-outlined select-none inline-flex items-center justify-center leading-none ${className}`}
+        className={`material-symbols-outlined select-none inline-flex items-center justify-center leading-none pointer-events-none ${className}`}
         style={{
           fontSize: 'inherit',
           width: '1em',
@@ -444,7 +444,7 @@ export default function Icon({ name, className = '', style = {}, filled = false,
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
       viewBox={name === "person-simple-circle" ? "0 0 256 256" : "0 -960 960 960"} 
-      className={className} 
+      className={`pointer-events-none ${className}`} 
       style={{
         width: '1em',
         height: '1em',
@@ -458,3 +458,4 @@ export default function Icon({ name, className = '', style = {}, filled = false,
     </svg>
   );
 }
+

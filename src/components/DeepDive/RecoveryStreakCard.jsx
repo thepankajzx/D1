@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   CheckCircle, 
@@ -45,24 +45,24 @@ export default function RecoveryStreakCard({
   const getMotivationalMessage = () => {
     if (totalMisses === 0) {
       return {
-        title: "Flawless consistency! 🌟",
+        title: "Flawless consistency!",
         desc: "You haven't missed any days recently. Keep up the amazing discipline!"
       };
     }
     if (recoveryStreak >= 3) {
       return {
-        title: "Elite resilience! 💪",
+        title: "Elite resilience!",
         desc: "You're bouncing back consistently like a champion. Keep building this momentum."
       };
     }
     if (recoveryStreak >= 1) {
       return {
-        title: "Great recovery! 🚀",
+        title: "Great recovery!",
         desc: "You successfully bounced back from your last miss. Consistency is a practice."
       };
     }
     return {
-      title: "Ready to bounce back! 🌱",
+      title: "Ready to bounce back!",
       desc: "Every day is a fresh opportunity. Complete your habit today to spark a new streak."
     };
   };
@@ -101,7 +101,7 @@ export default function RecoveryStreakCard({
                 </button>
               </div>
               <p className="text-[10px] sm:text-xs text-slate-500 font-medium leading-tight mt-0.5 line-clamp-1 sm:line-clamp-none">
-                Consecutive recoveries after missed days
+                Consecutive comebacks after off-target days
               </p>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function RecoveryStreakCard({
         <div className="bg-orange-50/80 border border-orange-200/80 rounded-xl p-3 text-xs text-orange-950 leading-relaxed transition-all">
           <p className="font-semibold mb-1">How Recovery Streak is measured:</p>
           <p className="text-orange-700">
-            Whenever a habit is missed on a day, we evaluate your completion over the following <strong>{recoveryWindow} days</strong>. If you achieve <strong>≥{successThreshold}% completion</strong> during those 7 days, it counts as a <strong>successful bounce-back</strong>. The Recovery Streak counts how many consecutive misses you successfully recovered from!
+            Whenever a habit has an off-target day (score &lt; 50%), we evaluate your completion over the following <strong>{recoveryWindow} days</strong>. If you achieve <strong>≥{successThreshold}% completion (5 of 7 days)</strong> during those 7 days, it counts as a <strong>successful bounce-back</strong>. The Recovery Streak counts how many consecutive off-targets you successfully recovered from!
           </p>
         </div>
       )}
@@ -143,10 +143,10 @@ export default function RecoveryStreakCard({
               <Sparkle size={24} weight="fill" />
             </div>
             <h4 className="text-xl sm:text-2xl font-black text-slate-900">
-              No misses yet! 🌟
+              Flawless Consistency!
             </h4>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              You haven't missed any habit days in this lookback window. Your recovery streak will appear automatically after your first bounce-back!
+              You haven't had any off-target days in this lookback window. Your recovery streak will appear automatically after your first bounce-back!
             </p>
           </div>
         ) : (
@@ -161,13 +161,13 @@ export default function RecoveryStreakCard({
 
             <h4 className="text-lg sm:text-2xl font-extrabold text-slate-950 flex items-center justify-center gap-1.5 leading-tight">
               <span>successful bounce-backs</span>
-              <span>🎉</span>
+              <Icon name="sparkle" className="text-amber-500 text-sm" />
             </h4>
 
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
               You recovered successfully after your{' '}
               <strong className="text-slate-900 font-bold">
-                {recoveryStreak > 0 ? `last ${recoveryStreak} misses` : 'recent misses'}
+                {recoveryStreak > 0 ? `last ${recoveryStreak} off-targets` : 'recent off-targets'}
               </strong>.
             </p>
           </>
@@ -178,11 +178,11 @@ export default function RecoveryStreakCard({
       <div className="w-full border-y border-dashed border-orange-200/90 py-2.5 sm:py-3 my-0.5 flex items-center justify-center gap-2 text-center">
         <ShieldCheck size={16} weight="fill" className="text-orange-600 flex-shrink-0" />
         <p className="text-[11px] sm:text-xs text-orange-800 font-medium leading-tight">
-          A recovery is successful when you achieve <strong className="font-bold text-orange-950">≥{successThreshold}% completion</strong> in the {recoveryWindow} days after a miss.
+          A recovery is successful when you achieve <strong className="font-bold text-orange-950">≥{successThreshold}% completion</strong> in the {recoveryWindow} days after an off-target day.
         </p>
       </div>
 
-      {/* ── 4. RECOVERY TIMELINE (Missed → Recovered Chain) ────────────────── */}
+      {/* ── 4. RECOVERY TIMELINE (Off-Target → Recovered Chain) ─────────────── */}
       {recentMisses.length > 0 && (
         <div className="flex flex-col items-center gap-3 pt-1">
           {/* Responsive Timeline Grid */}
@@ -198,16 +198,16 @@ export default function RecoveryStreakCard({
                     : 'bg-slate-50/70 border-slate-200/60'
                 }`}
               >
-                {/* Top: Status Nodes (Missed ─→ Recovered) */}
+                {/* Top: Status Nodes (Off-Target ─→ Recovered) */}
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  {/* Missed Node */}
+                  {/* Off-Target Node */}
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center flex-shrink-0">
                       <XCircle size={17} weight="fill" />
                     </div>
                     <div className="flex flex-col text-left">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">
-                        Missed
+                        Off-Target
                       </span>
                       <span className="text-xs font-semibold text-slate-800 mt-0.5 leading-none">
                         {formatDateShort(m.missDate)}

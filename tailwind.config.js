@@ -81,13 +81,14 @@ export default {
           "unit": "4px"
       },
       "fontFamily": {
-          "body-lg": ["Inter"],
-          "headline-lg-mobile": ["Inter"],
-          "mono-data": ["Geist"],
-          "body-md": ["Inter"],
-          "headline-md": ["Inter"],
-          "headline-lg": ["Inter"],
-          "label-sm": ["Inter"]
+          "sans": ["'Plus Jakarta Sans'", "Outfit", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+          "body-lg": ["'Plus Jakarta Sans'", "Inter", "sans-serif"],
+          "headline-lg-mobile": ["'Plus Jakarta Sans'", "Outfit", "sans-serif"],
+          "mono-data": ["Geist", "monospace"],
+          "body-md": ["'Plus Jakarta Sans'", "Inter", "sans-serif"],
+          "headline-md": ["'Plus Jakarta Sans'", "Outfit", "sans-serif"],
+          "headline-lg": ["'Plus Jakarta Sans'", "Outfit", "sans-serif"],
+          "label-sm": ["'Plus Jakarta Sans'", "Inter", "sans-serif"]
       },
       "fontSize": {
           "body-lg": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],

@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import { 
   Lock, Lightbulb, ShieldCheck, ChartLineUp, 
   Sparkle, PlugsConnected, Crown, BatteryLow, Trophy, BookOpen,
-  CheckCircle, ArrowRight
+  CheckCircle, ArrowRight, ArrowLeft
 } from '@phosphor-icons/react';
 
 export default function InsightsRoadmap() {
@@ -35,13 +35,21 @@ export default function InsightsRoadmap() {
       
       {/* ── TOP HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-            {isHinglish ? 'इंटेलिजेंस रोडमैप (Intelligence Roadmap)' : 'Intelligence Roadmap'}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {isHinglish ? 'जैसे-जैसे आप दिन ट्रैक करेंगे, नए-नए एल्गोरिदम अनलॉक होंगे' : 'Progressively unlock advanced behavioral intelligence as you log habits.'}
-          </p>
+        <div className="flex items-start sm:items-center gap-3">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors mt-0.5 sm:mt-0"
+          >
+            <ArrowLeft size={16} weight="bold" />
+          </button>
+          <div>
+            <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              {isHinglish ? 'इंटेलिजेंस रोडमैप (Intelligence Roadmap)' : 'Intelligence Roadmap'}
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {isHinglish ? 'जैसे-जैसे आप दिन ट्रैक करेंगे, नए-नए एल्गोरिदम अनलॉक होंगे' : 'Progressively unlock advanced behavioral intelligence as you log habits.'}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

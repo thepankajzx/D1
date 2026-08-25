@@ -14,8 +14,10 @@ import {
   PottedPlant,
   Lightbulb
 } from '@phosphor-icons/react';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ScoringModal({ type, onClose }) {
+  const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('build');
   const [tooltipText, setTooltipText] = useState(null);
 
@@ -66,9 +68,124 @@ export default function ScoringModal({ type, onClose }) {
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-[480px] max-h-[80vh] sm:max-h-[84vh] bg-[#f8fafc] dark:bg-[#131722] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200" 
+        className="relative w-full max-w-[480px] max-h-[80vh] sm:max-h-[84vh] bg-[#f8fafc] dark:bg-[#131722] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 font-sans" 
         onClick={e => e.stopPropagation()}
       >
+        <style>{`
+          .chart-svg {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+          }
+          .chart-svg text {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            letter-spacing: -0.01em;
+          }
+          .chart-svg path.curve {
+            fill: none !important;
+            stroke-width: 4.5px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+          }
+          .chart-svg path.curve.green {
+            stroke: #10b981 !important;
+          }
+          .chart-svg path.curve.blue {
+            stroke: #3b82f6 !important;
+          }
+          .chart-svg path.curve.purple {
+            stroke: #8b5cf6 !important;
+          }
+          .chart-svg path.curve.orange {
+            stroke: #f97316 !important;
+          }
+          .chart-svg path.curve.red {
+            stroke: #ef4444 !important;
+          }
+          .chart-svg .area-green {
+            fill: rgba(16, 185, 129, 0.14) !important;
+            stroke: none !important;
+          }
+          .chart-svg .area-blue {
+            fill: rgba(59, 130, 246, 0.14) !important;
+            stroke: none !important;
+          }
+          .chart-svg .area-red {
+            fill: rgba(239, 68, 68, 0.14) !important;
+            stroke: none !important;
+          }
+          .chart-svg .area-purple {
+            fill: rgba(139, 92, 246, 0.14) !important;
+            stroke: none !important;
+          }
+          .chart-svg .area-orange {
+            fill: rgba(249, 115, 22, 0.14) !important;
+            stroke: none !important;
+          }
+          .chart-svg circle.marker-green {
+            fill: #10b981 !important;
+            stroke: ${isDark ? '#131722' : '#ffffff'} !important;
+            stroke-width: 3.5px;
+          }
+          .chart-svg circle.marker-blue {
+            fill: #3b82f6 !important;
+            stroke: ${isDark ? '#131722' : '#ffffff'} !important;
+            stroke-width: 3.5px;
+          }
+          .chart-svg circle.marker-red {
+            fill: #ef4444 !important;
+            stroke: ${isDark ? '#131722' : '#ffffff'} !important;
+            stroke-width: 3.5px;
+          }
+          .chart-svg text.score-number {
+            font-weight: 800;
+          }
+          .chart-svg text.score-number.green {
+            fill: #059669 !important;
+          }
+          .chart-svg text.score-number.red {
+            fill: #dc2626 !important;
+          }
+          .chart-svg text.axis-label {
+            font-weight: 600;
+            fill: ${isDark ? '#9BA3AF' : '#64748b'};
+            font-size: 13px;
+          }
+          .chart-svg text.chart-label {
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+          }
+          .chart-svg text.chart-label.green {
+            fill: #059669 !important;
+          }
+          .chart-svg text.chart-label.red {
+            fill: #dc2626 !important;
+          }
+          .chart-svg line.grid-line {
+            stroke: ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'};
+            stroke-dasharray: 4 4;
+            stroke-width: 1px;
+          }
+          .chart-svg line.axis-line {
+            stroke: ${isDark ? 'rgba(255,255,255,0.15)' : '#cbd5e1'};
+            stroke-width: 1.5;
+          }
+          
+          /* Dynamic Fills for text tags */
+          .chart-svg text.dynamic-text {
+            fill: ${isDark ? '#F1F3F7' : '#111318'} !important;
+          }
+          .chart-svg text.dynamic-label {
+            fill: ${isDark ? '#9BA3AF' : '#667085'} !important;
+          }
+          .chart-svg line.dynamic-grid {
+            stroke: ${isDark ? 'rgba(255,255,255,0.08)' : '#e9ebef'} !important;
+          }
+          .chart-svg line.dynamic-axis {
+            stroke: ${isDark ? 'rgba(255,255,255,0.15)' : '#b8bec8'} !important;
+          }
+        `}</style>
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 bg-white dark:bg-[#151a26] border-b border-slate-200/80 dark:border-slate-800 shrink-0">
           <div>
@@ -180,18 +297,18 @@ export default function ScoringModal({ type, onClose }) {
                         </linearGradient>
                       </defs>
 
-                      <line x1="105" y1="70" x2="820" y2="70" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="155" x2="820" y2="155" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="240" x2="820" y2="240" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="315" x2="820" y2="315" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="70" x2="820" y2="70" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="155" x2="820" y2="155" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="240" x2="820" y2="240" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="315" x2="820" y2="315" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
 
-                      <line x1="105" y1="55" x2="105" y2="325" stroke="#b8bec8" strokeWidth="1.2" />
-                      <line x1="105" y1="325" x2="820" y2="325" stroke="#b8bec8" strokeWidth="1.2" />
+                      <line x1="105" y1="55" x2="105" y2="325" className="dynamic-axis" strokeWidth="1.2" />
+                      <line x1="105" y1="325" x2="820" y2="325" className="dynamic-axis" strokeWidth="1.2" />
 
                       <text x="55" y="76" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
-                      <text x="72" y="161" fill="#667085" fontSize="14" fontWeight="750">75</text>
-                      <text x="72" y="246" fill="#667085" fontSize="14" fontWeight="750">50</text>
-                      <text x="72" y="321" fill="#667085" fontSize="14" fontWeight="750">0</text>
+                      <text x="72" y="161" className="dynamic-label" fontSize="14" fontWeight="750">75</text>
+                      <text x="72" y="246" className="dynamic-label" fontSize="14" fontWeight="750">50</text>
+                      <text x="72" y="321" className="dynamic-label" fontSize="14" fontWeight="750">0</text>
 
                       <path d="M105 315 L220 270 L335 220 L450 165 L560 105 L640 70 L820 70 L820 325 L105 325 Z" fill="rgba(18,166,106,.09)" />
                       <path stroke="url(#grad-build)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" d="M105 315 C155 295, 190 282, 220 270 C265 250, 300 236, 335 220 C380 198, 420 181, 450 165 C500 138, 535 119, 560 105 C595 85, 620 70, 640 70 L820 70" />
@@ -199,16 +316,16 @@ export default function ScoringModal({ type, onClose }) {
                       <circle cx="640" cy="70" r="12" fill="#12a66a" stroke="#fff" strokeWidth="4" />
 
                       <text x="640" y="40" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
-                      <text x="220" y="252" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">25</text>
-                      <text x="335" y="202" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">40</text>
-                      <text x="450" y="147" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">60</text>
-                      <text x="560" y="87" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">80</text>
+                      <text x="220" y="252" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">25</text>
+                      <text x="335" y="202" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">40</text>
+                      <text x="450" y="147" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">60</text>
+                      <text x="560" y="87" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">80</text>
 
                       <line x1="640" y1="70" x2="640" y2="325" stroke="#12a66a" strokeWidth="2" strokeDasharray="6 7" />
 
-                      <text x="640" y="355" textAnchor="middle" fill="#111318" fontSize="13" fontWeight="900">REACH HERE = 100!</text>
-                      <text transform="translate(24 190) rotate(-90)" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">Your score</text>
-                      <text x="460" y="347" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">How much you did →</text>
+                      <text x="640" y="355" textAnchor="middle" className="dynamic-text" fontSize="13" fontWeight="900">REACH HERE = 100!</text>
+                      <text transform="translate(24 190) rotate(-90)" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">Your score</text>
+                      <text x="460" y="347" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">How much you did →</text>
                     </svg>
                   </div>
                   <p className="text-center text-xs font-bold text-slate-600 mt-3">
@@ -325,17 +442,17 @@ export default function ScoringModal({ type, onClose }) {
                         </linearGradient>
                       </defs>
 
-                      <line x1="105" y1="70" x2="820" y2="70" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="160" x2="820" y2="160" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="250" x2="820" y2="250" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="340" x2="820" y2="340" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="70" x2="820" y2="70" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="160" x2="820" y2="160" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="250" x2="820" y2="250" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="340" x2="820" y2="340" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
 
-                      <line x1="105" y1="55" x2="105" y2="340" stroke="#b8bec8" strokeWidth="1.2" />
-                      <line x1="105" y1="340" x2="820" y2="340" stroke="#b8bec8" strokeWidth="1.2" />
+                      <line x1="105" y1="55" x2="105" y2="340" className="dynamic-axis" strokeWidth="1.2" />
+                      <line x1="105" y1="340" x2="820" y2="340" className="dynamic-axis" strokeWidth="1.2" />
 
                       <text x="48" y="76" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
-                      <text x="72" y="166" fill="#667085" fontSize="14" fontWeight="750">75</text>
-                      <text x="72" y="256" fill="#667085" fontSize="14" fontWeight="750">50</text>
+                      <text x="72" y="166" className="dynamic-label" fontSize="14" fontWeight="750">75</text>
+                      <text x="72" y="256" className="dynamic-label" fontSize="14" fontWeight="750">50</text>
                       <text x="58" y="346" fill="#e5484d" fontSize="18" fontWeight="900">0</text>
 
                       <rect x="105" y="70" width="415" height="270" fill="#e9f8f1" opacity=".9"/>
@@ -359,10 +476,10 @@ export default function ScoringModal({ type, onClose }) {
 
                       <text x="580" y="150" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="900">75</text>
                       <text x="650" y="230" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="900">50</text>
-                      <text x="705" y="295" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">25</text>
+                      <text x="705" y="295" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">25</text>
 
-                      <text transform="translate(24 205) rotate(-90)" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">Your score</text>
-                      <text x="480" y="335" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">How much you did →</text>
+                      <text transform="translate(24 205) rotate(-90)" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">Your score</text>
+                      <text x="480" y="335" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">How much you did →</text>
                     </svg>
                   </div>
                   <p className="text-center text-xs font-bold text-slate-600 mt-3">
@@ -479,17 +596,17 @@ export default function ScoringModal({ type, onClose }) {
                         </linearGradient>
                       </defs>
 
-                      <line x1="105" y1="70" x2="820" y2="70" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="155" x2="820" y2="155" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="240" x2="820" y2="240" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="325" x2="820" y2="325" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="70" x2="820" y2="70" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="155" x2="820" y2="155" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="240" x2="820" y2="240" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="325" x2="820" y2="325" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
 
-                      <line x1="105" y1="55" x2="105" y2="340" stroke="#b8bec8" strokeWidth="1.2" />
-                      <line x1="105" y1="340" x2="820" y2="340" stroke="#b8bec8" strokeWidth="1.2" />
+                      <line x1="105" y1="55" x2="105" y2="340" className="dynamic-axis" strokeWidth="1.2" />
+                      <line x1="105" y1="340" x2="820" y2="340" className="dynamic-axis" strokeWidth="1.2" />
 
                       <text x="50" y="76" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
-                      <text x="72" y="161" fill="#667085" fontSize="14" fontWeight="750">75</text>
-                      <text x="72" y="246" fill="#667085" fontSize="14" fontWeight="750">50</text>
+                      <text x="72" y="161" className="dynamic-label" fontSize="14" fontWeight="750">75</text>
+                      <text x="72" y="246" className="dynamic-label" fontSize="14" fontWeight="750">50</text>
                       <text x="58" y="331" fill="#e5484d" fontSize="18" fontWeight="900">0</text>
 
                       <path d="M105 325 C170 305, 220 265, 280 210 C325 170, 350 115, 390 70 L600 70 C640 115, 665 170, 710 210 C770 265, 800 305, 820 325 L820 340 L105 340 Z" fill="rgba(18,166,106,.09)" />
@@ -500,7 +617,7 @@ export default function ScoringModal({ type, onClose }) {
 
                       <text x="495" y="42" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
                       <text x="495" y="105" textAnchor="middle" fill="#12a66a" fontSize="13" fontWeight="900">PERFECT RANGE</text>
-                      <text x="495" y="130" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">7–8 HOURS</text>
+                      <text x="495" y="130" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">7–8 HOURS</text>
 
                       <line x1="390" y1="70" x2="390" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
                       <line x1="600" y1="70" x2="600" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
@@ -508,11 +625,11 @@ export default function ScoringModal({ type, onClose }) {
                       <text x="250" y="140" textAnchor="middle" fill="#e5484d" fontSize="13" fontWeight="900">NOT ENOUGH</text>
                       <text x="750" y="140" textAnchor="middle" fill="#e5484d" fontSize="13" fontWeight="900">WAY TOO MUCH</text> 
 
-                      <text x="145" y="315" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">0</text>
-                      <text x="790" y="315" textAnchor="middle" fill="#111318" fontSize="18" fontWeight="900">0</text>
+                      <text x="145" y="315" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">0</text>
+                      <text x="790" y="315" textAnchor="middle" className="dynamic-text" fontSize="18" fontWeight="900">0</text>
 
-                      <text transform="translate(24 205) rotate(-90)" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">Your score</text>
-                      <text x="490" y="370" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">How much you did →</text>
+                      <text transform="translate(24 205) rotate(-90)" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">Your score</text>
+                      <text x="490" y="370" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">How much you did →</text>
                     </svg>
                   </div>
                   <p className="text-center text-xs font-bold text-slate-600 mt-3">
@@ -631,18 +748,18 @@ export default function ScoringModal({ type, onClose }) {
                         </linearGradient>
                       </defs>
 
-                      <line x1="105" y1="70" x2="820" y2="70" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="140" x2="820" y2="140" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="210" x2="820" y2="210" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
-                      <line x1="105" y1="280" x2="820" y2="280" stroke="#e9ebef" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="70" x2="820" y2="70" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="140" x2="820" y2="140" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="210" x2="820" y2="210" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
+                      <line x1="105" y1="280" x2="820" y2="280" className="dynamic-grid" strokeWidth="1" strokeDasharray="4 5" />
 
-                      <line x1="105" y1="55" x2="105" y2="280" stroke="#b8bec8" strokeWidth="1.2" />
-                      <line x1="105" y1="280" x2="820" y2="280" stroke="#b8bec8" strokeWidth="1.2" />
+                      <line x1="105" y1="55" x2="105" y2="280" className="dynamic-axis" strokeWidth="1.2" />
+                      <line x1="105" y1="280" x2="820" y2="280" className="dynamic-axis" strokeWidth="1.2" />
 
                       <text x="55" y="76" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
-                      <text x="72" y="146" fill="#667085" fontSize="14" fontWeight="750">75</text>
-                      <text x="72" y="216" fill="#667085" fontSize="14" fontWeight="750">50</text>
-                      <text x="72" y="286" fill="#667085" fontSize="14" fontWeight="750">0</text>
+                      <text x="72" y="146" className="dynamic-label" fontSize="14" fontWeight="750">75</text>
+                      <text x="72" y="216" className="dynamic-label" fontSize="14" fontWeight="750">50</text>
+                      <text x="72" y="286" className="dynamic-label" fontSize="14" fontWeight="750">0</text>
 
                       <path stroke="url(#grad-sustain)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" d="M140 280 C 260 280, 380 70, 480 70 C 580 70, 700 280, 820 280" />
 
@@ -652,16 +769,16 @@ export default function ScoringModal({ type, onClose }) {
 
                       <line x1="480" y1="70" x2="480" y2="280" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7" />
 
-                      <text x="480" y="310" textAnchor="middle" fill="#111318" fontSize="13" fontWeight="900">EXACTLY 8:00 AM</text>
+                      <text x="480" y="310" textAnchor="middle" className="dynamic-text" fontSize="13" fontWeight="900">EXACTLY 8:00 AM</text>
 
                       <text x="240" y="150" textAnchor="middle" fill="#e5484d" fontSize="13" fontWeight="900">TOO EARLY</text>
-                      <text x="240" y="175" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">7:00 AM</text>
+                      <text x="240" y="175" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">7:00 AM</text>
 
                       <text x="720" y="150" textAnchor="middle" fill="#e5484d" fontSize="13" fontWeight="900">TOO LATE</text>
-                      <text x="720" y="175" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">9:00 AM</text>
+                      <text x="720" y="175" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">9:00 AM</text>
 
-                      <text transform="translate(24 175) rotate(-90)" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">Your score</text>
-                      <text x="480" y="365" textAnchor="middle" fill="#667085" fontSize="14" fontWeight="750">Time you did it →</text>
+                      <text transform="translate(24 175) rotate(-90)" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">Your score</text>
+                      <text x="480" y="365" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">Time you did it →</text>
                     </svg>
                   </div>
                   <p className="text-center text-xs font-bold text-slate-600 mt-3">
@@ -852,7 +969,7 @@ export default function ScoringModal({ type, onClose }) {
             onClick={onClose}
             className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 active:scale-98 text-white rounded-xl text-xs sm:text-sm font-black cursor-pointer transition-all shadow-md flex items-center justify-center gap-2"
           >
-            <span>Got it, let's choose habits 🚀</span>
+            <span>Got it, let's choose habits</span>
           </button>
         </div>
 

@@ -99,12 +99,12 @@ export function calculateRecoveryScore(
       if (typeof hObj === 'boolean') {
         isCompleted = hObj;
       } else if (hObj && typeof hObj === 'object') {
-        isCompleted = hObj.completed === true || (typeof hObj.score === 'number' && hObj.score >= 60);
+        isCompleted = hObj.completed === true || (typeof hObj.score === 'number' && hObj.score >= 50);
       }
     } else if (summary.habitScores && summary.habitScores[habitId] !== undefined) {
       hasRecord = true;
       const score = summary.habitScores[habitId];
-      isCompleted = score !== null && score >= 60;
+      isCompleted = score !== null && score >= 50;
     }
 
     if (hasRecord) {

@@ -145,7 +145,7 @@ export function getLowerIsBetterAnalytics(habit, allSummaries, dateRange) {
   // ── Insights ───────────────────────────────────────────────────────────────
   const insights = [];
   if (weakestDay !== 'N/A') {
-    insights.push(`💡 ${weakestDay} usage is highest. Try a smaller window.`);
+    insights.push(`${weakestDay} usage is highest. Try a smaller window.`);
   }
   if (improvement !== null && improvement > 0) {
     insights.push(`↗ Score improved by ${improvement}% vs the previous period. Great job!`);
@@ -153,7 +153,7 @@ export function getLowerIsBetterAnalytics(habit, allSummaries, dateRange) {
     insights.push(`↘ Score dropped by ${Math.abs(improvement)}% vs last period.`);
   }
   if (daysOnTarget > 0) {
-    insights.push(`🎯 You stayed within target on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
+    insights.push(`You stayed within target on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
   }
   if (valueChange !== null && valueChange < 0) {
     insights.push(`↘ You reduced average ${unit || 'value'} by ${formatVal(Math.abs(valueChange))} vs last period.`);

@@ -51,8 +51,28 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
     target0 = (h || 15) * 60 + (m || 0);
   }
 
-  let scoreSum = 0, valueSum = 0, trackedDays = 0;
-  let prevScoreSum = 0, prevValueSum = 0, prevTrackedDays = 0;
+  // Detect night/bedtime habits to handle midnight wraparound
+  const isNightHabit = habit.id.includes('sleep') || habit.id.includes('bed') || (habit.name && habit.name.toLowerCase().includes('sleep')) || targetValue >= 12 * 60;
+
+  const normalizeTimeForAvg = (val) => {
+    if (val === null || val === undefined || typeof val !== 'number') return null;
+    if (isNightHabit && val < 12 * 60) {
+      return val + 1440;
+    }
+    return val;
+  };
+
+  const denormalizeAvg = (val) => {
+    if (val === null || val === undefined) return null;
+    let v = Math.round(val);
+    if (isNightHabit && v >= 1440) {
+      v = v % 1440;
+    }
+    return v;
+  };
+
+  let scoreSum = 0, normalizedValueSum = 0, trackedDays = 0;
+  let prevScoreSum = 0, prevNormalizedValueSum = 0, prevTrackedDays = 0;
   let daysOnTarget = 0;
   let bestValue = -Infinity, bestDate = null;
 
@@ -69,26 +89,27 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
     let numValue = s.habitValues?.[habit.id];
     
     if (numValue !== null && numValue !== undefined && typeof numValue === 'number') {
-       if (numValue > 1440 && habit.id.includes('sleep')) numValue -= 1440;
+      if (numValue > 1440 && isNightHabit) numValue -= 1440;
     } else {
-       numValue = null;
+      numValue = null;
     }
 
     const hasData = score !== null && score !== undefined;
+    const normalizedVal = normalizeTimeForAvg(numValue);
 
     if (s.id >= start && s.id <= end) {
       if (hasData) {
         scoreSum += score;
-        if (numValue !== null) valueSum += numValue;
+        if (normalizedVal !== null) normalizedValueSum += normalizedVal;
         trackedDays++;
         if (score >= 100) daysOnTarget++;
         // Later is better means HIGHER time is better
-        if (numValue !== null && numValue > bestValue) {
-          bestValue = numValue;
+        if (normalizedVal !== null && normalizedVal > bestValue) {
+          bestValue = normalizedVal;
           bestDate = s.id;
         }
         const dowIdx = getDOWIndex(s.id);
-        weekdayValueSum[dowIdx] += numValue || 0;
+        weekdayValueSum[dowIdx] += normalizedVal || 0;
         weekdayScoreSum[dowIdx] += score;
         weekdayCounts[dowIdx]++;
       }
@@ -97,7 +118,7 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
 
     if (s.id >= prevStart && s.id <= prevEnd && hasData) {
       prevScoreSum += score;
-      if (numValue !== null) prevValueSum += numValue;
+      if (normalizedVal !== null) prevNormalizedValueSum += normalizedVal;
       prevTrackedDays++;
     }
   }
@@ -113,17 +134,20 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
   });
 
   const overallScore = trackedDays > 0 ? Math.round(scoreSum / trackedDays) : 0;
-  const avgValue     = trackedDays > 0 ? Math.round(valueSum / trackedDays) : 0;
+  const rawAvgNormalized = trackedDays > 0 ? (normalizedValueSum / trackedDays) : 0;
+  const avgValue = denormalizeAvg(rawAvgNormalized);
 
-  const prevScore    = prevTrackedDays > 0 ? Math.round(prevScoreSum / prevTrackedDays) : null;
-  const prevAvgValue = prevTrackedDays > 0 ? Math.round(prevValueSum / prevTrackedDays) : null;
-  const improvement  = prevScore !== null ? overallScore - prevScore : null;
-  const valueChange  = prevAvgValue !== null ? avgValue - prevAvgValue : null;
+  const prevScore = prevTrackedDays > 0 ? Math.round(prevScoreSum / prevTrackedDays) : null;
+  const rawPrevAvgNormalized = prevTrackedDays > 0 ? (prevNormalizedValueSum / prevTrackedDays) : null;
+  const prevAvgValue = denormalizeAvg(rawPrevAvgNormalized);
+  
+  const improvement = prevScore !== null ? overallScore - prevScore : null;
+  const valueChange = (rawAvgNormalized !== null && rawPrevAvgNormalized !== null) ? Math.round(rawAvgNormalized - rawPrevAvgNormalized) : null;
 
   const weekdayPattern = DAYS_ORDER.map((day, i) => ({
     day,
-    avg: weekdayCounts[i] > 0 ? Math.round(weekdayValueSum[i] / weekdayCounts[i]) : 0,
-    avgScore: weekdayCounts[i] > 0 ? weekdayScoreSum[i] / weekdayCounts[i] : 0,
+    avg: weekdayCounts[i] > 0 ? denormalizeAvg(weekdayValueSum[i] / weekdayCounts[i]) : 0,
+    avgScore: weekdayCounts[i] > 0 ? Math.round(weekdayScoreSum[i] / weekdayCounts[i]) : 0,
     count: weekdayCounts[i],
   }));
   const maxWeekdayAvg = Math.max(...weekdayPattern.map(w => w.avg), 0.0001);
@@ -146,7 +170,7 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
 
   const insights = [];
   if (weakestDay !== 'N/A') {
-    insights.push(`💡 You tend to miss your target time most on ${weakestDay}s.`);
+    insights.push(`You tend to miss your target time most on ${weakestDay}s.`);
   }
   if (improvement !== null && improvement > 0) {
     insights.push(`↗ Score improved by ${improvement}% vs the previous period. Great job!`);
@@ -154,7 +178,7 @@ export function getLaterIsBetterAnalytics(habit, allSummaries, dateRange) {
     insights.push(`↘ Score dropped by ${Math.abs(improvement)}% vs last period.`);
   }
   if (daysOnTarget > 0) {
-    insights.push(`🎯 You were on target on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
+    insights.push(`You were on target on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
   }
   if (valueChange !== null && valueChange > 0) {
     const hr = Math.floor(valueChange / 60);

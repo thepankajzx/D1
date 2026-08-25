@@ -25,9 +25,11 @@
     background-color: var(--ahs-bg-page);
     color: var(--ahs-text-main);
     line-height: 1.5;
-    padding-bottom: 110px;
+    padding-bottom: 120px;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .ahs-wrap * {
@@ -39,9 +41,9 @@
   width: 100%; 
   max-width: 1300px; 
   margin: 0 auto; 
-  padding: 16px 12px; 
+  padding: 12px 10px; 
   box-sizing: border-box; 
-  overflow: visible; 
+  overflow-x: hidden; 
 }
 @media (min-width: 640px) {
   .ahs-container {
@@ -108,14 +110,21 @@
 .ahs-habits-grid { 
   display: grid; 
   grid-template-columns: 1fr; 
-  gap: 10px; 
+  gap: 12px; 
   width: 100%; 
   max-width: 100%; 
   box-sizing: border-box; 
 }
 @media (min-width: 640px) {
   .ahs-habits-grid { 
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+    gap: 14px;
+  }
+}
+@media (min-width: 1024px) {
+  .ahs-habits-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+    gap: 16px;
   }
 }
 

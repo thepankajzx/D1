@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Target, X, ChartBar, Lightbulb, Lightning, Sparkle } from '@phosphor-icons/react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { db } from '../lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { useAuth } from '../contexts/AuthContext';
-import { useData } from '../contexts/DataContext';
-import { HABITS_SEED_DATA } from '../lib/premadeHabits';
-import { calculateScore } from '../lib/scoring';
-import Icon from '../components/Icon';
-import PriorityIcon from '../components/PriorityIcon';
-import HabitIcon from '../components/HabitIcon';
-import ScoringModal from '../components/ScoringModal';
-import ProModal from '../components/ProModal';
-import './AdvancedHabitSelector.css';
-
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Target, X, ChartBar, Lightbulb, Lightning, Sparkle, Palette, TrendUp, TrendDown } from '@phosphor-icons/react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { db } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
+import { HABITS_SEED_DATA } from '../lib/premadeHabits';
+import { calculateScore } from '../lib/scoring';
+import Icon from '../components/Icon';
+import PriorityIcon from '../components/PriorityIcon';
+import HabitIcon from '../components/HabitIcon';
+import ScoringModal from '../components/ScoringModal';
+import ProModal from '../components/ProModal';
+import HabitIconColorPickerModal from '../components/HabitIconColorPickerModal';
+import './AdvancedHabitSelector.css';
+
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime, habitId, habitName }) => {
   let resolvedUnit = (unit && unit !== 'Time' && unit !== 'time') ? unit : '';
   if (!resolvedUnit && (habitId || habitName)) {
@@ -31,8 +32,8 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   }
 
   const isDecimalUnit = resolvedUnit === 'Liters' || resolvedUnit === 'L' || resolvedUnit === 'liters' || resolvedUnit === 'km' || resolvedUnit === 'miles';
-  const localMax = isTime ? 1440 : (isDecimalUnit ? 20 : (Math.max(100, target0 * 1.5, target100 * 1.5)));
-  const step = isDecimalUnit ? 0.1 : 1;
+  const localMax = isTime ? 1440 : (isDecimalUnit ? 20 : (Math.max(100, (target0 || 0) * 1.5, (target100 || 10) * 1.5)));
+  const step = isTime ? 5 : (isDecimalUnit ? 0.1 : 1);
 
   const [glowTarget, setGlowTarget] = useState(null);
   const prevValRef = useRef({ target0, target100 });
@@ -146,58 +147,67 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
     const borderColor = glowTarget === field ? 'border-primary shadow-lg shadow-primary/20' : 'border-outline-variant/40';
 
     return (
-      <div className="flex flex-col items-center w-full">
-        <div className={`border ${borderColor} rounded-2xl p-3 bg-surface flex flex-col items-center w-full transition-all duration-300 shadow-xs`}>
-          <span className={`px-3 py-1 rounded-md text-xs font-bold mb-2.5 ${badgeBg}`}>
+      <div className="flex flex-col items-center w-full min-w-0">
+        <div className={`border ${borderColor} rounded-2xl p-2.5 sm:p-3.5 bg-surface flex flex-col items-center w-full transition-all duration-300 shadow-xs`}>
+          <span className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-bold mb-2 ${badgeBg}`}>
             {label}
           </span>
           {isTime ? (
             <div className="relative w-full">
               <input 
                 type="time"
-                className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-2.5 w-full text-center font-bold text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
+                className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-2 w-full text-center font-black text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
                 value={formatTimeStr(value)} 
                 onChange={e => onChange(field, parseTimeStr(e.target.value))} 
               />
             </div>
           ) : showHM ? (
             <div className="flex flex-col items-center w-full">
-              <div className="flex items-center justify-center w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-2.5 py-2">
-                <div className="flex items-center justify-center flex-1 min-w-0">
+              <div className="flex items-center justify-center w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl px-2 py-1.5 gap-0.5 sm:gap-1">
+                <div className="flex items-center justify-center min-w-0 flex-1">
                   <input 
                     type="number" min="0" max="23"
-                    className="bg-transparent w-full text-center font-bold text-base sm:text-lg focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                    value={getH(value) || ''} 
+                    className="bg-transparent w-full text-center font-black text-sm sm:text-base text-slate-900 dark:text-white focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums" 
+                    value={getH(value) !== undefined && getH(value) !== null ? getH(value) : ''} 
                     placeholder="0"
                     onChange={e => updateHM(field, value, 'h', e.target.value)} 
                   />
-                  <span className="text-xs text-on-surface-variant font-bold ml-1 shrink-0">h</span>
+                  <span className="text-[11px] text-slate-500 font-bold shrink-0">h</span>
                 </div>
-                <div className="text-outline-variant/60 font-bold px-1.5">:</div>
-                <div className="flex items-center justify-center flex-1 min-w-0">
+                <div className="text-slate-400 font-bold px-0.5 shrink-0">:</div>
+                <div className="flex items-center justify-center min-w-0 flex-1">
                   <input 
                     type="number" min="0" max="59"
-                    className="bg-transparent w-full text-center font-bold text-base sm:text-lg focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                    className="bg-transparent w-full text-center font-black text-sm sm:text-base text-slate-900 dark:text-white focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums" 
                     value={getM(value) !== undefined && getM(value) !== null ? getM(value) : ''} 
                     placeholder="00"
                     onChange={e => updateHM(field, value, 'm', e.target.value)} 
                   />
-                  <span className="text-xs text-on-surface-variant font-bold ml-1 shrink-0">m</span>
+                  <span className="text-[11px] text-slate-500 font-bold shrink-0">m</span>
                 </div>
               </div>
-              <div className="text-center text-xs font-bold text-primary mt-2 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+              <div className="text-center text-[11px] font-bold text-primary mt-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 whitespace-nowrap">
                 {getH(value)}h {getM(value)}m
               </div>
             </div>
           ) : (
             <div className="relative w-full flex flex-col items-center">
-              <div className="flex items-center justify-center w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors">
+              <div className="flex items-center justify-center w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-2.5 sm:px-3 py-2 focus-within:border-primary transition-colors">
                 <input 
                   type="number" 
+                  min="0"
                   step={isDecimalUnit ? "0.1" : "1"}
-                  className="bg-transparent w-full text-center font-bold text-lg sm:text-xl focus:outline-none" 
+                  className="bg-transparent w-full text-center font-black text-base sm:text-xl text-slate-900 dark:text-white focus:outline-none tabular-nums" 
                   value={value !== undefined && value !== null ? value : ''} 
-                  onChange={e => onChange(field, isDecimalUnit ? parseFloat(e.target.value) || 0 : Math.round(parseFloat(e.target.value)) || 0)} 
+                  onChange={e => {
+                    const raw = e.target.value;
+                    if (raw === '') {
+                      onChange(field, 0);
+                      return;
+                    }
+                    const parsed = parseFloat(raw);
+                    onChange(field, isNaN(parsed) ? 0 : (isDecimalUnit ? Math.round(parsed * 10) / 10 : Math.round(parsed)));
+                  }} 
                 />
                 {resolvedUnit && (
                   <span className="text-xs sm:text-sm font-bold text-primary ml-1 shrink-0">
@@ -206,14 +216,15 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
                 )}
               </div>
               {resolvedUnit && (
-                <div className="text-center text-xs font-bold text-primary mt-2 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                <div className="text-center text-[11px] font-bold text-primary mt-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 whitespace-nowrap">
                   {value} {resolvedUnit}
                 </div>
               )}
             </div>
           )}
+
         </div>
-        <div className="text-[11px] text-on-surface-variant mt-2 font-medium">
+        <div className="text-[11px] text-on-surface-variant mt-1.5 font-medium text-center">
           {isTime ? (isRed ? 'Late Limit (0%)' : 'Ideal Time (100%)') : (isRed ? 'Start Floor (0%)' : 'Target Goal (100%)')}
         </div>
       </div>
@@ -221,79 +232,75 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   };
 
   return (
-    <div className="w-full mt-4 mb-2">
-      <div className="flex justify-between items-start gap-4 mb-6">
+    <div className="w-full mt-3 mb-2">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 mb-3.5">
         <InputCard field="target0" label="0% Score" value={target0} isRed={true} />
         <InputCard field="target100" label="100% Score" value={target100} isRed={false} />
       </div>
       
-      {!isTime && (
-        <>
-          <div className="flex items-center gap-3 w-full mt-2">
-            <button
-              type="button"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                startHolding('target100', -step);
-              }}
-              onPointerUp={stopHolding}
-              onPointerLeave={stopHolding}
-              onPointerCancel={stopHolding}
-              className="w-9 h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
-              title="Decrease Target (-1 unit)"
-              aria-label="Decrease Target"
-            >
-              <Icon name="remove" className="text-[18px]" />
-            </button>
+      <div className="flex items-center gap-2 sm:gap-3 w-full mt-2">
+        <button
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            startHolding('target100', -step);
+          }}
+          onPointerUp={stopHolding}
+          onPointerLeave={stopHolding}
+          onPointerCancel={stopHolding}
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
+          title="Decrease Target"
+          aria-label="Decrease Target"
+        >
+          <Icon name="remove" className="text-[16px] sm:text-[18px]" />
+        </button>
 
-            <div className="dual-slider-container flex-1">
-              <div className="dual-slider-track" style={{ background: bg }} />
-              <input 
-                type="range"
-                min={0} max={localMax} step={isDecimalUnit ? 0.1 : 1}
-                value={target0}
-                onChange={e => handleSliderChange('target0', Number(e.target.value))}
-                className="dual-slider-input"
-                style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
-              />
-              <input 
-                type="range"
-                min={0} max={localMax} step={isDecimalUnit ? 0.1 : 1}
-                value={target100}
-                onChange={e => handleSliderChange('target100', Number(e.target.value))}
-                className="dual-slider-input"
-                style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
-              />
-            </div>
+        <div className="dual-slider-container flex-1">
+          <div className="dual-slider-track" style={{ background: bg }} />
+          <input 
+            type="range"
+            min={0} max={localMax} step={step}
+            value={target0}
+            onChange={e => handleSliderChange('target0', Number(e.target.value))}
+            className="dual-slider-input"
+            style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
+          />
+          <input 
+            type="range"
+            min={0} max={localMax} step={step}
+            value={target100}
+            onChange={e => handleSliderChange('target100', Number(e.target.value))}
+            className="dual-slider-input"
+            style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
+          />
+        </div>
 
-            <button
-              type="button"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                startHolding('target100', step);
-              }}
-              onPointerUp={stopHolding}
-              onPointerLeave={stopHolding}
-              onPointerCancel={stopHolding}
-              className="w-9 h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
-              title="Increase Target (+1 unit)"
-              aria-label="Increase Target"
-            >
-              <Icon name="add" className="text-[18px]" />
-            </button>
-          </div>
+        <button
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            startHolding('target100', step);
+          }}
+          onPointerUp={stopHolding}
+          onPointerLeave={stopHolding}
+          onPointerCancel={stopHolding}
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-90 flex items-center justify-center text-on-surface font-bold transition-all border border-outline-variant/40 select-none touch-none shrink-0 shadow-xs cursor-pointer"
+          title="Increase Target"
+          aria-label="Increase Target"
+        >
+          <Icon name="add" className="text-[16px] sm:text-[18px]" />
+        </button>
+      </div>
 
-          <div className="text-[10px] text-center text-on-surface-variant mt-2.5 opacity-80 font-medium">
-            Drag red/green knobs or tap + / - to adjust in {resolvedUnit || 'units'}
-          </div>
-        </>
-      )}
+      <div className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
+        Drag red/green knobs or tap + / - to adjust {isTime ? 'in minutes' : (resolvedUnit || 'value')}
+      </div>
     </div>
   );
 };
 
-const MAX_FREE_HABITS = 8;
-const MAX_CUSTOM_HABITS = 5;
+const MAX_FREE_HABITS = 10;
+const MAX_CUSTOM_HABITS = 10;
 
 export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
@@ -326,14 +333,18 @@ export default function AdvancedHabitSelector() {
   const [showPriorityLockModal, setShowPriorityLockModal] = useState(false);
 
   // Custom Habit Builder State
+  const [editingCustomHabitId, setEditingCustomHabitId] = useState(null);
   const [cbName, setCbName] = useState('');
   const [cbType, setCbType] = useState('yn');
   const [cbUnit, setCbUnit] = useState('L');
   const [cbUnitCustom, setCbUnitCustom] = useState('');
-  const [cbDirection, setCbDirection] = useState('');
+  const [cbDirection, setCbDirection] = useState('higher');
   const [cbFloor, setCbFloor] = useState(0);
   const [cbTarget, setCbTarget] = useState(10);
   const [cbTolerance, setCbTolerance] = useState(false);
+  const [cbIcon, setCbIcon] = useState('rocket_launch');
+  const [cbColor, setCbColor] = useState('#10b981');
+  const [showIconPickerModal, setShowIconPickerModal] = useState(false);
   
   // Choose What You Want feature toggles
   const [enabledFeatures, setEnabledFeatures] = useState({
@@ -347,6 +358,22 @@ export default function AdvancedHabitSelector() {
       setEnabledFeatures(prev => ({ ...prev, ...userDoc.enabledFeatures }));
     }
   }, [userDoc]);
+
+  // Automatically show the How Scoring Works popup on first-time visit
+  useEffect(() => {
+    try {
+      const hasSeen = localStorage.getItem('definite_scoring_guide_intro_seen');
+      if (!hasSeen) {
+        const timer = setTimeout(() => {
+          setScoringModal('all');
+          localStorage.setItem('definite_scoring_guide_intro_seen', 'true');
+        }, 450);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }, []);
 
   const isFirstTimeSetup = existingHabits.length === 0;
 
@@ -497,19 +524,40 @@ export default function AdvancedHabitSelector() {
   };
 
   const handleCardClick = (habit) => {
-    if (expandedHabitId === habit.id) return;
+    if (expandedHabitId === habit.id) {
+      setExpandedHabitId(null);
+      setDraftHabit(null);
+      return;
+    }
     const isExisting = existingHabits.some(h => h.id === habit.id);
     if (isExisting) {
       alert("You are already tracking this habit. To manage existing habits, go to your Profile.");
       return;
     }
+
+    if (habit.isCustom || habit.id?.startsWith('custom_')) {
+      const existingCustom = customHabits.find(h => h.id === habit.id) || habit;
+      setDraftHabit({
+        ...existingCustom,
+        target: existingCustom.userTarget100 !== undefined ? existingCustom.userTarget100 : (existingCustom.target100 !== undefined ? existingCustom.target100 : 10),
+        floor: existingCustom.userTarget0 !== undefined ? existingCustom.userTarget0 : (existingCustom.target0 !== undefined ? existingCustom.target0 : 0)
+      });
+      setExpandedHabitId(habit.id);
+      return;
+    }
+
     const existingSelected = selectedHabits.find(h => h.id === habit.id);
     if (existingSelected) {
-        setDraftHabit({ ...existingSelected });
+        setDraftHabit({
+          ...existingSelected,
+          target: existingSelected.userTarget100 !== undefined ? existingSelected.userTarget100 : (existingSelected.target100 !== undefined ? existingSelected.target100 : 100),
+          floor: existingSelected.userTarget0 !== undefined ? existingSelected.userTarget0 : (existingSelected.target0 !== undefined ? existingSelected.target0 : 0)
+        });
     } else {
-        const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
-        const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
-        if (totalHabitsCount >= 9 && (!userDoc || !userDoc.isPro)) {
+        const newLibrarySelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
+        const existingLibraryCount = existingHabits.filter(h => !h.id.startsWith('custom_') && h.category !== 'Custom').length;
+        const totalLibraryCount = existingLibraryCount + newLibrarySelections.length;
+        if (totalLibraryCount >= 10 && (!userDoc || !userDoc.isPro)) {
             setPaywallSource("total_habits_limit");
             setShowPaywall(true);
             return;
@@ -532,10 +580,47 @@ export default function AdvancedHabitSelector() {
     setExpandedHabitId(habit.id);
   };
 
+  const isDuplicateIconAndColor = (icon, color, ignoreHabitId = null) => {
+    const normColor = (color || '#10b981').toLowerCase().trim();
+    const normIcon = (icon || 'rocket_launch').toLowerCase().trim();
+    const allHabits = [
+      ...existingHabits,
+      ...selectedHabits,
+      ...customHabits
+    ];
+    return allHabits.find(h => {
+      if (ignoreHabitId && h.id === ignoreHabitId) return false;
+      const hColor = (h.color || '#10b981').toLowerCase().trim();
+      const hIcon = (h.icon || 'rocket_launch').toLowerCase().trim();
+      return hIcon === normIcon && hColor === normColor;
+    });
+  };
+
   const handleDoneConfig = (e) => {
     if (e) e.stopPropagation();
     if (!draftHabit) return;
     
+    if (draftHabit.isCustom || draftHabit.id?.startsWith('custom_')) {
+      const dup = isDuplicateIconAndColor(draftHabit.icon, draftHabit.color, draftHabit.id);
+      if (dup) {
+        alert(`This icon and color combination is already in use by "${dup.name}". Please choose a different icon or distinct color.`);
+        return;
+      }
+
+      const finalCustom = {
+        ...draftHabit,
+        userTarget100: draftHabit.target !== undefined && draftHabit.target !== null ? draftHabit.target : (draftHabit.userTarget100 ?? 10),
+        userTarget0: draftHabit.floor !== undefined && draftHabit.floor !== null ? draftHabit.floor : (draftHabit.userTarget0 ?? 0),
+        target100: draftHabit.target !== undefined && draftHabit.target !== null ? draftHabit.target : (draftHabit.target100 ?? 10),
+        target0: draftHabit.floor !== undefined && draftHabit.floor !== null ? draftHabit.floor : (draftHabit.target0 ?? 0)
+      };
+
+      setCustomHabits(prev => prev.map(ch => ch.id === finalCustom.id ? finalCustom : ch));
+      setExpandedHabitId(null);
+      setDraftHabit(null);
+      return;
+    }
+
     // Convert back target/floor to userTarget0/100 if needed by saving logic
     const finalHabit = {
         ...draftHabit,
@@ -558,7 +643,11 @@ export default function AdvancedHabitSelector() {
 
   const handleDeleteConfig = (e, habitId) => {
     if (e) e.stopPropagation();
-    setSelectedHabits(prev => prev.filter(h => h.id !== habitId));
+    if (habitId?.startsWith('custom_')) {
+      setCustomHabits(prev => prev.filter(h => h.id !== habitId));
+    } else {
+      setSelectedHabits(prev => prev.filter(h => h.id !== habitId));
+    }
     setExpandedHabitId(null);
     setDraftHabit(null);
   };
@@ -572,27 +661,50 @@ export default function AdvancedHabitSelector() {
     }));
   };
 
+  const startEditingCustomHabit = (ch, e) => {
+    if (e) e.stopPropagation();
+    setViewMode('selection');
+    setActiveCategories(['Custom']);
+    handleCardClick(ch);
+    window.scrollTo({ top: 80, behavior: 'smooth' });
+  };
+
+  const cancelEditCustomHabit = (e) => {
+    if (e) e.stopPropagation();
+    setEditingCustomHabitId(null);
+    setCbName('');
+    setCbType('yn');
+    setCbUnit('L');
+    setCbUnitCustom('');
+    setCbDirection('higher');
+    setCbFloor(0);
+    setCbTarget(10);
+    setCbTolerance(false);
+    setCbIcon('rocket_launch');
+    setCbColor('#10b981');
+  };
+
   const addCustomHabit = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
 
     if (!cbName.trim()) { alert("Please enter a Habit Name"); return; }
     if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
     if (cbType !== 'yn' && cbType !== 'time' && !cbDirection) { alert("Please select whether Higher or Lower is better"); return; }
     if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
 
-    const newSelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
-    const totalHabitsCount = existingHabits.length + newSelections.length + customHabits.length;
-
-    const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
-    if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
-      setPaywallSource("custom_habit_creation");
-      setShowPaywall(true);
+    const duplicate = isDuplicateIconAndColor(cbIcon, cbColor, editingCustomHabitId);
+    if (duplicate) {
+      alert(`This icon and color combination is already in use by "${duplicate.name}". Please choose a different icon or distinct color.`);
       return;
     }
-    if (totalHabitsCount >= 9 && !userDoc?.isPro) {
-      setPaywallSource("total_habits_limit");
-      setShowPaywall(true);
-      return;
+
+    if (!editingCustomHabitId) {
+      const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
+      if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
+        setPaywallSource("custom_habit_creation");
+        setShowPaywall(true);
+        return;
+      }
     }
 
     const name = cbName.trim();
@@ -605,10 +717,6 @@ export default function AdvancedHabitSelector() {
     if (cbType === 'yn') scoringType = 'binary';
     else if (cbType === 'time') scoringType = 'time';
 
-    const CUSTOM_DEDICATED_ICONS = ['rocket_launch', 'emoji_events', 'workspace_premium', 'local_fire_department', 'star'];
-    const totalCustomCount = customHabits.length + existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
-    const icon = CUSTOM_DEDICATED_ICONS[totalCustomCount % CUSTOM_DEDICATED_ICONS.length];
-
     const parseTime = (val) => {
       if (typeof val === 'string' && val.includes(':')) {
         const [h, m] = val.split(':').map(Number);
@@ -617,28 +725,49 @@ export default function AdvancedHabitSelector() {
       return parseFloat(val) || 0;
     };
 
-    const newCustom = {
-      id: `custom_${Date.now()}`,
+    const isDecimal = unit === 'Liters' || unit === 'L' || unit === 'liters' || unit === 'km' || unit === 'miles';
+    const target0Val = cbType === 'time' ? parseTime(cbFloor) : (isDecimal ? parseFloat(cbFloor) || 0 : Math.round(parseFloat(cbFloor) || 0));
+    const target100Val = cbType === 'time' ? parseTime(cbTarget) : (isDecimal ? parseFloat(cbTarget) || 0 : Math.round(parseFloat(cbTarget) || 0));
+
+
+    const habitPayload = {
+      id: editingCustomHabitId || `custom_${Date.now()}`,
       name,
       category: 'Custom',
-      icon,
+      icon: cbIcon || 'rocket_launch',
+      color: cbColor || '#10b981',
       scoringType,
       direction: cbType === 'yn' ? 'higher_is_better' : (cbType === 'time' ? 'lower_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better')),
       unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
-      userTarget0: cbType === 'time' ? parseTime(cbFloor) : Math.round(parseFloat(cbFloor) || 0),
-      userTarget100: cbType === 'time' ? parseTime(cbTarget) : Math.round(parseFloat(cbTarget) || 0),
+      userTarget0: target0Val,
+      userTarget100: target100Val,
+      target0: target0Val,
+      target100: target100Val,
       userTolerance: cbTolerance ? 10 : 0,
       isCustom: true
     };
 
-    setCustomHabits([...customHabits, newCustom]);
+    if (editingCustomHabitId) {
+      setCustomHabits(prev => prev.map(h => h.id === editingCustomHabitId ? habitPayload : h));
+      setEditingCustomHabitId(null);
+    } else {
+      setCustomHabits([...customHabits, habitPayload]);
+    }
+
     setCbName('');
     setCbTolerance(false);
+    setCbFloor(0);
+    setCbTarget(10);
+    setCbIcon('rocket_launch');
+    setCbColor('#10b981');
   };
 
   const deleteCustomHabit = (id, e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     setCustomHabits(customHabits.filter(h => h.id !== id));
+    if (editingCustomHabitId === id) {
+      cancelEditCustomHabit();
+    }
   };
 
   const renderHabitInputs = (h) => {
@@ -651,6 +780,205 @@ export default function AdvancedHabitSelector() {
     const updateDraft = (field, val) => {
        setDraftHabit(prev => ({ ...prev, [field]: val }));
     };
+
+    if (h.isCustom || h.id?.startsWith('custom_')) {
+      return (
+        <div className="w-full pt-3 space-y-3" onClick={e => e.stopPropagation()}>
+          {/* Edit Name */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Habit Name</label>
+            <input 
+              type="text" 
+              value={selectedObj.name || ''} 
+              onChange={e => updateDraft('name', e.target.value)} 
+              className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          {/* Edit Icon & Color */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+              Habit Icon & Color
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setShowIconPickerModal(true);
+              }}
+              className="w-full p-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all flex items-center justify-between gap-2 cursor-pointer group"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <HabitIcon 
+                  name={selectedObj.icon || 'rocket_launch'} 
+                  boxed={true} 
+                  color={selectedObj.color || '#10b981'} 
+                  size={16} 
+                  className="!w-8 !h-8 !rounded-full shrink-0 shadow-xs" 
+                />
+                <div className="text-left min-w-0 flex-1">
+                  <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                    <span>Icon & Color</span>
+                    <span 
+                      className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-xs"
+                      style={{ backgroundColor: selectedObj.color || '#10b981' }}
+                    />
+                  </div>
+                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                    Tap to change icon or color spectrum
+                  </div>
+                </div>
+              </div>
+              <div className="px-2 py-1 rounded-lg bg-white dark:bg-slate-700/80 text-[10.5px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors flex items-center gap-1 border border-slate-200/60 dark:border-slate-600/40 shrink-0 shadow-2xs">
+                <Palette size={12} weight="bold" />
+                <span>Pick</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Scoring Type & Unit Selector */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Type</label>
+              <select 
+                value={selectedObj.scoringType === 'binary' ? 'yn' : (selectedObj.scoringType === 'time' ? 'time' : 'duration')} 
+                onChange={e => {
+                  const newType = e.target.value;
+                  if (newType === 'yn') {
+                    updateDraft('scoringType', 'binary');
+                    updateDraft('unit', '');
+                    updateDraft('direction', 'higher_is_better');
+                  } else if (newType === 'time') {
+                    updateDraft('scoringType', 'time');
+                    updateDraft('unit', 'Time');
+                    updateDraft('direction', 'lower_is_better');
+                    updateDraft('floor', selectedObj.floor !== undefined ? selectedObj.floor : 480);
+                    updateDraft('target', selectedObj.target !== undefined ? selectedObj.target : 360);
+                  } else {
+                    updateDraft('scoringType', 'numeric');
+                    updateDraft('unit', selectedObj.unit && selectedObj.unit !== 'Time' ? selectedObj.unit : 'mins');
+                    updateDraft('direction', selectedObj.direction || 'higher_is_better');
+                    updateDraft('floor', selectedObj.floor !== undefined ? selectedObj.floor : 0);
+                    updateDraft('target', selectedObj.target !== undefined ? selectedObj.target : 10);
+                  }
+                }}
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+              >
+                <option value="yn">Yes / No (Binary)</option>
+                <option value="duration">Duration / Number</option>
+                <option value="time">Target Time</option>
+              </select>
+            </div>
+
+            {selectedObj.scoringType !== 'binary' && selectedObj.scoringType !== 'time' && (
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Unit</label>
+                <select 
+                  value={['mins', 'hrs', 'steps', 'pages', 'reps', 'L', 'kg'].includes(selectedObj.unit) ? selectedObj.unit : (selectedObj.unit === 'minutes' ? 'mins' : (selectedObj.unit === 'hours' ? 'hrs' : 'custom'))}
+                  onChange={e => {
+                    const u = e.target.value;
+                    if (u === 'custom') {
+                      updateDraft('unit', 'custom');
+                    } else {
+                      updateDraft('unit', u);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                >
+                  <option value="mins">Minutes (mins)</option>
+                  <option value="hrs">Hours (hrs)</option>
+                  <option value="steps">Steps</option>
+                  <option value="pages">Pages</option>
+                  <option value="reps">Reps</option>
+                  <option value="L">Litres (L)</option>
+                  <option value="kg">Kilograms (kg)</option>
+                  <option value="custom">Custom Unit...</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {selectedObj.scoringType !== 'binary' && selectedObj.scoringType !== 'time' && (!['mins', 'hrs', 'steps', 'pages', 'reps', 'L', 'kg', 'minutes', 'hours'].includes(selectedObj.unit) || selectedObj.unit === 'custom') && (
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Custom Unit Label</label>
+              <input 
+                type="text" 
+                value={selectedObj.unit === 'custom' ? '' : (selectedObj.unit || '')} 
+                onChange={e => updateDraft('unit', e.target.value)} 
+                placeholder="e.g. cups, laps, pushups" 
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+              />
+            </div>
+          )}
+
+          {/* Scoring Controls */}
+          {selectedObj.scoringType === 'binary' ? (
+            <div className="ahs-input-group mt-2">
+              <label className="ahs-input-label">Type</label>
+              <div className="ahs-form-control cursor-not-allowed bg-surface-variant/30">
+                <input type="text" value="Yes / No (Binary)" readOnly />
+              </div>
+            </div>
+          ) : (
+            <>
+              {selectedObj.scoringType !== 'time' && (
+                <div className="mb-3 w-full">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400">Scoring Logic</label>
+                  </div>
+                  <div className="flex bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
+                    <button 
+                      type="button" 
+                      className={selectedObj.direction === 'higher_is_better' ? "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 font-bold text-xs transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs" : "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 font-bold text-xs transition-all bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-200/50"} 
+                      onClick={(e) => { e.stopPropagation(); updateDraft('direction', 'higher_is_better'); }}
+                    >
+                      <Icon name="trending_up" className="text-[14px]" /> Higher is better
+                    </button>
+                    <button 
+                      type="button" 
+                      className={selectedObj.direction === 'lower_is_better' ? "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 font-bold text-xs transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs" : "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 font-bold text-xs transition-all bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-200/50"} 
+                      onClick={(e) => { e.stopPropagation(); updateDraft('direction', 'lower_is_better'); }}
+                    >
+                      <Icon name="trending_down" className="text-[14px]" /> Lower is better
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <DualRangeSlider 
+                target0={selectedObj.floor !== undefined ? selectedObj.floor : 0} 
+                target100={selectedObj.target !== undefined ? selectedObj.target : 10} 
+                unit={selectedObj.unit === 'custom' ? '' : (selectedObj.unit || '')}
+                habitId={h.id}
+                habitName={selectedObj.name || h.name}
+                isTime={selectedObj.scoringType === 'time'}
+                direction={selectedObj.direction || 'higher_is_better'}
+                onChange={(field, val) => {
+                  updateDraft(field === 'target0' ? 'floor' : 'target', val);
+                }}
+              />
+            </>
+          )}
+
+          {/* Actions: Remove & Done */}
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button 
+              type="button"
+              onClick={(e) => handleDeleteConfig(e, h.id)} 
+              className="px-4 py-2 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Icon name="delete" className="text-[14px]" /> Remove
+            </button>
+            <button 
+              type="button"
+              onClick={handleDoneConfig}
+              className="px-6 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-xs cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     let content = null;
     if (h.scoringType === 'binary') {
@@ -712,9 +1040,10 @@ export default function AdvancedHabitSelector() {
           )}
 
           <DualRangeSlider 
-            target0={selectedObj.floor} 
-            target100={selectedObj.target} 
+            target0={selectedObj.floor !== undefined && selectedObj.floor !== null ? Number(selectedObj.floor) : 0} 
+            target100={selectedObj.target !== undefined && selectedObj.target !== null ? Number(selectedObj.target) : (selectedObj.direction === 'lower_is_better' ? 0 : 10)} 
             unit={h.unit || h.defaultUnit || h.customUnit || selectedObj?.unit || selectedObj?.defaultUnit || ""}
+
             habitId={h.id}
             habitName={h.name}
             isTime={h.scoringType === 'time'}
@@ -781,7 +1110,7 @@ export default function AdvancedHabitSelector() {
                 Choose Your Daily Habits
               </h1>
               <p className="text-[11px] sm:text-xs text-rose-600 dark:text-rose-400 font-black mt-0.5 flex items-center gap-1">
-                <span>🔒 Habits lock for 30 days once your plan is saved</span>
+                <span className="flex items-center gap-1.5"><Icon name="lock" className="text-xs" /> Habits lock for 30 days once your plan is saved</span>
               </p>
             </div>
 
@@ -883,7 +1212,7 @@ export default function AdvancedHabitSelector() {
                     {activeCategories.includes('Selected') && !activeCategories.includes('Custom') && (
                       <button 
                         onClick={() => setActiveCategories(['Custom'])}
-                        className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl py-2.5 px-4 font-black flex justify-between items-center mb-4 shadow-sm hover:opacity-90 transition-all cursor-pointer text-xs sm:text-sm active:scale-98"
+                        className="col-span-full w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl py-2.5 px-4 font-black flex justify-between items-center mb-4 shadow-sm hover:opacity-90 transition-all cursor-pointer text-xs sm:text-sm active:scale-98"
                       >
                         <div className="flex items-center gap-2">
                           <Icon name="add_circle" className="text-lg" />
@@ -903,7 +1232,7 @@ export default function AdvancedHabitSelector() {
 
                       if (showProLocked) {
                         return (
-                          <div className="flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-[#151a26] border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl w-full" onClick={(e) => {
+                          <div className="col-span-full flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-[#151a26] border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl w-full" onClick={(e) => {
                             e.stopPropagation();
                             setPaywallSource("custom_habit_creation");
                             setShowPaywall(true);
@@ -912,7 +1241,7 @@ export default function AdvancedHabitSelector() {
                               <span className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5"><Icon name="add" className="text-base"/> Unlimited Custom Habits</span>
                               <span className="text-[10px] font-black bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">PRO</span>
                             </div>
-                            <p className="text-slate-500 text-xs max-w-[280px] mb-4 font-medium">You have added 5 Free Custom Habits. Upgrade to Pro to add unlimited custom habits.</p>
+                            <p className="text-slate-500 text-xs max-w-[280px] mb-4 font-medium">You have added {MAX_CUSTOM_HABITS} Free Custom Habits. Upgrade to Pro to add unlimited custom habits.</p>
                             <button className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full px-5 py-2 font-black text-xs hover:opacity-90 transition-all cursor-pointer shadow-xs">
                               <Icon name="lock" className="text-sm" /> Upgrade to Pro
                             </button>
@@ -921,24 +1250,41 @@ export default function AdvancedHabitSelector() {
                       }
 
                       return (
-                        <div className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
-                            <div className="flex items-center gap-1.5 min-w-0">
+                        <div className="col-span-full w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xs space-y-3 overflow-hidden" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
                               <h3 className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
-                                Create Custom Habit
+                                {editingCustomHabitId ? 'Edit Custom Habit' : 'Create Custom Habit'}
                               </h3>
-                              <span className="text-[9.5px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md shrink-0">
-                                {isPro ? 'PRO' : `${Math.max(0, MAX_CUSTOM_HABITS - totalCustoms)} Free Left`}
-                              </span>
+                              {editingCustomHabitId ? (
+                                <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 rounded-md shrink-0">
+                                  Editing Mode
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md shrink-0">
+                                  {isPro ? 'PRO' : `${Math.max(0, MAX_CUSTOM_HABITS - totalCustoms)} Free`}
+                                </span>
+                              )}
                             </div>
-                            <button 
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
-                              className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary text-[10.5px] font-bold flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
-                            >
-                              <Icon name="help_outline" className="text-[12px] text-primary" /> 
-                              <span>Scoring Rules</span>
-                            </button>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {editingCustomHabitId && (
+                                <button
+                                  type="button"
+                                  onClick={cancelEditCustomHabit}
+                                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[10px] font-bold cursor-pointer transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                              <button 
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
+                                className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary text-[10px] font-bold flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
+                              >
+                                <Icon name="help_outline" className="text-[11px] text-primary" /> 
+                                <span>Rules</span>
+                              </button>
+                            </div>
                           </div>
 
                           <div className="space-y-2.5">
@@ -951,6 +1297,44 @@ export default function AdvancedHabitSelector() {
                                 placeholder="e.g. Read 10 Pages, Cold Shower" 
                                 className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
                               />
+                            </div>
+
+                            {/* ICON & COLOR SELECTOR TRIGGER */}
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                Habit Icon & Color
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setShowIconPickerModal(true)}
+                                className="w-full p-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all flex items-center justify-between gap-2 cursor-pointer group overflow-hidden"
+                              >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <HabitIcon 
+                                    name={cbIcon} 
+                                    boxed={true} 
+                                    color={cbColor} 
+                                    size={16} 
+                                    className="!w-8 !h-8 !rounded-full shrink-0 shadow-xs" 
+                                  />
+                                  <div className="text-left min-w-0 flex-1">
+                                    <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                                      <span>Custom Icon</span>
+                                      <span 
+                                        className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-xs"
+                                        style={{ backgroundColor: cbColor }}
+                                      />
+                                    </div>
+                                    <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                                      Tap to customize icon & color
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="px-2 py-1 rounded-lg bg-white dark:bg-slate-700/80 text-[10.5px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors flex items-center gap-1 border border-slate-200/60 dark:border-slate-600/40 shrink-0 shadow-2xs">
+                                  <Palette size={12} weight="bold" />
+                                  <span>Pick</span>
+                                </div>
+                              </button>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1001,40 +1385,92 @@ export default function AdvancedHabitSelector() {
                               </div>
                             )}
 
-                            {cbType !== 'yn' && (
-                              <div className="grid grid-cols-2 gap-2.5">
-                                <div>
-                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                    {cbType === 'time' ? 'Target Time (100% Score)' : 'Target Goal (100%)'}
-                                  </label>
-                                  <input 
-                                    type={cbType === 'time' ? 'time' : 'number'}
-                                    value={cbTarget} 
-                                    onChange={e => setCbTarget(e.target.value)} 
-                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                    {cbType === 'time' ? 'Missed Time (0% Score)' : 'Baseline (0% Score)'}
-                                  </label>
-                                  <input 
-                                    type={cbType === 'time' ? 'time' : 'number'}
-                                    value={cbFloor} 
-                                    onChange={e => setCbFloor(e.target.value)} 
-                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
-                                  />
+                            {cbType === 'duration' && (
+                              <div>
+                                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                                  Goal Direction
+                                </label>
+                                <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-[#0f1420] border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => setCbDirection('higher')}
+                                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                      cbDirection === 'higher'
+                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                  >
+                                    <TrendUp size={15} weight="bold" />
+                                    <span>Higher is better</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCbDirection('lower')}
+                                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                      cbDirection === 'lower'
+                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                  >
+                                    <TrendDown size={15} weight="bold" />
+                                    <span>Lower is better</span>
+                                  </button>
                                 </div>
                               </div>
                             )}
 
-                            <button 
-                              type="button" 
-                              onClick={addCustomHabit}
-                              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer shadow-xs mt-2"
-                            >
-                              Add to Plan
-                            </button>
+                            {cbType !== 'yn' && (
+                              <div className="pt-2">
+                                <DualRangeSlider 
+                                  target0={cbFloor !== undefined && cbFloor !== '' && !isNaN(Number(cbFloor)) ? Number(cbFloor) : 0} 
+                                  target100={cbTarget !== undefined && cbTarget !== '' && !isNaN(Number(cbTarget)) ? Number(cbTarget) : (cbDirection === 'lower' ? 0 : 10)} 
+                                  unit={cbType === 'duration' ? (cbUnit === 'custom' ? cbUnitCustom : cbUnit) : (cbType === 'time' ? 'Time' : '')}
+
+                                  habitName={cbName || 'Custom Habit'}
+                                  isTime={cbType === 'time'}
+                                  direction={cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better'}
+                                  onChange={(field, val) => {
+                                    if (field === 'target0') setCbFloor(val);
+                                    else setCbTarget(val);
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {editingCustomHabitId ? (
+                              <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <button 
+                                  type="button" 
+                                  onClick={(e) => deleteCustomHabit(editingCustomHabitId, e)}
+                                  className="px-3 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                                  title="Delete this habit"
+                                >
+                                  <Icon name="delete" className="text-sm" /> Delete
+                                </button>
+                                <button 
+                                  type="button" 
+                                  onClick={cancelEditCustomHabit}
+                                  className="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  type="button" 
+                                  onClick={addCustomHabit}
+                                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm hover:opacity-95 transition-all cursor-pointer shadow-xs"
+                                >
+                                  Save Changes
+                                </button>
+                              </div>
+                            ) : (
+                              <button 
+                                type="button" 
+                                onClick={addCustomHabit}
+                                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer shadow-xs mt-2"
+                              >
+                                Add to Plan
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -1048,47 +1484,74 @@ export default function AdvancedHabitSelector() {
                         return `Target: ${ch.userTarget100} ${ch.unit || ''}`.trim();
                       };
 
+                      const isExpanded = expandedHabitId === ch.id;
+
                       return (
                         <div 
                           key={ch.id} 
-                          className="ahs-habit-card selected bg-white dark:bg-[#151a26] border-2 border-slate-900 dark:border-white rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 shadow-2xs w-full"
+                          onClick={() => handleCardClick(ch)}
+                          className={`ahs-habit-card selected bg-white dark:bg-[#151a26] border-2 ${
+                            isExpanded ? 'border-primary ring-2 ring-primary/20' : 'border-slate-900 dark:border-white'
+                          } rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs w-full cursor-pointer hover:opacity-95 transition-all group`}
+                          title="Click to edit custom habit"
                         >
-                          {/* Left Icon & Details */}
-                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                            <HabitIcon name={ch.icon || 'rocket_launch'} habitId={ch.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-lg shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate">
-                                  {ch.name}
-                                </span>
-                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0">
-                                  CUSTOM
-                                </span>
+                          {/* Top Row: Icon + Name + Details + Actions */}
+                          <div className="flex items-center justify-between gap-2.5 w-full">
+                            {/* Left Icon & Details */}
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <HabitIcon name={ch.icon || 'rocket_launch'} habitId={ch.id} boxed={true} color={ch.color} size={16} className="!w-8 !h-8 !rounded-full shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                                    {ch.name}
+                                  </span>
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                                    CUSTOM
+                                  </span>
+                                </div>
+                                <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
+                                  {formatTargetStr()}
+                                </div>
                               </div>
-                              <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
-                                {formatTargetStr()}
-                              </div>
+                            </div>
+
+                            {/* Right Action Controls */}
+                            <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <button 
+                                type="button" 
+                                className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCardClick(ch);
+                                }}
+                                title="Edit habit targets & settings"
+                              >
+                                <Icon name="edit" className="text-[12px]" /> Edit
+                              </button>
+                              <button 
+                                type="button" 
+                                className="ahs-btn-custom-scoring text-xs" 
+                                onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
+                              >
+                                <Icon name="help_outline" className="text-[12px]" /> Scoring
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={(e) => deleteCustomHabit(ch.id, e)}
+                                className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-colors cursor-pointer"
+                                title="Delete custom habit"
+                              >
+                                <Icon name="delete" className="text-[14px]" />
+                              </button>
                             </div>
                           </div>
 
-                          {/* Right Action Controls */}
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button 
-                              type="button" 
-                              className="ahs-btn-custom-scoring text-xs" 
-                              onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
-                            >
-                              <Icon name="help_outline" className="text-[12px]" /> Scoring
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={(e) => deleteCustomHabit(ch.id, e)}
-                              className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-colors cursor-pointer"
-                              title="Delete custom habit"
-                            >
-                              <Icon name="delete" className="text-[14px]" />
-                            </button>
-                          </div>
+                          {/* INLINE EXPANDED INPUTS FOR CUSTOM HABIT */}
+                          {isExpanded && (
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 ahs-habit-card-expanded w-full">
+                              {renderHabitInputs(ch)}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -1097,20 +1560,42 @@ export default function AdvancedHabitSelector() {
                     {displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       const isSelectedView = activeCategories.includes('Selected');
-                      const isExpanded = expandedSelectedHabits.includes(habit.id);
+                      const isExpanded = expandedHabitId === habit.id;
 
                       if (isSelectedView) {
                          return (
-                          <div key={habit.id} className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs">
+                          <div 
+                            key={habit.id} 
+                            onClick={() => handleCardClick(habit)}
+                            className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs cursor-pointer hover:border-slate-400/80 transition-all"
+                          >
                             <div className="flex items-center justify-between gap-2.5">
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                 <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-lg shrink-0" />
+                                 <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-full shrink-0" />
                                  <div className="min-w-0 flex-1">
                                    <div className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate">{habit.name}</div>
                                    <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">{habit.category}</div>
                                  </div>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                                 <button 
+                                   type="button" 
+                                   className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs" 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     handleCardClick(habit);
+                                   }}
+                                   title="Edit habit targets & settings"
+                                 >
+                                   <Icon name="edit" className="text-[12px]" /> Edit
+                                 </button>
+                                 <button 
+                                   type="button" 
+                                   className="ahs-btn-custom-scoring text-xs" 
+                                   onClick={(e) => { e.stopPropagation(); openScoringModalForHabit(habit); }}
+                                 >
+                                   <Icon name="help_outline" className="text-[12px]" /> Scoring
+                                 </button>
                                  <button 
                                    type="button"
                                    onClick={(e) => handleDeleteConfig(e, habit.id)} 
@@ -1121,9 +1606,11 @@ export default function AdvancedHabitSelector() {
                                  </button>
                               </div>
                             </div>
-                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 ahs-habit-card-expanded">
-                               {renderHabitInputs(habit)}
-                            </div>
+                            {isExpanded && (
+                              <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 ahs-habit-card-expanded">
+                                 {renderHabitInputs(habit)}
+                              </div>
+                            )}
                           </div>
                          );
                       }
@@ -1136,14 +1623,39 @@ export default function AdvancedHabitSelector() {
                         >
                             <div className="ahs-hc-header">
                                 <div className="ahs-hc-left">
-                                    <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={22} className="!w-10 !h-10 !rounded-xl shrink-0" />
+                                    <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={22} className="!w-10 !h-10 !rounded-full shrink-0" />
                                     <div className="ahs-hc-title">{habit.name}</div>
                                 </div>
-                                <div className="ahs-card-actions">
+                                <div className="ahs-card-actions" onClick={e => e.stopPropagation()}>
+                                    {isSelected && (
+                                      <button 
+                                        type="button" 
+                                        className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleCardClick(habit);
+                                        }}
+                                        title="Edit habit targets & settings"
+                                      >
+                                        <Icon name="edit" className="text-[12px]" /> Edit
+                                      </button>
+                                    )}
                                     <button className="ahs-btn-custom-scoring" onClick={(e) => { e.stopPropagation(); openScoringModalForHabit(habit); }}>
                                       <Icon name="help_outline" className="text-[12px]" /> Scoring
                                     </button>
-                                    <div className="ahs-checkbox"><Icon name="check" className="text-sm text-white stroke-white stroke-2" /></div>
+                                    <div 
+                                      className="ahs-checkbox cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isSelected) {
+                                          handleDeleteConfig(e, habit.id);
+                                        } else {
+                                          handleCardClick(habit);
+                                        }
+                                      }}
+                                    >
+                                      <Icon name="check" className="text-sm text-white stroke-white stroke-2" />
+                                    </div>
                                 </div>
                             </div>
                             {renderHabitInputs(habit)}
@@ -1273,12 +1785,45 @@ export default function AdvancedHabitSelector() {
                 };
                 const habitUnit = resolveReviewUnit();
 
+                const isCustom = h.isCustom || h.id.startsWith('custom_');
+
+                const handleSummaryItemClick = (e) => {
+                  if (isCustom) {
+                    startEditingCustomHabit(h, e);
+                  } else {
+                    setViewMode('selection');
+                    setActiveCategories(['Selected']);
+                    setExpandedHabitId(h.id);
+                    const sel = selectedHabits.find(sh => sh.id === h.id);
+                    if (sel) {
+                      setDraftHabit({ 
+                        ...sel,
+                        target: sel.userTarget100 !== undefined ? sel.userTarget100 : sel.target100,
+                        floor: sel.userTarget0 !== undefined ? sel.userTarget0 : sel.target0
+                      });
+                    }
+                  }
+                };
+
                 return (
-                  <div key={h.id} className="ahs-summary-item flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151a26] shadow-2xs">
+                  <div 
+                    key={h.id} 
+                    onClick={handleSummaryItemClick}
+                    className="ahs-summary-item flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#151a26] shadow-2xs hover:border-slate-400/80 dark:hover:border-slate-600 cursor-pointer transition-all group"
+                    title={`Click to edit ${h.name}`}
+                  >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={16} className="!rounded-lg shrink-0" />
+                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={16} className="!rounded-full shrink-0" />
                       <div className="ahs-si-details flex-1 min-w-0">
-                          <div className="ahs-si-title font-black text-slate-900 dark:text-white text-xs sm:text-[13px] truncate">{h.name} {h.isCustom ? <span className="ahs-custom-badge">CUSTOM</span> : ''}</div>
+                          <div className="ahs-si-title font-black text-slate-900 dark:text-white text-xs sm:text-[13px] truncate flex items-center gap-1.5 flex-wrap">
+                            <span className="group-hover:text-primary transition-colors">{h.name}</span>
+                            {isCustom ? (
+                              <span className="ahs-custom-badge">CUSTOM</span>
+                            ) : null}
+                            <span className="text-[10px] font-bold text-slate-400 group-hover:text-primary flex items-center gap-0.5 ml-auto sm:ml-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <Icon name="edit" className="text-[11px]" /> Edit
+                            </span>
+                          </div>
                           <div className="ahs-si-target mt-1">
                               {h.scoringType === 'binary' ? (
                                 <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">Type: Yes / No</span>
@@ -1299,7 +1844,7 @@ export default function AdvancedHabitSelector() {
                       </div>
                     </div>
                     {showPrioritySection && (
-                      <div className="ahs-si-check shrink-0">
+                      <div className="ahs-si-check shrink-0" onClick={e => e.stopPropagation()}>
                         <button 
                           onClick={() => togglePriorityRank(h.id)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-dashed transition-all cursor-pointer ${
@@ -1538,6 +2083,19 @@ export default function AdvancedHabitSelector() {
             </div>
           </div>
         )}
+
+        {/* ICON & COLOR PICKER MODAL */}
+        <HabitIconColorPickerModal
+          isOpen={showIconPickerModal}
+          onClose={() => setShowIconPickerModal(false)}
+          selectedIcon={cbIcon}
+          selectedColor={cbColor}
+          habitName={cbName}
+          onSelect={({ icon, color }) => {
+            setCbIcon(icon);
+            setCbColor(color);
+          }}
+        />
 
         {/* SCORING MODAL */}
         <ScoringModal type={scoringModal} onClose={() => setScoringModal(null)} />

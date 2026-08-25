@@ -354,7 +354,7 @@ export default function StreaksPage() {
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div
-                      className="w-8 h-8 rounded-xl text-white flex items-center justify-center shrink-0 shadow-2xs"
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
                       style={{ backgroundColor: h.color }}
                     >
                       <HabitIcon name={h.icon} size={15} />

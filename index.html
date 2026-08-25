@@ -2,19 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- PWA Primary Manifest & Meta -->
+    <link rel="manifest" href="/manifest.json?v=14" />
+    <meta name="theme-color" content="#0B0F19" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFE" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0F19" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Definite" />
+
+    <!-- iOS / Apple Specific PWA Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Definite" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=14" />
+    <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png?v=14" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=14" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=14" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=14" />
+    <link rel="shortcut icon" href="/favicon.ico?v=14" />
+
+
+    <!-- Descriptions & OpenGraph -->
+    <meta name="description" content="Understand your habits, not just track them." />
+    <meta property="og:title" content="Definite — Habit Intelligence" />
+    <meta property="og:description" content="Understand your habits, not just track them." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/pwa-512x512.png" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Preconnects & Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://firestore.googleapis.com" rel="preconnect"/>
     <link href="https://identitytoolkit.googleapis.com" rel="preconnect"/>
     <link href="https://d1.thedefinite.one" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <title>Definite Habit Tracker</title>
+    
+    <title>Definite — Habit Intelligence</title>
   </head>
   <body>
+    <noscript>You need to enable JavaScript to run Definite.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

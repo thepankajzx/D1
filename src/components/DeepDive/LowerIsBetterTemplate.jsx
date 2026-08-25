@@ -244,12 +244,13 @@ export default function LowerIsBetterTemplate({ habit, allSummaries, habits, dat
       {/* ── 5. TREND + EXPLANATION ────────────────────────────────────────── */}
       <div className="w-full flex flex-col">
           <DeepDiveTrendAnalysisCard 
-          trend={trend}
-          unit={unit}
-          fmtVal={fmtVal}
-          dateRange={dateRange}
-          direction={habit.direction}
-        />
+            trend={trend}
+            unit={unit}
+            fmtVal={fmtVal}
+            dateRange={dateRange}
+            direction={habit.direction}
+            habit={habit}
+          />
 
         
       </div>

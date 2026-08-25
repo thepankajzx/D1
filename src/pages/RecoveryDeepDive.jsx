@@ -104,7 +104,7 @@ export default function RecoveryDeepDive() {
         d.setDate(d.getDate() - (vals.length - 1 - i));
         const dateStr = d.toISOString().split('T')[0];
         const score = val >= 45 ? 100 : val <= 10 ? 0 : Math.round(((val - 10) / 35) * 100);
-        return { id: dateStr, date: dateStr, overallScore: score, habitScores: { [hId]: score }, scores: { [hId]: score }, habitValues: { [hId]: val }, values: { [hId]: val }, actuals: { [hId]: val }, habitsCompleted: score >= 60 ? 1 : 0, habitsTotal: 1 };
+        return { id: dateStr, date: dateStr, overallScore: score, habitScores: { [hId]: score }, scores: { [hId]: score }, habitValues: { [hId]: val }, values: { [hId]: val }, actuals: { [hId]: val }, habitsCompleted: score >= 50 ? 1 : 0, habitsTotal: 1 };
       });
     }
     return allSummaries;
@@ -159,7 +159,7 @@ export default function RecoveryDeepDive() {
 
       {/* ── 2. HABIT TITLE & ICON (OUTSIDE WRAPPER, TOP-LEFT) ── */}
       <div className="flex items-center gap-3.5 px-1">
-        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0 shadow-xs">
+        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0 shadow-xs">
           <HabitIcon name={habit.icon} habitId={habit.id} size={26} />
         </div>
         <div className="min-w-0">
@@ -231,87 +231,101 @@ export default function RecoveryDeepDive() {
       {showInfo && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="fixed inset-0" onClick={handleCloseInfo} />
-          <div className="relative w-full max-w-[420px] max-h-[85vh] bg-white dark:bg-[#131722] rounded-3xl p-4 sm:p-5 shadow-2xl border border-orange-200/80 dark:border-orange-900/50 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3">
+          <div className="relative w-full max-w-[440px] max-h-[85vh] bg-white rounded-3xl p-4 sm:p-5 shadow-2xl border border-orange-200/80 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 flex items-center justify-center shrink-0">
                   <ShieldCheck size={18} weight="fill" />
                 </div>
                 <div>
-                  <h4 className="font-black text-sm text-slate-900 dark:text-white leading-tight">
-                    {isHinglish ? 'रेज़िलिएंस कैसे काम करता है?' : 'How Resilience Works'}
+                  <h4 className="font-black text-sm text-slate-900 leading-tight">
+                    {isHinglish ? 'रेज़िलिएंस & बाउंस-बैक गाइड' : 'Resilience & Bounce-Back Guide'}
                   </h4>
                   <span className="text-[10px] text-slate-400 font-medium">
-                    {isHinglish ? 'बाउंस-बैक और रिकवरी का तरीका' : 'Quick bounce-back measurement guide'}
+                    {isHinglish ? 'Off-Target, 7-Day Window aur Recovery' : 'How Off-Targets, Windows and Streaks work'}
                   </span>
                 </div>
               </div>
               <button 
                 type="button" 
                 onClick={handleCloseInfo} 
-                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-all shrink-0"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-all shrink-0"
               >
                 <X size={14} weight="bold" />
               </button>
             </div>
 
-            {/* Compact Highlighted Items (No right badges, clear highlights) */}
-            <div className="space-y-2 overflow-y-auto pr-0.5">
+            {/* Compact Highlighted Items */}
+            <div className="space-y-2 overflow-y-auto pr-0.5 max-h-[60vh]">
               
-              {/* Item 1 */}
-              <div className="p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+              {/* Item 1: Off-Target */}
+              <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100 flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <XCircle size={14} weight="fill" />
+                </div>
+                <div className="min-w-0 text-[11.5px] text-slate-600 leading-snug">
+                  {isHinglish ? (
+                    <><strong className="text-rose-700 font-black">Off-Target (Score &lt; 50%):</strong> इसका मतलब यह नहीं कि आपने ट्रैकिंग मिस की। इसका मतलब है कि उस दिन टारगेट थोड़ा कम रह गया (स्कोर 50 से नीचे रहा)।</>
+                  ) : (
+                    <><strong className="text-rose-700 font-black">Off-Target Day (Score &lt; 50%):</strong> This does not mean you missed logging. It means you showed up, but fell short of the passing target threshold (score below 50).</>
+                  )}
+                </div>
+              </div>
+
+              {/* Item 2: 7-Day Window */}
+              <div className="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
                   <CalendarCheck size={14} weight="fill" />
                 </div>
-                <div className="min-w-0 text-[11.5px] text-slate-600 dark:text-slate-300 leading-snug">
+                <div className="min-w-0 text-[11.5px] text-slate-600 leading-snug">
                   {isHinglish ? (
-                    <>आदत मिस होते ही अगले <strong className="text-indigo-700 dark:text-indigo-300 font-black">7 दिनों की रिकवरी विंडो</strong> खुद-ब-खुद शुरू हो जाती है।</>
+                    <>Off-target होते ही अगले <strong className="text-indigo-700 font-black">7 दिनों की बाउंस-बैक विंडो</strong> शुरू हो जाती है ताकि आप तुरंत कमबैक कर सकें।</>
                   ) : (
-                    <>When a habit is missed, a <strong className="text-indigo-700 dark:text-indigo-300 font-black">7-day evaluation window</strong> automatically tracks your comeback speed.</>
+                    <>When an off-target occurs, a <strong className="text-indigo-700 font-black">7-day comeback window</strong> automatically opens to track your recovery speed.</>
                   )}
                 </div>
               </div>
 
-              {/* Item 2 */}
-              <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+              {/* Item 3: Recovered */}
+              <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                   <CheckCircle size={14} weight="fill" />
                 </div>
-                <div className="min-w-0 text-[11.5px] text-slate-600 dark:text-slate-300 leading-snug">
+                <div className="min-w-0 text-[11.5px] text-slate-600 leading-snug">
                   {isHinglish ? (
-                    <>अगले 7 दिनों में <strong className="text-emerald-700 dark:text-emerald-300 font-black">कम से कम 5 दिन (≥70%)</strong> आदत पूरी करने पर बाउंस-बैक सफल माना जाता है।</>
+                    <>अगले 7 दिनों में <strong className="text-emerald-700 font-black">5+ दिन (≥70%)</strong> अच्छा स्कोर करने पर यह दिन <strong className="text-emerald-700 font-black">Recovered (Green)</strong> माना जाता है।</>
                   ) : (
-                    <>Completing <strong className="text-emerald-700 dark:text-emerald-300 font-black">at least 5 of 7 days (≥70%)</strong> locks in a confirmed successful bounce-back.</>
+                    <>Completing <strong className="text-emerald-700 font-black">at least 5 of 7 days (≥70%)</strong> successfully marks this event as <strong className="text-emerald-700 font-black">Recovered</strong>.</>
                   )}
                 </div>
               </div>
 
-              {/* Item 3 */}
-              <div className="p-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/40 flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 mt-0.5">
+              {/* Item 4: Recovery Streak */}
+              <div className="p-2.5 rounded-xl bg-orange-50/70 border border-orange-100 flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
                   <Flame size={14} weight="fill" />
                 </div>
-                <div className="min-w-0 text-[11.5px] text-slate-600 dark:text-slate-300 leading-snug">
+                <div className="min-w-0 text-[11.5px] text-slate-600 leading-snug">
                   {isHinglish ? (
-                    <><strong className="text-orange-700 dark:text-orange-300 font-black">Recovery Streak</strong> लगातार बिना रीलेप्स किए सफल बाउंस-बैक की संख्या को गिनता है।</>
+                    <><strong className="text-orange-700 font-black">Recovery Streak</strong> गिनता है कि लगातार कितनी बार आपने हर Off-Target से बिना रुके सफल बाउंस-बैक किया।</>
                   ) : (
-                    <><strong className="text-orange-700 dark:text-orange-300 font-black">Recovery Streak</strong> counts consecutive misses you bounced back from without slipping into a relapse.</>
+                    <><strong className="text-orange-700 font-black">Recovery Streak</strong> counts consecutive off-targets you successfully recovered from without a multi-day slump.</>
                   )}
                 </div>
               </div>
 
-              {/* Item 4 */}
-              <div className="p-2.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40 flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+              {/* Item 5: Resilience Score */}
+              <div className="p-2.5 rounded-xl bg-purple-50/70 border border-purple-100 flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
                   <TrendUp size={14} weight="fill" />
                 </div>
-                <div className="min-w-0 text-[11.5px] text-slate-600 dark:text-slate-300 leading-snug">
+                <div className="min-w-0 text-[11.5px] text-slate-600 leading-snug">
                   {isHinglish ? (
-                    <><strong className="text-purple-700 dark:text-purple-300 font-black">Resilience Score %</strong> आपके सभी मिस में से सफल वापसी का लाइफटाइम प्रतिशत दिखाता है।</>
+                    <><strong className="text-purple-700 font-black">Resilience Score %</strong> आपके सभी Off-Targets में से सफल कमबैक का 30-दिन का ओवरऑल सक्सेस रेट है।</>
                   ) : (
-                    <><strong className="text-purple-700 dark:text-purple-300 font-black">Resilience Score %</strong> is your lifetime recovery win rate across all historical missed events.</>
+                    <><strong className="text-purple-700 font-black">Resilience Score %</strong> is your 30-day recovery win rate across all recorded off-target events.</>
                   )}
                 </div>
               </div>
@@ -319,11 +333,11 @@ export default function RecoveryDeepDive() {
             </div>
 
             {/* Bottom Button */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
+            <div className="pt-2 border-t border-slate-100 shrink-0">
               <button 
                 type="button" 
                 onClick={handleCloseInfo} 
-                className="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-xl text-xs font-black transition-all cursor-pointer active:scale-98"
+                className="w-full py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-black transition-all cursor-pointer active:scale-98"
               >
                 {isHinglish ? 'समझ गया (Got it)' : 'Got it'}
               </button>
@@ -337,11 +351,11 @@ export default function RecoveryDeepDive() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
         {[
           {label:'Recovery Streak', val:recoveryStreak, unit:'bounces', sub:'Consecutive comebacks', IC:<ShieldCheck size={18} weight="fill"/>, ibg:'bg-orange-50 text-orange-600', vc:'text-orange-600'},
-          {label:'Best Recovery', val:bestRecoveryStreak, unit:'bounces', sub:'All-time best streak', IC:<Star size={18} weight="fill"/>, ibg:'bg-indigo-50 text-indigo-600', vc:'text-slate-900 dark:text-white'},
-          {label:'Total Misses', val:totalMisses, unit:'days', sub:'In lookback window', IC:<XCircle size={18} weight="fill"/>, ibg:'bg-rose-50 text-rose-500', vc:'text-slate-900 dark:text-white'},
+          {label:'Best Recovery', val:bestRecoveryStreak, unit:'bounces', sub:'All-time best streak', IC:<Star size={18} weight="fill"/>, ibg:'bg-indigo-50 text-indigo-600', vc:'text-slate-900'},
+          {label:'Off-Target Days', val:totalMisses, unit:'days', sub:'Score < 50% in window', IC:<XCircle size={18} weight="fill"/>, ibg:'bg-rose-50 text-rose-500', vc:'text-slate-900'},
           {label:'Win Rate', val:formatNum1(winRate)+'%', unit:'', sub:recoveredMisses.length+' of '+totalMisses+' resolved', IC:<CheckCircle size={18} weight="fill"/>, ibg:'bg-emerald-50 text-emerald-600', vc:'text-emerald-600'}
         ].map(({label,val,unit,sub,IC,ibg,vc}) => (
-          <div key={label} className="bg-white dark:bg-[#151a26] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-col justify-between hover:border-orange-200 transition-all">
+          <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between hover:border-orange-200 transition-all">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
               <div className={'w-8 h-8 rounded-xl flex items-center justify-center ' + ibg}>{IC}</div>
@@ -358,10 +372,21 @@ export default function RecoveryDeepDive() {
 
       {/* ── 6. BOUNCE-BACK & RECOVERY TIMELINE (DASHED SEPARATORS) ── */}
       <div className="space-y-4 w-full pt-1">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Bounce-Back and Recovery Timeline</h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Chronological log of every slip and 7-day comeback journey</p>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Bounce-Back and Recovery Timeline</h3>
+              <button 
+                type="button" 
+                onClick={() => setShowInfo(true)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 text-[11px] font-bold transition-colors cursor-pointer"
+                title="How Timeline Works"
+              >
+                <Info size={13} weight="bold" />
+                <span>How it works</span>
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Chronological log of every off-target day and 7-day comeback journey</p>
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
             {[
@@ -370,7 +395,7 @@ export default function RecoveryDeepDive() {
               {k:'inprogress',l:'In Progress ('+inProgressMisses.length+')',a:'bg-amber-500 text-white'},
               {k:'unrecovered',l:'Unrecovered ('+unrecoveredMisses.length+')',a:'bg-slate-700 text-white'}
             ].map(({k,l,a}) => (
-              <button key={k} type="button" onClick={() => setActiveFilter(k)} className={'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ' + (activeFilter===k ? a : 'bg-white dark:bg-[#151a26] border border-slate-200/90 hover:bg-slate-50 text-slate-600 shadow-2xs')}>{l}</button>
+              <button key={k} type="button" onClick={() => setActiveFilter(k)} className={'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ' + (activeFilter===k ? a : 'bg-white border border-slate-200/90 hover:bg-slate-50 text-slate-600 shadow-2xs')}>{l}</button>
             ))}
           </div>
         </div>
@@ -394,7 +419,7 @@ export default function RecoveryDeepDive() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center flex-shrink-0"><XCircle size={18} weight="fill" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 leading-none">Missed Day</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 leading-none">Off-Target</span>
                         <span className="text-sm font-bold text-slate-900 mt-1 leading-none truncate">{formatDateShort(item.missDate||item.date)}</span>
                         <span className="text-[10px] text-slate-400 font-medium mt-0.5">{getDayOfWeek(item.missDate||item.date)}</span>
                       </div>
@@ -405,17 +430,78 @@ export default function RecoveryDeepDive() {
                     </div>
                   </div>
                   {isExpanded && (
-                    <div onClick={e=>e.stopPropagation()} className="w-full flex flex-col gap-1.5 pt-3 border-t border-slate-200/60 animate-in fade-in duration-150 cursor-default">
+                    <div onClick={e=>e.stopPropagation()} className="w-full flex flex-col gap-2 pt-3 border-t border-slate-200/60 animate-in fade-in duration-150 cursor-default">
                       <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-600 flex items-center gap-1.5"><CalendarCheck size={14} className="text-orange-600"/>7-Day Window: <strong className="text-slate-900">{daysCompleted}/7 days</strong></span>
-                        <span className={'font-bold ' + (item.recovered?'text-emerald-600':item.isInProgress?'text-amber-600':'text-slate-500')}>{completionPercent}% completion</span>
+                        <span className="text-slate-600 flex items-center gap-1.5"><CalendarCheck size={14} className="text-orange-600"/>7-Day Comeback Window: <strong className="text-slate-900">{daysCompleted}/7 days</strong></span>
+                        <span className={'font-bold ' + (item.recovered?'text-emerald-600':item.isInProgress?'text-amber-600':'text-slate-500')}>{completionPercent}% completed</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                         <div className={'h-full rounded-full transition-all duration-500 ' + (item.recovered?'bg-gradient-to-r from-emerald-400 to-emerald-600':item.isInProgress?'bg-gradient-to-r from-amber-400 to-amber-500':'bg-slate-300')} style={{width:Math.min(completionPercent,100)+'%'}}/>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                        <span>Threshold: 70%+</span>
-                        <span>Window: {formatDateShort(item.missDate||item.date)} to {formatDateShort(item.endDate)}</span>
+                        <span>Success Threshold: 70%+ (5 of 7 days)</span>
+                        <span>Window: {formatDateShort(item.missDate||item.date)} – {formatDateShort(item.endDate)}</span>
+                      </div>
+
+                      {/* Contextual Explainer Note with Premium Phosphor Icons */}
+                      <div className={`p-3 rounded-2xl flex items-start gap-2.5 mt-0.5 border shadow-2xs ${
+                        item.recovered
+                          ? 'bg-emerald-50/80 text-emerald-900 border-emerald-200/80'
+                          : item.isInProgress
+                          ? 'bg-amber-50/80 text-amber-950 border-amber-200/80'
+                          : 'bg-slate-100/90 text-slate-700 border-slate-200'
+                      }`}>
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                          item.recovered
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : item.isInProgress
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-200 text-slate-600'
+                        }`}>
+                          {item.recovered ? (
+                            <Sparkle size={14} weight="fill" />
+                          ) : item.isInProgress ? (
+                            <HourglassSimple size={14} weight="bold" />
+                          ) : (
+                            <Info size={14} weight="bold" />
+                          )}
+                        </div>
+                        <div className="min-w-0 text-[11.5px] leading-relaxed">
+                          {item.recovered ? (
+                            <>
+                              <strong className="font-black text-emerald-950 block mb-0.5">
+                                {isHinglish ? 'शानदार कमबैक' : 'Strong Comeback'}
+                              </strong>
+                              <span>
+                                {isHinglish 
+                                  ? `आपने 7 दिनों में से ${daysCompleted} दिन आदत को पूरा किया (≥70%), जिससे यह Off-Target सफलतापूर्वक Recovered हो गया।`
+                                  : `You completed ${daysCompleted} of 7 days (≥70%), successfully securing this recovery.`}
+                              </span>
+                            </>
+                          ) : item.isInProgress ? (
+                            <>
+                              <strong className="font-black text-amber-950 block mb-0.5">
+                                {isHinglish ? 'कमबैक चैलेंज एक्टिव है' : 'Active Comeback Challenge'}
+                              </strong>
+                              <span>
+                                {isHinglish
+                                  ? `${formatDateShort(item.endDate)} से पहले बचे हुए दिनों में 50%+ स्कोर लाकर कम से कम 5/7 दिन पूरे करें और Recovery हासिल करें!`
+                                  : `Hit 50%+ score in remaining days before ${formatDateShort(item.endDate)} to secure 5 of 7 days and complete the recovery!`}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <strong className="font-black text-slate-900 block mb-0.5">
+                                {isHinglish ? 'विंडो समाप्त' : 'Window Closed'}
+                              </strong>
+                              <span>
+                                {isHinglish
+                                  ? `7-दिन की विंडो समाप्त हो गई (${daysCompleted}/7 दिन, ${completionPercent}%)। अगला Off-Target आपके लिए नई Recovery Streak शुरू करने का ताज़ा मौका है!`
+                                  : `7-day window closed at ${daysCompleted}/7 days (${completionPercent}%). The next off-target is a fresh opportunity to build your recovery streak!`}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

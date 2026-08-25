@@ -124,14 +124,14 @@ export default function DeepDiveAdvancedHeatmap({
 
   // Color gradient helper for score bands
   const getPerfBandClass = (score) => {
-    if (score === null || score === undefined) return 'bg-slate-100 dark:bg-slate-800/60 text-slate-400';
-    if (score <= 10) return 'bg-red-800 text-white';
-    if (score <= 20) return 'bg-rose-600 text-white';
-    if (score <= 35) return 'bg-rose-400 text-white';
-    if (score <= 50) return 'bg-emerald-300 dark:bg-emerald-400/80 text-emerald-950';
-    if (score <= 65) return 'bg-emerald-500 text-white';
-    if (score <= 80) return 'bg-emerald-600 text-white';
-    return 'bg-emerald-700 text-white';
+    if (score === null || score === undefined) return 'bg-surface-container text-on-surface-variant/40';
+    if (score <= 10) return 'bg-[var(--color-perf-1)] text-white';
+    if (score <= 20) return 'bg-[var(--color-perf-2)] text-white';
+    if (score <= 35) return 'bg-[var(--color-perf-3)] text-white';
+    if (score <= 50) return 'bg-[var(--color-perf-4)] text-white';
+    if (score <= 65) return 'bg-[var(--color-perf-6)] text-black';
+    if (score <= 80) return 'bg-[var(--color-perf-8)] text-white';
+    return 'bg-[var(--color-perf-10)] text-white';
   };
 
   // Month-blocks grouping
@@ -340,15 +340,15 @@ export default function DeepDiveAdvancedHeatmap({
         
         {/* Left: Less [🔴🔴🟠🟢🟢] More Scale */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 dark:text-slate-500">Less</span>
+          <span className="text-on-surface-variant">Less</span>
           <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[3px] bg-red-800 block shadow-2xs" />
-            <span className="w-2.5 h-2.5 rounded-[3px] bg-rose-500 block shadow-2xs" />
-            <span className="w-2.5 h-2.5 rounded-[3px] bg-rose-400 block shadow-2xs" />
-            <span className="w-2.5 h-2.5 rounded-[3px] bg-emerald-400 block shadow-2xs" />
-            <span className="w-2.5 h-2.5 rounded-[3px] bg-emerald-700 block shadow-2xs" />
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--color-perf-1)] block shadow-2xs" />
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--color-perf-3)] block shadow-2xs" />
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--color-perf-5)] block shadow-2xs" />
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--color-perf-7)] block shadow-2xs" />
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--color-perf-10)] block shadow-2xs" />
           </div>
-          <span className="text-slate-400 dark:text-slate-500">More</span>
+          <span className="text-on-surface-variant">More</span>
         </div>
 
         {/* Right: Partial & No Data dots */}

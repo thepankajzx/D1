@@ -8,6 +8,7 @@ import DeepDiveTrendChart from './DeepDiveTrendChart';
 import DeepDivePerformanceDonut from './DeepDivePerformanceDonut';
 import DeepDiveInsights from './DeepDiveInsights';
 import DeepDiveStreakRecoveryBanner from './DeepDiveStreakRecoveryBanner';
+import DeepDiveTrendAnalysisCard from './DeepDiveTrendAnalysisCard';
 import ReactEChartsCoreLib from 'echarts-for-react/lib/core';
 import PriorityIcon from '../PriorityIcon';
 const ReactEChartsCore = ReactEChartsCoreLib.default || ReactEChartsCoreLib;
@@ -424,46 +425,33 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
         </div>
       </div>
 
-      {/* 7. TREND & IMPACT */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full">
-        
-        <div className="bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full">
-          <div className="flex-1 w-full text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 md:mb-3">
-              <Icon name="trending_up" className="text-indigo-500 text-[18px]" />
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Trend Analysis</h3>
-            </div>
-            <p className="text-[12px] md:text-[13px] text-slate-700 leading-relaxed font-medium">
-              {data.trend.change >= 0 
-                ? `Your consistency is improving. You completed ${data.trend.currentPeriodScore}% of days this period, up from ${data.trend.previousPeriodScore}% last period.`
-                : `Your consistency dropped slightly. You completed ${data.trend.currentPeriodScore}% of days this period, down from ${data.trend.previousPeriodScore}% last period.`}
-            </p>
-          </div>
-          
-          <div className="w-40 md:w-48 h-28 md:h-32 relative flex items-end justify-center gap-8 md:gap-10 mt-2 md:mt-0 pb-6 text-[10px] md:text-xs font-medium text-slate-500">
-            <div className="flex flex-col items-center z-10">
-              <span className="mb-1 text-slate-500 font-bold">{data.trend.previousPeriodScore}%</span>
-              <div className="w-8 md:w-10 bg-slate-200 rounded-t-lg relative" style={{height: `${Math.max(10, data.trend.previousPeriodScore)}px`}}></div>
-              <span className="absolute bottom-0 whitespace-nowrap text-[9px] md:text-[10px]">Prev</span>
-            </div>
-            <div className="flex flex-col items-center z-10">
-              <span className="mb-1 text-emerald-600 font-bold">{data.trend.currentPeriodScore}%</span>
-              <div className="w-8 md:w-10 bg-emerald-400 rounded-t-lg relative shadow-sm border-t border-x border-emerald-300" style={{height: `${Math.max(10, data.trend.currentPeriodScore)}px`}}></div>
-              <span className="absolute bottom-0 whitespace-nowrap text-[9px] md:text-[10px] text-slate-800">Cur</span>
-            </div>
-          </div>
-        </div>
+      {/* 7. TREND ANALYSIS */}
+      <div className="w-full flex flex-col">
+        <DeepDiveTrendAnalysisCard 
+          trend={{
+            currentAvg: data.trend.currentPeriodScore,
+            prevAvg: data.trend.previousPeriodScore,
+            change: data.trend.change
+          }}
+          unit="%"
+          fmtVal={(val) => `${Math.round(val || 0)}%`}
+          dateRange={dateRange}
+          direction="higher_is_better"
+          habit={habit}
+        />
+      </div>
 
-        <div className="bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full">
-          <div className="flex-1 w-full text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 md:mb-3">
-              <Icon name="hub" className="text-indigo-500 text-[18px]" />
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Impact on Other Habits</h3>
-            </div>
-            <p className="text-[12px] md:text-[13px] text-slate-700 leading-relaxed font-medium">
-              On days you complete this habit, consistency with other important habits is higher.
-            </p>
+      {/* 8. IMPACT ON OTHER HABITS */}
+      <div className="bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full">
+        <div className="flex-1 w-full text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 md:mb-3">
+            <Icon name="hub" className="text-indigo-500 text-[18px]" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Impact on Other Habits</h3>
           </div>
+          <p className="text-[12px] md:text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+            On days you complete this habit, completion with other important habits is higher.
+          </p>
+        </div>
 
           <div className="w-full sm:w-56 flex flex-col gap-2">
             {data.impacts.length === 0 && (
@@ -482,8 +470,6 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
             ))}
           </div>
         </div>
-
-      </div>
 
       {/* 8. BOTTOM ROW */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full">

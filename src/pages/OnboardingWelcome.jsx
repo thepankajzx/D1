@@ -1,105 +1,119 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Icon from '../components/Icon';
+import { useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+  TrendUp, Crown, ShieldCheck, ArrowRight, Sparkle, LockKey
+} from '@phosphor-icons/react';
 
 export default function OnboardingWelcome() {
   const navigate = useNavigate();
-  const [rotated, setRotated] = useState(false);
 
   useEffect(() => {
-    // Subtle entry animation for the progress ring
-    const timer = setTimeout(() => {
-      setRotated(true);
-    }, 100);
-    return () => clearTimeout(timer);
+    window.scrollTo(0, 0);
   }, []);
 
-  return (
-    <div className="bg-tertiary-container text-surface flex flex-col min-h-screen font-body-md antialiased overflow-hidden absolute inset-0 z-50">
-      <main className="flex-1 flex flex-col justify-between items-center p-margin-mobile md:p-margin-desktop max-w-md mx-auto w-full h-full">
-        {/* Brand Header */}
-        <header className="w-full pt-8 flex justify-center">
-          <span className="font-headline-md text-headline-md text-surface tracking-tight">Definite</span>
-        </header>
+  const handleStart = () => {
+    if (navigator.vibrate) navigator.vibrate(20);
+    navigate('/onboarding/select');
+  };
 
-        {/* Core Content Area */}
-        <section className="flex-1 flex flex-col justify-center items-center text-center space-y-8 w-full mt-4">
-          
-          {/* Header text */}
-          <div className="space-y-2 px-4 mb-4">
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-surface">
-              How it works
-            </h1>
-            <p className="font-body-lg text-body-lg text-surface opacity-70 max-w-xs mx-auto">
-              Three simple steps to build bulletproof consistency.
+  return (
+    <div className="h-screen max-h-screen bg-[#FBFBFA] text-slate-900 flex flex-col justify-between p-4 sm:p-6 font-sans antialiased overflow-hidden select-none">
+      
+      {/* 01. COMPACT TOP BRAND HEADER */}
+      <header className="flex items-center justify-between shrink-0">
+        <Link to="/" className="flex items-center">
+          <img src="/icon-d-black.svg?v=6" alt="Definite" className="h-6 w-auto object-contain sm:hidden" />
+          <img src="/logo-black.svg?v=6" alt="Definite" className="h-6 sm:h-7 w-auto object-contain hidden sm:block" />
+        </Link>
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+          <Sparkle size={10} weight="fill" className="text-indigo-600" />
+          <span>Precision Habit OS</span>
+        </span>
+      </header>
+
+      {/* 02. HERO HEADLINE (SUPER TIGHT) */}
+      <div className="text-center shrink-0 my-1 sm:my-2">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-tight">
+          Build Better. <span className="text-indigo-600">Understand Yourself.</span>
+        </h1>
+        <p className="text-[11px] sm:text-xs text-slate-500 max-w-xs mx-auto mt-0.5">
+          3 core mathematical principles behind your consistency.
+        </p>
+      </div>
+
+      {/* 03. 3 MAJOR PILLARS (ZERO-SCROLL COMPACT CARDS) */}
+      <div className="grid grid-cols-1 gap-2 sm:gap-2.5 my-auto max-w-md mx-auto w-full">
+        
+        {/* Pillar 1: Precision Scoring */}
+        <div className="bg-white border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/70 text-emerald-600 flex items-center justify-center shrink-0">
+            <TrendUp size={20} weight="bold" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-900">5 Precision Scoring Engines</span>
+              <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">0–100% Score</span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
+              Not just checkmarks. Scored by Build, Break, Timing, Range & Binary rules.
             </p>
           </div>
+        </div>
 
-          {/* How it Works - Vertical Steps */}
-          <div className="w-full max-w-[320px] flex flex-col gap-2 items-start text-left mx-auto">
-            
-            {/* Step 1 */}
-            <div className="flex gap-5 items-start w-full group">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-2xl bg-surface/10 border border-surface/20 flex items-center justify-center text-surface transition-all duration-300 group-hover:bg-surface/20 group-hover:scale-105">
-                  <Icon name="fact_check" className="text-[24px]" />
-                </div>
-                <div className="w-[2px] h-8 bg-gradient-to-b from-surface/30 to-surface/5 mt-2 rounded-full"></div>
-              </div>
-              <div className="pt-2">
-                <h3 className="font-bold text-[17px] text-surface tracking-wide">1. Select Habits</h3>
-                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Choose from our library or build your custom habits.</p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="flex gap-5 items-start w-full group">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-2xl bg-surface/10 border border-surface/20 flex items-center justify-center text-surface transition-all duration-300 group-hover:bg-surface/20 group-hover:scale-105">
-                  <Icon name="tune" className="text-[24px]" />
-                </div>
-                <div className="w-[2px] h-8 bg-gradient-to-b from-surface/30 to-surface/5 mt-2 rounded-full"></div>
-              </div>
-              <div className="pt-2">
-                <h3 className="font-bold text-[17px] text-surface tracking-wide">2. Choose Scoring</h3>
-                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Set target numbers, timers, or simple Yes/No tracking.</p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex gap-5 items-start w-full group">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-2xl bg-surface text-tertiary-container flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300 group-hover:scale-105">
-                  <Icon name="trending_up" className="text-[24px]" />
-                </div>
-              </div>
-              <div className="pt-2">
-                <h3 className="font-bold text-[17px] text-surface tracking-wide">3. Track Consistency</h3>
-                <p className="text-surface/70 text-[14px] mt-1 leading-snug">Build your streak and analyze your progress over time.</p>
-              </div>
-            </div>
-
+        {/* Pillar 2: 30-Day Locked Priorities */}
+        <div className="bg-white border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/70 text-amber-600 flex items-center justify-center shrink-0">
+            <Crown size={20} weight="fill" />
           </div>
-        </section>
-
-        {/* Bottom Controls */}
-        <footer className="w-full pb-8 space-y-8 flex flex-col items-center">
-          {/* Progress Indicators */}
-          <div aria-label="Onboarding step 1 of 3" className="flex space-x-2 items-center">
-            <div className="w-8 h-1 rounded-full bg-surface transition-all duration-300"></div>
-            <div className="w-2 h-1 rounded-full bg-surface opacity-20 transition-all duration-300"></div>
-            <div className="w-2 h-1 rounded-full bg-surface opacity-20 transition-all duration-300"></div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-900">30-Day Weighted Priorities</span>
+              <span className="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">3× • 2× • 1×</span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
+              Lock your keystone habits for 30 days to build genuine neuroplastic discipline.
+            </p>
           </div>
+        </div>
 
-          {/* Primary Action */}
-          <button 
-            onClick={() => navigate('/onboarding/select')}
-            className="w-full py-4 rounded-lg bg-surface text-tertiary-container font-label-sm text-label-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 border border-surface shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
-          >
-            Start Tracking <Icon name="arrow_forward" className="text-lg" />
-          </button>
-        </footer>
-      </main>
+        {/* Pillar 3: Resiliency & Recovery */}
+        <div className="bg-white border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200/70 text-indigo-600 flex items-center justify-center shrink-0">
+            <ShieldCheck size={20} weight="fill" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-900">Resilience & Recovery Hub</span>
+              <span className="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded">Bounce-Back</span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
+              1 missed day isn't failure. Recovering within 24h earns +20 resilience points.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 04. BOTTOM ACTION & LAUNCH BUTTON (ALWAYS VISIBLE ABOVE THE FOLD) */}
+      <footer className="shrink-0 pt-1 pb-2 flex flex-col items-center gap-1.5 max-w-md mx-auto w-full">
+        <button
+          type="button"
+          onClick={handleStart}
+          className="w-full py-3 sm:py-3.5 rounded-xl bg-slate-950 text-white font-black text-xs sm:text-sm shadow-md hover:bg-slate-800 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>Choose Your Habits Now</span>
+          <ArrowRight size={15} weight="bold" />
+        </button>
+
+        <div className="flex items-center justify-center gap-2 text-[10px] font-semibold text-slate-400">
+          <span>Precision Engines</span>
+          <span>•</span>
+          <span>30D Lock</span>
+          <span>•</span>
+          <span>100% Free</span>
+        </div>
+      </footer>
+
     </div>
   );
 }

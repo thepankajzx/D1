@@ -12,6 +12,7 @@ import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import ProModal from '../components/ProModal';
 import { useData } from '../contexts/DataContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   Flame,
@@ -128,6 +129,7 @@ export default function ExperimentalAnalytics() {
   const navigate = useNavigate();
   const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc } = useData();
   const { isHinglish, t } = useLanguage();
+  const { isDark } = useTheme();
 
   // Selected scope & timeframe
   // Timeframe & Granularity State (Persisted in sessionStorage so navigation retains timeframe)
@@ -151,6 +153,23 @@ export default function ExperimentalAnalytics() {
   const [appliedCustomStart, setAppliedCustomStart] = useState('');
   const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
   const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
+  const [isTopHabitDropdownOpen, setIsTopHabitDropdownOpen] = useState(false);
+  const topHabitDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (topHabitDropdownRef.current && !topHabitDropdownRef.current.contains(e.target)) {
+        setIsTopHabitDropdownOpen(false);
+      }
+    };
+    if (isTopHabitDropdownOpen) {
+      document.addEventListener('pointerdown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
+    };
+  }, [isTopHabitDropdownOpen]);
+
   const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
   const [showResilienceLockModal, setShowResilienceLockModal] = useState(false);
   const [showDiagnoseLockModal, setShowDiagnoseLockModal] = useState(false);
@@ -177,7 +196,6 @@ export default function ExperimentalAnalytics() {
   const [showTimeframeModal, setShowTimeframeModal] = useState(false);
   const lastVibratedIndexRef = useRef(null);
   const echartsRef = useRef(null);
-
 
   // Check if preview mode - only show sample simulation when no habits are configured at all
   const isPreviewMode = realHabits.length === 0 && realSummaries.length === 0;
@@ -1081,7 +1099,7 @@ export default function ExperimentalAnalytics() {
         value: val,
         symbol: 'circle',
         symbolSize: chartTrendMode === 'both' ? 4 : 5.5,
-        itemStyle: { color: primaryColor, borderColor: '#ffffff', borderWidth: 1.5 },
+        itemStyle: { color: primaryColor, borderColor: isDark ? '#131722' : '#ffffff', borderWidth: 1.5 },
         meta: d.meta,
         rawVal: val,
         maVal: ma7Scores[i]
@@ -1332,22 +1350,187 @@ export default function ExperimentalAnalytics() {
         </div>
       )}
 
-      {/* ── SECTION 1: TOP CONTROLS & HABIT PERFORMANCE KPIS (STICKY ON SCROLL) ── */}
-      <section className="sticky top-[calc(3.25rem+env(safe-area-inset-top))] z-30 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md pt-0 pb-1 space-y-1.5 transition-all">
-        {/* Top Controls Row: Left = Timeframe Picker Pill */}
-        <div className="flex items-center justify-between px-0.5">
-          {/* Left: Custom In-App Timeframe Selector Button (Zero OS Dialog Lag) */}
+      {/* ── SECTION 1: TOP CONTROLS: HABIT DROPDOWN (LEFT) + TIMEFRAME PICKER (RIGHT) ── */}
+      <section className="sticky top-[calc(3.25rem+env(safe-area-inset-top))] z-30 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md py-1.5 transition-all">
+        <div className="flex items-center justify-between gap-2 px-0.5">
+          
+          {/* Left: Custom In-App Habit Selector Dropdown (with Score & Trend Indicator) */}
+          <div className="relative min-w-0" ref={topHabitDropdownRef}>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(20);
+                setIsTopHabitDropdownOpen(prev => !prev);
+              }}
+              className="flex items-center gap-2 bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-full h-[36px] px-3 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer select-none group max-w-[230px] sm:max-w-xs"
+              title="Select Habit"
+            >
+              {selectedHabitId === 'all' ? (
+                <>
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <Sparkle size={11} weight="fill" />
+                  </div>
+                  <span className="text-xs font-black text-slate-900 dark:text-white truncate">Overall</span>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0">{overallStat.avgScore}%</span>
+                  <span
+                    className={`text-[10px] font-bold flex items-center gap-0.5 shrink-0 ${
+                      overallStat.delta > 0
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : overallStat.delta < 0
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    {overallStat.delta > 0 && <TrendUp size={10} weight="bold" />}
+                    {overallStat.delta < 0 && <TrendDown size={10} weight="bold" />}
+                    {Math.abs(overallStat.delta)}%
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div
+                    className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
+                    style={{ backgroundColor: currentSelectedHabit?.color || '#3b82f6' }}
+                  >
+                    <HabitIcon name={currentSelectedHabit?.icon} size={10} className="text-white" />
+                  </div>
+                  <span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[130px]">
+                    {currentSelectedHabit?.name}
+                  </span>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0">
+                    {habitStats.find(h => h.id === selectedHabitId)?.avgScore ?? 0}%
+                  </span>
+                  {(() => {
+                    const hStat = habitStats.find(h => h.id === selectedHabitId);
+                    if (!hStat) return null;
+                    return (
+                      <span
+                        className={`text-[10px] font-bold flex items-center gap-0.5 shrink-0 ${
+                          hStat.delta > 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : hStat.delta < 0
+                            ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-slate-400'
+                        }`}
+                      >
+                        {hStat.delta > 0 && <TrendUp size={10} weight="bold" />}
+                        {hStat.delta < 0 && <TrendDown size={10} weight="bold" />}
+                        {Math.abs(hStat.delta)}%
+                      </span>
+                    );
+                  })()}
+                </>
+              )}
+              <CaretDown size={11} weight="bold" className={`text-slate-400 transition-transform shrink-0 ${isTopHabitDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu Popup */}
+            {isTopHabitDropdownOpen && (
+              <div className="absolute left-0 top-[calc(100%+6px)] w-64 sm:w-72 bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-100 max-h-72 overflow-y-auto custom-scrollbar">
+                {/* 1. Overall Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    setSelectedHabitId('all');
+                    setIsTopHabitDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition-all cursor-pointer ${
+                    selectedHabitId === 'all'
+                      ? 'bg-slate-100 dark:bg-slate-800/80 font-black'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <Sparkle size={12} weight="fill" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate">Overall Average</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 text-right">
+                    <span className="text-xs font-black text-slate-900 dark:text-white">{overallStat.avgScore}%</span>
+                    <span
+                      className={`text-[10.5px] font-bold flex items-center gap-0.5 ${
+                        overallStat.delta > 0
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : overallStat.delta < 0
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {overallStat.delta > 0 && <TrendUp size={10} weight="bold" />}
+                      {overallStat.delta < 0 && <TrendDown size={10} weight="bold" />}
+                      {Math.abs(overallStat.delta)}%
+                    </span>
+                  </div>
+                </button>
+
+                <div className="h-[1px] bg-slate-100 dark:bg-slate-800/80 my-1 mx-1" />
+
+                {/* 2. Individual Habits List */}
+                {habitStats.map(h => {
+                  const isSelected = selectedHabitId === h.id;
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        setSelectedHabitId(h.id);
+                        setIsTopHabitDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-100 dark:bg-slate-800/80 font-black'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
+                          style={{ backgroundColor: h.color }}
+                        >
+                          <HabitIcon name={h.icon} size={11} className="text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[110px] sm:max-w-[130px]">
+                          {h.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 text-right">
+                        <span className="text-xs font-black text-slate-900 dark:text-white">{h.avgScore}%</span>
+                        <span
+                          className={`text-[10.5px] font-bold flex items-center gap-0.5 ${
+                            h.delta > 0
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : h.delta < 0
+                              ? 'text-rose-600 dark:text-rose-400'
+                              : 'text-slate-400'
+                          }`}
+                        >
+                          {h.delta > 0 && <TrendUp size={10} weight="bold" />}
+                          {h.delta < 0 && <TrendDown size={10} weight="bold" />}
+                          {Math.abs(h.delta)}%
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Timeframe Selector Button */}
           <button
             type="button"
             onClick={() => {
               if (navigator.vibrate) navigator.vibrate(30);
               setShowTimeframeModal(true);
             }}
-            className="flex items-center gap-1 bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800 rounded-full h-[28px] px-2.5 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-full h-[36px] px-3.5 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
             title="Change Timeframe"
           >
-            <Calendar size={11} weight="bold" className="text-slate-500 shrink-0" />
-            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">
+            <Calendar size={13} weight="bold" className="text-slate-500 shrink-0" />
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">
               {rangeOption === '7' ? '7D' :
                rangeOption === '14' ? '14D' :
                rangeOption === '30' ? '30D' :
@@ -1355,101 +1538,10 @@ export default function ExperimentalAnalytics() {
                rangeOption === 'custom' ? 'Custom' :
                '30D'}
             </span>
-            <CaretDown size={9} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
+            <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
           </button>
-        </div>
-
-        {/* Horizontal Scrollable Habit KPI Pills (No Scrollbar) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5 -mx-0.5">
-          {/* Overall Composite Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(30);
-              setSelectedHabitId('all');
-            }}
-            className={`h-[34px] px-3 rounded-full border flex items-center gap-2 shrink-0 cursor-pointer transition-all shadow-2xs ${
-              selectedHabitId === 'all'
-                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xs font-black'
-                : 'bg-white dark:bg-[#131722] border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
-            }`}
-          >
-            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <Sparkle size={11} weight="fill" />
-            </div>
-            <span className="text-xs font-bold whitespace-nowrap">Overall</span>
-            <span className="text-xs font-black ml-0.5">{overallStat.avgScore}%</span>
-            <span
-              className={`text-[10.5px] font-bold flex items-center gap-0.5 leading-none ${
-                overallStat.delta > 0
-                  ? selectedHabitId === 'all'
-                    ? 'text-emerald-300 dark:text-emerald-600'
-                    : 'text-emerald-600 dark:text-emerald-400'
-                  : overallStat.delta < 0
-                  ? selectedHabitId === 'all'
-                    ? 'text-rose-300 dark:text-rose-600'
-                    : 'text-rose-600 dark:text-rose-400'
-                  : 'text-slate-400'
-              }`}
-            >
-              (
-              {overallStat.delta > 0 && <TrendUp size={10} weight="bold" />}
-              {overallStat.delta < 0 && <TrendDown size={10} weight="bold" />}
-              {Math.abs(overallStat.delta)}%)
-            </span>
-          </button>
-
-          {/* Individual Habit KPI Pills */}
-          {habitStats.map(h => {
-            const isSelected = selectedHabitId === h.id;
-            return (
-              <button
-                key={h.id}
-                type="button"
-                onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(30);
-                  setSelectedHabitId(h.id);
-                }}
-                className={`h-[34px] px-3 rounded-full border flex items-center gap-2 shrink-0 cursor-pointer transition-all shadow-2xs ${
-                  isSelected
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xs font-black'
-                    : 'bg-white dark:bg-[#131722] border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
-              >
-                <div
-                  className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                  style={{ backgroundColor: h.color }}
-                >
-                  <HabitIcon name={h.icon} size={11} className="text-white" />
-                </div>
-                <span className="text-xs font-bold whitespace-nowrap truncate max-w-[120px]">{h.name}</span>
-                <span className="text-xs font-black ml-0.5">{h.avgScore}%</span>
-                <span
-                  className={`text-[10.5px] font-bold flex items-center gap-0.5 leading-none ${
-                    h.delta > 0
-                      ? isSelected
-                        ? 'text-emerald-300 dark:text-emerald-600'
-                        : 'text-emerald-600 dark:text-emerald-400'
-                      : h.delta < 0
-                      ? isSelected
-                        ? 'text-rose-300 dark:text-rose-600'
-                        : 'text-rose-600 dark:text-rose-400'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  (
-                  {h.delta > 0 && <TrendUp size={10} weight="bold" />}
-                  {h.delta < 0 && <TrendDown size={10} weight="bold" />}
-                  {Math.abs(h.delta)}%)
-                </span>
-              </button>
-            );
-          })}
         </div>
       </section>
-
-
-
 
       {/* ── DESKTOP 2-COLUMN GRID (CHART TOP/LEFT, HEATMAP BOTTOM/RIGHT) / MOBILE STACK ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
@@ -2407,7 +2499,7 @@ export default function ExperimentalAnalytics() {
         </div>
 
         {/* ── 3 INSIGHT CARDS GRID WITH 30-DAY BLUR & LOCK OVERLAY ── */}
-        <div className="relative">
+        <div className={`relative ${(realSummaries?.length || 0) < 30 ? 'min-h-[280px]' : ''}`}>
           <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${(realSummaries?.length || 0) < 30 ? 'filter blur-[3px] select-none pointer-events-none opacity-50' : ''}`}>
           
           {/* Card 1: Best Day */}

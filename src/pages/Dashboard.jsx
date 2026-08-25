@@ -1,7 +1,7 @@
 import Icon from '../components/Icon';
 import { Target, Flame, Lightning } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,6 +50,7 @@ export default function Dashboard() {
   }, [habits]);
   
   // State
+  const dateInputRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(() => getTodayDate());
   
   const [entries, setEntries] = useState([]);
@@ -452,8 +453,14 @@ export default function Dashboard() {
 
       {/* 3. Date Selector */}
       <div className="flex items-center justify-start">
-        <div className="flex items-center gap-2 text-on-surface border border-outline-variant/40 px-3.5 py-2 rounded-xl bg-surface-container-lowest hover:bg-surface-container shadow-2xs cursor-pointer relative transition-colors">
+        <div 
+          onClick={() => {
+            try { dateInputRef.current?.showPicker(); } catch(e) {}
+          }}
+          className="flex items-center gap-2 text-on-surface border border-outline-variant/40 px-3.5 py-2 rounded-xl bg-surface-container-lowest hover:bg-surface-container shadow-2xs cursor-pointer relative transition-colors"
+        >
           <input 
+            ref={dateInputRef}
             type="date" 
             aria-label="Select Date"
             value={selectedDate} 

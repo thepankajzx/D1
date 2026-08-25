@@ -213,40 +213,49 @@ export default function StreakMilestonesPage() {
           </div>
         </div>
 
-        {/* ── MASTER HERO CARD (COMPACT) ────────────────────────── */}
-        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs relative overflow-hidden">
+        {/* ── MASTER HERO CARD (PREMIUM & 100% UNBREAKABLE) ────────────────────────── */}
+        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-2xl pointer-events-none -translate-y-8 translate-x-8"></div>
 
-          <div className="flex items-center justify-between gap-3 relative z-10">
-            {/* Left: Flame & Current Streak */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
-                <Flame size={22} weight="fill" className="animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                    {streakData.currentStreak}
-                  </span>
-                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    {isHinglish ? 'दिन की स्ट्रीक' : 'Day Streak'}
-                  </span>
+          <div className="space-y-3 relative z-10">
+            {/* Top Row: Flame Icon + Streak Count + Trophy Badge */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/25">
+                  <Flame size={26} weight="fill" className="animate-pulse" />
                 </div>
-                <p className="text-[11px] text-slate-500 font-bold mt-0.5">
-                  {isHinglish ? `Personal Best: ${bestStreak} दिन` : `Personal Best: ${bestStreak} days`}
-                </p>
+                <div className="min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                      {streakData.currentStreak}
+                    </span>
+                    <span className="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                      {isHinglish ? 'दिन की स्ट्रीक' : 'Day Streak'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1 whitespace-nowrap">
+                    {isHinglish ? `Personal Best: ${bestStreak} दिन` : `Personal Best: ${bestStreak} days`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Trophy Pill Badge (Right Side) */}
+              <div className="shrink-0">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black whitespace-nowrap">
+                  <Trophy size={14} weight="fill" className="text-amber-500" />
+                  <span>{unlockedCount} / {DEDICATED_MILESTONES.length}</span>
+                </div>
               </div>
             </div>
 
-            {/* Right: Unlocked Progress Badge */}
-            <div className="text-right">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-black">
-                <Trophy size={13} weight="fill" className="text-amber-500" />
-                <span>{unlockedCount} / {DEDICATED_MILESTONES.length}</span>
-              </div>
-              <p className="text-[10px] font-bold text-slate-400 mt-1 truncate max-w-[120px] xs:max-w-none">
-                {isHinglish ? `अगला: ${milestoneInfo.label}` : `Next: ${milestoneInfo.label}`}
-              </p>
+            {/* Bottom Row: Next Milestone Target Banner */}
+            <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0">
+                {isHinglish ? 'अगला पड़ाव' : 'Next Milestone'}:
+              </span>
+              <span className="font-bold text-amber-600 dark:text-amber-400 truncate pl-2">
+                {milestoneInfo.label}
+              </span>
             </div>
           </div>
         </div>
@@ -379,8 +388,9 @@ export default function StreakMilestonesPage() {
               </div>
 
               <div>
-                <span className="text-[10.5px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                  {isHinglish ? '🏆 माइलस्टोन हासिल!' : '🏆 Milestone Unlocked!'}
+                <span className="inline-flex items-center gap-1 text-[10.5px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                  <Trophy size={13} weight="fill" />
+                  <span>{isHinglish ? 'माइलस्टोन हासिल!' : 'Milestone Unlocked!'}</span>
                 </span>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1.5">
                   {isHinglish ? celebratedMilestone.hindiTitle : celebratedMilestone.title}

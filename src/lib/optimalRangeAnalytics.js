@@ -150,7 +150,7 @@ export function getOptimalRangeAnalytics(habit, allSummaries, dateRange) {
 
   const insights = [];
   if (weakestDay !== 'N/A') {
-    insights.push(`💡 You tend to miss your optimal range most on ${weakestDay}s.`);
+    insights.push(`You tend to miss your optimal range most on ${weakestDay}s.`);
   }
   if (improvement !== null && improvement > 0) {
     insights.push(`↗ Score improved by ${improvement}% vs the previous period.`);
@@ -158,7 +158,7 @@ export function getOptimalRangeAnalytics(habit, allSummaries, dateRange) {
     insights.push(`↘ Score dropped by ${Math.abs(improvement)}% vs last period.`);
   }
   if (daysOnTarget > 0) {
-    insights.push(`🎯 You were in the optimal range on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
+    insights.push(`You were in the optimal range on ${daysOnTarget} of ${diffDays} days (${Math.round(daysOnTarget / diffDays * 100)}%).`);
   }
 
   return {

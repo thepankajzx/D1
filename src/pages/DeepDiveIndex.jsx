@@ -115,17 +115,6 @@ export default function DeepDiveIndex() {
           </div>
         </div>
 
-        {priorityHabits.length > 0 && (
-          <button
-            type="button"
-            onClick={handleOpenPriorityModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer shrink-0 shadow-2xs"
-          >
-            <SlidersHorizontal size={13} weight="bold" />
-            <span className="hidden sm:inline">{isHinglish ? 'प्राथमिकता बदलें' : 'Edit Priorities'}</span>
-            <span className="sm:hidden">{isHinglish ? 'बदलें' : 'Edit'}</span>
-          </button>
-        )}
       </div>
 
       {/* ── COMPACT SAMPLE PREVIEW BUTTON (WHEN < 7 DAYS) ── */}
@@ -307,7 +296,7 @@ export default function DeepDiveIndex() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={15} className="!w-7 !h-7 !rounded-lg shrink-0" />
+                      <HabitIcon name={habit.icon || 'star'} habitId={habit.id} boxed={true} size={15} className="!w-7 !h-7 !rounded-full shrink-0" />
                       <span className={`font-bold text-xs truncate ${isSelected ? 'text-primary dark:text-primary-light font-black' : 'text-slate-800 dark:text-slate-200'}`}>
                         {habit.name}
                       </span>

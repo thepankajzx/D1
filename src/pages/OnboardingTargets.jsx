@@ -149,7 +149,7 @@ export default function OnboardingTargets() {
             return (
               <div key={habit.id} className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex flex-col gap-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-primary shadow-sm border border-outline-variant/30">
+                  <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-primary shadow-sm border border-outline-variant/30">
                     <Icon name={habit.icon}  style={{fontVariationSettings: "'FILL' 1"}} />
                   </div>
                   <div>
