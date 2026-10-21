@@ -1,23 +1,62 @@
+export function isNightHabit(habit) {
+  if (!habit) return false;
+  const id = (habit.id || '').toLowerCase();
+  const name = (habit.name || '').toLowerCase();
+  const category = (habit.category || '').toLowerCase();
+  return (
+    id === 'sleep' ||
+    id.includes('sleep') ||
+    id.includes('bed') ||
+    id.includes('night') ||
+    category === 'night' ||
+    category === 'evening' ||
+    (name.includes('sleep') && !name.includes('duration')) ||
+    name.includes('bedtime') ||
+    name.includes('soye') ||
+    name.includes('sona') ||
+    name.includes('night')
+  );
+}
+
+export function normalizeNightTime(minutes) {
+  if (minutes === null || minutes === undefined || isNaN(Number(minutes))) return minutes;
+  const num = Number(minutes);
+  if (num < 12 * 60) {
+    return num + 1440;
+  }
+  return num;
+}
+
 export function calculateScore(scoringType, direction, rawValue, target100, target0) {
-  if (scoringType === "binary") return rawValue === 1 ? 100 : 0;
+  if (scoringType === "binary" || scoringType === "yn") {
+    if (rawValue === null || rawValue === undefined) return null;
+    const num = Number(rawValue);
+    if (direction === "lower_is_better") {
+      return num === 0 ? 100 : 0;
+    }
+    return num === 1 ? 100 : 0;
+  }
   if (scoringType === "subjective") return null;
+  if (rawValue === null || rawValue === undefined) return null;
+
+  let val = Number(rawValue);
+  let t100 = Number(target100);
+  let t0 = Number(target0);
+
+  if (isNaN(val) || isNaN(t100) || isNaN(t0)) return null;
 
   const lowerIsBetter = direction === "lower_is_better";
-  
-  // Special case for time (sleep time wraparound)
-  if (scoringType === "time") {
-    // We already handle the +1440 at the component level for sleep time specifically if needed
-    // The exact scoring formula remains linear between target100 and target0
-  }
 
   if (lowerIsBetter) {
-    if (rawValue <= target100) return 100;
-    if (rawValue >= target0) return 0;
-    return 100 * (target0 - rawValue) / (target0 - target100);
+    if (t100 === t0) return val <= t100 ? 100 : 0;
+    if (val <= t100) return 100;
+    if (val >= t0) return 0;
+    return 100 * (t0 - val) / (t0 - t100);
   } else {
-    if (rawValue >= target100) return 100;
-    if (rawValue <= target0) return 0;
-    return 100 * (rawValue - target0) / (target100 - target0);
+    if (t100 === t0) return val >= t100 ? 100 : 0;
+    if (val >= t100) return 100;
+    if (val <= t0) return 0;
+    return 100 * (val - t0) / (t100 - t0);
   }
 }
 
@@ -47,8 +86,13 @@ export function calculateDailySummary(habits, entries, priorityModeEnabled) {
     }
 
     // Weighting logic if Priority Mode is enabled
-    // If high priority, it counts as 2 habits for the average.
-    const weight = (priorityModeEnabled && habit.priority === 'high') ? 2 : 1;
+    // Rank 1: 3x, Rank 2: 2x, Rank 3: 1.5x, Normal: 1x
+    let weight = 1;
+    if (priorityModeEnabled && habit.priorityRank) {
+      if (habit.priorityRank === 1) weight = 3;
+      else if (habit.priorityRank === 2) weight = 2;
+      else if (habit.priorityRank === 3) weight = 1.5;
+    }
     
     scoreSum += score * weight;
     scoredHabitsTotal += weight;
@@ -97,20 +141,23 @@ export function recalculateStreaks(dailySummaries) {
   let checkDate = new Date();
   
   // If today has no summary yet, we might still have a streak ending yesterday.
-  // We'll see if today's summary exists and has data.
   const todaySummary = summaryMap.get(todayStr);
-  if (todaySummary && todaySummary.overallScore !== null) {
+  const todayIsSuccessful = todaySummary && todaySummary.overallScore !== null && Number(todaySummary.overallScore) >= 60;
+  const todayIsFailed = todaySummary && todaySummary.overallScore !== null && Number(todaySummary.overallScore) < 60;
+
+  if (todayIsSuccessful) {
       currentStreak++;
   }
   
   checkDate.setDate(checkDate.getDate() - 1);
-  let streakActive = true;
+  // If today was logged but score < 60, streak is broken today
+  let streakActive = !todayIsFailed;
   
   while(streakActive) {
       const dateStr = checkDate.toISOString().split('T')[0];
       const summary = summaryMap.get(dateStr);
       
-      if (summary && summary.overallScore !== null) {
+      if (summary && summary.overallScore !== null && Number(summary.overallScore) >= 60) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -128,7 +175,7 @@ export function recalculateStreaks(dailySummaries) {
   let previousDate = null;
   
   for (const sum of sortedSummaries) {
-      if (sum && sum.overallScore !== null) {
+      if (sum && sum.overallScore !== null && Number(sum.overallScore) >= 60) {
           if (!previousDate) {
               currentHistoricalStreak = 1;
           } else {

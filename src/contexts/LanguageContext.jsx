@@ -34,8 +34,8 @@ export const translations = {
   'score_label': { en: 'SCORE', hinglish: 'SCORE' },
   'why_recovery_title': { en: 'Why Recovery > Streaks', hinglish: 'Recovery Streak Se Zyada Zaroori Kyun Hai?' },
   'why_recovery_desc': { 
-    en: 'Streaks measure perfection. Recovery measures resilience. Real life has disruptions — your ability to bounce back within 24-48 hours is the #1 predictor of lifelong habit retention.',
-    hinglish: 'Streak sirf perfection naapti hai, lekin Recovery tumhari comeback ki taqat naapti hai. Asli zindagi me busy din aayenge — 24-48 ghante me wapas aana hi habit banaye rakhne ka sabse bada secret hai.' 
+    en: 'Streaks measure perfection. Recovery measures resilience. Real life has disruptions - your ability to bounce back within 24-48 hours is the #1 predictor of lifelong habit retention.',
+    hinglish: 'Streak sirf perfection naapti hai, lekin Recovery tumhari comeback ki taqat naapti hai. Asli zindagi me busy din aayenge - 24-48 ghante me wapas aana hi habit banaye rakhne ka sabse bada secret hai.' 
   },
   'how_recovery_calc_title': { en: 'How Recovery Score is Calculated', hinglish: 'Recovery Score Kaise Banta Hai?' },
   'how_recovery_calc_desc': { 

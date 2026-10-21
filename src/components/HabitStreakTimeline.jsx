@@ -125,7 +125,7 @@ export default function HabitStreakTimeline({ habits, summaries, allSummaries, s
           {/* Habit Rows */}
           <div className="flex flex-col gap-[14px]">
             {habits.map((habit, hIdx) => {
-              const color = HABIT_COLORS[hIdx % HABIT_COLORS.length];
+              const color = habit.color || "#10b981";
               const currentStreak = getHabitStreak(habit.id);
               
               return (

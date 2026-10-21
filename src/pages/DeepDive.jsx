@@ -37,7 +37,7 @@ export default function DeepDive() {
   const habitId = query.get('habitId');
   const navigate = useNavigate();
   
-  const { habits, allSummaries } = useData();
+  const { habits, deletedHabits, allSummaries } = useData();
   const isSamplePreview = habitId === 'sample_workout' || habitId?.startsWith('sample_');
   const daysRemaining = Math.max(0, 7 - (allSummaries?.length || 0));
   
@@ -104,15 +104,15 @@ export default function DeepDive() {
   const habit = useMemo(() => {
     if (!habitId) return null;
     if (isSamplePreview) return SAMPLE_WORKOUT_HABIT;
-    const userHabit = habits?.find(h => h.id === habitId);
+    const userHabit = habits?.find(h => h.id === habitId) || deletedHabits?.find(h => h.id === habitId);
     if (userHabit) return userHabit;
     return HABITS_SEED_DATA.find(h => h.id === habitId) || null;
-  }, [habits, habitId, isSamplePreview]);
+  }, [habits, deletedHabits, habitId, isSamplePreview]);
 
   const resolvedHabits = useMemo(() => {
-    if (isSamplePreview) return [SAMPLE_WORKOUT_HABIT, ...(habits || [])];
-    return habits || [];
-  }, [isSamplePreview, habits]);
+    if (isSamplePreview) return [SAMPLE_WORKOUT_HABIT, ...(habits || []), ...(deletedHabits || [])];
+    return [...(habits || []), ...(deletedHabits || [])];
+  }, [isSamplePreview, habits, deletedHabits]);
 
   if (!habit) {
     return (

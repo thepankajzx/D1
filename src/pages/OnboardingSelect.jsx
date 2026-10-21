@@ -18,7 +18,9 @@ export default function OnboardingSelect() {
   const [showPaywall, setShowPaywall] = useState(false);
   
   const { currentUser } = useAuth();
-  const { habits: existingHabits = [] } = useData();
+  const { habits: existingHabits = [], userDoc } = useData();
+  const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+  const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function OnboardingSelect() {
             Choose up to 8 habits to track
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant">
-            {existingHabits.length + selectedHabits.length} of 8 limits reached
+            {isPro ? `${existingHabits.length + selectedHabits.length} habits selected` : `${existingHabits.length + selectedHabits.length} of 8 limits reached`}
           </p>
         </div>
 

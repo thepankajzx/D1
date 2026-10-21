@@ -218,7 +218,7 @@ export default function RecoveryDeepDive() {
           </div>
           <div className="flex flex-col items-end flex-shrink-0 text-right">
             <div className="text-2xl sm:text-3xl md:text-4xl font-black text-orange-500 leading-tight">
-              {recoveryScore !== null && recoveryScore !== undefined ? formatNum1(recoveryScore) + '%' : '—'}
+              {recoveryScore !== null && recoveryScore !== undefined ? formatNum1(recoveryScore) + '%' : ' - '}
             </div>
             <span className="text-[11px] sm:text-xs text-orange-200/80 font-bold tracking-wide mt-0.5 capitalize">
               {recoveryScore >= 80 ? 'High Resilience' : recoveryScore >= 50 ? 'Moderate' : 'Needs Work'}
@@ -429,6 +429,19 @@ export default function RecoveryDeepDive() {
                       <div className={'w-7 h-7 rounded-lg bg-slate-100/80 flex items-center justify-center text-slate-500 transition-transform duration-200 ' + (isExpanded?'rotate-180':'')}><CaretDown size={14} weight="bold"/></div>
                     </div>
                   </div>
+
+                  {/* Prominent Action Line: Tells exactly what is required to recover */}
+                  {item.isInProgress && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] font-bold text-amber-900 dark:text-amber-200">
+                      <Sparkle size={13} weight="fill" className="text-amber-500 shrink-0" />
+                      <span>
+                        {isHinglish 
+                          ? 'रिकवर करने के लिए: अगले 7 दिनों में कम से कम 5 दिन 70%+ स्कोर लाएं' 
+                          : 'To recover: Score 70%+ on at least 5 of the next 7 days'}
+                      </span>
+                    </div>
+                  )}
+
                   {isExpanded && (
                     <div onClick={e=>e.stopPropagation()} className="w-full flex flex-col gap-2 pt-3 border-t border-slate-200/60 animate-in fade-in duration-150 cursor-default">
                       <div className="flex items-center justify-between text-xs font-semibold">
@@ -440,7 +453,7 @@ export default function RecoveryDeepDive() {
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
                         <span>Success Threshold: 70%+ (5 of 7 days)</span>
-                        <span>Window: {formatDateShort(item.missDate||item.date)} – {formatDateShort(item.endDate)}</span>
+                        <span>Window: {formatDateShort(item.missDate||item.date)} - {formatDateShort(item.endDate)}</span>
                       </div>
 
                       {/* Contextual Explainer Note with Premium Phosphor Icons */}
@@ -485,8 +498,8 @@ export default function RecoveryDeepDive() {
                               </strong>
                               <span>
                                 {isHinglish
-                                  ? `${formatDateShort(item.endDate)} से पहले बचे हुए दिनों में 50%+ स्कोर लाकर कम से कम 5/7 दिन पूरे करें और Recovery हासिल करें!`
-                                  : `Hit 50%+ score in remaining days before ${formatDateShort(item.endDate)} to secure 5 of 7 days and complete the recovery!`}
+                                  ? `विंडो समाप्त (${formatDateShort(item.endDate)}) होने से पहले बचे हुए दिनों में 70%+ स्कोर लाकर कम से कम 5/7 दिन पूरे करें और Recovery हासिल करें!`
+                                  : `Score ≥70% on at least 5 of 7 days before ${formatDateShort(item.endDate)} to secure your recovery!`}
                               </span>
                             </>
                           ) : (

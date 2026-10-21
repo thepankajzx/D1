@@ -1,4 +1,6 @@
 import { calculateRecoveryScore } from './recoveryAnalytics';
+import { HABITS_SEED_DATA } from './premadeHabits';
+import { formatTimeVal as formatTimeHelper } from './timeFormat';
 
 // earlierIsBetterAnalytics.js
 // O(N) single-pass analytics for "Earlier Is Better" habit scoring type (Time)
@@ -7,14 +9,10 @@ const DAYS_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday
 
 function toDateStr(d) { return d.toISOString().split('T')[0]; }
 
-export function formatTimeVal(minutes) {
-  if (minutes === null || minutes === undefined) return 'N/A';
-  let h = Math.floor(minutes / 60) % 24;
-  let m = Math.round(minutes % 60);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12;
-  h = h ? h : 12;
-  return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+export function formatTimeVal(minutes, timeFormat) {
+  if (minutes === null || minutes === undefined || minutes === '') return 'N/A';
+  const res = formatTimeHelper(minutes, timeFormat);
+  return res || 'N/A';
 }
 
 function getDOWIndex(dateStr) {
@@ -37,23 +35,54 @@ export function getEarlierIsBetterAnalytics(habit, allSummaries, dateRange) {
   const prevStart = toDateStr(prevStartDt);
   const prevEnd   = toDateStr(prevEndDt);
 
-  // Time targets are stored in habit.target100 and habit.target0 (or userTarget100)
-  let targetValue = habit.target100 !== undefined ? Number(habit.target100) : (habit.userTarget100 !== undefined ? Number(habit.userTarget100) : 480);
-  let target0 = habit.target0 !== undefined ? Number(habit.target0) : (habit.userTarget0 !== undefined ? Number(habit.userTarget0) : 600);
-  
+  // Robust target resolution
+  const seed = HABITS_SEED_DATA.find(s => s.id === habit.id || (habit.name && s.name.toLowerCase() === habit.name.toLowerCase()));
+  let isNightHabit = habit.id?.includes('sleep') || habit.id?.includes('bed') || (habit.name && habit.name.toLowerCase().includes('sleep'));
+
+  const rawT100 = (habit.userTarget100 !== undefined && habit.userTarget100 !== null && habit.userTarget100 !== '') 
+    ? habit.userTarget100
+    : (habit.target100 !== undefined && habit.target100 !== null && habit.target100 !== '')
+    ? habit.target100
+    : (habit.target !== undefined && habit.target !== null && habit.target !== '')
+    ? habit.target
+    : (habit.targetValue !== undefined && habit.targetValue !== null && habit.targetValue !== '')
+    ? habit.targetValue
+    : (seed?.target100 !== undefined ? seed.target100 : (isNightHabit ? 1320 : 480));
+
+  const rawT0 = (habit.userTarget0 !== undefined && habit.userTarget0 !== null && habit.userTarget0 !== '')
+    ? habit.userTarget0
+    : (habit.target0 !== undefined && habit.target0 !== null && habit.target0 !== '')
+    ? habit.target0
+    : (habit.floor !== undefined && habit.floor !== null && habit.floor !== '')
+    ? habit.floor
+    : (habit.startValue !== undefined && habit.startValue !== null && habit.startValue !== '')
+    ? habit.startValue
+    : (seed?.target0 !== undefined ? seed.target0 : (isNightHabit ? 1440 : 600));
+
+  let targetValue = Number(rawT100);
   if (isNaN(targetValue)) {
-    const tv = String(habit.target100 || habit.userTarget100 || "08:00");
-    const [h, m] = tv.split(':').map(Number);
-    targetValue = (h || 8) * 60 + (m || 0);
+    const tv = String(rawT100 || (isNightHabit ? "22:00" : "08:00"));
+    if (tv.includes(':')) {
+      const [h, m] = tv.split(':').map(Number);
+      targetValue = (h || 0) * 60 + (m || 0);
+    } else {
+      targetValue = isNightHabit ? 1320 : 480;
+    }
   }
+
+  let target0 = Number(rawT0);
   if (isNaN(target0)) {
-    const t0 = String(habit.target0 || habit.userTarget0 || "10:00");
-    const [h, m] = t0.split(':').map(Number);
-    target0 = (h || 10) * 60 + (m || 0);
+    const t0 = String(rawT0 || (isNightHabit ? "24:00" : "10:00"));
+    if (t0.includes(':')) {
+      const [h, m] = t0.split(':').map(Number);
+      target0 = (h || 0) * 60 + (m || 0);
+    } else {
+      target0 = isNightHabit ? 1440 : 600;
+    }
   }
 
   // Detect night/bedtime habits to handle midnight wraparound
-  const isNightHabit = habit.id.includes('sleep') || habit.id.includes('bed') || (habit.name && habit.name.toLowerCase().includes('sleep')) || targetValue >= 12 * 60;
+  isNightHabit = isNightHabit || targetValue >= 12 * 60;
 
   const normalizeTimeForAvg = (val) => {
     if (val === null || val === undefined || typeof val !== 'number') return null;

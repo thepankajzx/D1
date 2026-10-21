@@ -23,7 +23,7 @@ export default function TodayInsightHighlightCard({ habits = [], allSummaries = 
     return generateDailyInsights(habits, allSummaries, isHinglish);
   }, [habits, allSummaries, isHinglish]);
 
-  // ── LOCKED PREVIEW BAR (< 7 Days) — THIN COMPACT STRIP WITH MODAL ──
+  // ── LOCKED PREVIEW BAR (< 7 Days) - THIN COMPACT STRIP WITH MODAL ──
   if (isLocked) {
     return (
       <>

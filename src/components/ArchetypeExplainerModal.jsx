@@ -79,7 +79,7 @@ export default function ArchetypeExplainerModal({ badgeLabel = 'POWER DUO', onCl
             </>
           ) : (
             <>
-              Consistency is not about never slipping — it is about <span className="font-bold text-slate-900">how fast you recover</span>. Bouncing back builds lifelong behavioral resilience.
+              Consistency is not about never slipping - it is about <span className="font-bold text-slate-900">how fast you recover</span>. Bouncing back builds lifelong behavioral resilience.
             </>
           )
         }

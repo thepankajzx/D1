@@ -21,7 +21,7 @@ export function generateBetterReport(habits = [], allSummaries = [], requestedWi
 
   const startDateStr = windowSummaries[0]?.id ? formatDateShort(windowSummaries[0].id) : 'Start';
   const endDateStr = windowSummaries[windowSummaries.length - 1]?.id ? formatDateShort(windowSummaries[windowSummaries.length - 1].id) : 'Today';
-  const dateRangeLabel = `${startDateStr} – ${endDateStr}`;
+  const dateRangeLabel = `${startDateStr} - ${endDateStr}`;
 
   // 2. Consistency Score calculation
   // Active days: days where overallScore > 0 or at least one habit was logged

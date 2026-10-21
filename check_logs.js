@@ -1,26 +1,35 @@
-import puppeteer from 'puppeteer';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, collection, getDocs } from 'firebase/firestore';
 
-(async () => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  
-  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-  page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
-  
-  await page.goto('http://localhost:5173/H1-V2/#/login');
-  
-  // Try to login
-  try {
-    await page.waitForSelector('input[type="email"]');
-    await page.type('input[type="email"]', 'nimaythakur1234@gmail.com');
-    await page.type('input[type="password"]', 'nimaythakur1234');
-    await page.click('button[type="submit"]');
-    
-    // Wait for a bit
-    await new Promise(r => setTimeout(r, 5000));
-  } catch(e) {
-    console.error("Login failed:", e);
-  }
-  
-  await browser.close();
-})();
+const firebaseConfig = {
+  apiKey: "AIzaSyBl9DfgHBCqykkR8WPNIuKZCZ7UQIzM4ho",
+  authDomain: "d1.thedefinite.one",
+  projectId: "d1-core",
+  storageBucket: "d1-core.firebasestorage.app",
+  messagingSenderId: "223282254697",
+  appId: "1:223282254697:web:7d4b0f1bc0bf18049723f8",
+  measurementId: "G-V62TNVP485"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const uid = "yGEyzR9SXcWZJ68TBvpSgysFPuk1";
+
+async function run() {
+  console.log("=== USER HABITS ===");
+  const habitsSnap = await getDocs(collection(db, "users", uid, "habits"));
+  habitsSnap.forEach(d => {
+    console.log(d.id, "=>", d.data());
+  });
+
+  console.log("\n=== RECENT SUMMARIES ===");
+  const sumsSnap = await getDocs(collection(db, "users", uid, "dailySummaries"));
+  const sorted = sumsSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 5);
+  console.log(JSON.stringify(sorted, null, 2));
+
+  process.exit(0);
+}
+
+run().catch(console.error);
+

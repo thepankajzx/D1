@@ -40,9 +40,41 @@ export default function StreaksPage() {
   const [searchParams] = useSearchParams();
   const initialHabit = searchParams.get('habitId') || 'all';
 
-  const { habits = [], dailySummaries = [] } = useData();
+  const { habits = [], dailySummaries = [], streakTrackingEnabled } = useData();
   const { isHinglish, t } = useLanguage();
   const [selectedHabitId, setSelectedHabitId] = useState(initialHabit);
+
+  if (!streakTrackingEnabled) {
+    return (
+      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4 animate-in fade-in">
+        <div className="w-16 h-16 mx-auto rounded-3xl bg-amber-500/15 text-amber-500 flex items-center justify-center shadow-xs">
+          <Flame size={32} weight="fill" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          {isHinglish ? 'स्ट्रीक ट्रैकिंग बंद है' : 'Streak Tracking is Disabled'}
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          {isHinglish
+            ? 'आपने प्रोफ़ाइल सेटिंग्स में स्ट्रीक ट्रैकिंग बंद की हुई है। स्ट्रीक और माइलस्टोन्स देखने के लिए प्रोफ़ाइल सेटिंग्स में इसे चालू करें।'
+            : 'You turned off streak tracking in your Profile settings. Turn it on anytime to track consecutive-day streaks and milestones.'}
+        </p>
+        <div className="pt-3 flex items-center justify-center gap-3">
+          <button
+            onClick={() => navigate('/profile')}
+            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            {isHinglish ? 'प्रोफ़ाइल सेटिंग्स खोलें' : 'Open Profile Settings'}
+          </button>
+          <button
+            onClick={() => navigate('/analytics')}
+            className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-95"
+          >
+            {isHinglish ? 'एनालिटिक्स देखें' : 'Go to Analytics'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Active habits
   const activeHabits = useMemo(() => habits.filter(h => !h.archived), [habits]);

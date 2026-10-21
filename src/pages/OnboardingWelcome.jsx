@@ -52,7 +52,7 @@ export default function OnboardingWelcome() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black text-slate-900">5 Precision Scoring Engines</span>
-              <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">0–100% Score</span>
+              <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">0-100% Score</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
               Not just checkmarks. Scored by Build, Break, Timing, Range & Binary rules.

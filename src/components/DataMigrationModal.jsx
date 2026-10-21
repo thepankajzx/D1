@@ -7,20 +7,19 @@ import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Database, CheckCircle, ShieldCheck, Sparkle, Spinner } from '@phosphor-icons/react';
 
-const OLD_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDmV8kDK7YZk-lxPwwDG2drrjybylwenWE",
-  authDomain: "fci-lms.firebaseapp.com",
-  projectId: "fci-lms",
-  storageBucket: "fci-lms.firebasestorage.app",
-  messagingSenderId: "180801083177",
-  appId: "1:180801083177:web:3a9c3b02728749d2420938"
-};
-
 const OLD_USER_ID = 'Pankaj@2026';
 
 function getOldFirestore() {
   const existing = getApps().find(a => a.name === 'fciLmsOldProject');
-  const app = existing || initializeApp(OLD_FIREBASE_CONFIG, 'fciLmsOldProject');
+  const app = existing || initializeApp({
+    apiKey: import.meta.env.VITE_OLD_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_OLD_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_OLD_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_OLD_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_OLD_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_OLD_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_OLD_FIREBASE_MEASUREMENT_ID
+  }, 'fciLmsOldProject');
   return getFirestore(app);
 }
 

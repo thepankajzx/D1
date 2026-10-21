@@ -360,15 +360,12 @@ function formatLocalYMD(d) {
           <span className="text-on-surface-variant">More</span>
         </div>
 
-        {/* Right: Partial & No Data dots */}
-        <div className="flex items-center gap-4 ml-auto">
+        {/* Right: Only No Data indicator (blank cell with centered dot) */}
+        <div className="flex items-center gap-2 ml-auto">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30" />
-            <span>Partial</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
+            <span className="w-3.5 h-3.5 rounded-[4px] bg-surface-container border border-black/5 dark:border-white/5 flex items-center justify-center shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400/80 dark:bg-slate-500" />
+            </span>
             <span>No Data</span>
           </div>
         </div>

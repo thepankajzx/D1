@@ -10,10 +10,14 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
+import HabitPerformanceOverview from '../components/HabitPerformanceOverview';
+import HabitShareCardModal from '../components/HabitShareCardModal';
 import ProModal from '../components/ProModal';
 import { useData } from '../contexts/DataContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatTimeVal } from '../lib/timeFormat';
+import { isNightHabit } from '../lib/scoring';
 import {
   Flame,
   ShieldCheck,
@@ -21,6 +25,7 @@ import {
   TrendDown,
   Sparkle,
   Calendar,
+  ShareNetwork,
   ChartLineUp,
   WarningCircle,
   CaretRight,
@@ -127,7 +132,7 @@ function getMilestoneTierIcon(title = '') {
 
 export default function ExperimentalAnalytics() {
   const navigate = useNavigate();
-  const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc } = useData();
+  const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc, streakTrackingEnabled, timeFormat } = useData();
   const { isHinglish, t } = useLanguage();
   const { isDark } = useTheme();
 
@@ -178,12 +183,12 @@ export default function ExperimentalAnalytics() {
   const dateSelectorRef = useRef(null);
   const [showHabitSheet, setShowHabitSheet] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
-  const [heatmapFilter, setHeatmapFilter] = useState('all'); // 'all', 'elite_90', 'target_80', 'passing_50', 'struggle_below_50', 'critical_below_30', 'skipped'
-  const [dayTypeFilter, setDayTypeFilter] = useState('all'); // 'all', 'weekdays', 'weekends'
-  const [heatmapLayout, setHeatmapLayout] = useState('continuous'); // 'continuous' | 'month_blocks'
-  const [chartTrendMode, setChartTrendMode] = useState('raw'); // 'raw', '7d_ma', 'both'
-  const [chartMetricType, setChartMetricType] = useState('score'); // 'score' | 'unit'
-  const [heatmapGranularity, setHeatmapGranularity] = useState('day'); // 'day', 'week', 'month'
+  const [heatmapFilter, setHeatmapFilter] = useState(() => { try { return localStorage.getItem('definite_heatmap_filter') || 'all'; } catch (e) { return 'all'; } });
+  const [dayTypeFilter, setDayTypeFilter] = useState(() => { try { return localStorage.getItem('definite_heatmap_daytype') || 'all'; } catch (e) { return 'all'; } });
+  const [heatmapLayout, setHeatmapLayout] = useState(() => { try { return localStorage.getItem('definite_heatmap_layout') || 'continuous'; } catch (e) { return 'continuous'; } });
+  const [chartTrendMode, setChartTrendMode] = useState(() => { try { return localStorage.getItem('definite_chart_trend') || 'raw'; } catch (e) { return 'raw'; } });
+  const [chartMetricType, setChartMetricType] = useState(() => { try { return localStorage.getItem('definite_chart_metric') || 'score'; } catch (e) { return 'score'; } });
+  const [heatmapGranularity, setHeatmapGranularity] = useState(() => { try { return localStorage.getItem('definite_heatmap_granularity') || 'day'; } catch (e) { return 'day'; } });
   const [activeTooltip, setActiveTooltip] = useState(null); // { date, score, x, y }
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [showHeatmapControlModal, setShowHeatmapControlModal] = useState(false);
@@ -194,6 +199,7 @@ export default function ExperimentalAnalytics() {
   const [guideModalTab, setGuideModalTab] = useState('weighted'); // 'weighted' | 'kpis'
   const [openWeightedSection, setOpenWeightedSection] = useState('1'); // '1' | '2' | '3' | null // 'weighted' | 'kpis'
   const [showTimeframeModal, setShowTimeframeModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const lastVibratedIndexRef = useRef(null);
   const echartsRef = useRef(null);
 
@@ -214,6 +220,8 @@ export default function ExperimentalAnalytics() {
     if (selectedHabitId === 'all') return null;
     return activeHabits.find(h => h.id === selectedHabitId) || null;
   }, [activeHabits, selectedHabitId]);
+
+  const currentLegendColor = selectedHabitId === 'all' ? '#10b981' : (currentSelectedHabit?.color || '#10b981');
 
   // Helper map: determine the earliest date each habit was ever created / present
   const habitFirstDateMap = useMemo(() => {
@@ -320,23 +328,23 @@ export default function ExperimentalAnalytics() {
     return activeHabits.map(h => {
       const scores = dateSeries.map(dStr => {
         const summary = summaryMap.get(dStr);
-        if (!summary || !summary.habitScores || summary.habitScores[h.id] === undefined) return 0;
+        if (!summary || !summary.habitScores || summary.habitScores[h.id] === undefined || summary.habitScores[h.id] === null) return null;
         return summary.habitScores[h.id];
       });
 
-      // Valid tracked scores
-      const validScores = scores.filter(s => s > 0);
+      // Valid tracked scores: any logged day (including 0!)
+      const validScores = scores.filter(s => s !== null && s !== undefined);
       const avgScore = validScores.length > 0
         ? Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length)
         : 0;
 
       // Dynamic sparkline matching the selected timeframe (7D, 14D, 30D)
-      const sparklineTimeframe = scores;
+      const sparklineTimeframe = scores.map(s => s === null ? 0 : s);
 
       // Trend: compare second half vs first half of timeframe
       const mid = Math.floor(scores.length / 2);
-      const firstHalf = scores.slice(0, mid).filter(s => s > 0);
-      const secondHalf = scores.slice(mid).filter(s => s > 0);
+      const firstHalf = scores.slice(0, mid).filter(s => s !== null && s !== undefined);
+      const secondHalf = scores.slice(mid).filter(s => s !== null && s !== undefined);
       const firstAvg = firstHalf.length > 0 ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length : avgScore;
       const secondAvg = secondHalf.length > 0 ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length : avgScore;
       const delta = Math.round(secondAvg - firstAvg);
@@ -358,15 +366,16 @@ export default function ExperimentalAnalytics() {
   const overallStat = useMemo(() => {
     const scores = dateSeries.map(dStr => {
       const summary = summaryMap.get(dStr);
-      return summary?.overallScore || 0;
+      if (!summary || summary.overallScore === undefined || summary.overallScore === null) return null;
+      return summary.overallScore;
     });
-    const validScores = scores.filter(s => s > 0);
+    const validScores = scores.filter(s => s !== null && s !== undefined);
     const avgScore = validScores.length > 0
       ? Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length)
       : 0;
     const mid = Math.floor(scores.length / 2);
-    const firstHalf = scores.slice(0, mid).filter(s => s > 0);
-    const secondHalf = scores.slice(mid).filter(s => s > 0);
+    const firstHalf = scores.slice(0, mid).filter(s => s !== null && s !== undefined);
+    const secondHalf = scores.slice(mid).filter(s => s !== null && s !== undefined);
     const firstAvg = firstHalf.length > 0 ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length : avgScore;
     const secondAvg = secondHalf.length > 0 ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length : avgScore;
     const delta = Math.round(secondAvg - firstAvg);
@@ -378,11 +387,13 @@ export default function ExperimentalAnalytics() {
     const scores = dateSeries.map(dStr => {
       const summary = summaryMap.get(dStr);
       if (selectedHabitId === 'all') {
-        return summary?.overallScore || 0;
+        if (!summary || summary.overallScore === undefined || summary.overallScore === null) return null;
+        return summary.overallScore;
       }
-      return summary?.habitScores?.[selectedHabitId] || 0;
+      if (!summary || !summary.habitScores || summary.habitScores[selectedHabitId] === undefined || summary.habitScores[selectedHabitId] === null) return null;
+      return summary.habitScores[selectedHabitId];
     });
-    const validScores = scores.filter(s => s > 0);
+    const validScores = scores.filter(s => s !== null && s !== undefined);
     const avgScore = validScores.length > 0
       ? Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length)
       : 0;
@@ -390,8 +401,8 @@ export default function ExperimentalAnalytics() {
       ? Math.round(Math.max(...validScores))
       : 0;
     const mid = Math.floor(scores.length / 2);
-    const firstHalf = scores.slice(0, mid).filter(s => s > 0);
-    const secondHalf = scores.slice(mid).filter(s => s > 0);
+    const firstHalf = scores.slice(0, mid).filter(s => s !== null && s !== undefined);
+    const secondHalf = scores.slice(mid).filter(s => s !== null && s !== undefined);
     const firstAvg = firstHalf.length > 0 ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length : avgScore;
     const secondAvg = secondHalf.length > 0 ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length : avgScore;
     const delta = Math.round(secondAvg - firstAvg);
@@ -412,23 +423,27 @@ export default function ExperimentalAnalytics() {
 
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      const dateRange = `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      const dateRange = `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 
       if (!groups.has(key)) {
         groups.set(key, { key, monday, dateRange, dates: [], scores: [] });
       }
 
       const sum = summaryMap.get(dStr);
-      let score = 0;
+      let score = null;
       if (selectedHabitId === 'all') {
-        score = sum?.overallScore ?? 0;
+        if (sum && sum.overallScore !== undefined && sum.overallScore !== null) {
+          score = sum.overallScore;
+        }
       } else {
-        score = sum?.habitScores?.[selectedHabitId] ?? 0;
+        if (sum && sum.habitScores && sum.habitScores[selectedHabitId] !== undefined && sum.habitScores[selectedHabitId] !== null) {
+          score = sum.habitScores[selectedHabitId];
+        }
       }
 
       const g = groups.get(key);
       g.dates.push(dStr);
-      if (score > 0) g.scores.push(score);
+      if (score !== null) g.scores.push(score);
     });
 
     return Array.from(groups.values()).sort((a, b) => a.monday - b.monday).map((g, idx) => {
@@ -565,7 +580,7 @@ export default function ExperimentalAnalytics() {
 
 
 
-  // Streak & Consistency metrics
+  // Streak & Consistency metrics (Strictly based on active logging, NOT score threshold)
   const { currentStreak, longestStreak, activeDaysCount, consistencyPct } = useMemo(() => {
     let curr = 0;
     let max = 0;
@@ -574,14 +589,15 @@ export default function ExperimentalAnalytics() {
 
     dateSeries.forEach(dStr => {
       const sum = summaryMap.get(dStr);
-      let score = 0;
-      if (selectedHabitId === 'all') {
-        score = sum?.overallScore || 0;
-      } else {
-        score = sum?.habitScores?.[selectedHabitId] || 0;
-      }
+      const isDayLogged = selectedHabitId === 'all'
+        ? Boolean(sum && (
+            (sum.habitScores && Object.keys(sum.habitScores).length > 0) ||
+            sum.habitsCompleted > 0 ||
+            (sum.overallScore !== undefined && sum.overallScore !== null)
+          ))
+        : Boolean(sum && sum.habitScores && sum.habitScores[selectedHabitId] !== undefined && sum.habitScores[selectedHabitId] !== null);
 
-      if (score >= 60) {
+      if (isDayLogged) {
         active++;
         temp++;
         if (temp > max) max = temp;
@@ -590,13 +606,18 @@ export default function ExperimentalAnalytics() {
       }
     });
 
-    // Check streak from end backwards
+    // Check streak from end backwards (Active logging streak)
     for (let i = dateSeries.length - 1; i >= 0; i--) {
       const sum = summaryMap.get(dateSeries[i]);
-      const score = selectedHabitId === 'all'
-        ? sum?.overallScore || 0
-        : sum?.habitScores?.[selectedHabitId] || 0;
-      if (score >= 60) curr++;
+      const isDayLogged = selectedHabitId === 'all'
+        ? Boolean(sum && (
+            (sum.habitScores && Object.keys(sum.habitScores).length > 0) ||
+            sum.habitsCompleted > 0 ||
+            (sum.overallScore !== undefined && sum.overallScore !== null)
+          ))
+        : Boolean(sum && sum.habitScores && sum.habitScores[selectedHabitId] !== undefined && sum.habitScores[selectedHabitId] !== null);
+
+      if (isDayLogged) curr++;
       else break;
     }
 
@@ -706,7 +727,7 @@ export default function ExperimentalAnalytics() {
       needleDeg = 55;
       title = isHinglish ? 'उच्च ख़तरा (High)' : 'High';
       message = isHinglish
-        ? 'गंभीर चेतावनी! 2 दिन से लॉग नहीं हुआ है — आज ही वापस लौटें।'
+        ? 'गंभीर चेतावनी! 2 दिन से लॉग नहीं हुआ है - आज ही वापस लौटें।'
         : "Don't break your chain! You're at risk if you miss 2 more days.";
       color = '#ef4444';
     }
@@ -827,21 +848,24 @@ export default function ExperimentalAnalytics() {
       const sliceDates = dateSeries.slice(w * daysPerWeek, (w + 1) * daysPerWeek);
       const scores = sliceDates.map(dStr => {
         const sum = summaryMap.get(dStr);
-        return selectedHabitId === 'all'
-          ? sum?.overallScore || 0
-          : sum?.habitScores?.[selectedHabitId] || 0;
-      }).filter(s => s > 0);
+        if (selectedHabitId === 'all') {
+          if (!sum || sum.overallScore === undefined || sum.overallScore === null) return null;
+          return sum.overallScore;
+        }
+        if (!sum || !sum.habitScores || sum.habitScores[selectedHabitId] === undefined || sum.habitScores[selectedHabitId] === null) return null;
+        return sum.habitScores[selectedHabitId];
+      }).filter(s => s !== null && s !== undefined);
 
       const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
       
-      // Calculate formatted date range, e.g. "7 Jun – 14 Jun"
+      // Calculate formatted date range, e.g. "7 Jun - 14 Jun"
       const startDate = sliceDates[0] ? new Date(sliceDates[0] + 'T00:00:00') : null;
       const endDate = sliceDates[sliceDates.length - 1] ? new Date(sliceDates[sliceDates.length - 1] + 'T00:00:00') : null;
       let dateRangeStr = '';
       if (startDate && endDate) {
         const startMonth = startDate.toLocaleDateString('en-US', { month: 'short' });
         const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' });
-        dateRangeStr = `${startDate.getDate()} ${startMonth} – ${endDate.getDate()} ${endMonth}`;
+        dateRangeStr = `${startDate.getDate()} ${startMonth} - ${endDate.getDate()} ${endMonth}`;
       }
 
       result.push({
@@ -863,10 +887,27 @@ export default function ExperimentalAnalytics() {
     });
   }, [dateSeries, summaryMap, selectedHabitId]);
 
-  // "Kamzor Kadi" / Weakest Habit identifier
+  // "Kamzor Kadi" / Weakest Habit identifier (Prioritizes Top 3 Priorities if they are struggling)
   const weakestHabit = useMemo(() => {
-    const declining = habitStats.filter(h => h.isWarning || h.avgScore < 60);
-    if (declining.length > 0) return declining[0];
+    if (!habitStats || habitStats.length === 0) return null;
+
+    // 1. Priority 1: Check if any Top 3 Priority habits (#1, #2, #3) are struggling (isWarning or avgScore < 60)
+    const priorityDeclining = habitStats.filter(h => (h.priorityRank === 1 || h.priorityRank === 2 || h.priorityRank === 3) && (h.isWarning || h.avgScore < 60));
+    if (priorityDeclining.length > 0) {
+      // Sort by priorityRank first (#1 -> #2 -> #3), then lowest avgScore
+      return priorityDeclining.sort((a, b) => ((a.priorityRank || 99) - (b.priorityRank || 99)) || (a.avgScore - b.avgScore))[0];
+    }
+
+    // 2. Priority 2: Check struggling normal/other habits
+    const normalDeclining = habitStats.filter(h => h.isWarning || h.avgScore < 60);
+    if (normalDeclining.length > 0) {
+      return normalDeclining[0];
+    }
+
+    // 3. Fallback: If all are >= 60, pick lowest scoring priority habit (< 80) or lowest overall
+    const priorityHabit = habitStats.find(h => (h.priorityRank === 1 || h.priorityRank === 2 || h.priorityRank === 3) && h.avgScore < 80);
+    if (priorityHabit) return priorityHabit;
+
     return habitStats[habitStats.length - 1] || null;
   }, [habitStats]);
 
@@ -960,33 +1001,56 @@ export default function ExperimentalAnalytics() {
     }
   }, [dateSeries, summaryMap, selectedHabitId, activeHabits]);
 
-  // Resolved Chart Data for ECharts
+  // Resolved Chart Data for ECharts with Date-Aware Habit Lifecycle
   const chartData = useMemo(() => {
     return dateSeries.map(dateStr => {
       const summary = summaryMap.get(dateStr);
       const dataPoint = { date: dateStr };
-      const hasLoggedHabits = summary && (
-        (summary.habitScores && Object.keys(summary.habitScores).length > 0) ||
-        (summary.habitsCompleted > 0) ||
-        summary.legacyRaw
-      );
 
-      if (!summary || !hasLoggedHabits) {
+      // Filter only habits that were active/added on or before this specific date
+      const habitsOnDate = activeHabits.filter(h => {
+        const firstDate = habitFirstDateMap[h.id];
+        return !firstDate || firstDate <= dateStr;
+      });
+      const expectedCount = habitsOnDate.length;
+
+      // Count only habits from habitsOnDate that were actually recorded on this date
+      let recordedCount = 0;
+      if (summary) {
+        if (summary.habitScores && Object.keys(summary.habitScores).length > 0) {
+          recordedCount = habitsOnDate.filter(h => 
+            summary.habitScores[h.id] !== undefined && summary.habitScores[h.id] !== null
+          ).length;
+        } else if (summary.habitsCompleted !== undefined && summary.habitsCompleted !== null) {
+          recordedCount = Math.min(summary.habitsCompleted, expectedCount);
+        }
+      }
+
+      const hasLoggedHabits = recordedCount > 0 || (summary && (summary.overallScore !== undefined && summary.overallScore !== null));
+
+      if (!summary || !hasLoggedHabits || recordedCount === 0) {
         dataPoint.overallScore = null;
         dataPoint.meta = {
            recordedCount: 0,
-           expectedCount: activeHabits.length
+           expectedCount: expectedCount || activeHabits.length
         };
       } else {
         dataPoint.overallScore = summary.overallScore !== undefined && summary.overallScore !== null ? summary.overallScore : null;
         dataPoint.meta = {
-           recordedCount: summary.habitsCompleted || (summary.loggedHabitIds?.length || Object.keys(summary.habitScores || {}).length),
-           expectedCount: summary.habitsTotal || activeHabits.length
+           recordedCount,
+           expectedCount: expectedCount || activeHabits.length
         };
       }
       
       activeHabits.forEach(h => {
-        if (!summary || !hasLoggedHabits || summary.habitScores?.[h.id] === undefined || summary.habitScores?.[h.id] === null) {
+        const firstDate = habitFirstDateMap[h.id];
+        const habitExisted = !firstDate || firstDate <= dateStr;
+
+        if (!habitExisted) {
+          // Habit did NOT exist yet on this historical date
+          dataPoint[h.id] = null;
+          dataPoint[`${h.id}_notCreated`] = true;
+        } else if (!summary || !hasLoggedHabits || summary.habitScores?.[h.id] === undefined || summary.habitScores?.[h.id] === null) {
           dataPoint[h.id] = null;
         } else {
           dataPoint[h.id] = summary.habitScores[h.id];
@@ -994,17 +1058,42 @@ export default function ExperimentalAnalytics() {
       });
       return dataPoint;
     });
-  }, [dateSeries, summaryMap, activeHabits]);
+  }, [dateSeries, summaryMap, activeHabits, habitFirstDateMap]);
 
-  // Helper to format minutes to 12-Hour Clock (e.g. 6:30 AM)
+  // Helper to parse any time format (string '12:05 AM', '23:30', or numeric minutes) into total minutes
+  const parseTimeToMinutes = (val) => {
+    if (val === null || val === undefined || val === '') return null;
+    if (typeof val === 'number') return isNaN(val) ? null : val;
+    const str = String(val).trim();
+    if (str.includes(':')) {
+      const parts = str.split(/[:\s]+/);
+      let h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      const ampm = (parts[2] || '').toUpperCase();
+      if (!isNaN(h) && !isNaN(m)) {
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+      }
+    }
+    const num = Number(str);
+    return isNaN(num) ? null : num;
+  };
+
+  // Helper to normalize night minutes past midnight continuously (e.g. 12:05 AM -> 5 + 1440 = 1445)
+  const normalizeNightMinutes = (mins) => {
+    if (mins === null || mins === undefined || isNaN(mins)) return null;
+    const num = Number(mins);
+    if (num < 12 * 60) {
+      return num + 1440;
+    }
+    return num;
+  };
+
+  // Helper to format minutes to 12-Hour or 24-Hour Clock (e.g. 6:30 AM or 06:30)
   const formatTimeMinutes = (mins) => {
     if (mins === null || mins === undefined || isNaN(mins)) return '';
-    const total = Math.round(mins) % 1440;
-    let h = Math.floor(total / 60);
-    const m = total % 60;
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+    return formatTimeVal(mins, timeFormat);
   };
 
   // Helper to format duration to compound hours/minutes (e.g. 1h 30m)
@@ -1019,22 +1108,51 @@ export default function ExperimentalAnalytics() {
   // Helper to compute raw metric value based on habit type & target
   const getHabitRawValue = (habit, score, summary) => {
     if (score === null || score === undefined) return null;
-    if (summary && summary.habitValues && summary.habitValues[habit.id] !== undefined) {
-      const val = summary.habitValues[habit.id];
-      if (typeof val === 'number') return val;
-      if (val === true) return 1;
-      if (val === false) return 0;
-      const parsed = parseFloat(val);
-      if (!isNaN(parsed)) return parsed;
-    }
-    const isTime = habit?.scoringType === 'time' || habit?.type === 'time';
+    const isTime = habit?.scoringType === 'time' || habit?.type === 'time' || habit?.unit === 'time' || habit?.unit === 'Time' || habit?.defaultUnit === 'time' || habit?.id === 'sleep' || habit?.id === 'wakeup' || isNightHabit(habit);
+    const isDuration = habit?.scoringType === 'duration' || habit?.unit === 'minutes' || habit?.unit === 'mins' || habit?.unit === 'hours';
     const isScale = habit?.scoringType === 'scale' || habit?.scoringType === 'rating' || habit?.unit === '/10';
     const isBoolean = habit?.scoringType === 'binary' || habit?.scoringType === 'boolean' || habit?.type === 'boolean';
+    const isNight = isTime && isNightHabit(habit);
+
+    if (summary && summary.habitValues && summary.habitValues[habit.id] !== undefined) {
+      const raw = summary.habitValues[habit.id];
+      if (isTime) {
+        const parsed = parseTimeToMinutes(raw);
+        if (parsed !== null) {
+          return isNight ? normalizeNightMinutes(parsed) : parsed;
+        }
+      } else if (isDuration) {
+        const parsed = typeof raw === 'number' ? raw : parseFloat(raw);
+        if (!isNaN(parsed)) return parsed;
+      } else if (isScale) {
+        const parsed = typeof raw === 'number' ? raw : parseFloat(raw);
+        if (!isNaN(parsed)) return parsed;
+      } else if (isBoolean) {
+        if (raw === true || raw === 1 || raw === '1') return 1;
+        if (raw === false || raw === 0 || raw === '0') return 0;
+      } else {
+        const parsed = typeof raw === 'number' ? raw : parseFloat(raw);
+        if (!isNaN(parsed)) return parsed;
+      }
+    }
     
     if (isTime) {
-      const t100 = habit.target100 !== undefined ? habit.target100 : (habit.targetValue || 360);
-      const t0 = habit.target0 !== undefined ? habit.target0 : (t100 + 120);
-      const val = t100 + ((100 - score) / 100) * (t0 - t100);
+      const rawT100 = habit.userTarget100 ?? habit.target100 ?? habit.targetValue ?? habit.target ?? (isNight ? 1320 : 360);
+      const rawT0 = habit.userTarget0 ?? habit.target0 ?? habit.floor ?? null;
+      
+      const parsedT100 = parseTimeToMinutes(rawT100) ?? (isNight ? 1320 : 360);
+      const parsedT0 = parseTimeToMinutes(rawT0) ?? (parsedT100 + 120);
+
+      let normT100 = isNight ? normalizeNightMinutes(parsedT100) : parsedT100;
+      let normT0 = isNight ? normalizeNightMinutes(parsedT0) : parsedT0;
+
+      const isLowerBetter = habit.direction === 'lower_is_better' || isNight;
+      let val;
+      if (isLowerBetter) {
+        val = normT100 + ((100 - score) / 100) * (normT0 - normT100);
+      } else {
+        val = normT0 + (score / 100) * (normT100 - normT0);
+      }
       return Math.round(val);
     }
     if (isScale) {
@@ -1043,25 +1161,108 @@ export default function ExperimentalAnalytics() {
     if (isBoolean) {
       return score >= 100 ? 1 : 0;
     }
-    const target = habit?.targetValue || habit?.target || 100;
+    const target = Number(habit?.userTarget100 ?? habit?.target100 ?? habit?.targetValue ?? habit?.target ?? 100) || 100;
     return Math.round((score / 100) * target * 10) / 10;
   };
 
+  // Helper to retrieve formatted target info for habit in unit mode (Dynamic to habit target changes)
+  const getHabitTargetFormatted = (habit) => {
+    if (!habit) return null;
+    const isTime = habit.scoringType === 'time' || habit.type === 'time' || habit.unit === 'time' || habit.unit === 'Time' || habit.defaultUnit === 'time' || habit.id === 'sleep' || habit.id === 'wakeup' || isNightHabit(habit);
+    const isDuration = habit.scoringType === 'duration' || habit.unit === 'minutes' || habit.unit === 'mins' || habit.unit === 'hours';
+    const isScale = habit.scoringType === 'scale' || habit.scoringType === 'rating' || habit.unit === '/10';
+    const isBoolean = habit.scoringType === 'binary' || habit.scoringType === 'boolean' || habit.type === 'boolean';
+    const isNight = isTime && isNightHabit(habit);
+
+    if (isBoolean) return null;
+
+    if (isTime) {
+      const rawTarget = habit.userTarget100 ?? habit.target100 ?? habit.targetValue ?? habit.target ?? habit.targetTime100 ?? habit.userTargetTime100 ?? (isNight ? 1320 : 360);
+      const parsedMins = parseTimeToMinutes(rawTarget);
+      
+      if (parsedMins !== null && !isNaN(parsedMins)) {
+        const formattedLabel = formatTimeVal(parsedMins, timeFormat);
+        const chartVal = isNight ? normalizeNightMinutes(parsedMins) : parsedMins;
+        return { val: chartVal, rawVal: parsedMins, label: formattedLabel };
+      }
+    }
+    if (isDuration) {
+      const rawTarget = habit.userTarget100 ?? habit.target100 ?? habit.targetValue ?? habit.target ?? 30;
+      const tVal = Number(rawTarget);
+      if (!isNaN(tVal)) {
+        return { val: tVal, rawVal: tVal, label: formatDurationMinutes(tVal) };
+      }
+    }
+    if (isScale) {
+      const rawTarget = habit.userTarget100 ?? habit.target100 ?? habit.targetValue ?? habit.target ?? 10;
+      const tVal = Number(rawTarget);
+      if (!isNaN(tVal)) {
+        return { val: tVal, rawVal: tVal, label: `${tVal}/10` };
+      }
+    }
+    const rawTarget = habit.userTarget100 ?? habit.target100 ?? habit.targetValue ?? habit.target ?? null;
+    if (rawTarget !== null && rawTarget !== undefined && rawTarget !== '') {
+      const tVal = Number(rawTarget);
+      if (!isNaN(tVal)) {
+        return { val: tVal, rawVal: tVal, label: `${tVal}${habit.unit ? ` ${habit.unit}` : ''}` };
+      }
+    }
+    return null;
+  };
+
   // ECharts Options Generator with Support for Score (0-100%) vs Actual Raw Units
-  const getEChartOption = (habitId) => {
+  const getEChartOption = (habitId, isExpanded = false) => {
     const isOverall = habitId === 'all';
     const habit = activeHabits.find(h => h.id === habitId);
     const habitName = isOverall ? 'Overall Composite' : (habit?.name || 'Habit');
     const primaryColor = isOverall ? '#10b981' : (habit?.color || '#10b981');
 
-    const isTime = !isOverall && (habit?.scoringType === 'time' || habit?.type === 'time');
+    const isTime = !isOverall && (habit?.scoringType === 'time' || habit?.type === 'time' || habit?.unit === 'time' || habit?.unit === 'Time' || habit?.defaultUnit === 'time' || habit?.id === 'sleep' || habit?.id === 'wakeup' || isNightHabit(habit));
     const isDuration = !isOverall && (habit?.scoringType === 'duration' || habit?.unit === 'minutes' || habit?.unit === 'mins' || habit?.unit === 'hours');
     const isBoolean = !isOverall && (habit?.scoringType === 'binary' || habit?.scoringType === 'boolean' || habit?.type === 'boolean');
     const isScale = !isOverall && (habit?.scoringType === 'scale' || habit?.scoringType === 'rating' || habit?.unit === '/10');
+    const isNight = isTime && isNightHabit(habit);
     
     // Unit mode active for non-overall, non-boolean habits when toggled
     const isUnitMode = !isOverall && !isBoolean && chartMetricType === 'unit';
     const unitSuffix = isUnitMode ? (isTime || isDuration ? '' : (isScale ? '/10' : (habit?.unit ? ` ${habit.unit}` : ''))) : '%';
+
+    // Target information for Unit mode reference line (reads dynamic target values)
+    const targetInfo = (isUnitMode && habit) ? getHabitTargetFormatted(habit) : null;
+    const habitTargetValue = targetInfo?.val ?? null;
+    const formattedTargetLabel = targetInfo?.label ?? '';
+
+    // Target Reference Line Configuration: Dark background, crisp white bold text, compact design
+    const targetMarkLine = (isUnitMode && habitTargetValue !== null) ? {
+      silent: true,
+      symbol: ['none', 'none'],
+      animation: false,
+      data: [
+        {
+          yAxis: habitTargetValue,
+          lineStyle: {
+            type: 'dashed',
+            color: '#10b981',
+            width: 1.5,
+            opacity: 0.95
+          },
+          label: {
+            show: true,
+            position: 'insideEndTop',
+            formatter: `🎯 Target: ${formattedTargetLabel}`,
+            color: '#ffffff',
+            fontSize: 9,
+            fontWeight: 800,
+            backgroundColor: isDark ? '#020617' : '#0f172a',
+            borderColor: '#10b981',
+            borderWidth: 1,
+            borderRadius: 4,
+            padding: [2, 5],
+            distance: [0, 4]
+          }
+        }
+      ]
+    } : undefined;
 
     // Helper to compute 7-Day Rolling Moving Average
     const get7DMAData = (rawList) => {
@@ -1089,17 +1290,106 @@ export default function ExperimentalAnalytics() {
 
     const ma7Scores = get7DMAData(rawScores);
 
+    // Dynamic Y-Axis scale (Calculated early so unrecorded points can align smoothly)
+    let yMin = 0;
+    let yMax = 100;
+    if (isUnitMode) {
+      if (isScale) {
+        yMax = 10;
+      } else if (isTime) {
+        const validTime = rawScores.filter(v => v !== null && v !== undefined && v > 0);
+        const allVals = habitTargetValue !== null ? [...validTime, habitTargetValue] : validTime;
+        if (isNight) {
+          const minTime = allVals.length > 0 ? Math.min(...allVals) : 1260; // 9:00 PM
+          const maxTime = allVals.length > 0 ? Math.max(...allVals) : 1620; // 3:00 AM
+          yMin = Math.max(720, Math.floor((minTime - 30) / 60) * 60);
+          yMax = Math.min(2160, Math.ceil((maxTime + 30) / 60) * 60);
+        } else {
+          const minTime = allVals.length > 0 ? Math.min(...allVals) : 300; // 5:00 AM
+          const maxTime = allVals.length > 0 ? Math.max(...allVals) : 540; // 9:00 AM
+          yMin = Math.max(0, Math.floor((minTime - 30) / 60) * 60);
+          yMax = Math.min(1440, Math.ceil((maxTime + 30) / 60) * 60);
+        }
+      } else {
+        const validNumeric = rawScores.filter(v => v !== null && v !== undefined && v > 0);
+        const targetVal = habitTargetValue !== null ? habitTargetValue : (habit?.targetValue || 10);
+        const allVals = [...validNumeric, targetVal];
+        const maxVal = allVals.length > 0 ? Math.max(...allVals) : targetVal;
+        const highest = Math.max(maxVal, targetVal);
+        yMax = highest > 100 ? Math.ceil(highest * 1.1) : Math.ceil(highest * 1.15);
+      }
+    }
+
     // Formatted raw data with circular data points
     const formattedRawPoints = chartData.map((d, i) => {
       const val = rawScores[i];
-      if (val === null || val === undefined) {
-        return null;
+      const isNotCreated = !isOverall && d[`${habitId}_notCreated`];
+      const isNotLogged = (val === null || val === undefined);
+
+      let pointStyle = {};
+      let pointSymbol = 'circle';
+      let pointVal = val;
+
+      if (isOverall) {
+        // OVERALL COMPOSITE VIEW (3 States: Daily Score, Partial Log, Not Logged):
+        const recorded = d.meta?.recordedCount || 0;
+        const expected = d.meta?.expectedCount || activeHabits.length || 1;
+
+        if (isNotLogged || recorded === 0) {
+          // 1. Not Logged -> Solid Black/Dark Dot at 0
+          pointVal = 0;
+          pointStyle = {
+            color: isDark ? '#ffffff' : '#0f172a',
+            borderColor: 'transparent',
+            borderWidth: 0
+          };
+        } else if (recorded < expected) {
+          // 2. Partial Logged -> Hollow Ring (White inside, black border)
+          pointVal = val;
+          pointStyle = {
+            color: isDark ? '#0f172a' : '#ffffff',
+            borderColor: isDark ? '#ffffff' : '#0f172a',
+            borderWidth: 2
+          };
+        } else {
+          // 3. Daily Score (Fully Logged) -> Solid Dot in Exact Chart Color
+          pointVal = val;
+          pointStyle = {
+            color: primaryColor,
+            borderColor: 'transparent',
+            borderWidth: 0
+          };
+        }
+      } else {
+        // INDIVIDUAL HABIT VIEW (2 States: Daily Score or Not Logged. NO RINGS EVER):
+        if (isNotCreated) {
+          // Habit was not yet created on this date -> Do not render dot
+          pointSymbol = 'none';
+          pointVal = null;
+        } else if (isNotLogged) {
+          // Not Logged -> Solid Black/Dark Dot at bottom axis yMin
+          pointVal = yMin;
+          pointStyle = {
+            color: isDark ? '#ffffff' : '#0f172a',
+            borderColor: 'transparent',
+            borderWidth: 0
+          };
+        } else {
+          // Daily Score (Logged) -> Solid Dot in Exact Habit Color (Matches chart line & legend)
+          pointVal = val;
+          pointStyle = {
+            color: primaryColor,
+            borderColor: 'transparent',
+            borderWidth: 0
+          };
+        }
       }
+
       return {
-        value: val,
-        symbol: 'circle',
+        value: pointVal,
+        symbol: pointSymbol,
         symbolSize: chartTrendMode === 'both' ? 4 : 5.5,
-        itemStyle: { color: primaryColor, borderColor: isDark ? '#131722' : '#ffffff', borderWidth: 1.5 },
+        itemStyle: pointStyle,
         meta: d.meta,
         rawVal: val,
         maVal: ma7Scores[i]
@@ -1199,25 +1489,9 @@ export default function ExperimentalAnalytics() {
       ];
     }
 
-    // Dynamic Y-Axis scale
-    let yMin = 0;
-    let yMax = 100;
-    if (isUnitMode) {
-      if (isScale) {
-        yMax = 10;
-      } else if (isTime) {
-        const validTime = rawScores.filter(v => v !== null && v !== undefined && v > 0);
-        const minTime = validTime.length > 0 ? Math.min(...validTime) : 360;
-        const maxTime = validTime.length > 0 ? Math.max(...validTime) : 480;
-        yMin = Math.max(0, Math.floor((minTime - 60) / 60) * 60);
-        yMax = Math.min(1440, Math.ceil((maxTime + 60) / 60) * 60);
-      } else {
-        const validNumeric = rawScores.filter(v => v !== null && v !== undefined && v > 0);
-        const maxVal = validNumeric.length > 0 ? Math.max(...validNumeric) : (habit?.targetValue || 10);
-        const targetVal = habit?.targetValue || 10;
-        const highest = Math.max(maxVal, targetVal);
-        yMax = highest > 100 ? Math.ceil(highest * 1.1) : Math.ceil(highest * 1.15);
-      }
+    // Attach Target Reference MarkLine to the first series
+    if (series.length > 0 && targetMarkLine) {
+      series[0].markLine = targetMarkLine;
     }
 
     return {
@@ -1297,8 +1571,29 @@ export default function ExperimentalAnalytics() {
         }
       },
       legend: { show: false },
-      dataZoom: [{ type: 'inside', xAxisIndex: 0, filterMode: 'filter' }],
-      grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+      dataZoom: isExpanded
+        ? [
+            { type: 'inside', xAxisIndex: 0, filterMode: 'filter' },
+            { 
+              type: 'slider', 
+              xAxisIndex: 0, 
+              bottom: 4, 
+              height: 24, 
+              borderColor: 'transparent',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+              fillerColor: isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.25)',
+              handleStyle: { color: '#10b981', borderColor: '#10b981' },
+              textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }
+            }
+          ]
+        : [{ type: 'inside', xAxisIndex: 0, filterMode: 'filter' }],
+      grid: { 
+        left: '3%', 
+        right: '4%', 
+        bottom: isExpanded ? '44px' : '15%', 
+        top: isExpanded ? '20px' : '5%', 
+        containLabel: true 
+      },
       xAxis: {
         type: 'category',
         boundaryGap: false,
@@ -1351,11 +1646,11 @@ export default function ExperimentalAnalytics() {
       )}
 
       {/* ── SECTION 1: TOP CONTROLS: HABIT DROPDOWN (LEFT) + TIMEFRAME PICKER (RIGHT) ── */}
-      <section className="sticky top-[calc(3.25rem+env(safe-area-inset-top))] z-30 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md py-1.5 transition-all">
+      <section className="sticky top-[calc(3.25rem+env(safe-area-inset-top))] z-40 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md py-1.5 transition-all">
         <div className="flex items-center justify-between gap-2 px-0.5">
           
           {/* Left: Custom In-App Habit Selector Dropdown (with Score & Trend Indicator) */}
-          <div className="relative min-w-0" ref={topHabitDropdownRef}>
+          <div className="relative min-w-0 z-50" ref={topHabitDropdownRef}>
             <button
               type="button"
               onClick={() => {
@@ -1519,29 +1814,60 @@ export default function ExperimentalAnalytics() {
             )}
           </div>
 
-          {/* Right: Timeframe Selector Button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(30);
-              setShowTimeframeModal(true);
-            }}
-            className="flex items-center gap-1.5 bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-full h-[36px] px-3.5 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
-            title="Change Timeframe"
-          >
-            <Calendar size={13} weight="bold" className="text-slate-500 shrink-0" />
-            <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-              {rangeOption === '7' ? '7D' :
-               rangeOption === '14' ? '14D' :
-               rangeOption === '30' ? '30D' :
-               rangeOption === '90' ? '90D' :
-               rangeOption === 'custom' ? 'Custom' :
-               '30D'}
-            </span>
-            <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
-          </button>
+          {/* Right: Share Button + Timeframe Selector Button */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Share Performance Button (Temporarily hidden, code preserved) */}
+            {/*
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                setShowShareModal(true);
+              }}
+              className="flex items-center justify-center bg-black dark:bg-black text-white hover:bg-slate-800 dark:hover:bg-slate-900 rounded-full w-[36px] h-[36px] shadow-sm transition-all cursor-pointer select-none active:scale-95 shrink-0"
+              title={isHinglish ? 'परफ़ॉर्मेंस शेयर करें' : 'Share Performance Card'}
+            >
+              <ShareNetwork size={16} weight="bold" className="text-white" />
+            </button>
+            */}
+
+            {/* Timeframe Selector Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                setShowTimeframeModal(true);
+              }}
+              className="flex items-center gap-1.5 bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800 rounded-full h-[36px] px-3.5 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer shrink-0 select-none group"
+              title="Change Timeframe"
+            >
+              <Calendar size={13} weight="bold" className="text-slate-500 shrink-0" />
+              <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                {rangeOption === '7' ? '7D' :
+                 rangeOption === '14' ? '14D' :
+                 rangeOption === '30' ? '30D' :
+                 rangeOption === '90' ? '90D' :
+                 rangeOption === 'custom' ? 'Custom' :
+                 '30D'}
+              </span>
+              <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
+            </button>
+          </div>
         </div>
       </section>
+
+      {/* ── AT A GLANCE: HABIT PERFORMANCE OVERVIEW (BARS) ── */}
+      <HabitPerformanceOverview
+        habitStats={habitStats}
+        overallAverage={overallStat?.avgScore || 0}
+        rangeOption={rangeOption}
+        isHinglish={isHinglish}
+        selectedHabitId={selectedHabitId}
+        onSelectHabit={(hId) => {
+          if (navigator.vibrate) navigator.vibrate(20);
+          setSelectedHabitId(hId);
+        }}
+      />
 
       {/* ── DESKTOP 2-COLUMN GRID (CHART TOP/LEFT, HEATMAP BOTTOM/RIGHT) / MOBILE STACK ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
@@ -1709,46 +2035,71 @@ export default function ExperimentalAnalytics() {
 
           {/* Trajectory Legend Under Chart */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 px-1 border-t border-slate-100 dark:border-slate-800/60 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-            {/* Trend Indicators */}
+            {/* Daily Score & Moving Avg Indicators */}
             <div className="flex items-center gap-3">
               {chartTrendMode === 'raw' && (
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950 inline-block"></span>
+                  <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-2xs" style={{ backgroundColor: currentLegendColor }}></span>
                   <span className="text-[10.5px]">
                     {selectedHabitId !== 'all' && chartMetricType === 'unit'
                       ? `Daily (${currentSelectedHabit?.unit || 'Units'})`
-                      : (isHinglish ? 'Daily Score' : 'Daily Score')}
+                      : (isHinglish ? 'डेली स्कोर' : 'Daily Score')}
                   </span>
                 </div>
               )}
               {chartTrendMode === '7d_ma' && (
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-1 rounded-full bg-blue-500 inline-block shadow-2xs"></span>
-                  <span className="text-[10.5px]">{isHinglish ? '7D Moving Avg' : '7D Moving Avg'}</span>
+                  <span className="w-3.5 h-1 rounded-full bg-blue-500 inline-block shadow-2xs shrink-0"></span>
+                  <span className="text-[10.5px]">{isHinglish ? '7D ट्रेंड' : '7D Moving Avg'}</span>
                 </div>
               )}
               {chartTrendMode === 'both' && (
                 <>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-0.5 border-b-2 border-dashed border-emerald-500 inline-block"></span>
+                    <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-2xs" style={{ backgroundColor: currentLegendColor }}></span>
                     <span className="text-[10.5px]">
                       {selectedHabitId !== 'all' && chartMetricType === 'unit'
                         ? `Daily (${currentSelectedHabit?.unit || 'Raw'})`
-                        : 'Daily (Raw)'}
+                        : (isHinglish ? 'डेली स्कोर' : 'Daily Score')}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3.5 h-1 rounded-full bg-blue-500 inline-block shadow-2xs"></span>
-                    <span className="text-[10.5px]">{isHinglish ? '7D Trend' : '7D Trend'}</span>
+                    <span className="w-3.5 h-1 rounded-full bg-blue-500 inline-block shadow-2xs shrink-0"></span>
+                    <span className="text-[10.5px]">{isHinglish ? '7D ट्रेंड' : '7D Trend'}</span>
                   </div>
                 </>
               )}
+
+              {/* Target Line Legend Indicator (when in Unit mode) */}
+              {selectedHabitId !== 'all' && chartMetricType === 'unit' && (() => {
+                const tInfo = getHabitTargetFormatted(currentSelectedHabit);
+                if (!tInfo) return null;
+                return (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 dark:bg-slate-950 border border-emerald-500/70 shadow-2xs">
+                    <span className="w-2.5 h-0 border-t-2 border-dashed border-emerald-400 inline-block shrink-0"></span>
+                    <span className="text-[9.5px] font-black text-white whitespace-nowrap">
+                      Target: {tInfo.label}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
-            {/* Not Logged / Untracked Indicator */}
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block shadow-2xs"></span>
-              <span className="text-[10.5px]">{isHinglish ? 'Log Nahi Hua' : 'Not Logged'}</span>
+            {/* Partial & Not Logged Indicators */}
+            <div className="flex items-center gap-3">
+              {/* Partial Logged: Ring / Hollow Circle - ONLY in Overall mode */}
+              {selectedHabitId === 'all' && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block shadow-2xs shrink-0"></span>
+                  <span className="text-[10.5px]">{isHinglish ? 'पार्शियल लॉग' : 'Partial Logged'}</span>
+                </div>
+              )}
+
+              {/* Not Logged: Solid Black / Dark Dot */}
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white inline-block shadow-2xs shrink-0"></span>
+                <span className="text-[10.5px]">{isHinglish ? 'लॉग नहीं हुआ' : 'Not Logged'}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -1880,9 +2231,21 @@ export default function ExperimentalAnalytics() {
                                   sum.legacyRaw
                                 );
 
+                                let recorded = 0;
+                                if (sum) {
+                                  if (Array.isArray(sum.loggedHabitIds)) {
+                                    recorded = sum.loggedHabitIds.length;
+                                  } else if (sum.habitScores && typeof sum.habitScores === 'object' && Object.keys(sum.habitScores).length > 0) {
+                                    recorded = Object.keys(sum.habitScores).length;
+                                  } else if (typeof sum.habitsCompleted === 'number') {
+                                    recorded = sum.habitsCompleted;
+                                  }
+                                }
+                                const expected = sum?.habitsTotal || activeHabits.length || 1;
+
                                 const isLogged = Boolean(hasLoggedHabits && (
                                   selectedHabitId === 'all'
-                                    ? (sum.overallScore !== undefined && sum.overallScore !== null)
+                                    ? (sum.overallScore !== undefined && sum.overallScore !== null && recorded > 0)
                                     : (sum.habitScores?.[selectedHabitId] !== undefined && sum.habitScores?.[selectedHabitId] !== null)
                                 ));
 
@@ -1918,8 +2281,6 @@ export default function ExperimentalAnalytics() {
                                 const isFullMatch = isScoreMatch && isDayTypeMatch;
                                 const filterEffectClass = isFullMatch ? 'opacity-100' : 'opacity-15 grayscale scale-95';
 
-                                const recorded = sum?.loggedHabitIds?.length ?? (sum ? (sum.habitsTotal || activeHabits.length) : 0);
-                                const expected = sum?.habitsTotal || activeHabits.length;
                                 const isPartial = selectedHabitId === 'all' && isLogged && recorded > 0 && recorded < expected;
 
                                 return (
@@ -1938,7 +2299,7 @@ export default function ExperimentalAnalytics() {
                                   >
                                     {showPercentages ? (
                                       <span className={`text-[9.5px] sm:text-[10.5px] font-black leading-none ${(score !== null && (score <= 35 || score >= 60)) ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
-                                        {isLogged && score !== null ? `${Math.round(score)}%` : '—'}
+                                        {isLogged && score !== null ? `${Math.round(score)}%` : ' - '}
                                       </span>
                                     ) : (
                                       <>
@@ -1984,9 +2345,21 @@ export default function ExperimentalAnalytics() {
                         sum.legacyRaw
                       );
 
+                      let recorded = 0;
+                      if (sum) {
+                        if (Array.isArray(sum.loggedHabitIds)) {
+                          recorded = sum.loggedHabitIds.length;
+                        } else if (sum.habitScores && typeof sum.habitScores === 'object' && Object.keys(sum.habitScores).length > 0) {
+                          recorded = Object.keys(sum.habitScores).length;
+                        } else if (typeof sum.habitsCompleted === 'number') {
+                          recorded = sum.habitsCompleted;
+                        }
+                      }
+                      const expected = sum?.habitsTotal || activeHabits.length || 1;
+
                       const isLogged = Boolean(hasLoggedHabits && (
                         selectedHabitId === 'all'
-                          ? (sum.overallScore !== undefined && sum.overallScore !== null)
+                          ? (sum.overallScore !== undefined && sum.overallScore !== null && recorded > 0)
                           : (sum.habitScores?.[selectedHabitId] !== undefined && sum.habitScores?.[selectedHabitId] !== null)
                       ));
 
@@ -2024,8 +2397,6 @@ export default function ExperimentalAnalytics() {
                         ? 'opacity-100'
                         : 'opacity-15 grayscale scale-95';
 
-                      const recorded = sum?.loggedHabitIds?.length ?? (sum ? (sum.habitsTotal || activeHabits.length) : 0);
-                      const expected = sum?.habitsTotal || activeHabits.length;
                       const isPartial = selectedHabitId === 'all' && isLogged && recorded > 0 && recorded < expected;
 
                       return (
@@ -2046,7 +2417,7 @@ export default function ExperimentalAnalytics() {
                             <span className={`${isLargeTimeframe ? 'text-[7.5px] sm:text-[8.5px]' : 'text-[10px] sm:text-[11px]'} font-black leading-none ${
                               (score !== null && (score <= 35 || score >= 60)) ? 'text-white' : 'text-slate-900 dark:text-white'
                             }`}>
-                              {isLogged && score !== null ? `${Math.round(score)}%` : '—'}
+                              {isLogged && score !== null ? `${Math.round(score)}%` : ' - '}
                             </span>
                           ) : (
                             <>
@@ -2109,7 +2480,7 @@ export default function ExperimentalAnalytics() {
                           {/* Bottom: Big Score % (Left) + Days Logged Count (Right) */}
                           <div className="flex items-baseline justify-between">
                             <span className="text-xl sm:text-2xl font-black leading-none tracking-tight">
-                              {isLogged ? `${score}%` : '—'}
+                              {isLogged ? `${score}%` : ' - '}
                             </span>
                             <span className="text-[10px] sm:text-[10.5px] font-extrabold opacity-85 bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full leading-none">
                               {w.daysLogged}/{w.totalDays} {isHinglish ? 'Din' : 'Days'}
@@ -2167,7 +2538,7 @@ export default function ExperimentalAnalytics() {
 
                         <div className="text-right shrink-0 ml-3">
                           <span className="text-2xl sm:text-3xl font-black leading-none block">
-                            {isLogged ? `${score}%` : '—'}
+                            {isLogged ? `${score}%` : ' - '}
                           </span>
                           <span className="text-[9.5px] font-bold opacity-75 uppercase tracking-wider">{isHinglish ? 'Month Avg' : 'Month Avg'}</span>
                         </div>
@@ -2320,7 +2691,19 @@ export default function ExperimentalAnalytics() {
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-              You’ve logged <strong>{weakestHabit.daysRecorded} of {dateSeries.length} days</strong> for this habit. Focus on logging this consistently to lift your overall trajectory.
+              {weakestHabit.daysRecorded >= Math.ceil(dateSeries.length * 0.8) ? (
+                isHinglish ? (
+                  <>आपने इसे <strong>{weakestHabit.daysRecorded}/{dateSeries.length} दिन</strong> नियमित रूप से लॉग किया है, लेकिन आपका स्कोर कम रहा है। ओवरऑल परफ़ॉर्मेंस सुधारने के लिए अपने <strong>टारगेट को पूरा करने</strong> पर ध्यान दें।</>
+                ) : (
+                  <>You've logged <strong>{weakestHabit.daysRecorded} of {dateSeries.length} days</strong> for this habit, but execution is low. Focus on <strong>meeting your target</strong> to lift your overall trajectory.</>
+                )
+              ) : (
+                isHinglish ? (
+                  <>आपने इस आदत के लिए <strong>{dateSeries.length} में से केवल {weakestHabit.daysRecorded} दिन</strong> लॉग किया है। अपने ओवरऑल स्कोर को ऊपर ले जाने के लिए इसे <strong>रोज़ लॉग करने</strong> पर ध्यान दें।</>
+                ) : (
+                  <>You've logged <strong>{weakestHabit.daysRecorded} of {dateSeries.length} days</strong> for this habit. Focus on <strong>logging this consistently</strong> to lift your overall trajectory.</>
+                )
+              )}
             </p>
 
             <div className="pt-2.5 border-t border-rose-200/50 dark:border-rose-900/40 flex flex-wrap items-center justify-between gap-2.5">
@@ -2358,7 +2741,8 @@ export default function ExperimentalAnalytics() {
       </div>
 
 
-      {/* ── SECTION 6: STEADY FIRE (HABIT STREAK & CONSISTENCY UNIFIED CARD) ── */}
+      {/* ── SECTION 6: STEADY FIRE (HABIT STREAK & MILESTONES CARD) ── */}
+      {streakTrackingEnabled && (
       <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-[24px] p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all relative overflow-hidden space-y-3">
         {/* Card Header with In-Place Habit Dropdown Switcher & Timeframe Pill (Left) and Profile Trophy Wall Link (Right) */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 gap-2">
@@ -2463,26 +2847,25 @@ export default function ExperimentalAnalytics() {
           </Link>
 
         </div>
+      </section>
+      )}
 
-        {/* ── 1ST DASHED DIVIDER LINE (COMPACT & SUBTLE) ── */}
-        <div className="w-full pt-0.5 pb-0">
-          <svg className="w-full h-[1.5px] text-slate-300 dark:text-slate-700/80" preserveAspectRatio="none">
-            <line x1="0" y1="0.5" x2="100%" y2="0.5" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 3" strokeLinecap="round" />
-          </svg>
-        </div>
-
-        {/* ── YOUR STREAK INSIGHTS TITLE & CLEAN STATIC PREVIEW BADGE ── */}
-        <div className="flex items-center justify-between gap-2 py-0.5 flex-wrap">
+      {/* ── SECTION 7: DAY RHYTHM & BEHAVIORAL PATTERNS (STANDALONE SECTION) ── */}
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-[24px] p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all relative overflow-hidden space-y-3">
+        {/* Section Header */}
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Lightbulb size={15} weight="fill" />
+            <div className="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <Calendar size={15} weight="fill" />
             </div>
-            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
-              {isHinglish ? 'आपकी स्ट्रीक इनसाइट्स (Your Streak Insights)' : 'Your Streak Insights'}
-            </h3>
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                {isHinglish ? 'साप्ताहिक लय और व्यवहार पैटर्न्स (Day Rhythm Patterns)' : 'Day Rhythm & Behavioral Patterns'}
+              </h3>
+            </div>
           </div>
 
-          {/* Clean Static Preview Mode Pill (Shown when < 30 days, No blinking, clean & structured) */}
+          {/* Clean Static Preview Mode Pill (Shown when < 30 days) */}
           {(realSummaries?.length || 0) < 30 && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 text-[10px] font-black tracking-wider uppercase select-none">
               <Lock size={11} weight="bold" className="text-amber-500" />
@@ -2491,14 +2874,7 @@ export default function ExperimentalAnalytics() {
           )}
         </div>
 
-        {/* ── 2ND DASHED DIVIDER LINE (COMPACT & SUBTLE) ── */}
-        <div className="w-full pt-0 pb-0.5">
-          <svg className="w-full h-[1.5px] text-slate-300 dark:text-slate-700/80" preserveAspectRatio="none">
-            <line x1="0" y1="0.5" x2="100%" y2="0.5" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 3" strokeLinecap="round" />
-          </svg>
-        </div>
-
-        {/* ── 3 INSIGHT CARDS GRID WITH 30-DAY BLUR & LOCK OVERLAY ── */}
+        {/* 3 Insight Cards Grid: Best Day, Vulnerable Day, Weekday vs Weekend */}
         <div className={`relative ${(realSummaries?.length || 0) < 30 ? 'min-h-[280px]' : ''}`}>
           <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${(realSummaries?.length || 0) < 30 ? 'filter blur-[3px] select-none pointer-events-none opacity-50' : ''}`}>
           
@@ -2612,7 +2988,7 @@ export default function ExperimentalAnalytics() {
                   style={{ height: `${Math.max(15, weekdayVsWeekendAnalysis.weekdayAvg)}%` }}
                 />
                 <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 truncate">
-                  Mon–Fri ({weekdayVsWeekendAnalysis.weekdayAvg}%)
+                  Mon-Fri ({weekdayVsWeekendAnalysis.weekdayAvg}%)
                 </span>
               </div>
 
@@ -2623,14 +2999,14 @@ export default function ExperimentalAnalytics() {
                   style={{ height: `${Math.max(15, weekdayVsWeekendAnalysis.weekendAvg)}%` }}
                 />
                 <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 truncate">
-                  Sat–Sun ({weekdayVsWeekendAnalysis.weekendAvg}%)
+                  Sat-Sun ({weekdayVsWeekendAnalysis.weekendAvg}%)
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-          {/* 30-Day Lock Overlay for Streak Insights */}
+          {/* 30-Day Lock Overlay for Day Rhythm Patterns */}
           {(realSummaries?.length || 0) < 30 && (
             <div className="absolute inset-0 z-10 flex items-center justify-center p-3 sm:p-4 bg-white/75 dark:bg-[#0b0f19]/85 backdrop-blur-xs rounded-3xl animate-in fade-in duration-150">
               <div className="w-full max-w-[320px] bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-3.5 text-center">
@@ -2898,90 +3274,215 @@ export default function ExperimentalAnalytics() {
                       </div>
                     </div>
 
-                    {/* Habits List Breakdown */}
+                    {/* Habits List Breakdown (Only habits active on selected date/period) */}
                     <div>
-                      <div className="flex items-center justify-between mb-2 px-0.5">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">All 7 Habits Breakdown</span>
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-                          {summaries.length} Day Logged
-                        </span>
-                      </div>
+                      {(() => {
+                        const targetDate = selectedPeriod.dates && selectedPeriod.dates.length > 0
+                          ? selectedPeriod.dates[0]
+                          : (selectedPeriod.id || new Date().toISOString().split('T')[0]);
 
-                      <div className="flex flex-col divide-y divide-dashed divide-slate-100 dark:divide-slate-800/80">
-                        {activeHabits.map(h => {
-                          const habitScores = summaries
-                            .map(s => s.habitScores?.[h.id])
-                            .filter(score => score !== undefined && score !== null);
-                          const isRecorded = habitScores.length > 0;
-                          const avgScore = isRecorded ? Math.round(habitScores.reduce((a, b) => a + b, 0) / habitScores.length) : null;
-                          const isSelected = h.id === selectedHabitId;
+                        const habitsOnPeriod = activeHabits.filter(h => {
+                          const firstDate = habitFirstDateMap[h.id];
+                          return !firstDate || firstDate <= targetDate;
+                        });
 
-                          // Raw value formatting for list item
-                          const singleVal = singleSummary?.habitValues?.[h.id];
-                          let valStr = '';
-                          if (singleVal !== undefined && singleVal !== null) {
-                            if (h.scoringType === 'time') valStr = formatTimeMinutes(singleVal);
-                            else if (h.scoringType === 'duration') valStr = formatDurationMinutes(singleVal);
-                            else if (h.scoringType === 'binary') valStr = singleVal === 1 ? 'Free' : 'Missed';
-                            else valStr = `${singleVal}`;
-                          }
-
-                          if (!isRecorded || avgScore === null) {
-                            return (
-                              <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5 opacity-60">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                  <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                                    <HabitIcon name={h.icon} size={12} className="text-white" />
-                                  </div>
-                                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{h.name}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
-                                    Not Logged
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-300 dark:text-slate-600 w-5 text-right">—</span>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div key={h.id} className={`py-2 px-1 flex items-center justify-between gap-2.5 rounded-xl transition-all ${
-                              isSelected ? 'bg-indigo-50/60 dark:bg-indigo-950/30 px-2 my-0.5 border border-indigo-200/50 dark:border-indigo-900/40' : ''
-                            }`}>
-                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                                  <HabitIcon name={h.icon} size={12} className="text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                  <span className={`text-xs truncate block ${isSelected ? 'font-black text-indigo-900 dark:text-indigo-200' : 'font-bold text-slate-900 dark:text-white'}`}>
-                                    {h.name} {isSelected && <span className="text-[9px] font-black uppercase text-indigo-500 ml-1">(Selected)</span>}
-                                  </span>
-                                  {valStr && (
-                                    <span className="text-[9.5px] font-semibold text-slate-400 block">
-                                      {valStr}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <div className="w-12 sm:w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                  <div className={`h-full rounded-full ${
-                                    avgScore >= 70 ? 'bg-emerald-500' : avgScore >= 40 ? 'bg-amber-500' : 'bg-rose-500'
-                                  }`} style={{ width: `${Math.max(5, avgScore)}%` }}></div>
-                                </div>
-                                <span className={`text-xs font-black w-8 text-right ${
-                                  avgScore >= 70 ? 'text-emerald-600 dark:text-emerald-400' : avgScore >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
-                                }`}>{avgScore}%</span>
-                              </div>
+                        return (
+                          <>
+                            <div className="flex items-center justify-between mb-2 px-0.5">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                All {habitsOnPeriod.length} Habits Breakdown
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                {summaries.length} Day Logged
+                              </span>
                             </div>
-                          );
-                        })}
-                      </div>
+
+                            <div className="flex flex-col divide-y divide-dashed divide-slate-100 dark:divide-slate-800/80">
+                              {habitsOnPeriod.map(h => {
+                                const habitScores = summaries
+                                  .map(s => s.habitScores?.[h.id])
+                                  .filter(score => score !== undefined && score !== null);
+                                const isRecorded = habitScores.length > 0;
+                                const avgScore = isRecorded ? Math.round(habitScores.reduce((a, b) => a + b, 0) / habitScores.length) : null;
+                                const isSelected = h.id === selectedHabitId;
+
+                                // Raw value formatting for list item
+                                const singleVal = singleSummary?.habitValues?.[h.id];
+                                let valStr = '';
+                                if (singleVal !== undefined && singleVal !== null) {
+                                  if (h.scoringType === 'time') valStr = formatTimeMinutes(singleVal);
+                                  else if (h.scoringType === 'duration') valStr = formatDurationMinutes(singleVal);
+                                  else if (h.scoringType === 'binary') valStr = singleVal === 1 ? 'Free' : 'Missed';
+                                  else valStr = `${singleVal}`;
+                                }
+
+                                if (!isRecorded || avgScore === null) {
+                                  return (
+                                    <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5 opacity-60">
+                                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                        <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
+                                          <HabitIcon name={h.icon} size={12} className="text-white" />
+                                        </div>
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{h.name}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
+                                          Not Logged
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-300 dark:text-slate-600 w-5 text-right"> - </span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div key={h.id} className={`py-2 px-1 flex items-center justify-between gap-2.5 rounded-xl transition-all ${
+                                    isSelected ? 'bg-indigo-50/60 dark:bg-indigo-950/30 px-2 my-0.5 border border-indigo-200/50 dark:border-indigo-900/40' : ''
+                                  }`}>
+                                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                      <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
+                                        <HabitIcon name={h.icon} size={12} className="text-white" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <span className={`text-xs truncate block ${isSelected ? 'font-black text-indigo-900 dark:text-indigo-200' : 'font-bold text-slate-900 dark:text-white'}`}>
+                                          {h.name} {isSelected && <span className="text-[9px] font-black uppercase text-indigo-500 ml-1">(Selected)</span>}
+                                        </span>
+                                        {valStr && (
+                                          <span className="text-[9.5px] font-semibold text-slate-400 block">
+                                            {valStr}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <div className="w-12 sm:w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                        <div className={`h-full rounded-full ${
+                                          avgScore >= 70 ? 'bg-emerald-500' : avgScore >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                                        }`} style={{ width: `${Math.max(5, avgScore)}%` }}></div>
+                                      </div>
+                                      <span className={`text-xs font-black w-8 text-right ${
+                                        avgScore >= 70 ? 'text-emerald-600 dark:text-emerald-400' : avgScore >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
+                                      }`}>{avgScore}%</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── FULLSCREEN / EXPANDED CHART MODAL (ZOOM OUT VIEW) ── */}
+      {showFullscreenChart && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 w-full max-w-5xl h-[92vh] sm:h-[88vh] rounded-[28px] p-4 sm:p-6 shadow-2xl flex flex-col justify-between space-y-3 animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {selectedHabitId === 'all' ? (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <Sparkle size={16} weight="fill" />
+                  </div>
+                ) : (
+                  <div 
+                    className="w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
+                    style={{ backgroundColor: currentSelectedHabit?.color || '#3b82f6' }}
+                  >
+                    <HabitIcon name={currentSelectedHabit?.icon} size={15} className="text-white" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+                      {selectedHabitId === 'all' ? 'Overall Performance' : currentSelectedHabit?.name}
+                    </h3>
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                      {selectedHabitId === 'all' ? `${overallStat.avgScore}% Avg` : `${habitStats.find(h => h.id === selectedHabitId)?.avgScore ?? 0}% Avg`}
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-bold text-slate-400">
+                    {rangeOption === 'custom' ? 'Custom Timeline' : `${rangeOption} Days Timeline`} • {chartData.length} data points
+                  </p>
+                </div>
+              </div>
+
+              {/* Close / Exit Fullscreen Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  setShowFullscreenChart(false);
+                }}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="Exit Fullscreen"
+              >
+                <X size={16} weight="bold" />
+              </button>
+            </div>
+
+            {/* Expanded ECharts Canvas with Interactive Zoom Slider */}
+            <div className="w-full flex-1 min-h-0 relative">
+              <ReactEChartsCore
+                echarts={echarts}
+                option={getEChartOption(selectedHabitId, true)}
+                notMerge={true}
+                lazyUpdate={true}
+                style={{ height: '100%', width: '100%' }}
+              />
+            </div>
+
+            {/* Trajectory Legend Under Expanded Chart */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 px-1 border-t border-slate-100 dark:border-slate-800/60 text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-2xs" style={{ backgroundColor: currentLegendColor }}></span>
+                  <span className="text-[10.5px] font-bold">
+                    {selectedHabitId !== 'all' && chartMetricType === 'unit'
+                      ? `Daily (${currentSelectedHabit?.unit || 'Units'})`
+                      : (isHinglish ? 'डेली स्कोर' : 'Daily Score')}
+                  </span>
+                </div>
+                {chartTrendMode !== 'raw' && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-1 rounded-full bg-blue-500 inline-block shadow-2xs shrink-0"></span>
+                    <span className="text-[10.5px] font-bold">{isHinglish ? '7D ट्रेंड' : '7D Moving Avg'}</span>
+                  </div>
+                )}
+                {/* Target Line Legend Indicator (when in Unit mode) */}
+                {selectedHabitId !== 'all' && chartMetricType === 'unit' && (() => {
+                  const tInfo = getHabitTargetFormatted(currentSelectedHabit);
+                  if (!tInfo) return null;
+                  return (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 dark:bg-slate-950 border border-emerald-500/70 shadow-2xs">
+                      <span className="w-2.5 h-0 border-t-2 border-dashed border-emerald-400 inline-block shrink-0"></span>
+                      <span className="text-[9.5px] font-black text-white whitespace-nowrap">
+                        Target: {tInfo.label}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="flex items-center gap-3">
+                {selectedHabitId === 'all' && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block shadow-2xs shrink-0"></span>
+                    <span className="text-[10.5px] font-bold">{isHinglish ? 'पार्शियल लॉग' : 'Partial Logged'}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white inline-block shadow-2xs shrink-0"></span>
+                  <span className="text-[10.5px] font-bold">{isHinglish ? 'लॉग नहीं हुआ' : 'Not Logged'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3060,7 +3561,7 @@ export default function ExperimentalAnalytics() {
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold'
                   }`}
                 >
-                  Mon–Fri
+                  Mon-Fri
                 </button>
                 <button
                   type="button"
@@ -3074,7 +3575,7 @@ export default function ExperimentalAnalytics() {
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold'
                   }`}
                 >
-                  Sat–Sun
+                  Sat-Sun
                 </button>
               </div>
             </div>
@@ -3280,16 +3781,35 @@ export default function ExperimentalAnalytics() {
               </div>
             </div>
 
-            {/* Done Button */}
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(30);
-                setShowHeatmapControlModal(false);
-              }}
-              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-            >
-              {isHinglish ? 'लागू करें और हो गया' : 'Apply & Done'}
-            </button>
+            {/* Done & Save Default Buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  localStorage.setItem('definite_heatmap_filter', heatmapFilter);
+                  localStorage.setItem('definite_heatmap_daytype', dayTypeFilter);
+                  localStorage.setItem('definite_heatmap_layout', heatmapLayout);
+                  localStorage.setItem('definite_heatmap_granularity', heatmapGranularity);
+                  const btn = e.currentTarget;
+                  const oldText = btn.innerText;
+                  btn.innerText = isHinglish ? 'Saved!' : 'Saved!';
+                  setTimeout(() => { btn.innerText = oldText; }, 1500);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                {isHinglish ? 'Set as Default' : 'Set as Default'}
+              </button>
+              <button
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(30);
+                  setShowHeatmapControlModal(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              >
+                {isHinglish ? 'लागू करें और हो गया' : 'Apply & Done'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -3394,7 +3914,7 @@ export default function ExperimentalAnalytics() {
                   <Sparkle size={14} weight="fill" className="text-amber-500 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-black block text-amber-950 dark:text-amber-100">
-                      {isHinglish ? 'Overall score 0–100% ही होता है' : 'Overall only uses 0–100% composite score'}
+                      {isHinglish ? 'Overall score 0-100% ही होता है' : 'Overall only uses 0-100% composite score'}
                     </span>
                     <span className="text-[10px] font-semibold opacity-90 block mt-0.5">
                       {isHinglish 
@@ -3471,16 +3991,33 @@ export default function ExperimentalAnalytics() {
               </div>
             </div>
 
-            {/* Done Button */}
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(30);
-                setShowChartControlModal(false);
-              }}
-              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-            >
-              {isHinglish ? 'लागू करें और हो गया' : 'Apply & Done'}
-            </button>
+            {/* Done & Save Default Buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  if (navigator.vibrate) navigator.vibrate(20);
+                  localStorage.setItem('definite_chart_trend', chartTrendMode);
+                  localStorage.setItem('definite_chart_metric', chartMetricType);
+                  const btn = e.currentTarget;
+                  const oldText = btn.innerText;
+                  btn.innerText = isHinglish ? 'Saved!' : 'Saved!';
+                  setTimeout(() => { btn.innerText = oldText; }, 1500);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                {isHinglish ? 'Set as Default' : 'Set as Default'}
+              </button>
+              <button
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(30);
+                  setShowChartControlModal(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              >
+                {isHinglish ? 'लागू करें और हो गया' : 'Apply & Done'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -3673,7 +4210,7 @@ export default function ExperimentalAnalytics() {
                   {/* 3 Single-Open Accordion Toggles */}
                   <div className="space-y-1.5 pt-0.5">
 
-                    {/* Toggle 1 — Priority Multipliers */}
+                    {/* Toggle 1 - Priority Multipliers */}
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/70 overflow-hidden transition-all">
                       <div 
                         onClick={() => {
@@ -3711,7 +4248,7 @@ export default function ExperimentalAnalytics() {
                       )}
                     </div>
 
-                    {/* Toggle 2 — Track What Matters */}
+                    {/* Toggle 2 - Track What Matters */}
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/70 overflow-hidden transition-all">
                       <div 
                         onClick={() => {
@@ -3739,7 +4276,7 @@ export default function ExperimentalAnalytics() {
                       )}
                     </div>
 
-                    {/* Toggle 3 — How Score Works */}
+                    {/* Toggle 3 - How Score Works */}
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/70 overflow-hidden transition-all">
                       <div 
                         onClick={() => {
@@ -3824,8 +4361,8 @@ export default function ExperimentalAnalytics() {
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
                       {isHinglish
-                        ? 'जब कोई आदत मिस होती है, तो आप 24–48 घंटे में कितनी तेज़ी से वापसी करते हैं। यह आपकी बाउंस-बैक क्षमता मापता है।'
-                        : 'Measures how quickly you bounce back within 24–48 hours after missing a day.'}
+                        ? 'जब कोई आदत मिस होती है, तो आप 24-48 घंटे में कितनी तेज़ी से वापसी करते हैं। यह आपकी बाउंस-बैक क्षमता मापता है।'
+                        : 'Measures how quickly you bounce back within 24-48 hours after missing a day.'}
                     </p>
                   </div>
 
@@ -4338,6 +4875,20 @@ export default function ExperimentalAnalytics() {
           </div>
         </div>
       )}
+
+      {/* ── HABIT PERFORMANCE SHARE CARD MODAL ── */}
+      <HabitShareCardModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        habit={currentSelectedHabit}
+        selectedHabitId={selectedHabitId}
+        dateSeries={dateSeries}
+        summaryMap={summaryMap}
+        allSummaries={realSummaries}
+        streakTrackingEnabled={streakTrackingEnabled}
+        rangeOption={rangeOption}
+        isHinglish={isHinglish}
+      />
     </div>
   );
 }

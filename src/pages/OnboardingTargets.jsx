@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { calculateScore } from '../lib/scoring';
+import { calculateScore, isNightHabit } from '../lib/scoring';
 import Icon from '../components/Icon';
 
 export default function OnboardingTargets() {
@@ -18,15 +18,14 @@ export default function OnboardingTargets() {
 
   useEffect(() => {
     async function fetchUserHabits() {
+      if (!currentUser) return;
       try {
-        const querySnapshot = await getDocs(collection(db, 'users', currentUser.uid, 'habits'));
-        const loadedHabits = [];
-        querySnapshot.forEach((doc) => {
-          loadedHabits.push({ id: doc.id, ...doc.data() });
-        });
-        setHabits(loadedHabits);
+        const habitsRef = collection(db, 'users', currentUser.uid, 'habits');
+        const snap = await getDocs(habitsRef);
+        const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setHabits(fetched);
       } catch (error) {
-        console.error("Error fetching user habits:", error);
+        console.error("Error fetching habits:", error);
       } finally {
         setLoading(false);
       }
@@ -47,13 +46,14 @@ export default function OnboardingTargets() {
     // "HH:MM" -> minutes since midnight
     if (!timeString) return 0;
     const [hours, minutes] = timeString.split(':').map(Number);
-    return hours * 60 + minutes;
+    return (hours || 0) * 60 + (minutes || 0);
   };
 
   const formatTimeString = (minutes) => {
     if (minutes == null) return "00:00";
-    const h = Math.floor(minutes / 60) % 24;
-    const m = minutes % 60;
+    const totalMins = (Math.round(minutes) % 1440 + 1440) % 1440;
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
@@ -68,8 +68,10 @@ export default function OnboardingTargets() {
 
         // Ensure proper types
         if (habit.scoringType === 'time') {
-          // If the user used the time input, we need to ensure it's in minutes
-          // We handle this conversion directly in the input onChange, so it should already be minutes
+          if (isNightHabit(habit)) {
+            if (typeof finalTarget100 === 'number' && finalTarget100 < 12 * 60) finalTarget100 += 1440;
+            if (typeof finalTarget0 === 'number' && finalTarget0 < 12 * 60) finalTarget0 += 1440;
+          }
         } else if (habit.scoringType !== 'binary' && habit.scoringType !== 'subjective') {
           finalTarget100 = Number(finalTarget100);
           finalTarget0 = Number(finalTarget0);
@@ -77,7 +79,9 @@ export default function OnboardingTargets() {
 
         await updateDoc(userHabitRef, {
           target100: finalTarget100,
-          target0: finalTarget0
+          target0: finalTarget0,
+          userTarget100: finalTarget100,
+          userTarget0: finalTarget0
         });
       }
       if (refreshData) {
@@ -138,11 +142,16 @@ export default function OnboardingTargets() {
                 let currentVal = habit.previewValue !== undefined ? habit.previewValue : (habit.target0 !== undefined ? habit.target0 : 0);
                 
                 let adjustedVal = currentVal;
-                if (isTime && habit.id.includes('sleep') && currentVal < 12 * 60) {
-                  adjustedVal += 1440;
+                let t100 = habit.target100;
+                let t0 = habit.target0;
+                const isNight = isTime && isNightHabit(habit);
+                if (isNight) {
+                  if (adjustedVal !== null && adjustedVal !== undefined && adjustedVal < 12 * 60) adjustedVal += 1440;
+                  if (typeof t100 === 'number' && t100 < 12 * 60) t100 += 1440;
+                  if (typeof t0 === 'number' && t0 < 12 * 60) t0 += 1440;
                 }
                 
-                const rawScore = calculateScore(habit.scoringType, habit.direction, adjustedVal, habit.target100, habit.target0);
+                const rawScore = calculateScore(habit.scoringType, habit.direction, adjustedVal, t100, t0);
                 previewScore = rawScore !== null ? Math.max(0, Math.min(100, Math.round(rawScore))) : 0;
             }
 

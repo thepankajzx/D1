@@ -10,7 +10,7 @@ import HabitCard from '../components/HabitCard';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
 import { Link, useNavigate } from 'react-router-dom';
 import StreakWidget from '../components/StreakWidget';
-import TodayInsightHighlightCard from '../components/TodayInsightHighlightCard';
+import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
 
 
@@ -38,7 +38,7 @@ function getTodayDate() {
 
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
-  const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData } = useData();
+  const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData, streakTrackingEnabled } = useData();
   const { isHinglish } = useLanguage();
   const navigate = useNavigate();
 
@@ -66,54 +66,6 @@ export default function Dashboard() {
   const [showKpiLockModal, setShowKpiLockModal] = useState(false);
   const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
 
-    // Calculate all-time weakest and strongest habits
-  const { weakestHabit, strongestHabit, hasLoggedData } = useMemo(() => {
-    if (!allSummaries || allSummaries.length === 0 || !habits || habits.length === 0) {
-      return { weakestHabit: null, strongestHabit: null, hasLoggedData: false };
-    }
-    
-    const habitStats = {};
-    habits.forEach(h => {
-        if (h.scoringType === 'subjective') return;
-        habitStats[h.id] = { total: 0, count: 0, name: h.name };
-    });
-
-    allSummaries.forEach(summary => {
-        if (summary.habitScores) {
-            Object.entries(summary.habitScores).forEach(([habitId, score]) => {
-                if (habitStats[habitId] !== undefined) {
-                    habitStats[habitId].total += score;
-                    habitStats[habitId].count += 1;
-                }
-            });
-        }
-    });
-
-    let weakest = null;
-    let strongest = null;
-    let minAvg = Infinity;
-    let maxAvg = -1;
-
-    Object.values(habitStats).forEach(stat => {
-        if (stat.count > 0) {
-            const avg = Math.round(stat.total / stat.count);
-            if (avg < minAvg) {
-                minAvg = avg;
-                weakest = { name: stat.name, score: avg };
-            }
-            if (avg > maxAvg) {
-                maxAvg = avg;
-                strongest = { name: stat.name, score: avg };
-            }
-        }
-    });
-
-    return { 
-        weakestHabit: weakest, 
-        strongestHabit: strongest,
-        hasLoggedData: Boolean(weakest || strongest)
-    };
-  }, [allSummaries, habits]);
 
   // Fetch entries when selectedDate changes
   useEffect(() => {
@@ -396,55 +348,14 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5 w-full pb-24">
-            {/* 1. Top KPI Pills (Focus & Streak) - Clean White / Light Theme Redesign */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 w-full">
-        {/* Focus Action Card */}
-        <div className="bg-white dark:bg-[#151926] text-slate-900 dark:text-white rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between overflow-hidden border border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:shadow-sm transition-all">
-          <div className="flex items-center justify-between gap-1 mb-1.5">
-            <span className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/70 dark:border-amber-800/40 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Target weight="fill" size={12} className="text-amber-600 dark:text-amber-400" />
-              Focus
-            </span>
-            <span className="text-xs sm:text-sm font-black text-amber-700 dark:text-amber-400">
-              {hasLoggedData && weakestHabit ? `${weakestHabit.score}%` : '--'}
-            </span>
-          </div>
-          <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
-            {hasLoggedData && weakestHabit ? weakestHabit.name : (isHinglish ? 'आज की आदतें भरें' : 'Log Today\'s Habits')}
-          </div>
-          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
-            {hasLoggedData && weakestHabit
-              ? (weakestHabit.score < 50 
-                  ? (isHinglish ? 'Rebound ki zaroorat hai' : 'Needs rebound') 
-                  : (isHinglish ? 'Pehle complete karo' : 'Execute early'))
-              : (isHinglish ? 'डेटा दर्ज करें' : 'Track to start')}
-          </div>
-        </div>
-
-        {/* Momentum Streak Card */}
-        <div className="bg-white dark:bg-[#151926] text-slate-900 dark:text-white rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between overflow-hidden border border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:shadow-sm transition-all">
-          <div className="flex items-center justify-between gap-1 mb-1.5">
-            <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/40 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-              <Flame weight="fill" size={12} className="text-emerald-600 dark:text-emerald-400" />
-              Streak
-            </span>
-            <span className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-400">
-              {hasLoggedData && strongestHabit ? `${strongestHabit.score}%` : '0d'}
-            </span>
-          </div>
-          <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
-            {hasLoggedData && strongestHabit ? strongestHabit.name : (isHinglish ? 'स्ट्रीक इग्निशन' : 'Day 1 Ignition')}
-          </div>
-          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
-            {hasLoggedData && strongestHabit
-              ? (isHinglish ? 'Streak tootne mat dena' : 'Keep unbroken')
-              : (isHinglish ? 'पहला स्ट्रीक शुरू करें' : 'Complete to ignite')}
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Today's Daily Insight Highlight Card */}
-      <TodayInsightHighlightCard habits={habits} allSummaries={allSummaries} />
+      {/* 1. Top 2 Tabs: All Insights (Left) & Today's Compass (Right) */}
+      <TodayTopKpis
+        habits={habits}
+        allSummaries={allSummaries}
+        todayEntries={entries}
+        priorityModeEnabled={priorityModeEnabled}
+        selectedDate={selectedDate}
+      />
 
       {/* 3. Date Selector */}
       <div className="flex items-center justify-start">
@@ -596,7 +507,7 @@ export default function Dashboard() {
           <div className="bg-surface p-6 rounded-2xl shadow-lg max-w-md w-full" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-headline-md font-bold text-on-surface flex items-center gap-2">
-                <Icon name="analytics" className="text-primary" /> Consistency & Streak
+                <Icon name="analytics" className="text-primary" /> {streakTrackingEnabled ? 'Consistency & Streak' : 'Consistency'}
               </h3>
               <button onClick={() => setShowKpiHelp(false)} className="text-on-surface-variant hover:text-on-surface cursor-pointer">
                 <Icon name="close" />
@@ -609,15 +520,19 @@ export default function Dashboard() {
                 <p>Consistency measures the percentage of days you have actively tracked your habits since your first entry. A higher percentage means you are regularly showing up to track your progress.</p>
               </div>
               
-              <div>
-                <h4 className="font-bold text-on-surface mb-1">Current Streak</h4>
-                <p>Your streak increases for every consecutive day your <span className="font-bold">Overall Daily Score</span> is <span className="text-primary font-bold">60% or higher</span>. If your overall score falls below 60% or you miss a day, your streak resets to 0.</p>
-              </div>
-              
-              <div>
-                <h4 className="font-bold text-on-surface mb-1">Record (Longest Streak)</h4>
-                <p>This is the highest streak you have ever achieved. Try to beat your record!</p>
-              </div>
+              {streakTrackingEnabled && (
+                <>
+                  <div>
+                    <h4 className="font-bold text-on-surface mb-1">Current Streak</h4>
+                    <p>Your streak increases for every consecutive day your <span className="font-bold">Overall Daily Score</span> is <span className="text-primary font-bold">60% or higher</span>. If your overall score falls below 60% or you miss a day, your streak resets to 0.</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-on-surface mb-1">Record (Longest Streak)</h4>
+                    <p>This is the highest streak you have ever achieved. Try to beat your record!</p>
+                  </div>
+                </>
+              )}
             </div>
             
             <button 

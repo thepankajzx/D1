@@ -32,13 +32,18 @@ export function calculateStreakData(habitId = 'all', summaries = [], referenceDa
 
   const scoreMap = new Map();
   sorted.forEach(s => {
-    let score = 0;
+    let isLogged = false;
+    let isSuccessful = false;
     if (habitId === 'all') {
-      score = s.overallScore || 0;
+      const score = s.overallScore;
+      isLogged = score !== undefined && score !== null;
+      isSuccessful = isLogged && Number(score) >= 60;
     } else {
-      score = (s.habitScores && s.habitScores[habitId] !== undefined) ? s.habitScores[habitId] : 0;
+      const score = s.habitScores ? s.habitScores[habitId] : undefined;
+      isLogged = score !== undefined && score !== null;
+      isSuccessful = isLogged && Number(score) >= 60;
     }
-    scoreMap.set(s.id, score);
+    scoreMap.set(s.id, { isLogged, isSuccessful });
   });
 
   // Calculate longest streak across history
@@ -54,10 +59,15 @@ export function calculateStreakData(habitId = 'all', summaries = [], referenceDa
   while (current <= lastDate) {
     totalDays++;
     const dStr = current.toISOString().split('T')[0];
-    const score = scoreMap.get(dStr) || 0;
+    const dayData = scoreMap.get(dStr);
 
-    if (score > 0) {
+    // Active logging days = Consistency
+    if (dayData && dayData.isLogged) {
       activeDays++;
+    }
+
+    // Consecutive successful days (score >= 60%) = Streak
+    if (dayData && dayData.isSuccessful) {
       tempStreak++;
       if (tempStreak > longestStreak) longestStreak = tempStreak;
     } else {
@@ -69,29 +79,33 @@ export function calculateStreakData(habitId = 'all', summaries = [], referenceDa
   // Calculate current streak (with grace period for today if not yet logged)
   let currentStreak = 0;
   const checkDate = new Date(lastDate);
-  const todayScore = scoreMap.get(todayStr) || 0;
+  const todayData = scoreMap.get(todayStr);
 
-  if (todayScore > 0) {
+  if (todayData && todayData.isSuccessful) {
     while (true) {
       const dStr = checkDate.toISOString().split('T')[0];
-      const s = scoreMap.get(dStr) || 0;
-      if (s > 0) {
+      const sData = scoreMap.get(dStr);
+      if (sData && sData.isSuccessful) {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
       } else {
         break;
       }
     }
+  } else if (todayData && todayData.isLogged && !todayData.isSuccessful) {
+    // Today was logged and failed to hit target (< 60%), streak is broken
+    currentStreak = 0;
   } else {
+    // Today not yet logged: check from yesterday backwards
     checkDate.setDate(checkDate.getDate() - 1);
     const yesterdayStr = checkDate.toISOString().split('T')[0];
-    const yesterdayScore = scoreMap.get(yesterdayStr) || 0;
+    const yesterdayData = scoreMap.get(yesterdayStr);
 
-    if (yesterdayScore > 0) {
+    if (yesterdayData && yesterdayData.isSuccessful) {
       while (true) {
         const dStr = checkDate.toISOString().split('T')[0];
-        const s = scoreMap.get(dStr) || 0;
-        if (s > 0) {
+        const sData = scoreMap.get(dStr);
+        if (sData && sData.isSuccessful) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);
         } else {
@@ -101,11 +115,14 @@ export function calculateStreakData(habitId = 'all', summaries = [], referenceDa
     }
   }
 
+  const consistencyPct = totalDays > 0 ? Math.round((activeDays / totalDays) * 100) : 0;
+
   return {
     currentStreak,
     longestStreak: Math.max(longestStreak, currentStreak),
     activeDays,
-    totalDays
+    totalDays,
+    consistencyPct
   };
 }
 
@@ -123,13 +140,13 @@ export function calculateConsistencyRate(habitId = 'all', summaries = [], days =
   
   const scoreMap = new Map();
   summaries.forEach(s => {
-    let score = 0;
+    let isLogged = false;
     if (habitId === 'all') {
-      score = s.overallScore || 0;
+      isLogged = s.overallScore !== undefined && s.overallScore !== null;
     } else {
-      score = (s.habitScores && s.habitScores[habitId] !== undefined) ? s.habitScores[habitId] : 0;
+      isLogged = (s.habitScores && s.habitScores[habitId] !== undefined && s.habitScores[habitId] !== null);
     }
-    scoreMap.set(s.id, score);
+    scoreMap.set(s.id, { isLogged });
   });
 
   let activeCount = 0;
@@ -137,8 +154,10 @@ export function calculateConsistencyRate(habitId = 'all', summaries = [], days =
     const d = new Date(refDate);
     d.setDate(d.getDate() - i);
     const dStr = d.toISOString().split('T')[0];
-    const score = scoreMap.get(dStr) || 0;
-    if (score > 0) {
+    const dayData = scoreMap.get(dStr);
+    
+    // A day is consistent if it was logged (even if the score was 0 for a Yes/No habit)
+    if (dayData && dayData.isLogged) {
       activeCount++;
     }
   }

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+<img id="img" src="file://G:/STITCH HABIT TRACKER/definite-habit-tracker/public/pwa-512x512.png" />
+<canvas id="c" width="512" height="512"></canvas>
+<script>
+window.onload = () => {
+  const img = document.getElementById('img');
+  const c = document.getElementById('c');
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const data = ctx.getImageData(0, 0, 512, 512).data;
+  let minX = 512, maxX = 0, minY = 512, maxY = 0;
+  for (let y = 0; y < 512; y++) {
+    for (let x = 0; x < 512; x++) {
+      const i = (y * 512 + x) * 4;
+      const r = data[i], g = data[i+1], b = data[i+2];
+      // If not background #0B0F19 (r:11, g:15, b:25)
+      if (Math.abs(r - 11) > 20 || Math.abs(g - 15) > 20 || Math.abs(b - 25) > 20) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  console.log('PIXEL_BOUNDS:', JSON.stringify({ minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY, centerX: (minX + maxX)/2, centerY: (minY + maxY)/2 }));
+};
+</script>
+</body>
+</html>

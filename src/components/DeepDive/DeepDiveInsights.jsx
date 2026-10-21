@@ -68,22 +68,22 @@ export default function DeepDiveInsights({
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-3 18h6v1H9v-1zm1-3h4v1h-4v-1z" />
               </svg>
             </div>
-            <div className="flex flex-col min-w-0">
-              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug truncate">
+            <div className="flex flex-col min-w-0 flex-1">
+              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug break-words">
                 {isHinglish ? (
                   <>{derivedWeakestDay} aapka <span className="text-amber-600 font-extrabold">weakest day</span> rehta hai.</>
                 ) : (
                   <>{derivedWeakestDay} tends to be your <span className="text-amber-600 font-extrabold">weakest day</span>.</>
                 )}
               </h4>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                 {isHinglish ? 'Dopahar ka reminder set karo.' : 'Try a midday reminder.'}
               </p>
             </div>
           </div>
 
-          <div className="flex-shrink-0 opacity-35 text-amber-400 pointer-events-none pr-0.5">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <div className="flex-shrink-0 opacity-30 text-amber-500 pointer-events-none pr-0.5">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" />
@@ -104,29 +104,28 @@ export default function DeepDiveInsights({
                 <polyline points="17 6 23 6 23 12" />
               </svg>
             </div>
-            <div className="flex flex-col min-w-0">
-              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug truncate">
+            <div className="flex flex-col min-w-0 flex-1">
+              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug break-words">
                 {isPositiveImprovement ? (
                   isHinglish 
                     ? <>Score me <span className="text-emerald-600 font-extrabold">+{improvement}%</span> ka improvement!</> 
-                    : <>Score improved by <span className="text-emerald-600 font-extrabold">+{improvement}%</span> vs</>
+                    : <>Score improved by <span className="text-emerald-600 font-extrabold">+{improvement}%</span></>
                 ) : (
                   isHinglish 
                     ? <>Score <span className="text-red-500 font-extrabold">{improvement}%</span> thoda gira hai</> 
-                    : <>Score dipped by <span className="text-red-500 font-extrabold">{improvement}%</span> vs</>
+                    : <>Score dipped by <span className="text-red-500 font-extrabold">{improvement}%</span></>
                 )}
               </h4>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                 {isHinglish 
-                  ? (isPositiveImprovement ? 'Momentum banaye rakho!' : 'Chhoti daily wins par focus karo.') 
-                  : (isPositiveImprovement ? 'the previous period!' : 'the previous period.')}
+                  ? (isPositiveImprovement ? 'Pichle period se behtar! Momentum banaye rakho.' : 'Chhoti daily wins par focus karo.') 
+                  : (isPositiveImprovement ? 'vs previous period • Keep momentum!' : 'vs previous period • Focus on daily wins.')}
               </p>
             </div>
           </div>
 
-
-          <div className="flex-shrink-0 opacity-35 text-emerald-500 pointer-events-none pr-0.5">
-            <svg className="w-8 h-5" viewBox="0 0 60 40" fill="none">
+          <div className="flex-shrink-0 opacity-30 text-emerald-500 pointer-events-none pr-0.5">
+            <svg className="w-6 h-4" viewBox="0 0 60 40" fill="none">
               <rect x="5" y="26" width="6" height="14" rx="2" fill="currentColor" fillOpacity="0.5" />
               <rect x="17" y="20" width="6" height="20" rx="2" fill="currentColor" fillOpacity="0.6" />
               <rect x="29" y="14" width="6" height="26" rx="2" fill="currentColor" fillOpacity="0.75" />
@@ -137,21 +136,21 @@ export default function DeepDiveInsights({
         </div>
 
         {/* 3. Progress / Target Card (Blue) */}
-        <div className="bg-gradient-to-r from-blue-50/80 to-blue-50/20 border border-blue-200/70 border-l-[3.5px] border-l-blue-500 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs">
+        <div className="bg-gradient-to-r from-blue-50/80 to-blue-50/20 dark:from-blue-950/40 dark:to-blue-950/10 border border-blue-200/70 dark:border-blue-900/50 border-l-[3.5px] border-l-blue-500 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-2.5 min-w-0 z-10 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-white shadow-2xs border border-blue-100 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 shadow-2xs border border-blue-100 dark:border-blue-900/40 flex items-center justify-center flex-shrink-0">
               <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <circle cx="12" cy="12" r="6" />
                 <circle cx="12" cy="12" r="2" fill="currentColor" />
               </svg>
             </div>
-            <div className="flex flex-col min-w-0">
-              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug truncate">
+            <div className="flex flex-col min-w-0 flex-1">
+              <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug break-words">
                 Hit target on <span className="text-blue-600 font-extrabold">{daysOnTarget} of {totalDays} days</span>
               </h4>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
-                ({targetPercent}% of period).
+              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
+                {isHinglish ? `${targetPercent}% period me target achieve hua.` : `(${targetPercent}% of tracking period)`}
               </p>
             </div>
           </div>
@@ -191,3 +190,4 @@ export default function DeepDiveInsights({
     </div>
   );
 }
+

@@ -243,7 +243,7 @@ export default function BetterReport() {
           </h1>
 
           <p className="text-slate-300 text-xs sm:text-sm md:text-base font-medium max-w-2xl leading-relaxed">
-            This is not a dry dashboard, but your behavioral mirror — revealing where your routines flourished, where energy competed, and how your resilience compounded over 30 days.
+            This is not a dry dashboard, but your behavioral mirror - revealing where your routines flourished, where energy competed, and how your resilience compounded over 30 days.
           </p>
 
           {/* Quick Metrics Bar */}

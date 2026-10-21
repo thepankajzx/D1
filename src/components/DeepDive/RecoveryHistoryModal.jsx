@@ -131,7 +131,7 @@ export default function RecoveryHistoryModal({
               <TrendUp size={15} weight="bold" />
             </div>
             <div className="text-xl sm:text-2xl font-black text-blue-600 leading-tight">
-              {recoveryScore !== null && recoveryScore !== undefined ? `${recoveryScore}%` : 'â€”'}
+              {recoveryScore !== null && recoveryScore !== undefined ? `${recoveryScore}%` : 'â€"'}
             </div>
             <span className="text-[10px] text-slate-500 font-medium mt-0.5">7-day avg pace</span>
           </div>
@@ -280,6 +280,14 @@ export default function RecoveryHistoryModal({
                     style={{ width: `${Math.min(100, Math.max(5, m.recoveryRate))}%` }}
                   ></div>
                 </div>
+
+                {/* Direct Action Hint */}
+                {m.isInProgress && (
+                  <div className="text-[10.5px] font-semibold text-amber-700 dark:text-amber-300 mt-2 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-xl flex items-center gap-1.5">
+                    <Sparkle size={12} weight="fill" className="text-amber-500 shrink-0" />
+                    <span>To recover: Score ≥70% on at least 5 of the 7 days</span>
+                  </div>
+                )}
               </div>
             ))
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Target, X, ChartBar, Lightbulb, Lightning, Sparkle, Palette, TrendUp, TrendDown } from '@phosphor-icons/react';
+import { Target, X, ChartBar, Lightbulb, Lightning, Sparkle, Palette, TrendUp, TrendDown, Info } from '@phosphor-icons/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -11,8 +11,11 @@ import Icon from '../components/Icon';
 import PriorityIcon from '../components/PriorityIcon';
 import HabitIcon from '../components/HabitIcon';
 import ScoringModal from '../components/ScoringModal';
+import BinaryGoalExplainerModal from '../components/BinaryGoalExplainerModal';
 import ProModal from '../components/ProModal';
 import HabitIconColorPickerModal from '../components/HabitIconColorPickerModal';
+import ColorfulPaletteButton from '../components/ColorfulPaletteButton';
+import { formatDuration, normalizeDurationToMinutes, isDurationHabit } from '../lib/formatDuration';
 import './AdvancedHabitSelector.css';
 
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime, habitId, habitName }) => {
@@ -36,6 +39,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   const step = isTime ? 5 : (isDecimalUnit ? 0.1 : 1);
 
   const [glowTarget, setGlowTarget] = useState(null);
+  const [activeThumb, setActiveThumb] = useState('target100');
   const prevValRef = useRef({ target0, target100 });
   const target0Ref = useRef(target0);
   const target100Ref = useRef(target100);
@@ -79,6 +83,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   };
 
   const handleSliderChange = (field, value) => {
+    setActiveThumb(field);
     const prev = field === 'target0' ? prevValRef.current.target0 : prevValRef.current.target100;
     prevValRef.current[field] = value;
     onChange(field, value);
@@ -148,54 +153,73 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
 
     return (
       <div className="flex flex-col items-center w-full min-w-0">
-        <div className={`border ${borderColor} rounded-2xl p-2.5 sm:p-3.5 bg-surface flex flex-col items-center w-full transition-all duration-300 shadow-xs`}>
-          <span className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-bold mb-2 ${badgeBg}`}>
-            {label}
-          </span>
+        <div className={`w-full bg-surface-container-lowest rounded-2xl border ${borderColor} p-3 sm:p-4 flex flex-col items-center justify-between min-h-[110px] sm:min-h-[125px] shadow-sm transition-all duration-300 relative overflow-hidden`}>
+          
+          <div className="flex items-center justify-center w-full mb-1">
+            <span className={`text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider px-3 py-0.5 rounded-full ${badgeBg}`}>
+              {label}
+            </span>
+          </div>
+
           {isTime ? (
-            <div className="relative w-full">
+            <div className="flex items-center justify-center my-auto w-full py-1">
               <input 
-                type="time"
-                className="bg-surface-container-low border border-outline-variant/30 rounded-xl px-2 py-2 w-full text-center font-black text-base sm:text-lg focus:border-primary focus:outline-none transition-colors" 
+                type="time" 
+                aria-label={`${label} target time`}
+                className="bg-surface-container-high/50 hover:bg-surface-container-high px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-black text-sm sm:text-lg text-on-surface border border-outline-variant/30 focus:outline-none focus:border-primary transition-colors cursor-pointer text-center" 
                 value={formatTimeStr(value)} 
                 onChange={e => onChange(field, parseTimeStr(e.target.value))} 
               />
             </div>
           ) : showHM ? (
-            <div className="flex flex-col items-center w-full">
-              <div className="flex items-center justify-center w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl px-2 py-1.5 gap-0.5 sm:gap-1">
-                <div className="flex items-center justify-center min-w-0 flex-1">
+            <div className="flex flex-col items-center justify-center my-auto w-full">
+              <div className="flex items-center justify-center gap-1 sm:gap-2">
+                <div className="flex items-center bg-surface-container-high/40 rounded-xl px-1.5 sm:px-2 py-0.5 sm:py-1 border border-outline-variant/30">
                   <input 
-                    type="number" min="0" max="23"
-                    className="bg-transparent w-full text-center font-black text-sm sm:text-base text-slate-900 dark:text-white focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums" 
-                    value={getH(value) !== undefined && getH(value) !== null ? getH(value) : ''} 
+                    type="number"
+                    aria-label={`${label} hours`}
+                    min={0}
+                    max={24}
+                    className="w-8 sm:w-10 text-center font-black text-sm sm:text-lg text-on-surface bg-transparent focus:outline-none tabular-nums"
+                    value={getH(value) || ''}
                     placeholder="0"
-                    onChange={e => updateHM(field, value, 'h', e.target.value)} 
+                    onChange={e => updateHM(field, value, 'h', e.target.value)}
                   />
-                  <span className="text-[11px] text-slate-500 font-bold shrink-0">h</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-on-surface-variant ml-0.5">h</span>
                 </div>
-                <div className="text-slate-400 font-bold px-0.5 shrink-0">:</div>
-                <div className="flex items-center justify-center min-w-0 flex-1">
+                <span className="font-black text-on-surface-variant text-xs">:</span>
+                <div className="flex items-center bg-surface-container-high/40 rounded-xl px-1.5 sm:px-2 py-0.5 sm:py-1 border border-outline-variant/30">
                   <input 
-                    type="number" min="0" max="59"
-                    className="bg-transparent w-full text-center font-black text-sm sm:text-base text-slate-900 dark:text-white focus:outline-none focus:text-primary py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums" 
-                    value={getM(value) !== undefined && getM(value) !== null ? getM(value) : ''} 
-                    placeholder="00"
-                    onChange={e => updateHM(field, value, 'm', e.target.value)} 
+                    type="number" 
+                    aria-label={`${label} minutes`}
+                    min={0}
+                    max={59}
+                    step={5}
+                    className="w-8 sm:w-10 text-center font-black text-sm sm:text-lg text-on-surface bg-transparent focus:outline-none tabular-nums"
+                    value={getM(value) || ''}
+                    placeholder="0"
+                    onChange={e => updateHM(field, value, 'm', e.target.value)}
                   />
-                  <span className="text-[11px] text-slate-500 font-bold shrink-0">m</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-on-surface-variant ml-0.5">m</span>
                 </div>
               </div>
-              <div className="text-center text-[11px] font-bold text-primary mt-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 whitespace-nowrap">
-                {getH(value)}h {getM(value)}m
+              <div className="text-center text-[10px] font-bold text-primary mt-1">
+                {(() => {
+                  const h = Math.floor(value / 60);
+                  const m = Math.round(value % 60);
+                  if (h > 0 && m > 0) return `${h} hr ${m} min (${value} mins)`;
+                  if (h > 0) return `${h} ${h === 1 ? 'hour' : 'hours'} (${value} mins)`;
+                  return `${m} mins`;
+                })()}
               </div>
             </div>
           ) : (
-            <div className="relative w-full flex flex-col items-center">
-              <div className="flex items-center justify-center w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-2.5 sm:px-3 py-2 focus-within:border-primary transition-colors">
+            <div className="flex flex-col items-center justify-center my-auto w-full">
+              <div className="flex items-center justify-center w-full">
                 <input 
                   type="number" 
-                  min="0"
+                  aria-label={`${label} value`}
+                  min={0}
                   step={isDecimalUnit ? "0.1" : "1"}
                   className="bg-transparent w-full text-center font-black text-base sm:text-xl text-slate-900 dark:text-white focus:outline-none tabular-nums" 
                   value={value !== undefined && value !== null ? value : ''} 
@@ -243,7 +267,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           type="button"
           onPointerDown={(e) => {
             e.preventDefault();
-            startHolding('target100', -step);
+            startHolding(activeThumb, -step);
           }}
           onPointerUp={stopHolding}
           onPointerLeave={stopHolding}
@@ -261,6 +285,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
             type="range"
             min={0} max={localMax} step={step}
             value={target0}
+            onPointerDown={() => setActiveThumb('target0')}
             onChange={e => handleSliderChange('target0', Number(e.target.value))}
             className="dual-slider-input"
             style={{ '--thumb-color': '#ef4444', zIndex: target0 > target100 ? 4 : 3 }}
@@ -269,6 +294,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
             type="range"
             min={0} max={localMax} step={step}
             value={target100}
+            onPointerDown={() => setActiveThumb('target100')}
             onChange={e => handleSliderChange('target100', Number(e.target.value))}
             className="dual-slider-input"
             style={{ '--thumb-color': '#22c55e', zIndex: target100 > target0 ? 4 : 3 }}
@@ -279,7 +305,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           type="button"
           onPointerDown={(e) => {
             e.preventDefault();
-            startHolding('target100', step);
+            startHolding(activeThumb, step);
           }}
           onPointerUp={stopHolding}
           onPointerLeave={stopHolding}
@@ -306,18 +332,19 @@ export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { habits: existingHabits = [], refreshData, userDoc } = useData();
+  const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+  const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
 
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('selection');
   const [prioritiesLocked, setPrioritiesLocked] = useState(false);
-  const [priorityLockDays, setPriorityLockDays] = useState(0); // 'locked', 'selection', 'summary'
+  const [priorityLockDays, setPriorityLockDays] = useState(0);
   const [lockDaysRemaining, setLockDaysRemaining] = useState(0);
   const [expandedSelectedHabits, setExpandedSelectedHabits] = useState([]);
   const [priorityRanks, setPriorityRanks] = useState({});
   const [expandedHabitId, setExpandedHabitId] = useState(null);
   const [draftHabit, setDraftHabit] = useState(null);
   
-  // Use static predefined habits
   const habitLibrary = HABITS_SEED_DATA;
   
   const [selectedHabits, setSelectedHabits] = useState([]);
@@ -329,8 +356,9 @@ export default function AdvancedHabitSelector() {
   const [paywallSource, setPaywallSource] = useState("");
   const [showConfirmSaveModal, setShowConfirmSaveModal] = useState(false);
   const [scoringModal, setScoringModal] = useState(null);
-    const [showPriorityInfo, setShowPriorityInfo] = useState(false);
+  const [showPriorityInfo, setShowPriorityInfo] = useState(false);
   const [showPriorityLockModal, setShowPriorityLockModal] = useState(false);
+  const [showBinaryExplainer, setShowBinaryExplainer] = useState(false);
 
   // Custom Habit Builder State
   const [editingCustomHabitId, setEditingCustomHabitId] = useState(null);
@@ -345,8 +373,9 @@ export default function AdvancedHabitSelector() {
   const [cbIcon, setCbIcon] = useState('rocket_launch');
   const [cbColor, setCbColor] = useState('#10b981');
   const [showIconPickerModal, setShowIconPickerModal] = useState(false);
+  const [pickerHabit, setPickerHabit] = useState(null);
+  const [customizedHabits, setCustomizedHabits] = useState({});
   
-  // Choose What You Want feature toggles
   const [enabledFeatures, setEnabledFeatures] = useState({
     insights: true,
     betterReport: true,
@@ -359,7 +388,6 @@ export default function AdvancedHabitSelector() {
     }
   }, [userDoc]);
 
-  // Automatically show the How Scoring Works popup on first-time visit
   useEffect(() => {
     try {
       const hasSeen = localStorage.getItem('definite_scoring_guide_intro_seen');
@@ -370,9 +398,7 @@ export default function AdvancedHabitSelector() {
         }, 450);
         return () => clearTimeout(timer);
       }
-    } catch (e) {
-      // Fallback
-    }
+    } catch (e) {}
   }, []);
 
   const isFirstTimeSetup = existingHabits.length === 0;
@@ -390,7 +416,10 @@ export default function AdvancedHabitSelector() {
 
   const categories = ['Selected', 'All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
   const displayedHabits = activeCategories.includes('Selected')
-    ? habitLibrary.filter(h => selectedHabits.some(sh => sh.id === h.id))
+    ? [
+        ...habitLibrary.filter(h => selectedHabits.some(sh => sh.id === h.id)),
+        ...customHabits
+      ]
     : activeCategories.includes('All') 
       ? habitLibrary 
       : habitLibrary.filter(h => activeCategories.includes(h.category));
@@ -450,7 +479,8 @@ export default function AdvancedHabitSelector() {
           habitLibraryId: habit.isCustom ? 'custom' : habit.id,
           name: habit.name || 'Unnamed',
           category: habit.category || 'Other',
-          icon: habit.icon || 'star',
+          icon: customizedHabits[habit.id]?.icon || habit.icon || 'star',
+          color: customizedHabits[habit.id]?.color || habit.color || null,
           scoringType: habit.scoringType || 'number',
           direction: habit.direction || 'higher_is_better',
           unit: habit.unit || '',
@@ -465,13 +495,10 @@ export default function AdvancedHabitSelector() {
           prioritySetAt: priorityRanks[habit.id] ? new Date().toISOString() : null
         };
         
-        // Remove any undefined values just to be absolutely safe
         Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
-
         await setDoc(userHabitRef, habitData);
       }
 
-      // Save Choose What You Want feature toggles to user settings
       if (currentUser?.uid) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         await setDoc(userDocRef, { enabledFeatures }, { merge: true });
@@ -501,7 +528,6 @@ export default function AdvancedHabitSelector() {
       const next = { ...prev };
       if (next[habitId]) {
         delete next[habitId];
-        // Re-calculate ranks to keep them contiguous 1,2,3
         const remaining = Object.entries(next).sort((a, b) => a[1] - b[1]);
         const newRanks = {};
         remaining.forEach(([id], index) => {
@@ -557,13 +583,12 @@ export default function AdvancedHabitSelector() {
         const newLibrarySelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
         const existingLibraryCount = existingHabits.filter(h => !h.id.startsWith('custom_') && h.category !== 'Custom').length;
         const totalLibraryCount = existingLibraryCount + newLibrarySelections.length;
-        if (totalLibraryCount >= 10 && (!userDoc || !userDoc.isPro)) {
+        if (totalLibraryCount >= 10 && !isPro) {
             setPaywallSource("total_habits_limit");
             setShowPaywall(true);
             return;
         }
         
-        // Setup defaults
         const newHabit = {
             ...habit,
             userTarget0: habit.target0 !== undefined ? habit.target0 : 0,
@@ -571,7 +596,6 @@ export default function AdvancedHabitSelector() {
             userTolerance: 0,
             direction: habit.direction || 'higher_is_better'
         };
-        // Normalize fields for draft so the slider reads target and floor
         newHabit.target = newHabit.userTarget100;
         newHabit.floor = newHabit.userTarget0;
 
@@ -621,11 +645,12 @@ export default function AdvancedHabitSelector() {
       return;
     }
 
-    // Convert back target/floor to userTarget0/100 if needed by saving logic
     const finalHabit = {
         ...draftHabit,
         userTarget100: draftHabit.target,
-        userTarget0: draftHabit.floor
+        userTarget0: draftHabit.floor,
+        target100: draftHabit.target,
+        target0: draftHabit.floor
     };
 
     setSelectedHabits(prev => {
@@ -650,15 +675,6 @@ export default function AdvancedHabitSelector() {
     }
     setExpandedHabitId(null);
     setDraftHabit(null);
-  };
-
-  const handleHabitInputChange = (habitId, field, value) => {
-    setSelectedHabits(selectedHabits.map(h => {
-      if (h.id === habitId) {
-        return { ...h, [field]: value };
-      }
-      return h;
-    }));
   };
 
   const startEditingCustomHabit = (ch, e) => {
@@ -700,7 +716,7 @@ export default function AdvancedHabitSelector() {
 
     if (!editingCustomHabitId) {
       const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
-      if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !userDoc?.isPro) {
+      if (customHabits.length + existingCustomsCount >= MAX_CUSTOM_HABITS && !isPro) {
         setPaywallSource("custom_habit_creation");
         setShowPaywall(true);
         return;
@@ -729,7 +745,6 @@ export default function AdvancedHabitSelector() {
     const target0Val = cbType === 'time' ? parseTime(cbFloor) : (isDecimal ? parseFloat(cbFloor) || 0 : Math.round(parseFloat(cbFloor) || 0));
     const target100Val = cbType === 'time' ? parseTime(cbTarget) : (isDecimal ? parseFloat(cbTarget) || 0 : Math.round(parseFloat(cbTarget) || 0));
 
-
     const habitPayload = {
       id: editingCustomHabitId || `custom_${Date.now()}`,
       name,
@@ -737,7 +752,7 @@ export default function AdvancedHabitSelector() {
       icon: cbIcon || 'rocket_launch',
       color: cbColor || '#10b981',
       scoringType,
-      direction: cbType === 'yn' ? 'higher_is_better' : (cbType === 'time' ? 'lower_is_better' : (cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better')),
+      direction: (cbDirection === 'lower' || cbDirection === 'lower_is_better') ? 'lower_is_better' : 'higher_is_better',
       unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
       userTarget0: target0Val,
       userTarget100: target100Val,
@@ -795,46 +810,6 @@ export default function AdvancedHabitSelector() {
             />
           </div>
 
-          {/* Edit Icon & Color */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-              Habit Icon & Color
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setShowIconPickerModal(true);
-              }}
-              className="w-full p-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all flex items-center justify-between gap-2 cursor-pointer group"
-            >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <HabitIcon 
-                  name={selectedObj.icon || 'rocket_launch'} 
-                  boxed={true} 
-                  color={selectedObj.color || '#10b981'} 
-                  size={16} 
-                  className="!w-8 !h-8 !rounded-full shrink-0 shadow-xs" 
-                />
-                <div className="text-left min-w-0 flex-1">
-                  <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
-                    <span>Icon & Color</span>
-                    <span 
-                      className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-xs"
-                      style={{ backgroundColor: selectedObj.color || '#10b981' }}
-                    />
-                  </div>
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
-                    Tap to change icon or color spectrum
-                  </div>
-                </div>
-              </div>
-              <div className="px-2 py-1 rounded-lg bg-white dark:bg-slate-700/80 text-[10.5px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors flex items-center gap-1 border border-slate-200/60 dark:border-slate-600/40 shrink-0 shadow-2xs">
-                <Palette size={12} weight="bold" />
-                <span>Pick</span>
-              </div>
-            </button>
-          </div>
-
           {/* Scoring Type & Unit Selector */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
@@ -868,6 +843,30 @@ export default function AdvancedHabitSelector() {
                 <option value="time">Target Time</option>
               </select>
             </div>
+
+            {selectedObj.scoringType === 'binary' && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Goal Type</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowBinaryExplainer(true)}
+                    className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 text-[10.5px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <Info size={12} weight="bold" />
+                    <span>How it works</span>
+                  </button>
+                </div>
+                <select
+                  value={selectedObj.direction === 'lower_is_better' ? 'lower_is_better' : 'higher_is_better'}
+                  onChange={e => updateDraft('direction', e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                >
+                  <option value="higher_is_better">🟢 Build Habit (Positive Action • e.g. Cold Shower)</option>
+                  <option value="lower_is_better">🛡️ Quit / Break Habit (Avoid / Stop • e.g. Sugar, Alcohol)</option>
+                </select>
+              </div>
+            )}
 
             {selectedObj.scoringType !== 'binary' && selectedObj.scoringType !== 'time' && (
               <div>
@@ -1005,17 +1004,7 @@ export default function AdvancedHabitSelector() {
     } else {
       content = (
         <div className="ahs-input-group mt-4" onClick={e => e.stopPropagation()}>
-          {h.scoringType === 'time' && (
-            <div className="mb-6 w-full">
-              <label className="text-sm font-bold text-on-surface-variant mb-3 block">Scoring Logic</label>
-              <div className="bg-[#0B1120] text-white rounded-xl p-3 text-[13px] font-bold flex items-center gap-2 shadow-sm">
-                <Icon name="trending_down" className="text-[16px]" /> 
-                Early is Better (Before Target = 100%)
-              </div>
-            </div>
-          )}
-
-          {h.scoringType !== 'time' && selectedObj.direction && (
+          {(selectedObj.direction !== undefined) && (
             <div className="mb-6 w-full">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm font-bold text-on-surface-variant">Scoring Logic</label>
@@ -1043,7 +1032,6 @@ export default function AdvancedHabitSelector() {
             target0={selectedObj.floor !== undefined && selectedObj.floor !== null ? Number(selectedObj.floor) : 0} 
             target100={selectedObj.target !== undefined && selectedObj.target !== null ? Number(selectedObj.target) : (selectedObj.direction === 'lower_is_better' ? 0 : 10)} 
             unit={h.unit || h.defaultUnit || h.customUnit || selectedObj?.unit || selectedObj?.defaultUnit || ""}
-
             habitId={h.id}
             habitName={h.name}
             isTime={h.scoringType === 'time'}
@@ -1081,7 +1069,7 @@ export default function AdvancedHabitSelector() {
     <div className="ahs-wrap">
       <div className="ahs-container">
         
-        {/* ── Top Bar (Back & Scoring Guide) ── */}
+        {/* Top Bar */}
         <div className="flex items-center justify-between gap-3 mb-2 pt-1">
           <button 
             type="button"
@@ -1093,7 +1081,7 @@ export default function AdvancedHabitSelector() {
           </button>
 
           <button 
-            type="button"
+            type="button" 
             onClick={() => setScoringModal('all')}
             className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[11px] font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
           >
@@ -1104,7 +1092,7 @@ export default function AdvancedHabitSelector() {
 
         {viewMode === 'selection' && (
           <div id="view-selection" className="space-y-3">
-            {/* ── Title & Lock Notice ── */}
+            {/* Title & Lock Notice */}
             <div className="mb-2">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                 Choose Your Daily Habits
@@ -1114,7 +1102,7 @@ export default function AdvancedHabitSelector() {
               </p>
             </div>
 
-            {/* ── 3 Main View Tabs (All Habits, Selected, + Custom) ── */}
+            {/* 3 Main View Tabs (All Habits, Selected, + Custom) */}
             <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
               
               {/* Tab 1: All Habits */}
@@ -1169,7 +1157,7 @@ export default function AdvancedHabitSelector() {
               </button>
             </div>
 
-            {/* ── Sub-Category Pills (Visible when in All Habits view) ── */}
+            {/* Sub-Category Pills */}
             {!activeCategories.includes('Selected') && !activeCategories.includes('Custom') && (
               <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 hide-scrollbar no-scrollbar scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <button
@@ -1277,7 +1265,7 @@ export default function AdvancedHabitSelector() {
                                 </button>
                               )}
                               <button 
-                                type="button"
+                                type="button" 
                                 onClick={(e) => { e.stopPropagation(); setScoringModal('all'); }}
                                 className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary text-[10px] font-bold flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
                               >
@@ -1306,7 +1294,10 @@ export default function AdvancedHabitSelector() {
                               </label>
                               <button
                                 type="button"
-                                onClick={() => setShowIconPickerModal(true)}
+                                onClick={() => {
+                                  setPickerHabit(null);
+                                  setShowIconPickerModal(true);
+                                }}
                                 className="w-full p-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all flex items-center justify-between gap-2 cursor-pointer group overflow-hidden"
                               >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1330,10 +1321,14 @@ export default function AdvancedHabitSelector() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="px-2 py-1 rounded-lg bg-white dark:bg-slate-700/80 text-[10.5px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors flex items-center gap-1 border border-slate-200/60 dark:border-slate-600/40 shrink-0 shadow-2xs">
-                                  <Palette size={12} weight="bold" />
-                                  <span>Pick</span>
-                                </div>
+                                <ColorfulPaletteButton 
+                                  size={28}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPickerHabit(null);
+                                    setShowIconPickerModal(true);
+                                  }}
+                                />
                               </button>
                             </div>
 
@@ -1350,6 +1345,30 @@ export default function AdvancedHabitSelector() {
                                   <option value="time">Target Time</option>
                                 </select>
                               </div>
+
+                              {cbType === 'yn' && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Goal Type</label>
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowBinaryExplainer(true)}
+                                      className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 text-[10.5px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                    >
+                                      <Info size={12} weight="bold" />
+                                      <span>How it works</span>
+                                    </button>
+                                  </div>
+                                  <select 
+                                    value={cbDirection === 'lower' || cbDirection === 'lower_is_better' ? 'lower_is_better' : 'higher_is_better'} 
+                                    onChange={e => setCbDirection(e.target.value)}
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  >
+                                    <option value="higher_is_better">🟢 Build Habit (Positive Action • e.g. Cold Shower)</option>
+                                    <option value="lower_is_better">🛡️ Quit / Break Habit (Avoid / Stop • e.g. Sugar, Alcohol)</option>
+                                  </select>
+                                </div>
+                              )}
 
                               {cbType === 'duration' && (
                                 <div>
@@ -1385,119 +1404,94 @@ export default function AdvancedHabitSelector() {
                               </div>
                             )}
 
-                            {cbType === 'duration' && (
+                            {(cbType === 'duration' || cbType === 'time') && (
                               <div>
-                                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                                  Goal Direction
-                                </label>
-                                <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-[#0f1420] border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+                                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Scoring Logic</label>
+                                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
                                   <button
                                     type="button"
                                     onClick={() => setCbDirection('higher')}
-                                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                    className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                                       cbDirection === 'higher'
-                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                                   >
-                                    <TrendUp size={15} weight="bold" />
-                                    <span>Higher is better</span>
+                                    <TrendUp size={13} weight="bold" /> Higher is Better
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setCbDirection('lower')}
-                                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                    className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                                       cbDirection === 'lower'
-                                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                                   >
-                                    <TrendDown size={15} weight="bold" />
-                                    <span>Lower is better</span>
+                                    <TrendDown size={13} weight="bold" /> Lower is Better
                                   </button>
                                 </div>
                               </div>
                             )}
 
                             {cbType !== 'yn' && (
-                              <div className="pt-2">
-                                <DualRangeSlider 
-                                  target0={cbFloor !== undefined && cbFloor !== '' && !isNaN(Number(cbFloor)) ? Number(cbFloor) : 0} 
-                                  target100={cbTarget !== undefined && cbTarget !== '' && !isNaN(Number(cbTarget)) ? Number(cbTarget) : (cbDirection === 'lower' ? 0 : 10)} 
-                                  unit={cbType === 'duration' ? (cbUnit === 'custom' ? cbUnitCustom : cbUnit) : (cbType === 'time' ? 'Time' : '')}
-
-                                  habitName={cbName || 'Custom Habit'}
-                                  isTime={cbType === 'time'}
-                                  direction={cbDirection === 'lower' ? 'lower_is_better' : 'higher_is_better'}
-                                  onChange={(field, val) => {
-                                    if (field === 'target0') setCbFloor(val);
-                                    else setCbTarget(val);
-                                  }}
-                                />
+                              <div className="grid grid-cols-2 gap-2.5">
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                    {cbType === 'time' ? '0% Score (Miss)' : '0% Floor'}
+                                  </label>
+                                  <input 
+                                    type={cbType === 'time' ? 'time' : 'number'} 
+                                    value={cbFloor} 
+                                    onChange={e => setCbFloor(e.target.value)} 
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                    {cbType === 'time' ? '100% Score (Target)' : '100% Target'}
+                                  </label>
+                                  <input 
+                                    type={cbType === 'time' ? 'time' : 'number'} 
+                                    value={cbTarget} 
+                                    onChange={e => setCbTarget(e.target.value)} 
+                                    className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-primary"
+                                  />
+                                </div>
                               </div>
                             )}
 
-                            {editingCustomHabitId ? (
-                              <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                                <button 
-                                  type="button" 
-                                  onClick={(e) => deleteCustomHabit(editingCustomHabitId, e)}
-                                  className="px-3 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                                  title="Delete this habit"
-                                >
-                                  <Icon name="delete" className="text-sm" /> Delete
-                                </button>
-                                <button 
-                                  type="button" 
-                                  onClick={cancelEditCustomHabit}
-                                  className="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button 
-                                  type="button" 
-                                  onClick={addCustomHabit}
-                                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm hover:opacity-95 transition-all cursor-pointer shadow-xs"
-                                >
-                                  Save Changes
-                                </button>
-                              </div>
-                            ) : (
-                              <button 
-                                type="button" 
-                                onClick={addCustomHabit}
-                                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer shadow-xs mt-2"
-                              >
-                                Add to Plan
-                              </button>
-                            )}
+                            <button 
+                              type="button" 
+                              onClick={addCustomHabit}
+                              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm transition-all shadow-xs cursor-pointer active:scale-98 mt-2"
+                            >
+                              {editingCustomHabitId ? 'Save Custom Habit Changes' : '+ Add Custom Habit to Plan'}
+                            </button>
                           </div>
                         </div>
                       );
                     })()}
 
-                    {/* EXISTING CUSTOM HABITS */}
-                    {(activeCategories.includes('Custom') || activeCategories.includes('Selected')) && customHabits.map(ch => {
-                      const formatTargetStr = () => {
-                        if (ch.scoringType === 'binary') return 'Type: Yes / No';
-                        if (ch.scoringType === 'time') return `Target: ${formatTimeStr(ch.userTarget100)}`;
-                        return `Target: ${ch.userTarget100} ${ch.unit || ''}`.trim();
-                      };
-
+                    {/* CUSTOM HABITS LIST (In Custom Tab) */}
+                    {activeCategories.includes('Custom') && customHabits.map(ch => {
                       const isExpanded = expandedHabitId === ch.id;
+                      const formatTargetStr = () => {
+                        if (ch.scoringType === 'binary') return 'Type: Yes / No (Binary)';
+                        if (ch.scoringType === 'time') return `Target: ${formatReviewTime(ch.target100)}`;
+                        if (ch.scoringType === 'duration' || isDurationHabit(ch)) {
+                          return `Target: ${formatDuration(normalizeDurationToMinutes(ch.target100, ch.unit), 'long')}`;
+                        }
+                        return `Target: ${ch.target100} ${ch.unit || ''}`;
+                      };
 
                       return (
                         <div 
                           key={ch.id} 
+                          className={`ahs-habit-card ${isExpanded ? 'expanded' : ''}`}
                           onClick={() => handleCardClick(ch)}
-                          className={`ahs-habit-card selected bg-white dark:bg-[#151a26] border-2 ${
-                            isExpanded ? 'border-primary ring-2 ring-primary/20' : 'border-slate-900 dark:border-white'
-                          } rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs w-full cursor-pointer hover:opacity-95 transition-all group`}
-                          title="Click to edit custom habit"
                         >
-                          {/* Top Row: Icon + Name + Details + Actions */}
                           <div className="flex items-center justify-between gap-2.5 w-full">
-                            {/* Left Icon & Details */}
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
                               <HabitIcon name={ch.icon || 'rocket_launch'} habitId={ch.id} boxed={true} color={ch.color} size={16} className="!w-8 !h-8 !rounded-full shrink-0" />
                               <div className="min-w-0 flex-1">
@@ -1515,8 +1509,15 @@ export default function AdvancedHabitSelector() {
                               </div>
                             </div>
 
-                            {/* Right Action Controls */}
                             <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <ColorfulPaletteButton 
+                                size={28}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPickerHabit(ch);
+                                  setShowIconPickerModal(true);
+                                }}
+                              />
                               <button 
                                 type="button" 
                                 className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs" 
@@ -1536,7 +1537,7 @@ export default function AdvancedHabitSelector() {
                                 <Icon name="help_outline" className="text-[12px]" /> Scoring
                               </button>
                               <button 
-                                type="button"
+                                type="button" 
                                 onClick={(e) => deleteCustomHabit(ch.id, e)}
                                 className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center transition-colors cursor-pointer"
                                 title="Delete custom habit"
@@ -1546,7 +1547,6 @@ export default function AdvancedHabitSelector() {
                             </div>
                           </div>
 
-                          {/* INLINE EXPANDED INPUTS FOR CUSTOM HABIT */}
                           {isExpanded && (
                             <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 ahs-habit-card-expanded w-full">
                               {renderHabitInputs(ch)}
@@ -1556,7 +1556,7 @@ export default function AdvancedHabitSelector() {
                       );
                     })}
 
-                    {/* RENDER HABIT LIBRARY (Not visible in Custom tab) */}
+                    {/* RENDER HABIT LIBRARY */}
                     {displayedHabits.map(habit => {
                       const isSelected = selectedHabits.some(h => h.id === habit.id);
                       const isSelectedView = activeCategories.includes('Selected');
@@ -1569,15 +1569,27 @@ export default function AdvancedHabitSelector() {
                             onClick={() => handleCardClick(habit)}
                             className="w-full bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-2xs cursor-pointer hover:border-slate-400/80 transition-all"
                           >
-                            <div className="flex items-center justify-between gap-2.5">
-                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                 <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={16} className="!w-8 !h-8 !rounded-full shrink-0" />
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-2.5">
+                              <div className="flex items-center gap-2.5 min-w-0 w-full sm:flex-1">
+                                 <HabitIcon name={customizedHabits[habit.id]?.icon || selectedHabits.find(sh => sh.id === habit.id)?.icon || habit.icon} habitId={habit.id} boxed={true} color={customizedHabits[habit.id]?.color || selectedHabits.find(sh => sh.id === habit.id)?.color || habit.color} size={16} className="!w-8 !h-8 !rounded-full shrink-0" />
                                  <div className="min-w-0 flex-1">
                                    <div className="font-black text-xs sm:text-[13px] text-slate-900 dark:text-white truncate">{habit.name}</div>
                                    <div className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">{habit.category}</div>
                                  </div>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <div className="flex items-center justify-end gap-1.5 w-full sm:w-auto shrink-0 overflow-x-auto hide-scrollbar pb-1 sm:pb-0" onClick={e => e.stopPropagation()}>
+                                 <ColorfulPaletteButton 
+                                   size={28}
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     if (expandedHabitId !== habit.id) {
+                                       handleCardClick(habit);
+                                     }
+                                     const cur = selectedHabits.find(sh => sh.id === habit.id);
+                                     setPickerHabit(cur || habit);
+                                     setShowIconPickerModal(true);
+                                   }}
+                                 />
                                  <button 
                                    type="button" 
                                    className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black flex items-center gap-1 cursor-pointer transition-colors shadow-2xs" 
@@ -1597,7 +1609,7 @@ export default function AdvancedHabitSelector() {
                                    <Icon name="help_outline" className="text-[12px]" /> Scoring
                                  </button>
                                  <button 
-                                   type="button"
+                                   type="button" 
                                    onClick={(e) => handleDeleteConfig(e, habit.id)} 
                                    className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
                                    title="Remove habit"
@@ -1623,10 +1635,22 @@ export default function AdvancedHabitSelector() {
                         >
                             <div className="ahs-hc-header">
                                 <div className="ahs-hc-left">
-                                    <HabitIcon name={habit.icon} habitId={habit.id} boxed={true} size={22} className="!w-10 !h-10 !rounded-full shrink-0" />
+                                    <HabitIcon name={customizedHabits[habit.id]?.icon || selectedHabits.find(sh => sh.id === habit.id)?.icon || habit.icon} habitId={habit.id} boxed={true} color={customizedHabits[habit.id]?.color || selectedHabits.find(sh => sh.id === habit.id)?.color || habit.color} size={22} className="!w-10 !h-10 !rounded-full shrink-0" />
                                     <div className="ahs-hc-title">{habit.name}</div>
                                 </div>
                                 <div className="ahs-card-actions" onClick={e => e.stopPropagation()}>
+                                    <ColorfulPaletteButton 
+                                      size={28}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (expandedHabitId !== habit.id) {
+                                          handleCardClick(habit);
+                                        }
+                                        const cur = selectedHabits.find(sh => sh.id === habit.id);
+                                        setPickerHabit(cur || habit);
+                                        setShowIconPickerModal(true);
+                                      }}
+                                    />
                                     {isSelected && (
                                       <button 
                                         type="button" 
@@ -1784,7 +1808,6 @@ export default function AdvancedHabitSelector() {
                   return u;
                 };
                 const habitUnit = resolveReviewUnit();
-
                 const isCustom = h.isCustom || h.id.startsWith('custom_');
 
                 const handleSummaryItemClick = (e) => {
@@ -1813,7 +1836,7 @@ export default function AdvancedHabitSelector() {
                     title={`Click to edit ${h.name}`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={16} className="!rounded-full shrink-0" />
+                      <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} color={h.color} size={16} className="!rounded-full shrink-0" />
                       <div className="ahs-si-details flex-1 min-w-0">
                           <div className="ahs-si-title font-black text-slate-900 dark:text-white text-xs sm:text-[13px] truncate flex items-center gap-1.5 flex-wrap">
                             <span className="group-hover:text-primary transition-colors">{h.name}</span>
@@ -1833,10 +1856,16 @@ export default function AdvancedHabitSelector() {
                                     Target: {formatReviewTime(h.userTarget100)}
                                   </span>
                                 </div>
+                              ) : (h.scoringType === 'duration' || isDurationHabit(h) || habitUnit === 'minutes' || habitUnit === 'hours') ? (
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                    Target: {formatDuration(normalizeDurationToMinutes(h.userTarget100 !== undefined ? h.userTarget100 : h.target100, habitUnit), 'long')}
+                                  </span>
+                                </div>
                               ) : (
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                                    Target: {h.userTarget100} {habitUnit}
+                                    Target: {h.userTarget100 !== undefined ? h.userTarget100 : h.target100} {habitUnit}
                                   </span>
                                 </div>
                               )}
@@ -1846,21 +1875,15 @@ export default function AdvancedHabitSelector() {
                     {showPrioritySection && (
                       <div className="ahs-si-check shrink-0" onClick={e => e.stopPropagation()}>
                         <button 
+                          type="button" 
                           onClick={() => togglePriorityRank(h.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-dashed transition-all cursor-pointer ${
+                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-black text-xs transition-all cursor-pointer ${
                             priorityRanks[h.id] 
-                              ? 'border-violet-400 bg-violet-50 text-violet-700' 
-                              : Object.keys(priorityRanks).length >= 3 
-                                ? 'border-slate-200 text-slate-300 cursor-not-allowed'
-                                : 'border-slate-300 text-slate-500 hover:border-violet-300 hover:text-violet-600 hover:bg-violet-50'
+                              ? 'border-violet-500 bg-violet-600 text-white shadow-xs' 
+                              : 'border-slate-300 dark:border-slate-600 bg-transparent text-slate-400 hover:border-violet-400'
                           }`}
                         >
-                          <span className="flex items-center justify-center">
-                            {priorityRanks[h.id] 
-                                ? `Priority #${priorityRanks[h.id]}` 
-                                : <span className="text-sm">+</span>}
-                          </span>
-                          {!priorityRanks[h.id] && <span>Set Priority</span>}
+                          {priorityRanks[h.id] ? `#${priorityRanks[h.id]}` : '+'}
                         </button>
                       </div>
                     )}
@@ -1869,133 +1892,55 @@ export default function AdvancedHabitSelector() {
               })}
             </div>
 
-            {/* Choose what you want feature control toggles (Only on first time setup) */}
-            {showFeatureToggles && (
-              <div className="mt-8 mb-6 p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
-                <h3 className="text-base font-bold text-slate-900 mb-1">Choose what you want</h3>
-                <p className="text-xs text-slate-500 mb-4">Toggle optional analysis and reporting features for your journey.</p>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                    <div>
-                      <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                        <Icon name="insights" className="text-primary text-[18px]" />
-                        7-Day Dynamic Insights
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">Automated pattern recognition & momentum feed</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={enabledFeatures.insights} 
-                        onChange={(e) => setEnabledFeatures(prev => ({ ...prev, insights: e.target.checked }))}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                    <div>
-                      <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                        <Icon name="auto_stories" className="text-primary text-[18px]" />
-                        30-Day Better Report
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">Comprehensive 30-day story documentary & growth analysis</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={enabledFeatures.betterReport} 
-                        onChange={(e) => setEnabledFeatures(prev => ({ ...prev, betterReport: e.target.checked }))}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                    <div>
-                      <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                        <Icon name="analytics" className="text-primary text-[18px]" />
-                        Habit Deep Dives
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">Individual habit deep-dive metrics & timeline breakdown</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={enabledFeatures.deepDives} 
-                        onChange={(e) => setEnabledFeatures(prev => ({ ...prev, deepDives: e.target.checked }))}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Sticky Bottom Actions Bar for Summary View */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-3.5 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-              <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-                <button 
+            {/* Sticky Bottom Bar for Review Mode */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+              <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+                <button
                   type="button"
-                  onClick={() => setViewMode('selection')} 
-                  className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl border border-slate-300 font-bold text-xs sm:text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                  onClick={() => setViewMode('selection')}
+                  className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-300 font-bold text-xs sm:text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
                 >
-                  Edit Selection
+                  Edit Habits
                 </button>
-                <button 
+                <button
                   type="button"
-                  onClick={handleSaveFlow} 
-                  className="flex-1 sm:flex-initial px-6 sm:px-10 py-2.5 sm:py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={handleSaveFlow}
+                  className="flex-1 sm:flex-initial px-6 sm:px-10 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
-                  Save Plan
+                  <span>Lock & Save Plan</span>
+                  <Icon name="check" className="text-[14px]" />
                 </button>
               </div>
             </div>
+
           </div>
         )}
+
+        {/* PRO MODAL */}
+        <ProModal 
+          isOpen={showPaywall} 
+          onClose={() => setShowPaywall(false)} 
+          source={paywallSource} 
+        />
 
         {/* PRIORITY LOCK MODAL */}
         {showPriorityLockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in" onClick={() => setShowPriorityLockModal(false)}>
-            <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl flex flex-col items-center text-center gap-3 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center shadow-xs">
-                <Icon name="lock" filled={true} className="text-3xl text-amber-500" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                  <Icon name="lock" className="text-xl" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Priority Limit Reached</h3>
+                  <p className="text-xs text-slate-500">You can select up to 3 core priority habits.</p>
+                </div>
               </div>
-              <h3 className="text-[18px] font-bold text-slate-900">Priorities Locked</h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed">
-                You've already set your 3 core priorities. They are locked for <strong className="text-slate-700">{priorityLockDays} more days</strong> to keep you focused and consistent.
-              </p>
-              <div className="w-full bg-slate-50 rounded-xl p-3 border border-slate-200 mt-1 flex items-center justify-center gap-1.5">
-                <Icon name="lock" filled={true} className="text-[14px] text-slate-500 shrink-0" />
-                <p className="text-[12px] text-slate-500 font-medium">Come back in {priorityLockDays} days to update your priorities.</p>
-              </div>
-              <button onClick={() => setShowPriorityLockModal(false)} className="mt-2 w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-[14px] hover:bg-slate-800 transition-colors cursor-pointer">
-                Got it
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* CONFIRM SAVE MODAL */}
-        {showConfirmSaveModal && (
-          <div className="ahs-modal-overlay" onClick={() => setShowConfirmSaveModal(false)}>
-            <div className="ahs-modal" onClick={e => e.stopPropagation()}>
-              <Icon name="lock" className="text-5xl text-primary mx-auto mb-4" />
-              <h3 className="text-red-500 font-bold">Lock Habits for 30 Days</h3>
-              <p className="mb-6 mt-2 text-on-surface-variant">
-                Your habits will be locked for 30 days to build consistency. You can add new habits later, but you cannot remove them during this time.
-              </p>
-              <button className="ahs-btn ahs-btn-primary flex justify-center items-center gap-2 w-full" onClick={() => {
-                  setShowConfirmSaveModal(false);
-                  executeSave();
-              }}>
-                Start Tracking
-              </button>
-              <button className="mt-4 text-sm font-bold text-on-surface-variant hover:text-on-surface w-full" onClick={() => setShowConfirmSaveModal(false)}>
-                Cancel
+              <button 
+                onClick={() => setShowPriorityLockModal(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Got It
               </button>
             </div>
           </div>
@@ -2003,81 +1948,58 @@ export default function AdvancedHabitSelector() {
 
         {/* PRIORITY INFO MODAL */}
         {showPriorityInfo && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowPriorityInfo(false)}>
-            <div 
-              className="bg-white rounded-[24px] shadow-2xl w-full max-w-[440px] md:max-w-[520px] max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 custom-scrollbar"
-              onClick={e => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div className="p-5 sm:p-7">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#F3F0FF] text-[#6C5CE7] flex items-center justify-center shrink-0">
-                      <Target size={20} weight="fill" className="sm:w-6 sm:h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-[17px] sm:text-[19px] font-semibold text-[#1F2937] leading-tight">
-                        Why Set <span className="text-[#6C5CE7]">Priorities</span>?
-                      </h3>
-                      <p className="text-[12px] sm:text-[13px] text-[#64748B] mt-0.5">Focus on what matters most.</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setShowPriorityInfo(false)}
-                    className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                  >
-                    <X size={14} weight="bold" />
-                  </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Why Set Priorities?</h3>
+                <button onClick={() => setShowPriorityInfo(false)} className="text-slate-400 hover:text-slate-600">
+                  <Icon name="close" className="text-lg" />
+                </button>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Priorities help focus your daily analytics, recovery deep dives, and habit coaching on your top 3 non-negotiable goals.
+              </p>
+              <button 
+                onClick={() => setShowPriorityInfo(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* CONFIRM SAVE MODAL */}
+        {showConfirmSaveModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div className="w-full max-w-md bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                  <Icon name="lock" className="text-2xl" />
                 </div>
-    
-                <div className="flex flex-col gap-2.5 mt-2 mb-3">
-                  <div className="bg-[#F3F0FF] rounded-xl p-3 sm:p-4 flex gap-3 relative overflow-hidden group border border-transparent hover:border-[#6C5CE7]/20 transition-colors">
-                    <div className="text-[#6C5CE7] flex-shrink-0 mt-0.5">
-                      <ChartBar size={20} weight="fill" />
-                    </div>
-                    <div className="flex-1 pr-5">
-                      <h4 className="text-[14px] sm:text-[15px] font-medium text-[#1F2937] mb-0.5">Deeper Insights</h4>
-                      <p className="text-[12px] sm:text-[13px] text-[#64748B] leading-[1.4]">Get detailed analytics, trends & recovery insights for your top 3 habits.</p>
-                    </div>
-                    <div className="absolute top-3 right-3 text-[12px] font-bold text-[#6C5CE7]/30">01</div>
-                  </div>
-    
-                  <div className="bg-[#FFF7E6] rounded-xl p-3 sm:p-4 flex gap-3 relative overflow-hidden group border border-transparent hover:border-amber-400/20 transition-colors">
-                    <div className="text-amber-500 flex-shrink-0 mt-0.5">
-                      <Lightbulb size={20} weight="fill" />
-                    </div>
-                    <div className="flex-1 pr-5">
-                      <h4 className="text-[14px] sm:text-[15px] font-medium text-[#1F2937] mb-0.5">Stronger Streaks</h4>
-                      <p className="text-[12px] sm:text-[13px] text-[#64748B] leading-[1.4]">Track streaks, bounce-backs & recovery after missed days.</p>
-                    </div>
-                    <div className="absolute top-3 right-3 text-[12px] font-bold text-amber-500/30">02</div>
-                  </div>
-    
-                  <div className="bg-[#E9FBEF] rounded-xl p-3 sm:p-4 flex gap-3 relative overflow-hidden group border border-transparent hover:border-emerald-500/20 transition-colors">
-                    <div className="text-emerald-500 flex-shrink-0 mt-0.5">
-                      <Lightning size={20} weight="fill" />
-                    </div>
-                    <div className="flex-1 pr-5">
-                      <h4 className="text-[14px] sm:text-[15px] font-medium text-[#1F2937] mb-0.5">Bigger Impact</h4>
-                      <p className="text-[12px] sm:text-[13px] text-[#64748B] leading-[1.4]">See how your priority habits influence your overall consistency.</p>
-                    </div>
-                    <div className="absolute top-3 right-3 text-[12px] font-bold text-emerald-500/30">03</div>
-                  </div>
+                <div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">Lock Your 30-Day Plan</h3>
+                  <p className="text-xs text-slate-500">Are you ready to commit to this routine?</p>
                 </div>
-    
-                <div className="flex gap-2.5 items-center p-3 bg-[#F3F0FF]/60 rounded-xl mb-4">
-                  <div className="text-[#6C5CE7] shrink-0">
-                    <Sparkle size={18} weight="fill" />
-                  </div>
-                  <p className="text-[12px] sm:text-[13px] text-[#1F2937] leading-snug">Prioritize what matters. Progress where it counts.</p>
-                </div>
-    
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Once saved, your habit plan and priorities will be locked for 30 days to build long-term consistency.
+              </p>
+              <div className="flex gap-3 pt-2">
                 <button 
-                  onClick={() => setShowPriorityInfo(false)}
-                  className="w-full py-3 bg-[#6C5CE7] hover:bg-[#5a4cdb] text-white font-medium text-[15px] rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowConfirmSaveModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
-                  Got it, thanks!
+                  Review Again
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowConfirmSaveModal(false);
+                    executeSave();
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+                >
+                  Confirm & Lock
                 </button>
               </div>
             </div>
@@ -2087,18 +2009,67 @@ export default function AdvancedHabitSelector() {
         {/* ICON & COLOR PICKER MODAL */}
         <HabitIconColorPickerModal
           isOpen={showIconPickerModal}
-          onClose={() => setShowIconPickerModal(false)}
-          selectedIcon={cbIcon}
-          selectedColor={cbColor}
-          habitName={cbName}
+          onClose={() => {
+            setShowIconPickerModal(false);
+            setPickerHabit(null);
+          }}
+          selectedIcon={pickerHabit ? (draftHabit?.id === pickerHabit.id ? draftHabit.icon : pickerHabit.icon) : cbIcon}
+          selectedColor={pickerHabit ? (draftHabit?.id === pickerHabit.id ? draftHabit.color : pickerHabit.color) : cbColor}
+          habitName={pickerHabit ? (draftHabit?.id === pickerHabit.id ? draftHabit.name : pickerHabit.name) : (cbName || 'Custom Habit')}
+          existingHabits={[...existingHabits, ...selectedHabits, ...customHabits]}
+          currentHabitId={pickerHabit?.id || editingCustomHabitId}
           onSelect={({ icon, color }) => {
-            setCbIcon(icon);
-            setCbColor(color);
+            if (pickerHabit) {
+              const targetId = pickerHabit.id;
+              // 1. Instant override in state so all icons and colors update immediately
+              setCustomizedHabits(prev => ({
+                ...prev,
+                [targetId]: { icon, color }
+              }));
+
+              // 2. Update in draftHabit if active
+              if (draftHabit && draftHabit.id === targetId) {
+                setDraftHabit(prev => ({ ...prev, icon, color }));
+              }
+
+              // 3. Update or auto-select in selectedHabits
+              setSelectedHabits(prev => {
+                const exists = prev.some(h => h.id === targetId);
+                if (exists) {
+                  return prev.map(h => h.id === targetId ? { ...h, icon, color } : h);
+                } else {
+                  const base = (draftHabit && draftHabit.id === targetId) ? draftHabit : pickerHabit;
+                  return [
+                    ...prev,
+                    {
+                      ...base,
+                      id: targetId,
+                      icon,
+                      color,
+                      userTarget0: base.userTarget0 !== undefined ? base.userTarget0 : (base.target0 ?? 0),
+                      userTarget100: base.userTarget100 !== undefined ? base.userTarget100 : (base.target100 ?? 100),
+                      direction: base.direction || 'higher_is_better'
+                    }
+                  ];
+                }
+              });
+
+              // 4. Update in customHabits
+              setCustomHabits(prev => prev.map(h => h.id === targetId ? { ...h, icon, color } : h));
+              setPickerHabit(prev => prev ? { ...prev, icon, color } : null);
+            } else {
+              setCbIcon(icon);
+              setCbColor(color);
+            }
+            setShowIconPickerModal(false);
           }}
         />
 
         {/* SCORING MODAL */}
         <ScoringModal type={scoringModal} onClose={() => setScoringModal(null)} />
+
+        {/* BINARY GOAL EXPLAINER MODAL */}
+        <BinaryGoalExplainerModal isOpen={showBinaryExplainer} onClose={() => setShowBinaryExplainer(false)} />
       </div>
     </div>
   );

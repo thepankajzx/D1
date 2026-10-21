@@ -42,6 +42,15 @@ const getPerfBandClass = (score) => {
   return 'bg-perf-10';
 };
 
+// Helper to get local date string matching Dashboard logic to prevent UTC timezone offset bugs
+function getLocalISODate(d) {
+  const date = d || new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const getPerformanceBand = (score) => {
   if (score === null || score === undefined) return { id: 0, label: 'None' };
   if (score <= 10) return { id: 1, label: 'Poor' };
@@ -72,7 +81,7 @@ const getPerfTextColorClass = (score) => {
 
 export default function Analytics() {
   const { currentUser: user } = useAuth();
-  const { habits, allSummaries, userDoc, loadingData } = useData();
+  const { habits, allSummaries, userDoc, loadingData, streakTrackingEnabled } = useData();
   const { isHinglish, t } = useLanguage();
   
   // Date Range State
@@ -134,7 +143,7 @@ function formatLocalYMD(d) {
   return `${year}-${month}-${day}`;
 }
 
-  // Tracks today's local date string — refreshes every minute so endDate stays current after midnight
+  // Tracks today's local date string - refreshes every minute so endDate stays current after midnight
   const [todayStr, setTodayStr] = useState(() => formatLocalYMD(new Date()));
   useEffect(() => {
     const tick = () => {
@@ -261,9 +270,15 @@ function formatLocalYMD(d) {
         dataPoint.overallScore = null;
         dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: habits.length };
       } else {
+        let recordedCount = 0;
+        if (summary) {
+          if (Array.isArray(summary.loggedHabitIds)) recordedCount = summary.loggedHabitIds.length;
+          else if (summary.habitScores && typeof summary.habitScores === 'object' && Object.keys(summary.habitScores).length > 0) recordedCount = Object.keys(summary.habitScores).length;
+          else if (typeof summary.habitsCompleted === 'number') recordedCount = summary.habitsCompleted;
+        }
         dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : 0;
         dataPoint.meta = {
-           recordedCount: summary.loggedHabitIds?.length || summary.habitsCompleted || 0,
+           recordedCount,
            expectedCount: summary.habitsTotal || habits.length
         };
       }
@@ -291,7 +306,7 @@ function formatLocalYMD(d) {
     const day = result.getDay();
     const diff = day === 0 ? -6 : 1 - day;
     result.setDate(result.getDate() + diff);
-    return result.toISOString().split('T')[0];
+    return getLocalISODate(result);
   };
 
   const aggregatedHeatmapData = useMemo(() => {
@@ -305,7 +320,7 @@ function formatLocalYMD(d) {
             const start = new Date(key);
             const end = new Date(start); end.setDate(end.getDate() + 6);
             const format = (d) => d.toLocaleDateString("en-US", { day: "numeric", month: "short" }).toUpperCase();
-            label = `${format(start)} – ${format(end)}`;
+            label = `${format(start)} - ${format(end)}`;
         } else if (heatmapPeriod === 'month') {
             key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
             label = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase();
@@ -319,33 +334,57 @@ function formatLocalYMD(d) {
     }));
   }, [dailyDataForHeatmap, heatmapPeriod]);
 
+  const getInterpolatedValue = (dataArray, index, key) => {
+    let prevValid = null;
+    let prevIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (dataArray[i][key] !== null && dataArray[i][key] !== undefined) {
+        prevValid = dataArray[i][key];
+        prevIndex = i;
+        break;
+      }
+    }
+    let nextValid = null;
+    let nextIndex = -1;
+    for (let i = index + 1; i < dataArray.length; i++) {
+      if (dataArray[i][key] !== null && dataArray[i][key] !== undefined) {
+        nextValid = dataArray[i][key];
+        nextIndex = i;
+        break;
+      }
+    }
+    if (prevValid !== null && nextValid !== null) {
+      const ratio = (index - prevIndex) / (nextIndex - prevIndex);
+      return prevValid + (nextValid - prevValid) * ratio;
+    } else if (prevValid !== null) return prevValid;
+    else if (nextValid !== null) return nextValid;
+  };
+
   // ECharts Options Generator
   const getEChartOption = (habitId) => {
     const isOverall = habitId === 'overall';
     const series = isOverall
       ? (() => {
-          const formattedData = chartData.map((d) => {
-            const val = d.overallScore;
+          const formattedData = chartData.map((d, i, arr) => {
+            const isFuture = d.meta && d.meta.isFuture;
+            let val = d.overallScore;
+            
+            if (isFuture) return { value: '-', symbol: 'none', meta: d.meta };
+            
             if (val === null || val === undefined) {
-              return {
-                value: 0,
-                symbol: 'circle',
-                symbolSize: 7,
-                itemStyle: {
-                  color: '#ffffff',
-                  borderColor: '#0f172a',
-                  borderWidth: 2
-                },
-                isUnrecorded: true,
-                meta: d.meta
-              };
+               val = getInterpolatedValue(arr, i, 'overallScore');
             }
-            return {
-              value: val,
-              symbol: 'none',
-              symbolSize: 0,
-              meta: d.meta
-            };
+
+            const recorded = d.meta.recordedCount || 0;
+            const expected = d.meta.expectedCount || 1;
+            
+            if (recorded === 0) {
+               return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#0f172a', borderColor: '#0f172a', borderWidth: 2 }, isUnrecorded: true, meta: d.meta };
+            } else if (recorded < expected) {
+               return { value: val, symbol: 'emptyCircle', symbolSize: 6, itemStyle: { color: '#ffffff', borderColor: '#0f172a', borderWidth: 2 }, meta: d.meta };
+            } else {
+               return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#10b981' }, meta: d.meta };
+            }
           });
           return [
             {
@@ -375,26 +414,25 @@ function formatLocalYMD(d) {
           const colors = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
           const color = colors[globalIndex % colors.length];
           
-          const formattedData = chartData.map((d) => {
-            const val = d[id];
+          const formattedData = chartData.map((d, i, arr) => {
+            const isFuture = d.meta && d.meta.isFuture;
+            if (isFuture) return { value: '-', symbol: 'none', meta: d.meta };
+
+            let val = d[id];
+            let isUnrecorded = false;
+            
             if (val === null || val === undefined) {
-              return {
-                value: 0,
-                symbol: 'circle',
-                symbolSize: 7,
-                itemStyle: {
-                  color: '#ffffff',
-                  borderColor: '#0f172a',
-                  borderWidth: 2
-                },
-                isUnrecorded: true
-              };
+              val = getInterpolatedValue(arr, i, id);
+              isUnrecorded = true;
             }
-            return {
-              value: val,
-              symbol: 'none',
-              symbolSize: 0
-            };
+
+            if (isUnrecorded) {
+              // Not Logged -> Solid Black Dot
+              return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#0f172a', borderColor: '#0f172a', borderWidth: 2 }, isUnrecorded: true, meta: d.meta };
+            } else {
+              // Logged -> Solid Dot with Habit Color (NO RING EVER)
+              return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: color }, meta: d.meta };
+            }
           });
 
           return [
@@ -424,6 +462,7 @@ function formatLocalYMD(d) {
       tooltip: {
         trigger: 'axis',
         backgroundColor: 'transparent',
+
         borderWidth: 0,
         padding: 0,
         shadowColor: 'transparent',
@@ -563,10 +602,10 @@ function formatLocalYMD(d) {
         const days = parseInt(rangeOption) || 30;
         const prevStartObj = new Date(startDate);
         prevStartObj.setDate(prevStartObj.getDate() - days);
-        const previousStartDate = prevStartObj.toISOString().split('T')[0];
+        const previousStartDate = getLocalISODate(prevStartObj);
         const previousEndDateObj = new Date(startDate);
         previousEndDateObj.setDate(previousEndDateObj.getDate() - 1);
-        const previousEndDate = previousEndDateObj.toISOString().split('T')[0];
+        const previousEndDate = getLocalISODate(previousEndDateObj);
         
         let prevSum = 0;
         let prevCount = 0;
@@ -619,8 +658,8 @@ function formatLocalYMD(d) {
     habits.forEach(h => {
       if (h.createdAt) {
         const dateStr = typeof h.createdAt === 'string' ? h.createdAt.split('T')[0] :
-          h.createdAt.toDate ? h.createdAt.toDate().toISOString().split('T')[0] :
-          typeof h.createdAt === 'number' ? new Date(h.createdAt).toISOString().split('T')[0] : null;
+          h.createdAt.toDate ? getLocalISODate(h.createdAt.toDate()) :
+          typeof h.createdAt === 'number' ? getLocalISODate(new Date(h.createdAt)) : null;
         if (dateStr) map[h.id] = dateStr;
       }
     });
@@ -639,7 +678,7 @@ function formatLocalYMD(d) {
     });
 
     // 3. For any habit with neither past summaries nor createdAt, default to today's date
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalISODate();
     habits.forEach(h => {
       if (!map[h.id]) {
         map[h.id] = todayStr;
@@ -829,10 +868,16 @@ function formatLocalYMD(d) {
             <div className={isHeatmapExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "w-full flex-grow min-h-[180px] -mb-2"}>
               {viewMode === 'charts' && !isHeatmapExpanded ? (
                 <div ref={chartContainerRef} className="flex flex-col w-full">
-                  {/* Legend: Not Recorded with Black Ring */}
-                  <div className="flex items-center justify-end px-2 sm:px-5 mb-1.5">
+                  {/* Legend: Solid Dots for Habits and Solid Black Dot for Not Recorded */}
+                  <div className="flex items-center justify-end gap-3 px-2 sm:px-5 mb-1.5">
+                    {selectedHabit === 'overall' && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block"></span>
+                        <span>Partial Logged</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block"></span>
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white inline-block"></span>
                       <span>Not Recorded</span>
                     </div>
                   </div>
@@ -896,8 +941,14 @@ function formatLocalYMD(d) {
                               <div className="grid-heatmap">
                                   {monthData.cells.map((cell, i) => {
                                     const isOverall = selectedHabit === 'overall';
-                                    const recorded = cell.meta ? (cell.meta.loggedHabitIds?.length || cell.meta.habitsCompleted || 0) : 0;
-                                    const expected = cell.meta ? (cell.meta.habitsTotal || habits.length) : (isOverall ? habits.length : 1);
+                                    let recorded = 0;
+                                    if (cell.meta) {
+                                      if (Array.isArray(cell.meta.loggedHabitIds)) recorded = cell.meta.loggedHabitIds.length;
+                                      else if (cell.meta.habitScores && typeof cell.meta.habitScores === 'object' && Object.keys(cell.meta.habitScores).length > 0) recorded = Object.keys(cell.meta.habitScores).length;
+                                      else if (typeof cell.meta.habitsCompleted === 'number') recorded = cell.meta.habitsCompleted;
+                                      else if (cell.meta.recordedCount !== undefined) recorded = cell.meta.recordedCount;
+                                    }
+                                    const expected = cell.meta ? (cell.meta.habitsTotal || cell.meta.expectedCount || habits.length) : (isOverall ? habits.length : 1);
                                     const isPartial = isOverall && recorded > 0 && recorded < expected;
                                     
                                     let titleText = '';
@@ -984,7 +1035,7 @@ function formatLocalYMD(d) {
         <div className="custom-dashed-line mt-2 mb-2"></div>
 
         {/* Habit Streak Timeline */}
-        {!isFutureOnly && summaries.length > 0 && (
+        {streakTrackingEnabled && !isFutureOnly && summaries.length > 0 && (
           <div className="flex flex-col gap-1 w-full mt-4">
             <span className="text-[18px] font-black text-on-surface px-2 sm:px-5">Streak</span>
             <HabitStreakTimeline 
@@ -997,11 +1048,11 @@ function formatLocalYMD(d) {
           </div>
         )}
 
-        <div className="custom-dashed-line mt-2 mb-2"></div>
+        {streakTrackingEnabled && <div className="custom-dashed-line mt-2 mb-2"></div>}
 
-        {/* Compact KPI Grid (2x2) */}
+        {/* Compact KPI Grid */}
         {!isFutureOnly && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mb-6">
+          <div className={`grid ${streakTrackingEnabled ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'} gap-3 w-full mb-6`}>
             {/* KPI 1: Average */}
             <div className="flex flex-col items-center justify-center text-center py-2">
               <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
@@ -1030,23 +1081,28 @@ function formatLocalYMD(d) {
               );
             })()}
 
-            {/* KPI 3: Current Streak */}
-            <div className="flex flex-col items-center justify-center text-center py-2">
-              <div className="w-10 h-10 rounded-full bg-perf-medium/10 text-perf-medium flex items-center justify-center mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <span className="text-[24px] font-black text-perf-medium leading-none mb-1">{kpis.currentStreak || 0}</span>
-              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
-            </div>
+            {/* KPI 3 & 4: Only when Streak Tracking is enabled */}
+            {streakTrackingEnabled && (
+              <>
+                {/* KPI 3: Current Streak */}
+                <div className="flex flex-col items-center justify-center text-center py-2">
+                  <div className="w-10 h-10 rounded-full bg-perf-medium/10 text-perf-medium flex items-center justify-center mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </div>
+                  <span className="text-[24px] font-black text-perf-medium leading-none mb-1">{kpis.currentStreak || 0}</span>
+                  <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
+                </div>
 
-            {/* KPI 4: Best Streak */}
-            <div className="flex flex-col items-center justify-center text-center py-2">
-              <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
-              </div>
-              <span className="text-[24px] font-black text-purple-500 leading-none mb-1">{kpis.bestStreak || 0}</span>
-              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
-            </div>
+                {/* KPI 4: Best Streak */}
+                <div className="flex flex-col items-center justify-center text-center py-2">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+                  </div>
+                  <span className="text-[24px] font-black text-purple-500 leading-none mb-1">{kpis.bestStreak || 0}</span>
+                  <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1222,7 +1278,7 @@ function formatLocalYMD(d) {
                                     <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant border border-outline-variant/30">
                                       Not Recorded
                                     </span>
-                                    <span className="text-[14px] font-bold text-on-surface-variant w-8 text-right">—</span>
+                                    <span className="text-[14px] font-bold text-on-surface-variant w-8 text-right"> - </span>
                                   </div>
                                 </div>
                               );
@@ -1257,7 +1313,7 @@ function formatLocalYMD(d) {
 
 
 
-      {/* Weighted Average Explainer Modal — Mobile First */}
+      {/* Weighted Average Explainer Modal - Mobile First */}
       {showWeightedInfoModal && (
         <div 
 
@@ -1297,7 +1353,7 @@ function formatLocalYMD(d) {
             {/* Modal Body */}
             <div className="p-4 sm:p-5 overflow-y-auto space-y-3 text-xs text-on-surface leading-relaxed custom-scrollbar">
               
-              {/* 00 — Traditional Average */}
+              {/* 00 - Traditional Average */}
               <div className="p-3.5 rounded-2xl bg-amber-500/8 border border-amber-500/20 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-extrabold text-amber-600 dark:text-amber-400 text-xs">
@@ -1314,7 +1370,7 @@ function formatLocalYMD(d) {
                 </div>
               </div>
 
-              {/* 01 — Priority Multipliers */}
+              {/* 01 - Priority Multipliers */}
               <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] font-black shrink-0">1</span>
@@ -1344,7 +1400,7 @@ function formatLocalYMD(d) {
                 </p>
               </div>
 
-              {/* 02 — Track What Matters */}
+              {/* 02 - Track What Matters */}
               <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">2</span>
@@ -1358,7 +1414,7 @@ function formatLocalYMD(d) {
                 </div>
               </div>
 
-              {/* 03 — How Your Score Works */}
+              {/* 03 - How Your Score Works */}
               <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">3</span>
@@ -1414,6 +1470,15 @@ function formatLocalYMD(d) {
 
 
 }
+
+
+
+
+
+
+
+
+
 
 
 

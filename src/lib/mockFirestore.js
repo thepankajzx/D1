@@ -6,25 +6,33 @@
 // Load initial state from LocalStorage
 let mockDb = JSON.parse(localStorage.getItem('mock_firestore_db') || '{}');
 
-const saveDb = () => {
+const saveDb = (changedPath) => {
   localStorage.setItem('mock_firestore_db', JSON.stringify(mockDb));
-  notifyListeners();
+  notifyListeners(changedPath);
 };
 
 const listeners = [];
-const notifyListeners = () => {
-  listeners.forEach(listener => listener());
+const notifyListeners = (changedPath) => {
+  listeners.forEach(listener => {
+    if (!changedPath || !listener.colPath || changedPath.startsWith(listener.colPath) || listener.colPath.startsWith(changedPath)) {
+      listener.emit();
+    }
+  });
 };
 
 const getPathData = (path) => mockDb[path] || {};
 const setPathData = (path, data) => {
   mockDb[path] = data;
-  saveDb();
+  saveDb(path);
 };
 
 export const documentId = () => '__name__';
 export const getFirestore = () => ({ type: 'firestore' });
 export const serverTimestamp = () => Date.now();
+export const Timestamp = {
+  now: () => ({ toMillis: () => Date.now(), toDate: () => new Date(), seconds: Math.floor(Date.now() / 1000) }),
+  fromDate: (d) => ({ toMillis: () => d.getTime(), toDate: () => d, seconds: Math.floor(d.getTime() / 1000) })
+};
 
 export const collection = (db, ...pathSegments) => ({ type: 'collection', path: pathSegments.join('/') });
 
@@ -129,8 +137,9 @@ export const limit = (val) => ({ type: 'limit', val });
 export const onSnapshot = (queryOrCol, onNext, onError) => {
   const emit = async () => { try { onNext(await getDocs(queryOrCol)); } catch (e) { if (onError) onError(e); } };
   emit();
-  listeners.push(emit);
-  return () => { const idx = listeners.indexOf(emit); if (idx > -1) listeners.splice(idx, 1); };
+  const listenerObj = { colPath: queryOrCol.path, emit };
+  listeners.push(listenerObj);
+  return () => { const idx = listeners.indexOf(listenerObj); if (idx > -1) listeners.splice(idx, 1); };
 };
 
 export const writeBatch = () => {

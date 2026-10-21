@@ -97,7 +97,7 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
       { 
         value: stats.moderateCount, 
         name: 'Moderate', 
-        desc: '60–89% score', 
+        desc: '60-89% score', 
         itemStyle: { color: '#f59e0b' } 
       },
       { 

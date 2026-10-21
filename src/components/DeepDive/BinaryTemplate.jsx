@@ -1,3 +1,4 @@
+import { useData } from '../../contexts/DataContext';
 import DeepDiveAdvancedHeatmap from './DeepDiveAdvancedHeatmap';
 import { useMemo, useState } from 'react';
 import { getBinaryDeepDiveAnalytics } from '../../lib/binaryAnalytics';
@@ -20,6 +21,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 echarts.use([LineChart, PieChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 export default function BinaryTemplate({ habit, allSummaries, habits, dateRange }) {
+  const { streakTrackingEnabled } = useData();
   const [activeInfo, setActiveInfo] = useState(null);
   // We use useMemo to completely isolate calculations.
   // We compute the normalized payload only when dependencies change.
@@ -99,7 +101,7 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
         <div className="border-t border-dashed border-slate-200 dark:border-slate-800"></div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-4 w-full p-2.5 sm:p-3.5 md:p-4 divide-x divide-dashed divide-slate-200 dark:divide-slate-800">
+        <div className={`grid ${streakTrackingEnabled ? 'grid-cols-4' : 'grid-cols-3'} w-full p-2.5 sm:p-3.5 md:p-4 divide-x divide-dashed divide-slate-200 dark:divide-slate-800`}>
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1 truncate max-w-full">
               Score
@@ -108,6 +110,7 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
               {data.summary.overallScore}%
             </span>
           </div>
+          {streakTrackingEnabled && (
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
               Streak
@@ -116,6 +119,7 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
               {data.streaks?.current ?? 0}<span className="text-[10px] sm:text-[11px] font-semibold text-slate-400">d</span>
             </span>
           </div>
+          )}
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
               Consist.
@@ -125,8 +129,8 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
             </span>
           </div>
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
-            <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
-              Days
+            <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full" title="Days on Target">
+              Target Hit
             </span>
             <span className="text-sm sm:text-lg md:text-xl font-black text-indigo-600 leading-none flex items-baseline gap-0.5 justify-center">
               {data.summary.successfulDays}<span className="text-[10px] sm:text-[11px] font-semibold text-slate-400">/{data.summary.totalDays}</span>
@@ -144,8 +148,9 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
       />
 
       {/* 3. KPI STRIP (Analytical KPIs without top row redundancy) */}
-      <div className="flex overflow-x-auto gap-2.5 pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 snap-x hide-scrollbar md:grid md:grid-cols-5 md:gap-3 w-full">
+      <div className={`flex overflow-x-auto gap-2.5 pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 snap-x hide-scrollbar md:grid ${streakTrackingEnabled ? 'md:grid-cols-5' : 'md:grid-cols-4'} md:gap-3 w-full`}>
         {/* Card 1: Best Streak */}
+        {streakTrackingEnabled && (
         <div className="snap-start flex-shrink-0 w-[135px] sm:w-[145px] md:w-auto bg-white rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all min-h-[100px] md:min-h-[115px]">
           <div className="flex items-center justify-between mb-2">
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center bg-orange-50 border border-orange-100 text-orange-500">
@@ -181,6 +186,7 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
             <span className="text-[9px] md:text-[10px] text-slate-400 font-medium truncate mt-0.5">Personal Record</span>
           </div>
         </div>
+        )}
 
         {/* Card 2: Best Month */}
         <div className="snap-start flex-shrink-0 w-[135px] sm:w-[145px] md:w-auto bg-white rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all min-h-[100px] md:min-h-[115px]">

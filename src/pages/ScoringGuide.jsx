@@ -70,7 +70,7 @@ export default function ScoringGuide() {
             Not just done. But how well?
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal mt-0.5">
-            Choose how your habit is measured — consistency to precision.
+            Choose how your habit is measured - consistency to precision.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function ScoringGuide() {
           <div className="bg-white dark:bg-[#1c1e26] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden flex flex-col">
             
             {/* =====================================================
-                 01 — BUILD (MORE = BETTER)
+                 01 - BUILD (MORE = BETTER)
             ====================================================== */}
             {activeTab === 'build' && (
               <div>
@@ -265,7 +265,7 @@ export default function ScoringGuide() {
             )}
 
             {/* =====================================================
-                 02 — BREAK (LESS = BETTER)
+                 02 - BREAK (LESS = BETTER)
             ====================================================== */}
             {activeTab === 'break' && (
               <div>
@@ -362,11 +362,11 @@ export default function ScoringGuide() {
                 {/* Score Strip */}
                 <div className="grid grid-cols-3 gap-2 p-3.5 sm:p-4 bg-slate-50/70 dark:bg-[#181a20]/70">
                   <div className="flex flex-col text-emerald-700 dark:text-emerald-400">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">0–15 MIN</span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">0-15 MIN</span>
                     <strong className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">Kept it low (100)</strong>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">15–30 MIN</span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">15-30 MIN</span>
                     <strong className="text-xs text-slate-900 dark:text-slate-100 font-bold mt-0.5">Score drops slowly</strong>
                   </div>
                   <div className="flex flex-col text-rose-700 dark:text-rose-400">
@@ -419,7 +419,7 @@ export default function ScoringGuide() {
             )}
 
             {/* =====================================================
-                 03 — BALANCE (SWEET SPOT)
+                 03 - BALANCE (SWEET SPOT)
             ====================================================== */}
             {activeTab === 'balance' && (
               <div>
@@ -434,7 +434,7 @@ export default function ScoringGuide() {
                           Sweet Spot
                         </h2>
                         <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
-                          Not too little, not too much — right in the middle.
+                          Not too little, not too much - right in the middle.
                         </p>
                       </div>
                     </div>
@@ -489,7 +489,7 @@ export default function ScoringGuide() {
 
                       <text x="495" y="42" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="800">100</text>
                       <text x="495" y="105" textAnchor="middle" fill="#12a66a" fontSize="13" fontWeight="800">PERFECT RANGE</text>
-                      <text x="495" y="130" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="14" fontWeight="600">7–8 HOURS</text>
+                      <text x="495" y="130" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="14" fontWeight="600">7-8 HOURS</text>
 
                       <line x1="390" y1="70" x2="390" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
                       <line x1="600" y1="70" x2="600" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
@@ -573,7 +573,7 @@ export default function ScoringGuide() {
             )}
 
             {/* =====================================================
-                 04 — SUSTAIN (ON TIME)
+                 04 - SUSTAIN (ON TIME)
             ====================================================== */}
             {activeTab === 'sustain' && (
               <div>
@@ -721,7 +721,7 @@ export default function ScoringGuide() {
             )}
 
             {/* =====================================================
-                 05 — TRACK (DONE OR NOT DONE)
+                 05 - TRACK (DONE OR NOT DONE)
             ====================================================== */}
             {activeTab === 'track' && (
               <div>

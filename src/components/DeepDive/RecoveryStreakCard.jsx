@@ -249,8 +249,8 @@ export default function RecoveryStreakCard({
                   </div>
                 </div>
 
-                {/* Bottom: 7-Day Bounce-Back Rate Badge */}
-                <div className="flex items-center justify-center pt-2 border-t border-slate-100/80">
+                {/* Bottom: 7-Day Bounce-Back Rate Badge & Action Instruction */}
+                <div className="flex flex-col items-center gap-1.5 pt-2 border-t border-slate-100/80">
                   <span 
                     className={`text-xs font-extrabold px-2.5 py-1 rounded-full border ${
                       m.recovered 
@@ -262,6 +262,11 @@ export default function RecoveryStreakCard({
                   >
                     {m.recoveryRate}% <span className="text-[10px] font-medium opacity-80">7-day rate</span>
                   </span>
+                  {m.isInProgress && (
+                    <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 text-center leading-tight">
+                      Target: Score ≥70% on at least 5 of 7 days
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

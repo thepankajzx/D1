@@ -35,3 +35,8 @@ capacitor.config.json
 *.patch
 hib_write.js
 replace_heatmap.js
+
+
+# Env Files
+.env*
+!.env.example

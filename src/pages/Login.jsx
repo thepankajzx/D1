@@ -12,7 +12,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { currentUser, login, signup, loginWithGoogle } = useAuth();
-  const { enterGuestMode } = useGuest();
+  const { enterGuestMode, exitGuestMode } = useGuest();
   const navigate = useNavigate();
 
   function handleGuestMode() {
@@ -57,6 +57,7 @@ export default function Login() {
       }
       // Ensure Firestore user doc exists
       if (userCred?.user) {
+        exitGuestMode();
         const userRef = doc(db, 'users', userCred.user.uid);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
@@ -78,6 +79,7 @@ export default function Login() {
       const result = await loginWithGoogle();
       // Ensure Firestore user doc exists for Google sign-in
       if (result?.user) {
+        exitGuestMode();
         const userRef = doc(db, 'users', result.user.uid);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
@@ -120,6 +122,7 @@ export default function Login() {
                 placeholder="Email address" 
                 required 
                 type="email"
+                maxLength={100}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -133,6 +136,8 @@ export default function Login() {
                 placeholder="Password" 
                 required 
                 type="password"
+                minLength={6}
+                maxLength={100}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -178,7 +183,7 @@ export default function Login() {
             className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold text-sm hover:bg-indigo-100/80 dark:hover:bg-indigo-900/40 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 group"
           >
             <span className="text-base">👁</span>
-            <span>Explore Demo — No Sign-up Needed</span>
+            <span>Explore Demo - No Sign-up Needed</span>
           </button>
           <p className="text-center text-[10px] text-on-surface-variant mt-1.5 opacity-70">
             50 days of sample data · Read-only preview

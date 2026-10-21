@@ -1,3 +1,4 @@
+import { useData } from '../../contexts/DataContext';
 import DeepDiveAdvancedHeatmap from './DeepDiveAdvancedHeatmap';
 import { useMemo, useState } from 'react';
 import { getOptimalRangeAnalytics } from '../../lib/optimalRangeAnalytics';
@@ -23,6 +24,7 @@ echarts.use([LineChart, PieChart, GridComponent, TooltipComponent, CanvasRendere
 
 
 export default function OptimalRangeTemplate({ habit, allSummaries, habits, dateRange }) {
+  const { streakTrackingEnabled } = useData();
   const data = useMemo(() => {
     return getOptimalRangeAnalytics(habit, allSummaries, dateRange);
   }, [habit, allSummaries, dateRange]);
@@ -48,7 +50,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
 
   const targetValue = data.targetValue || (target100 ? (targetMax100 && targetMax100 !== target100 ? `${target100} - ${targetMax100}` : target100) : (habit.userTarget100 ? `${habit.userTarget100} - ${habit.targetMax || habit.userTarget100}` : 'Not Set'));
 
-  const fmtVal = (typeof data.fmtVal === 'function' ? data.fmtVal : (typeof data.formatVal === 'function' ? data.formatVal : ((v) => v != null ? String(v) : '—')));
+  const fmtVal = (typeof data.fmtVal === 'function' ? data.fmtVal : (typeof data.formatVal === 'function' ? data.formatVal : ((v) => v != null ? String(v) : ' - ')));
 
   function formatDate(dateStr) {
     if (!dateStr) return 'N/A';
@@ -102,7 +104,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
         <div className="border-t border-dashed border-slate-200 dark:border-slate-800"></div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-4 w-full p-2.5 sm:p-3.5 md:p-4 divide-x divide-dashed divide-slate-200 dark:divide-slate-800">
+        <div className={`grid ${streakTrackingEnabled ? 'grid-cols-4' : 'grid-cols-3'} w-full p-2.5 sm:p-3.5 md:p-4 divide-x divide-dashed divide-slate-200 dark:divide-slate-800`}>
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1 truncate max-w-full">
               Score
@@ -111,6 +113,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
               {summary.overallScore}%
             </span>
           </div>
+          {streakTrackingEnabled && (
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
               Streak
@@ -119,6 +122,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
               {data.currentStreak ?? 0}<span className="text-[10px] sm:text-[11px] font-semibold text-slate-400">d</span>
             </span>
           </div>
+          )}
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
             <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
               Consist.
@@ -128,8 +132,8 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
             </span>
           </div>
           <div className="flex flex-col items-center justify-center px-0.5 text-center">
-            <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full">
-              Days
+            <span className="text-[10px] sm:text-[11px] md:text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate max-w-full" title="Days on Target">
+              Target Hit
             </span>
             <span className="text-sm sm:text-lg md:text-xl font-black text-indigo-600 leading-none flex items-baseline gap-0.5 justify-center">
               {summary.daysOnTarget}<span className="text-[10px] sm:text-[11px] font-semibold text-slate-400">/{summary.totalDays}</span>
@@ -234,7 +238,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
                 <div className="h-[7px] bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-400 rounded-full transition-all" style={{width: maxWeekdayAvg > 0 ? `${(w.avg / maxWeekdayAvg) * 100}%` : '0%'}}></div>
                 </div>
-                <span className="font-bold text-slate-700 dark:text-slate-200 text-right">{w.count > 0 ? fmtVal(w.avg) : '—'}</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200 text-right">{w.count > 0 ? fmtVal(w.avg) : ' - '}</span>
               </div>
             ))}
           </div>
@@ -269,7 +273,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
                   <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${d.score !== null && d.score >= 100 ? 'bg-emerald-500' : d.score !== null ? 'bg-red-400' : 'bg-slate-300'}`}></div>
                   <span className="text-slate-600 dark:text-slate-400">{formatDate(d.date)}</span>
                 </div>
-                <span className="text-slate-900 dark:text-white font-bold">{d.value !== null ? fmtVal(d.value) : '—'}</span>
+                <span className="text-slate-900 dark:text-white font-bold">{d.value !== null ? fmtVal(d.value) : ' - '}</span>
                 <span className={`px-2 py-1 border rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wide w-14 md:w-16 text-center ${d.score !== null && d.score >= 100 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : d.score !== null ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
                   {d.score !== null ? Math.round(d.score) + '%' : 'No data'}
                 </span>
@@ -313,7 +317,7 @@ export default function OptimalRangeTemplate({ habit, allSummaries, habits, date
 
       {/* ── Bottom note ───────────────────────────────────────────────────── */}
       <div className="p-3 md:p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl text-center text-[11px] md:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/40">
-        With Optimal Range, progress means moving up. Reaching your target earns 100 points — never more than 100.
+        With Optimal Range, progress means moving up. Reaching your target earns 100 points - never more than 100.
       </div>
 
       {/* ── Day Details Modal ─────────────────────────────────────────────── */}

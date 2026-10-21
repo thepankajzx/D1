@@ -29,7 +29,7 @@ export const DEDICATED_MILESTONES = [
     title: '3-Day Ignition', 
     hindiTitle: '3-दिन इग्निशन (Ignition)', 
     desc: 'The spark that starts everything. First 3 consecutive days.',
-    hindiDesc: 'पहला स्पार्क — 3 दिन की लगातार और मजबूत शुरुआत!',
+    hindiDesc: 'पहला स्पार्क - 3 दिन की लगातार और मजबूत शुरुआत!',
     icon: Sparkle, 
     color: 'from-amber-400 to-orange-500', 
     borderColor: 'border-amber-400/40',
@@ -42,7 +42,7 @@ export const DEDICATED_MILESTONES = [
     title: '7-Day Momentum', 
     hindiTitle: '7-दिन मोमेंटम (Momentum)', 
     desc: '1 full week without break. The flywheel begins to turn.',
-    hindiDesc: '1 पूरा हफ़्ता बिना रुके — गति और लय पकड़ ली है!',
+    hindiDesc: '1 पूरा हफ़्ता बिना रुके - गति और लय पकड़ ली है!',
     icon: Lightning, 
     color: 'from-orange-500 to-amber-600', 
     borderColor: 'border-orange-500/40',
@@ -55,7 +55,7 @@ export const DEDICATED_MILESTONES = [
     title: '14-Day Habit Seed', 
     hindiTitle: '14-दिन आदत का बीज (Habit Seed)', 
     desc: '2 weeks of consistency. Roots are firmly planted in soil.',
-    hindiDesc: '2 हफ़्ते — जड़ें ज़मीन में मज़बूती से जम चुकी हैं!',
+    hindiDesc: '2 हफ़्ते - जड़ें ज़मीन में मज़बूती से जम चुकी हैं!',
     icon: Plant, 
     color: 'from-emerald-500 to-teal-600', 
     borderColor: 'border-emerald-500/40',
@@ -68,7 +68,7 @@ export const DEDICATED_MILESTONES = [
     title: '21-Day Neural Path', 
     hindiTitle: '21-दिन दिमागी सर्किट (Neural Path)', 
     desc: 'The classical threshold. New synaptic pathway formed.',
-    hindiDesc: '21 दिन का नियम — दिमाग में नया न्यूरल पाथवे लॉक हो गया!',
+    hindiDesc: '21 दिन का नियम - दिमाग में नया न्यूरल पाथवे लॉक हो गया!',
     icon: Brain, 
     color: 'from-cyan-500 to-blue-600', 
     borderColor: 'border-cyan-500/40',
@@ -81,7 +81,7 @@ export const DEDICATED_MILESTONES = [
     title: '30-Day Solid Iron', 
     hindiTitle: '30-दिन ठोस लोहा (Solid Iron)', 
     desc: '1 full month. Discipline forged under pressure.',
-    hindiDesc: '1 पूरा महीना — अनुशासन अब ठोस लोहे जैसा पक्का बन चुका है!',
+    hindiDesc: '1 पूरा महीना - अनुशासन अब ठोस लोहे जैसा पक्का बन चुका है!',
     icon: ShieldChevron, 
     color: 'from-blue-600 to-indigo-600', 
     borderColor: 'border-blue-500/40',
@@ -94,7 +94,7 @@ export const DEDICATED_MILESTONES = [
     title: '60-Day Unstoppable', 
     hindiTitle: '60-दिन अजेय रफ़्तार (Unstoppable)', 
     desc: '2 months of mastery. Velocity overcomes all obstacles.',
-    hindiDesc: '2 महीने — अब आपको कोई बाहरी रुकावट नहीं डिगा सकती!',
+    hindiDesc: '2 महीने - अब आपको कोई बाहरी रुकावट नहीं डिगा सकती!',
     icon: RocketLaunch, 
     color: 'from-purple-500 to-pink-600', 
     borderColor: 'border-purple-500/40',
@@ -107,7 +107,7 @@ export const DEDICATED_MILESTONES = [
     title: '90-Day New Identity', 
     hindiTitle: '90-दिन नई पहचान (New Identity)', 
     desc: 'Quarter of a year. It is no longer what you do, but who you are.',
-    hindiDesc: '90 दिन — यह आदत अब सिर्फ़ काम नहीं, आपकी पहचान बन चुकी है!',
+    hindiDesc: '90 दिन - यह आदत अब सिर्फ़ काम नहीं, आपकी पहचान बन चुकी है!',
     icon: Diamond, 
     color: 'from-pink-500 to-rose-600', 
     borderColor: 'border-pink-500/40',
@@ -120,7 +120,7 @@ export const DEDICATED_MILESTONES = [
     title: '180-Day Titan', 
     hindiTitle: '180-दिन टाइटन (Titan)', 
     desc: 'Half a year of continuous excellence. Elite tier consistency.',
-    hindiDesc: 'आधा साल — चैंपियन स्तर का अटूट और अडिग अनुशासन!',
+    hindiDesc: 'आधा साल - चैंपियन स्तर का अटूट और अडिग अनुशासन!',
     icon: Crown, 
     color: 'from-amber-400 to-yellow-600', 
     borderColor: 'border-yellow-400/40',
@@ -133,7 +133,7 @@ export const DEDICATED_MILESTONES = [
     title: '365-Day Grandmaster', 
     hindiTitle: '365-दिन ग्रैंडमास्टर (Grandmaster)', 
     desc: '1 full year of triumph. The pinnacle of human consistency.',
-    hindiDesc: '1 पूरा साल (365 दिन) — आदत का सर्वोच्च शिखर हासिल!',
+    hindiDesc: '1 पूरा साल (365 दिन) - आदत का सर्वोच्च शिखर हासिल!',
     icon: Planet, 
     color: 'from-yellow-400 via-amber-500 to-red-500', 
     borderColor: 'border-red-400/40',
@@ -145,8 +145,40 @@ export const DEDICATED_MILESTONES = [
 
 export default function StreakMilestonesPage() {
   const navigate = useNavigate();
-  const { allSummaries = [] } = useData();
+  const { allSummaries = [], streakTrackingEnabled } = useData();
   const { isHinglish } = useLanguage();
+
+  if (!streakTrackingEnabled) {
+    return (
+      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4 animate-in fade-in">
+        <div className="w-16 h-16 mx-auto rounded-3xl bg-amber-500/15 text-amber-500 flex items-center justify-center shadow-xs">
+          <Trophy size={32} weight="fill" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          {isHinglish ? 'स्ट्रीक और माइलस्टोन्स बंद हैं' : 'Streak Milestones Disabled'}
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          {isHinglish
+            ? 'आपने प्रोफ़ाइल सेटिंग्स में स्ट्रीक ट्रैकिंग बंद की हुई है। ट्रॉफी वॉल और स्ट्रीक लेवल्स देखने के लिए प्रोफ़ाइल सेटिंग्स में इसे चालू करें।'
+            : 'You turned off streak tracking in your Profile settings. Turn it on anytime to track your trophy wall and milestone tiers.'}
+        </p>
+        <div className="pt-3 flex items-center justify-center gap-3">
+          <button
+            onClick={() => navigate('/profile')}
+            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            {isHinglish ? 'प्रोफ़ाइल सेटिंग्स खोलें' : 'Open Profile Settings'}
+          </button>
+          <button
+            onClick={() => navigate('/analytics')}
+            className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-95"
+          >
+            {isHinglish ? 'एनालिटिक्स देखें' : 'Go to Analytics'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const streakData = useMemo(() => {
     return calculateStreakData('all', allSummaries);
@@ -359,7 +391,7 @@ export default function StreakMilestonesPage() {
           <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
             <Trophy size={20} weight="fill" />
             <h4 className="text-xs sm:text-sm font-black">
-              {isHinglish ? 'माइलस्टोन्स की शक्ति — अनुशासन का प्रमाण' : 'The Power of Streak Milestones'}
+              {isHinglish ? 'माइलस्टोन्स की शक्ति - अनुशासन का प्रमाण' : 'The Power of Streak Milestones'}
             </h4>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">

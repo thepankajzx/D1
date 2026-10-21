@@ -1,7 +1,8 @@
 import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { DataProvider } from './contexts/DataContext';
+import { DataProvider, useData } from './contexts/DataContext';
+import HabitAiCoachBot from './components/HabitAiCoachBot';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,9 +13,9 @@ import Icon from './components/Icon';
 import Footer from './components/Footer';
 import { Compass, SunHorizon, ChartLineUp, Binoculars, Moon, Sun } from '@phosphor-icons/react';
 
-import { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+
 function lazyRetry(componentImport) {
   return lazy(async () => {
     try {
@@ -49,7 +50,10 @@ const ScoringGuide = lazyRetry(() => import('./pages/ScoringGuide'));
 const StreaksPage = lazyRetry(() => import('./pages/StreaksPage'));
 const StreakMilestonesPage = lazyRetry(() => import('./pages/StreakMilestonesPage'));
 
+const TodaysCompassPage = lazyRetry(() => import('./pages/TodaysCompassPage'));
 const Profile = lazyRetry(() => import('./pages/Profile'));
+const ProgressTowerPage = lazyRetry(() => import('./pages/ProgressTowerPage'));
+const BonsaiTreePage = lazyRetry(() => import('./pages/ProgressTowerPage'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/OnboardingWelcome'));
 const OnboardingSelect = lazyRetry(() => import('./pages/AdvancedHabitSelector'));
 const OnboardingTargets = lazyRetry(() => import('./pages/OnboardingTargets'));
@@ -112,7 +116,7 @@ function Layout({ children }) {
   ].some(p => location.pathname.startsWith(p));
 
   return (
-    <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background pb-16 md:pb-0 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background w-full max-w-full overflow-x-hidden">
       {/* Top Navbar */}
       <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] box-border">
         {/* Left: Brand Logo Only */}
@@ -212,21 +216,21 @@ function Layout({ children }) {
       </nav>
 
       {/* Main Content Spacer for Fixed Navbar */}
-      <div className="h-[3.25rem] pt-[env(safe-area-inset-top)] shrink-0"></div>
+      <div className="h-[calc(3.25rem+env(safe-area-inset-top,0px))] shrink-0"></div>
 
       {/* Guest mode banner */}
       {isGuest && guestBannerVisible && (
         <div className="w-full bg-indigo-600 text-white text-xs font-semibold flex items-center justify-between px-4 py-2 gap-2 shrink-0">
           <span className="flex items-center gap-1.5">
             <span>👁</span>
-            <span>You're viewing a demo with 50 days of sample data — <button onClick={handleExitGuest} className="underline font-bold cursor-pointer">Sign up free</button> to track your own habits</span>
+            <span>You're viewing a demo with 50 days of sample data - <button onClick={handleExitGuest} className="underline font-bold cursor-pointer">Sign up free</button> to track your own habits</span>
           </span>
           <button onClick={() => setGuestBannerVisible(false)} className="opacity-70 hover:opacity-100 text-base leading-none cursor-pointer">×</button>
         </div>
       )}
 
       {/* Main App Container */}
-      <main className="flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 pt-1.5 pb-4 sm:py-5 md:py-6 min-w-0">
+      <main className={`flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 pt-1.5 min-w-0 ${showFooter ? 'pb-4 sm:py-5 md:py-6' : 'pb-20 sm:py-5 md:py-6'}`}>
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
@@ -276,6 +280,7 @@ function RoutePreloader() {
       import('./pages/DeepDiveIndex');
       import('./pages/Profile');
       import('./pages/RecoveryDeepDive');
+      import('./pages/TodaysCompassPage');
       import('./pages/StreakMilestonesPage');
       import('./pages/BetterReport');
       import('./pages/HabitDiagnostics');
@@ -304,6 +309,15 @@ function ScrollToTop() {
   return null;
 }
 
+function BotLayer() {
+  const { aiCoachEnabled } = useData();
+
+  const isEnabled = aiCoachEnabled === true && localStorage.getItem('preference_ai_coach_enabled') !== 'false';
+  if (!isEnabled) return null;
+
+  return <HabitAiCoachBot />;
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -315,6 +329,7 @@ function App() {
                 <HashRouter>
                 <RoutePreloader />
                 <ScrollToTop />
+                <BotLayer />
                 <Suspense fallback={
                   <div className="min-h-screen bg-background"></div>
                 }>
@@ -339,7 +354,15 @@ function App() {
                     <Route path="/diagnostics" element={<Layout><HabitDiagnostics /></Layout>} />
                     <Route path="/diagnose" element={<Layout><HabitDiagnostics /></Layout>} />
                     <Route path="/deep-dive" element={<Layout><DeepDiveIndex /></Layout>} />
+                    <Route path="/compass" element={<Layout><TodaysCompassPage /></Layout>} />
+                    <Route path="/todays-compass" element={<Layout><TodaysCompassPage /></Layout>} />
+                    <Route path="/today-compass" element={<Layout><TodaysCompassPage /></Layout>} />
                     <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                    <Route path="/tower" element={<Layout><ProgressTowerPage /></Layout>} />
+                    <Route path="/progress-tower" element={<Layout><ProgressTowerPage /></Layout>} />
+                    <Route path="/tree" element={<Layout><ProgressTowerPage /></Layout>} />
+                    <Route path="/habit-tree" element={<Layout><BonsaiTreePage /></Layout>} />
+                    <Route path="/bonsai" element={<Layout><BonsaiTreePage /></Layout>} />
                     <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
                     <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
                     <Route path="/terms" element={<Layout><Terms /></Layout>} />
@@ -373,6 +396,5 @@ function App() {
     </ThemeProvider>
   );
 }
-
 
 export default App;

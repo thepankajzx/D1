@@ -1,5 +1,5 @@
 /**
- * Definite Habit Intelligence — Production Service Worker
+ * Definite Habit Intelligence - Production Service Worker
  * Version: 1.0.0
  * 
  * Features:

@@ -15,14 +15,30 @@ function getRangeLabel(summaries) {
   const start = formatDateShort(summaries[0].id || summaries[0].date);
   const end = formatDateShort(summaries[summaries.length - 1].id || summaries[summaries.length - 1].date);
   if (start === end) return start;
-  return `${start} – ${end}`;
+  return `${start} - ${end}`;
+}
+
+function getLocalDateStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function generateDailyInsights(habits = [], allSummaries = [], isHinglish = false) {
   if (!habits || habits.length === 0) return [];
 
+  const todayStr = getLocalDateStr();
+
+  // Exclude today's ongoing/incomplete date so insights are strictly calculated on completed past days (up to yesterday)
+  const completedSummaries = (allSummaries || []).filter(s => {
+    const sDate = s.id || s.date;
+    return sDate && sDate < todayStr;
+  });
+
   // Sort summaries ascending by date (e.g. 2026-08-01 -> 2026-08-21)
-  const sortedSummaries = [...allSummaries].sort((a, b) => ((a.id || a.date) > (b.id || b.date) ? 1 : -1));
+  const sortedSummaries = [...completedSummaries].sort((a, b) => ((a.id || a.date) > (b.id || b.date) ? 1 : -1));
   const recent1 = sortedSummaries.slice(-1);
   const recent7 = sortedSummaries.slice(-7);
   const prior7 = sortedSummaries.slice(-14, -7);
@@ -46,38 +62,39 @@ export function generateDailyInsights(habits = [], allSummaries = [], isHinglish
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 1. TODAY'S DAILY INSIGHTS (Today's Momentum & Quick Triggers)
+  // 1. YESTERDAY'S / LATEST COMPLETED DAY INSIGHTS (Daily Momentum & Quick Triggers)
   // ─────────────────────────────────────────────────────────────────────────────
   if (recent7.length >= 2) {
-    const latest = recent7[recent7.length - 1];
-    const prev = recent7[recent7.length - 2];
+    const latest = recent7[recent7.length - 1]; // Yesterday (Latest completed full day)
+    const prev = recent7[recent7.length - 2];   // Prior day (2 days ago)
+    const latestDateStr = formatDateShort(latest?.id || latest?.date);
 
     habits.forEach(h => {
-      const todayScore = latest?.habitScores?.[h.id] ?? 0;
+      const yesterdayScore = latest?.habitScores?.[h.id] ?? 0;
       const prevScore = prev?.habitScores?.[h.id] ?? 0;
 
-      if (todayScore >= 100 && prevScore < 50) {
+      if (yesterdayScore >= 100 && prevScore < 50) {
         insights.push({
-          id: `today_surge_${h.id}`,
+          id: `yesterday_surge_${h.id}`,
           timeframe: 'today',
-          dateCategory: 'Today',
+          dateCategory: 'Yesterday',
           type: 'daily_momentum',
-          category: 'TODAY',
-          timeScope: 'Today vs Yesterday',
-          dateRange: 'Today',
+          category: 'YESTERDAY',
+          timeScope: isHinglish ? 'Yesterday vs Prior Day' : 'Yesterday vs Prior Day',
+          dateRange: latestDateStr || (isHinglish ? 'Kal' : 'Yesterday'),
           badge: { label: 'DAILY SURGE', color: 'emerald' },
           icon: 'Lightning',
           headline: isHinglish
-            ? `Aaj ${h.name} me zabardast comeback! Score 100% hit hua`
-            : `Strong daily comeback in ${h.name}! Score hit 100% today`,
+            ? `Kal ${h.name} me zabardast comeback! Score 100% hit hua`
+            : `Strong comeback in ${h.name} yesterday! Score hit 100%`,
           subtitle: isHinglish
-            ? `Kal ke low score ke baad aaj perfect target achieve kiya`
-            : `Achieved 100% target today following a slower yesterday`,
+            ? `Pichhle din ke low score ke baad kal perfect target achieve kiya`
+            : `Achieved 100% target yesterday following a slower prior day`,
           body: isHinglish
-            ? `Aapne bina kisi delay ke ${h.name} ko aaj top priority dekar reset kar diya. Is daily momentum ko kal bhi continue rakho.`
-            : `You prioritized ${h.name} today to immediately bounce back. Carry this proactive momentum into tomorrow.`,
+            ? `Aapne bina kisi delay ke ${h.name} ko kal top priority dekar reset kar diya. Is momentum ko aaj bhi continue rakho.`
+            : `You prioritized ${h.name} yesterday to immediately bounce back. Carry this proactive momentum into today.`,
           visualType: 'comparison',
-          visualData: { bar1Label: 'Yesterday', bar1Val: prevScore, bar2Label: 'Today', bar2Val: 100, accentColor: 'emerald' },
+          visualData: { bar1Label: 'Prior Day', bar1Val: prevScore, bar2Label: 'Yesterday', bar2Val: 100, accentColor: 'emerald' },
           actionLabel: `${h.name} Deep Dive`,
           actionHabitId: h.id,
           impactScore: 96 + getPriorityBoost(h.id)
@@ -463,7 +480,7 @@ export function generateDailyInsights(habits = [], allSummaries = [], isHinglish
             : `Monday Avg: ${monAvg}% (vs ${restAvg}% overall)`,
           body: isHinglish
             ? `Fresh Start Effect aapke liye kamaal ka kaam karta hai. Monday ki will-power momentum ko poore hafte aage le jao!`
-            : `The Fresh Start Effect works wonders for you. Your willpower peaks on Monday mornings — ride this momentum into midweek!`,
+            : `The Fresh Start Effect works wonders for you. Your willpower peaks on Monday mornings - ride this momentum into midweek!`,
           visualType: 'comparison',
           visualData: { bar1Label: 'Monday Avg', bar1Val: monAvg, bar2Label: 'Other Days', bar2Val: restAvg, accentColor: 'teal' },
           actionLabel: 'Explore Analytics',

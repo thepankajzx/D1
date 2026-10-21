@@ -1,14 +1,10 @@
 import { useMemo } from 'react';
+import { formatTimeVal } from '../lib/timeFormat';
 
-// Helper to format minutes into HH:MM (AM/PM)
-export function formatTimeAmPm(minutes) {
+// Helper to format minutes into HH:MM (AM/PM or 24h)
+export function formatTimeAmPm(minutes, timeFormat) {
   if (minutes == null) return "--:--";
-  let h = Math.floor(minutes / 60) % 24;
-  let m = minutes % 60;
-  let ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12;
-  if (h === 0) h = 12;
-  return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+  return formatTimeVal(minutes, timeFormat) || "--:--";
 }
 
 export function useTargetTimeData(habit, allSummaries, days = 30) {

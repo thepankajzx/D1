@@ -925,7 +925,7 @@ export default function HabitDiagnostics() {
                   style={{ height: `${Math.max(15, timingAnalysis.weekdayAvg)}%` }}
                 />
                 <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 truncate">
-                  Mon–Fri ({formatNum1(timingAnalysis.weekdayAvg)}%)
+                  Mon-Fri ({formatNum1(timingAnalysis.weekdayAvg)}%)
                 </span>
               </div>
               <div className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
@@ -934,7 +934,7 @@ export default function HabitDiagnostics() {
                   style={{ height: `${Math.max(15, timingAnalysis.weekendAvg)}%` }}
                 />
                 <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 truncate">
-                  Sat–Sun ({formatNum1(timingAnalysis.weekendAvg)}%)
+                  Sat-Sun ({formatNum1(timingAnalysis.weekendAvg)}%)
                 </span>
               </div>
             </div>
@@ -1425,7 +1425,7 @@ export default function HabitDiagnostics() {
                     </div>
                     <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
                       {isHinglish
-                        ? 'जब यह आदत छूटती है, तो आलस में आकर आपकी दूसरी कौन सी आदतें भी उसी दिन छूट जाती हैं — एक गिरी तो दूसरी भी गिरी।'
+                        ? 'जब यह आदत छूटती है, तो आलस में आकर आपकी दूसरी कौन सी आदतें भी उसी दिन छूट जाती हैं - एक गिरी तो दूसरी भी गिरी।'
                         : 'When this habit fails, dependent secondary habits tend to collapse on the same day like falling dominoes.'}
                     </p>
                   </div>
@@ -1628,7 +1628,7 @@ export default function HabitDiagnostics() {
                     <strong className="text-slate-900 dark:text-white">2. The 2-Minute Safety Valve:</strong> On busy or chaotic days, never aim for a 100% full workout or study session. Instead, perform the 2-minute minimum version (e.g. 5 push-ups or 1 page reading).
                   </p>
                   <p>
-                    <strong className="text-slate-900 dark:text-white">3. Elastic Resilience:</strong> A habit is not broken until you miss two consecutive days. Recovering within 24–48 hours keeps neural plasticity intact.
+                    <strong className="text-slate-900 dark:text-white">3. Elastic Resilience:</strong> A habit is not broken until you miss two consecutive days. Recovering within 24-48 hours keeps neural plasticity intact.
                   </p>
                 </>
               ) : (

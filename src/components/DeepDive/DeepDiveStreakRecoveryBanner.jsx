@@ -66,7 +66,7 @@ export default function DeepDiveStreakRecoveryBanner({
               SCORE
             </span>
             <span className="text-base sm:text-lg md:text-xl font-black text-white leading-tight mt-1">
-              {recoveryScore !== null && recoveryScore !== undefined ? `${recoveryScore}%` : '—'}
+              {recoveryScore !== null && recoveryScore !== undefined ? `${recoveryScore}%` : ' - '}
             </span>
           </div>
         </div>

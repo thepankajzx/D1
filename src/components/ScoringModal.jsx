@@ -193,7 +193,7 @@ export default function ScoringModal({ type, onClose }) {
               Not just done. But how well?
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              Choose how your habit is measured — consistency to precision.
+              Choose how your habit is measured - consistency to precision.
             </p>
           </div>
           <button 
@@ -250,7 +250,7 @@ export default function ScoringModal({ type, onClose }) {
           <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col">
             
             {/* =====================================================
-                 01 — BUILD (MORE = BETTER)
+                 01 - BUILD (MORE = BETTER)
             ====================================================== */}
             {activeTab === 'build' && (
               <div>
@@ -395,7 +395,7 @@ export default function ScoringModal({ type, onClose }) {
             )}
 
             {/* =====================================================
-                 02 — BREAK (LESS = BETTER)
+                 02 - BREAK (LESS = BETTER)
             ====================================================== */}
             {activeTab === 'break' && (
               <div>
@@ -492,11 +492,11 @@ export default function ScoringModal({ type, onClose }) {
                 {/* Score Strip */}
                 <div className="grid grid-cols-3 gap-2 p-3 sm:p-4 bg-slate-50/50">
                   <div className="flex flex-col text-emerald-700">
-                    <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">0–15 MIN</span>
+                    <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">0-15 MIN</span>
                     <strong className="text-xs text-emerald-600 font-bold mt-0.5">Kept it low (100)</strong>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">15–30 MIN</span>
+                    <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">15-30 MIN</span>
                     <strong className="text-xs text-slate-900 font-bold mt-0.5">Score drops slowly</strong>
                   </div>
                   <div className="flex flex-col text-rose-700">
@@ -549,7 +549,7 @@ export default function ScoringModal({ type, onClose }) {
             )}
 
             {/* =====================================================
-                 03 — BALANCE (SWEET SPOT)
+                 03 - BALANCE (SWEET SPOT)
             ====================================================== */}
             {activeTab === 'balance' && (
               <div>
@@ -564,7 +564,7 @@ export default function ScoringModal({ type, onClose }) {
                           Sweet Spot
                         </h2>
                         <p className="text-xs sm:text-sm font-bold text-slate-700 mt-1">
-                          Not too little, not too much — right in the middle.
+                          Not too little, not too much - right in the middle.
                         </p>
                       </div>
                     </div>
@@ -617,7 +617,7 @@ export default function ScoringModal({ type, onClose }) {
 
                       <text x="495" y="42" textAnchor="middle" fill="#12a66a" fontSize="18" fontWeight="900">100</text>
                       <text x="495" y="105" textAnchor="middle" fill="#12a66a" fontSize="13" fontWeight="900">PERFECT RANGE</text>
-                      <text x="495" y="130" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">7–8 HOURS</text>
+                      <text x="495" y="130" textAnchor="middle" className="dynamic-label" fontSize="14" fontWeight="750">7-8 HOURS</text>
 
                       <line x1="390" y1="70" x2="390" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
                       <line x1="600" y1="70" x2="600" y2="340" stroke="#12a66a" strokeWidth="2" strokeDasharray="7 7"/>
@@ -701,7 +701,7 @@ export default function ScoringModal({ type, onClose }) {
             )}
 
             {/* =====================================================
-                 04 — SUSTAIN (ON TIME)
+                 04 - SUSTAIN (ON TIME)
             ====================================================== */}
             {activeTab === 'sustain' && (
               <div>
@@ -849,7 +849,7 @@ export default function ScoringModal({ type, onClose }) {
             )}
 
             {/* =====================================================
-                 05 — TRACK (DONE OR NOT DONE)
+                 05 - TRACK (DONE OR NOT DONE)
             ====================================================== */}
             {activeTab === 'track' && (
               <div>

@@ -11,7 +11,6 @@ export async function logErrorToDb(error, errorInfo) {
       url: window.location.href,
       userAgent: navigator.userAgent,
       userId: user?.uid || 'unauthenticated',
-      userEmail: user?.email || 'unauthenticated',
       timestamp: serverTimestamp(),
       resolved: false
     });

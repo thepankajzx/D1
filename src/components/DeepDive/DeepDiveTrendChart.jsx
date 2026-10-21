@@ -81,7 +81,7 @@ function formatLocalYMD(d) {
       };
     });
 
-    // Series data: Normal line with Black/White Ring ONLY on truly untracked days
+    // Series data: Individual habit has solid habit-colored dots when logged, solid black dot when not recorded
     const seriesData = chartData.map((d) => {
       if (d.isUntracked || d.score === null) {
         return {
@@ -89,15 +89,21 @@ function formatLocalYMD(d) {
           symbol: 'circle',
           symbolSize: 6,
           itemStyle: {
-            color: isDark ? '#111215' : '#ffffff',
-            borderColor: isDark ? '#ffffff' : '#0f172a',
-            borderWidth: 2
+            color: isDark ? '#ffffff' : '#0f172a',
+            borderColor: 'transparent',
+            borderWidth: 0
           }
         };
       }
       return {
         value: d.score,
-        symbol: 'none'
+        symbol: 'circle',
+        symbolSize: 6,
+        itemStyle: {
+          color: color,
+          borderColor: 'transparent',
+          borderWidth: 0
+        }
       };
     });
 
@@ -207,10 +213,14 @@ function formatLocalYMD(d) {
 
   return (
     <div ref={chartContainerRef} className="w-full flex flex-col gap-2">
-      {/* Chart Legend - Exclusively 'Not Recorded' with Black/White Ring */}
-      <div className="flex items-center justify-end gap-2 text-xs font-medium text-on-surface-variant mb-1">
+      {/* Chart Legend: Habit Solid Dot and Solid Black Dot for Not Recorded */}
+      <div className="flex items-center justify-between gap-2 text-xs font-medium text-on-surface-variant mb-1">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-on-surface bg-surface-bright"></span>
+          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: color }}></span>
+          <span className="text-on-surface font-semibold">{habit.name}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white inline-block"></span>
           <span className="text-on-surface font-semibold">Not Recorded</span>
         </div>
       </div>

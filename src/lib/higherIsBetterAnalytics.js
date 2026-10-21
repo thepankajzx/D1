@@ -1,6 +1,6 @@
 import { calculateRecoveryScore } from './recoveryAnalytics';
 
-// higherIsBetterAnalytics.js — O(N) single-pass analytics
+// higherIsBetterAnalytics.js - O(N) single-pass analytics
 const DAYS_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
 function toDateStr(d) { return d.toISOString().split("T")[0]; }

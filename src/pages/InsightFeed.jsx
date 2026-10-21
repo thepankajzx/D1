@@ -38,10 +38,28 @@ export default function InsightFeed() {
   const { habits, allSummaries } = useData();
   const { isHinglish, t } = useLanguage();
 
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const completedSummaries = useMemo(() => {
+    return (allSummaries || []).filter(s => {
+      const sDate = s.id || s.date;
+      return sDate && sDate < todayStr;
+    });
+  }, [allSummaries, todayStr]);
+
+  const isLocked = (completedSummaries?.length || 0) < 7;
+  const daysRemaining = Math.max(0, 7 - (completedSummaries?.length || 0));
+
   const [shareInsight, setShareInsight] = useState(null);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [explainerBadge, setExplainerBadge] = useState(null);
-  const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 7);
+  const [showLockModal, setShowLockModal] = useState(isLocked);
 
   // 4 Main Dropdown Sections: ALL CLOSED BY DEFAULT, SINGLE-OPEN ACCORDION
   const [openSection, setOpenSection] = useState(null);
@@ -76,20 +94,17 @@ export default function InsightFeed() {
     } catch (e) {}
   };
 
-  const isLocked = (allSummaries?.length || 0) < 7;
-  const daysRemaining = Math.max(0, 7 - (allSummaries?.length || 0));
-
   const sampleInsights = useMemo(() => [
-    // 1. TODAY SAMPLE
+    // 1. TODAY / YESTERDAY SAMPLE
     {
       id: 'sample_today_1',
       timeframe: 'today',
       archetype: 'duo',
       icon: 'join_inner',
       badge: { label: 'POWER DUO', color: 'sky' },
-      dateCategory: 'Today',
-      timeScope: isHinglish ? 'Today Focus' : 'Today Focus',
-      dateRange: isHinglish ? 'Active Pattern' : 'Active Pattern',
+      dateCategory: 'Yesterday',
+      timeScope: isHinglish ? 'Yesterday Focus' : 'Yesterday Focus',
+      dateRange: isHinglish ? 'Kal Ka Pattern' : 'Yesterday',
       headline: isHinglish
         ? 'Jab aap Morning Hydration karte ho, to Deep Work completion rate +42% badh jata hai'
         : 'When you complete Morning Hydration, Deep Work completion rate surges by +42%',
@@ -120,8 +135,8 @@ export default function InsightFeed() {
       archetype: 'time',
       icon: 'schedule',
       badge: { label: 'GOLDEN HOUR', color: 'amber' },
-      dateCategory: 'Today',
-      timeScope: isHinglish ? 'Today Trigger' : 'Today Trigger',
+      dateCategory: 'Yesterday',
+      timeScope: isHinglish ? 'Yesterday Trigger' : 'Yesterday Trigger',
       dateRange: '6 AM - 8 AM',
       headline: isHinglish
         ? 'Subah 7:30 AM se pehle kiye gaye Workouts ki consistency 95% rehti hai'
@@ -158,37 +173,37 @@ export default function InsightFeed() {
       timeScope: isHinglish ? 'Last 7 Days' : 'Last 7 Days',
       dateRange: isHinglish ? 'Past 7 Days' : 'Past 7 Days',
       headline: isHinglish
-        ? 'Daily Meditation ka score lagatar 7 dino se +45% upar badh raha hai'
-        : 'Daily Meditation has climbed +45% straight over the last 7 days',
+        ? 'Reading habit me pichhle 7 dino me +24% ka steady growth dekha gaya'
+        : 'Reading consistency climbed steadily by +24% over the past 7 days',
       subtitle: isHinglish
-        ? 'Score 40% se jump karke 85% par pahunch gaya.'
-        : 'Score jumped from 40% to 85% with solid daily consistency.',
+        ? 'Pichhle hafte: 58% ➔ Is hafte: 82%'
+        : 'Previous Week: 58% ➔ This Week: 82%',
       body: isHinglish
-        ? 'Pichhle hafte aapne har roz bina kisi gap ke 10-15 minute meditation complete kiya. Is momentum ko protect karo!'
-        : 'Across the past week, you sustained uninterrupted daily meditation sessions. Maintain this rising momentum!',
-      visualType: 'sparkline',
-      visualData: { points: [40, 45, 60, 70, 75, 80, 85], label: 'Daily Meditation', isPositive: true, accentColor: 'emerald' }
+        ? 'Pichhle hafte ke 4 misses ke mukable is hafte sirf 1 miss hua. Aapka evening consistency band kafi strong ho raha hai.'
+        : 'Recorded only 1 slip this week compared to 4 prior misses. Your evening retention routine is consolidating.',
+      visualType: 'comparison',
+      visualData: { bar1Label: 'Prior 7 Days', bar1Val: 58, bar2Label: 'Recent 7 Days', bar2Val: 82, accentColor: 'emerald' }
     },
     {
       id: 'sample_weekly_2',
       timeframe: 'weekly',
-      archetype: 'recovery',
-      icon: 'offline_bolt',
-      badge: { label: 'BOUNCE BACK', color: 'violet' },
+      archetype: 'bounce_back',
+      icon: 'verified',
+      badge: { label: 'COMEBACK HERO', color: 'violet' },
       dateCategory: 'Weekly',
-      timeScope: isHinglish ? 'Last 7 Days' : 'Last 7 Days',
-      dateRange: isHinglish ? '24h Rebound' : '24h Rebound',
+      timeScope: isHinglish ? 'Recent Comeback' : 'Recent Comeback',
+      dateRange: isHinglish ? 'Past 7 Days' : 'Past 7 Days',
       headline: isHinglish
-        ? 'Reading miss hone par aapne 24 ghante ke andar 88% bounce-back kiya'
-        : 'You rebounded from missed reading sessions within 24 hours 88% of the time',
+        ? 'Meditation me 2-din ke slip ke baad instant bounce back kiya'
+        : 'Rapid bounce back in Meditation following a 2-day dip',
       subtitle: isHinglish
-        ? 'Ek din miss hona kabhi bhi multi-day slump me nahi badla.'
-        : 'Single missed days never spiraled into extended slumps.',
+        ? 'Zero streak drop mentality: slip ke turant baad perfect score achieve kiya'
+        : 'Resilience triggered: converted friction immediately back to 100%',
       body: isHinglish
-        ? 'Tuesday ke slip ke baad Wednesday ko 45 minutes reading poori karke aapne streak ko protect kiya.'
-        : 'After a minor slip on Tuesday, you completed 45 mins reading on Wednesday, preserving your habit momentum.',
-      visualType: 'sparkline',
-      visualData: { points: [80, 85, 30, 85, 90, 85, 90], label: 'Reading Rebound', isPositive: true, accentColor: 'violet' }
+        ? 'Aapne friction ko streak killer nahi banne diya aur turant normal baseline pe return kiya.'
+        : 'Prevented minor drift from becoming habit decay by instantly re-engaging.',
+      visualType: 'comparison',
+      visualData: { bar1Label: 'Slip Day', bar1Val: 20, bar2Label: 'Rebound Day', bar2Val: 100, accentColor: 'violet' }
     },
 
     // 3. 14-DAY SAMPLE
@@ -272,7 +287,7 @@ export default function InsightFeed() {
 
   // Group insights into the 4 main timeframes
   const todayInsights = useMemo(() => {
-    return insights.filter(i => i.timeframe === 'today' || i.dateCategory === 'Today' || i.timeScope?.includes('Today'));
+    return insights.filter(i => i.timeframe === 'today' || i.dateCategory === 'Today' || i.dateCategory === 'Yesterday' || i.category === 'YESTERDAY' || i.timeScope?.includes('Today') || i.timeScope?.includes('Yesterday'));
   }, [insights]);
 
   const weeklyInsights = useMemo(() => {
@@ -290,8 +305,8 @@ export default function InsightFeed() {
   const sectionsConfig = [
     {
       key: 'today',
-      title: isHinglish ? "Today's Insights (टुडे)" : "Today's Daily Insights",
-      subtitle: isHinglish ? 'आज के ट्रिगर्स और डेली मोमेंटम' : 'Immediate triggers & daily momentum patterns',
+      title: isHinglish ? "Yesterday's Insights (कल का परफॉर्मेंस)" : "Yesterday's Insights (Latest Day)",
+      subtitle: isHinglish ? 'कल के ट्रिगर्स, कमबैक और डेली मोमेंटम' : 'Yesterday\'s triggers, comeback rebounds & daily momentum',
       items: todayInsights,
       icon: <Lightning size={18} weight="fill" className="text-amber-500" />,
       badgeColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
@@ -403,7 +418,7 @@ export default function InsightFeed() {
             >
               {isHinglish 
                 ? 'Today, Weekly (7D), 14 Days aur Monthly (30D) ke behavioral patterns aur Power Duos.'
-                : 'Your behavioral mirror — discovering hidden routines, Power Duos, and multi-week momentum patterns.'}
+                : 'Your behavioral mirror - discovering hidden routines, Power Duos, and multi-week momentum patterns.'}
             </p>
           </div>
         </div>
@@ -837,10 +852,10 @@ function InsightGuideModal({ onClose }) {
         ? 'मिड-वीक स्लंप से तुरंत वापस पटरी पर लौटने की ताक़त।'
         : 'Celebrating rapid recovery from mid-week performance dips.',
       rule: isHinglish
-        ? 'स्लिप होना सामान्य है — उसी हफ़्ते में 75%+ पर बाउंस-बैक करना ही असली रेजिलिएंस है।'
+        ? 'स्लिप होना सामान्य है - उसी हफ़्ते में 75%+ पर बाउंस-बैक करना ही असली रेजिलिएंस है।'
         : 'Slipping is human; bouncing right back to 75%+ within the same week cements true lifelong grit.',
       actionTip: isHinglish
-        ? '"Never Miss Twice" का नियम अपनाएँ — 1 दिन छूटे तो अगले दिन तुरंत रीसेट करें।'
+        ? '"Never Miss Twice" का नियम अपनाएँ - 1 दिन छूटे तो अगले दिन तुरंत रीसेट करें।'
         : 'Apply the "Never Miss Twice" golden rule to protect habit momentum.'
     },
     {
@@ -890,7 +905,7 @@ function InsightGuideModal({ onClose }) {
         ? 'हाल के दिनों में स्कोर गिरने पर तुरंत अलर्ट करता है ताकि आदत पूरी तरह टूटने से पहले बचाई जा सके।'
         : 'Detects a multi-day slide so you can intervene before the habit completely breaks.',
       actionTip: isHinglish
-        ? '2-Minute Rule अपनाएँ — फ्रिक्शन घटाकर सिर्फ़ 2 मिनट का मिनी-वर्जन करें।'
+        ? '2-Minute Rule अपनाएँ - फ्रिक्शन घटाकर सिर्फ़ 2 मिनट का मिनी-वर्जन करें।'
         : 'Apply the 2-Minute Rule to lower friction and reset the habit effortlessly.'
     },
     {

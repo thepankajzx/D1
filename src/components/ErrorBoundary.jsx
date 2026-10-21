@@ -32,7 +32,8 @@ export class ErrorBoundary extends React.Component {
     if (!isChunkLoadError || sessionStorage.getItem('chunk_load_error_reloaded')) {
       sessionStorage.removeItem('chunk_load_error_reloaded');
       this.setState({ error, errorInfo });
-      console.error("ErrorBoundary caught an error", error, errorInfo);
+      // Generic error logging for console, detailed logic is sent to DB
+      console.error("An application error occurred. Details have been logged.");
       logErrorToDb(error, errorInfo);
     }
   }

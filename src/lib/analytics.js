@@ -5,13 +5,13 @@ function computeStreaks(allSummaries, endDate, habitId = 'overall') {
 
   const scoreMap = new Map();
   sorted.forEach(s => {
-    let score = 0;
+    let isLogged = false;
     if (habitId === 'overall') {
-      score = s.overallScore || 0;
+      isLogged = s.overallScore !== undefined && s.overallScore !== null;
     } else {
-      score = (s.habitScores && s.habitScores[habitId] !== undefined) ? s.habitScores[habitId] : 0;
+      isLogged = (s.habitScores && s.habitScores[habitId] !== undefined && s.habitScores[habitId] !== null);
     }
-    scoreMap.set(s.id, score);
+    scoreMap.set(s.id, { isLogged });
   });
 
   const firstDate = new Date(sorted[0].id);
@@ -23,8 +23,9 @@ function computeStreaks(allSummaries, endDate, habitId = 'overall') {
   
   while (current <= lastDate) {
     const dateStr = current.toISOString().split('T')[0];
-    const score = scoreMap.get(dateStr) || 0;
-    if (score >= 60) {
+    const dayData = scoreMap.get(dateStr);
+    
+    if (dayData && dayData.isLogged) {
       tempStreak++;
       if (tempStreak > bestStreak) bestStreak = tempStreak;
     } else {
@@ -37,13 +38,13 @@ function computeStreaks(allSummaries, endDate, habitId = 'overall') {
   let checkDate = new Date(endDate);
   
   const endStr = checkDate.toISOString().split('T')[0];
-  const endScore = scoreMap.get(endStr) || 0;
+  const endData = scoreMap.get(endStr);
   
-  if (endScore >= 60) {
+  if (endData && endData.isLogged) {
     while (true) {
       const dStr = checkDate.toISOString().split('T')[0];
-      const s = scoreMap.get(dStr) || 0;
-      if (s >= 60) {
+      const sData = scoreMap.get(dStr);
+      if (sData && sData.isLogged) {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -53,12 +54,12 @@ function computeStreaks(allSummaries, endDate, habitId = 'overall') {
   } else {
     checkDate.setDate(checkDate.getDate() - 1);
     const yestStr = checkDate.toISOString().split('T')[0];
-    const yestScore = scoreMap.get(yestStr) || 0;
-    if (yestScore >= 60) {
+    const yestData = scoreMap.get(yestStr);
+    if (yestData && yestData.isLogged) {
       while (true) {
         const dStr = checkDate.toISOString().split('T')[0];
-        const s = scoreMap.get(dStr) || 0;
-        if (s >= 60) {
+        const sData = scoreMap.get(dStr);
+        if (sData && sData.isLogged) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);
         } else {

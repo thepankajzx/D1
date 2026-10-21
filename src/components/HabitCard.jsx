@@ -1,16 +1,19 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { calculateScore } from '../lib/scoring';
+import { calculateScore, isNightHabit } from '../lib/scoring';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import { useNavigate } from 'react-router-dom';
 import { Check, X } from '@phosphor-icons/react';
+import { formatDuration, normalizeDurationToMinutes, isDurationHabit } from '../lib/formatDuration';
+import { formatTimeVal } from '../lib/timeFormat';
 
 
 // Helper to format minutes into HH:MM
 function formatTime(minutes) {
   if (minutes == null) return "00:00";
-  let h = Math.floor(minutes / 60) % 24;
-  const m = minutes % 60;
+  const totalMins = (minutes % 1440 + 1440) % 1440;
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
@@ -18,7 +21,7 @@ function formatTime(minutes) {
 function parseTime(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
-  return h * 60 + m;
+  return (h || 0) * 60 + (m || 0);
 }
 
 function HabitDetailSheet({ habit, allSummaries, onClose }) {
@@ -205,12 +208,21 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
     setVal(newRawVal);
     
     let adjustedVal = newRawVal;
-    if (habit.scoringType === 'time' && habit.id.includes('sleep') && newRawVal < 12 * 60) {
+    const isNight = (habit.scoringType === 'time' || habit.unit === 'Time' || habit.unit === 'time') && isNightHabit(habit);
+    if (isNight && adjustedVal !== null && adjustedVal !== undefined && adjustedVal < 12 * 60) {
       adjustedVal += 1440;
     }
 
-    const target100 = habit.target100 !== undefined && habit.target100 !== null ? habit.target100 : (habit.userTarget100 !== undefined && habit.userTarget100 !== null ? habit.userTarget100 : (habit.target ?? 10));
-    const target0 = habit.target0 !== undefined && habit.target0 !== null ? habit.target0 : (habit.userTarget0 !== undefined && habit.userTarget0 !== null ? habit.userTarget0 : (habit.floor ?? 0));
+    let target100 = habit.userTarget100 !== undefined && habit.userTarget100 !== null ? habit.userTarget100 : (habit.target100 !== undefined && habit.target100 !== null ? habit.target100 : (habit.target ?? 10));
+    let target0 = habit.userTarget0 !== undefined && habit.userTarget0 !== null ? habit.userTarget0 : (habit.target0 !== undefined && habit.target0 !== null ? habit.target0 : (habit.floor ?? 0));
+    
+    if (isNight) {
+      if (typeof target100 === 'number' && target100 < 12 * 60) target100 += 1440;
+      if (typeof target0 === 'number' && target0 < 12 * 60) target0 += 1440;
+    } else if (habit.scoringType === 'duration' || isDurationHabit(habit)) {
+      target100 = normalizeDurationToMinutes(target100, habit.unit);
+      target0 = normalizeDurationToMinutes(target0, habit.unit);
+    }
 
     const computedScore = calculateScore(
       habit.scoringType, 
@@ -227,8 +239,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
   const renderInputInner = () => {
     switch (habit.scoringType) {
       case 'binary': {
-        const isWrongSelected = val === 0;
-        const isRightSelected = val === 1;
+        const isQuit = habit.direction === 'lower_is_better';
+        const isWrongSelected = isQuit ? val === 1 : val === 0;
+        const isRightSelected = isQuit ? val === 0 : val === 1;
 
         return (
           <div className="flex items-center gap-2">
@@ -237,15 +250,15 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                handleChange(isWrongSelected ? null : 0);
+                handleChange(isWrongSelected ? null : (isQuit ? 1 : 0));
               }}
               className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center cursor-pointer select-none active:scale-95 transition-all ${
                 isWrongSelected
                   ? 'bg-[#ef4444] text-white shadow-sm shadow-red-500/30 ring-2 ring-red-500/40'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 border border-slate-200/80 dark:border-slate-700'
               }`}
-              title="Mark as Incomplete (0%)"
-              aria-label="No / Wrong"
+              title={isQuit ? "Mark as Slipped / Did it (0%)" : "Mark as Incomplete (0%)"}
+              aria-label={isQuit ? "Slipped / Did it" : "No / Wrong"}
             >
               <X size={16} weight="bold" />
             </button>
@@ -255,15 +268,15 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                handleChange(isRightSelected ? null : 1);
+                handleChange(isRightSelected ? null : (isQuit ? 0 : 1));
               }}
               className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center cursor-pointer select-none active:scale-95 transition-all ${
                 isRightSelected
                   ? 'bg-[#10b981] text-white shadow-sm shadow-emerald-500/30 ring-2 ring-emerald-500/40'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-emerald-500 border border-slate-200/80 dark:border-slate-700'
               }`}
-              title="Mark as Completed (100%)"
-              aria-label="Yes / Right"
+              title={isQuit ? "Mark as Stayed Clean / Avoided (100%)" : "Mark as Completed (100%)"}
+              aria-label={isQuit ? "Clean / Avoided" : "Yes / Right"}
             >
               <Check size={16} weight="bold" />
             </button>
@@ -376,17 +389,21 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
       case 'number':
       case 'duration':
       default:
+        const isDuration = habit.scoringType === 'duration' || isDurationHabit(habit);
         const mult = 1;
         const dVal = val * mult;
-        const dTarget100 = (habit.target100 || 0) * mult;
-        const dTarget0 = (habit.target0 || 0) * mult;
+        let dTarget100 = (habit.userTarget100 !== undefined && habit.userTarget100 !== null ? habit.userTarget100 : (habit.target100 || 0)) * mult;
+        let dTarget0 = (habit.userTarget0 !== undefined && habit.userTarget0 !== null ? habit.userTarget0 : (habit.target0 || 0)) * mult;
+        if (isDuration) {
+          dTarget100 = normalizeDurationToMinutes(dTarget100, habit.unit);
+          dTarget0 = normalizeDurationToMinutes(dTarget0, habit.unit);
+        }
         
         const maxSlider = Math.max(dTarget100, dTarget0) > 0 
           ? Math.max(dTarget100, dTarget0) * 1.5 
-          : 100;
+          : (isDuration ? 720 : 100);
         const minSlider = 0;
-        
-        const sliderStep = '1'; // Snap to whole numbers
+        const sliderStep = isDuration ? '5' : '1';
         
         // Generate Dynamic Slider Track Background
         const generateGradient = () => {
@@ -519,40 +536,28 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
 
                             {showManualInput && (
                 <div className="relative flex items-center shrink-0 ml-1 gap-1">
-                  {habit.scoringType === 'duration' ? (() => {
-                    const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
-                    let hrs = 0;
-                    let mins = 0;
-                    if (isBaseHours) {
-                      hrs = Math.floor(val);
-                      mins = Math.round((val - hrs) * 60);
-                    } else {
-                      hrs = Math.floor(val / 60);
-                      mins = Math.round(val % 60);
-                    }
+                  {habit.scoringType === 'duration' || isDurationHabit(habit) ? (() => {
+                    let totalMins = normalizeDurationToMinutes(val, habit.unit);
+                    const hrs = Math.floor(totalMins / 60);
+                    const mins = totalMins % 60;
                     return (
                       <>
                         <input
                           type="number"
                           aria-label="Hours"
                           min="0"
-                          value={hrs === 0 && mins === 0 ? '' : hrs}
+                          max="24"
+                          value={hrs === 0 && mins === 0 ? '' : (hrs || '')}
                           placeholder="hr"
                           onChange={(e) => {
-                            const newHrs = Number(e.target.value) || 0;
-                            if (isBaseHours) {
-                              setVal(newHrs + (mins / 60));
-                            } else {
-                              setVal((newHrs * 60) + mins);
-                            }
+                            const newHrs = Math.max(0, parseInt(e.target.value) || 0);
+                            const updated = (newHrs * 60) + mins;
+                            setVal(updated);
                           }}
                           onBlur={(e) => {
-                            const newHrs = Number(e.target.value) || 0;
-                            if (isBaseHours) {
-                              handleChange(newHrs + (mins / 60));
-                            } else {
-                              handleChange((newHrs * 60) + mins);
-                            }
+                            const newHrs = Math.max(0, parseInt(e.target.value) || 0);
+                            const updated = (newHrs * 60) + mins;
+                            handleChange(updated);
                           }}
                           className="w-10 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-1 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
                         />
@@ -562,23 +567,17 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                           aria-label="Minutes"
                           min="0"
                           max="59"
-                          value={hrs === 0 && mins === 0 ? '' : mins}
+                          value={hrs === 0 && mins === 0 ? '' : (mins || '')}
                           placeholder="min"
                           onChange={(e) => {
-                            const newMins = Number(e.target.value) || 0;
-                            if (isBaseHours) {
-                              setVal(hrs + (newMins / 60));
-                            } else {
-                              setVal((hrs * 60) + newMins);
-                            }
+                            const newMins = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                            const updated = (hrs * 60) + newMins;
+                            setVal(updated);
                           }}
                           onBlur={(e) => {
-                            const newMins = Number(e.target.value) || 0;
-                            if (isBaseHours) {
-                              handleChange(hrs + (newMins / 60));
-                            } else {
-                              handleChange((hrs * 60) + newMins);
-                            }
+                            const newMins = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                            const updated = (hrs * 60) + newMins;
+                            handleChange(updated);
                           }}
                           className="w-10 h-8 bg-surface-container-lowest border border-outline-variant/60 rounded-[8px] px-1 py-1 text-center font-mono-data text-on-surface focus:border-primary focus:outline-none transition-colors text-[13px] font-bold"
                         />
@@ -628,28 +627,14 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
 
   const formatDisplayValue = () => {
     if (val === null || val === undefined) return '--';
-    if (habit.scoringType === 'time') return formatTime(val);
+    if (habit.scoringType === 'time') return formatTimeVal(val);
     if (habit.scoringType === 'binary') {
       return val === 1 ? 'Yes' : 'No';
     }
     if (habit.scoringType === 'subjective') return `${val}/10`;
     
-    if (habit.scoringType === 'duration') {
-      const isBaseHours = habit.unit?.toLowerCase().startsWith('h');
-      let hrs = 0;
-      let mins = 0;
-      if (isBaseHours) {
-        hrs = Math.floor(val);
-        mins = Math.round((val - hrs) * 60);
-      } else {
-        hrs = Math.floor(val / 60);
-        mins = Math.round(val % 60);
-      }
-      let parts = [];
-      if (hrs > 0) parts.push(`${hrs}h`);
-      if (mins > 0) parts.push(`${mins}min`);
-      if (parts.length === 0) return '0min';
-      return parts.join(' ');
+    if (habit.scoringType === 'duration' || isDurationHabit(habit)) {
+      return formatDuration(normalizeDurationToMinutes(val, habit.unit), 'standard') || '0 mins';
     }
     
     // Fallback for number and other types
