@@ -2374,6 +2374,12 @@ export default function Profile() {
         </div>
       )}
 
+            {/* ── EARLY UNLOCK WARNING MODAL ────────────────────────────────────── */}
+      <EarlyUnlockWarningModal
+        isOpen={showEarlyUnlockModal}
+        onClose={() => setShowEarlyUnlockModal(false)}
+      />
+
       {/* ── PAYWALL MODAL ────────────────────────────────────────────────────── */}
       {showPaywall && <ProModal onClose={() => setShowPaywall(false)} />}
     </div>
