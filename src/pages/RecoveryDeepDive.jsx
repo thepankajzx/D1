@@ -87,6 +87,13 @@ export default function RecoveryDeepDive() {
       const seed = (HABITS_SEED_DATA || []).find(h => h.id === habitId);
       if (seed) return seed;
     }
+    try {
+      const lastId = localStorage.getItem('last_viewed_deep_dive_habit_id');
+      if (lastId) {
+        const found = habits && habits.find(h => h.id === lastId);
+        if (found) return found;
+      }
+    } catch (e) {}
     return activeHabits[0] || (HABITS_SEED_DATA || [])[0] || SAMPLE_WORKOUT_HABIT;
   }, [habits, habitId, isSamplePreview, activeHabits]);
 
@@ -162,27 +169,9 @@ export default function RecoveryDeepDive() {
       <div className="flex items-center gap-3.5 px-1">
         <HabitIcon habit={habit} size={48} className="shrink-0 shadow-xs" />
         <div className="min-w-0 flex-1">
-          {activeHabits.length > 1 ? (
-            <div className="relative inline-flex items-center max-w-full group">
-              <select 
-                value={habit.id} 
-                onChange={(e) => navigate(`/analytics/deep-dive/recovery?habitId=${e.target.value}`)}
-                className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate bg-transparent border-none outline-none cursor-pointer pr-6 appearance-none leading-tight"
-                title="Switch habit"
-              >
-                {activeHabits.map(h => (
-                  <option key={h.id} value={h.id} className="text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 text-sm font-bold">
-                    {h.name}
-                  </option>
-                ))}
-              </select>
-              <CaretDown size={15} weight="bold" className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors" />
-            </div>
-          ) : (
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
-              {habit.name}
-            </h1>
-          )}
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+            {habit.name}
+          </h1>
           <span className="text-xs text-slate-400 font-medium truncate block">
             {habit.category ? habit.category + ' Focus • Resilience Hub' : 'Habit Resilience Hub'}
           </span>

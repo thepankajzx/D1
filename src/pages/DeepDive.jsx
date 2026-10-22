@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Icon from '../components/Icon';
 import BinaryTemplate from '../components/DeepDive/BinaryTemplate';
 import HigherIsBetterTemplate from '../components/DeepDive/HigherIsBetterTemplate';
@@ -113,6 +113,14 @@ export default function DeepDive() {
     if (isSamplePreview) return [SAMPLE_WORKOUT_HABIT, ...(habits || []), ...(deletedHabits || [])];
     return [...(habits || []), ...(deletedHabits || [])];
   }, [isSamplePreview, habits, deletedHabits]);
+
+  useEffect(() => {
+    if (habit?.id) {
+      try {
+        localStorage.setItem('last_viewed_deep_dive_habit_id', habit.id);
+      } catch (e) {}
+    }
+  }, [habit?.id]);
 
   if (!habit) {
     return (
