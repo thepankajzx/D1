@@ -1,10 +1,29 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Scroll, Gavel } from '@phosphor-icons/react';
 import Icon from '../components/Icon';
 
 export default function Terms() {
+  const navigate = useNavigate();
+
   return (
     <div className="animate-fade-in w-full max-w-4xl mx-auto pt-4 pb-12 px-4 sm:px-0">
+      <div className="mb-3">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/login');
+            }
+          }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-outline-variant/40 hover:bg-surface-container-high text-on-surface text-xs font-bold transition-all shadow-2xs cursor-pointer"
+        >
+          <span>←</span> Back
+        </button>
+      </div>
+
       <div className="bg-surface rounded-3xl border border-outline-variant/30 overflow-hidden shadow-xs">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary/10 to-surface p-6 sm:p-8 border-b border-outline-variant/30 flex items-center gap-4">

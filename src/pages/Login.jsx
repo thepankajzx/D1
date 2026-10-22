@@ -192,70 +192,81 @@ export default function Login() {
           --emerald-core: #10B981;
           --emerald-deep: #059669;
           --gold-warm: #F59E0B;
-          --surface-pearl: #F4F8F5;
-          --surface-card: #FFFFFF;
         }
 
         .login-stage-wrapper {
           width: 100vw;
-          min-height: 100dvh;
           height: 100dvh;
+          min-height: 100dvh;
+          max-height: 100dvh;
           overflow-y: auto;
           overflow-x: hidden;
-          background: #E4ECE7;
+          background: #0E1612;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: max(14px, env(safe-area-inset-top, 14px)) 12px max(14px, env(safe-area-inset-bottom, 14px));
-          box-sizing: border-box;
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           user-select: none;
           color: var(--ink);
+          box-sizing: border-box;
         }
 
         @media (min-width: 481px) {
           .login-stage-wrapper {
             background:
-              radial-gradient(circle at 20% 15%, rgba(16, 185, 129, 0.14), transparent 38%),
-              radial-gradient(circle at 80% 85%, rgba(245, 158, 11, 0.1), transparent 40%),
-              linear-gradient(135deg, #DCE7E0 0%, #EDF3EF 50%, #DFEAE3 100%);
+              radial-gradient(circle at 50% 25%, rgba(16, 185, 129, 0.16), transparent 55%),
+              radial-gradient(circle at 80% 85%, rgba(245, 158, 11, 0.08), transparent 45%),
+              linear-gradient(145deg, #09120E 0%, #111D17 50%, #0A130F 100%);
+            padding: 16px;
           }
         }
 
-        /* ── Centered Phone Card (No awkward space in between) ── */
+        /* ── Centered Phone Shell: 100dvh on mobile, Titanium bezel on desktop ── */
         .phone-frame {
           position: relative;
           width: 100%;
-          max-width: 392px;
+          max-width: 390px;
+          height: 100dvh;
+          max-height: 100dvh;
           background: #FFFFFF;
-          border-radius: 38px;
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
           overflow: hidden;
-          box-shadow:
-            0 0 0 1px rgba(7, 26, 18, 0.08),
-            0 0 0 6px #F7FAF8,
-            0 24px 50px -12px rgba(7, 26, 18, 0.22),
-            0 8px 20px -4px rgba(16, 185, 129, 0.12);
-          margin: auto;
+          box-sizing: border-box;
         }
 
-        /* ── Top Hero Canvas (~44% height of card) ── */
+        @media (min-width: 481px) {
+          .phone-frame {
+            height: min(840px, 96dvh);
+            max-height: 840px;
+            border-radius: 40px;
+            box-shadow:
+              0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 0 0 8px #1A2620,
+              0 0 0 9.5px rgba(255, 255, 255, 0.15),
+              0 30px 70px -15px rgba(0, 0, 0, 0.65),
+              0 10px 28px -6px rgba(16, 185, 129, 0.2);
+          }
+        }
+
+        /* ── Top Hero Canvas (~44% height) ── */
         .hero-section {
           position: relative;
-          height: 318px;
-          padding: 16px 18px 14px 20px;
+          flex: 0 0 auto;
+          height: clamp(280px, 42vh, 325px);
+          padding: 16px 16px 10px 18px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           overflow: hidden;
           isolation: isolate;
           background:
-            radial-gradient(circle at 86% 18%, rgba(16, 185, 129, 0.20), transparent 42%),
-            radial-gradient(circle at 76% 85%, rgba(245, 158, 11, 0.16), transparent 45%),
-            radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.95), transparent 50%),
-            linear-gradient(155deg, #F6FAF7 0%, #ECF5F0 52%, #E2F0E8 100%);
-          border-bottom: 1px solid rgba(16, 185, 129, 0.16);
+            radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.22), transparent 44%),
+            radial-gradient(circle at 75% 85%, rgba(245, 158, 11, 0.15), transparent 42%),
+            radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.95), transparent 48%),
+            linear-gradient(160deg, #F3F9F5 0%, #E8F4ED 50%, #DAEDE1 100%);
+          border-bottom: 1px solid rgba(16, 185, 129, 0.15);
           box-sizing: border-box;
         }
 
@@ -264,238 +275,150 @@ export default function Login() {
           inset: 0;
           z-index: -2;
           background-image:
-            linear-gradient(to right, rgba(7, 26, 18, 0.038) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(7, 26, 18, 0.038) 1px, transparent 1px);
-          background-size: 20px 20px;
+            linear-gradient(to right, rgba(7, 26, 18, 0.035) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(7, 26, 18, 0.035) 1px, transparent 1px);
+          background-size: 18px 18px;
           mask-image: radial-gradient(ellipse at 60% 45%, black 35%, transparent 88%);
           -webkit-mask-image: radial-gradient(ellipse at 60% 45%, black 35%, transparent 88%);
         }
 
-        .orbital-core {
+        /* Background flowing momentum path */
+        .hero-wave-curve {
           position: absolute;
-          right: -28px;
-          bottom: -36px;
-          width: 210px;
-          height: 210px;
-          z-index: 1;
+          inset: 0;
+          z-index: -1;
           pointer-events: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          opacity: 0.75;
         }
 
-        .orbital-aura {
-          position: absolute;
-          inset: 18px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 45deg,
-            rgba(16, 185, 129, 0.28),
-            rgba(245, 158, 11, 0.22),
-            rgba(6, 182, 212, 0.18),
-            rgba(16, 185, 129, 0.28)
-          );
-          filter: blur(22px);
-          animation: pulseAura 5s ease-in-out infinite alternate;
-        }
-
-        .orbital-ring-outer {
-          position: absolute;
-          inset: 6px;
-          border-radius: 50%;
-          border: 1px solid rgba(16, 185, 129, 0.22);
-          background: radial-gradient(circle, transparent 58%, rgba(255, 255, 255, 0.45) 100%);
-          box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9);
-        }
-
-        .orbital-ring-dashed {
-          position: absolute;
-          inset: 24px;
-          border-radius: 50%;
-          border: 1.5px dashed rgba(5, 150, 105, 0.32);
-          animation: orbitSpin 28s linear infinite;
-        }
-
-        .orbital-ring-inner {
-          position: absolute;
-          inset: 44px;
-          border-radius: 50%;
-          border: 1px solid rgba(245, 158, 11, 0.35);
-          background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(16, 185, 129, 0.08));
-          backdrop-filter: blur(4px);
-        }
-
-        .sunlit-beam {
-          position: absolute;
-          width: 180px;
-          height: 2px;
-          right: 10px;
-          bottom: 58px;
-          background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.55), rgba(245, 158, 11, 0.7), transparent);
-          transform: rotate(-28deg);
-          filter: blur(0.5px);
-          z-index: 1;
-        }
-
-        @keyframes orbitSpin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes pulseAura {
-          0% { transform: scale(0.94); opacity: 0.75; }
-          100% { transform: scale(1.06); opacity: 1; }
-        }
-
+        /* Editorial Typography */
         .editorial-title {
-          font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-          font-size: 28px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Inter', sans-serif;
+          font-size: 27px;
           font-weight: 800;
-          line-height: 0.97;
-          letter-spacing: -0.045em;
-          color: var(--ink);
+          line-height: 1.0;
+          letter-spacing: -0.04em;
+          color: #0A1E14;
         }
 
-        .emerald-metallic {
-          position: relative;
-          display: inline-block;
-          background: linear-gradient(135deg, #047857 0%, #10B981 52%, #0D9488 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          padding-bottom: 2px;
-        }
-
-        .emerald-metallic::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: -2px;
-          width: 100%;
-          height: 2.5px;
-          border-radius: 999px;
-          background: linear-gradient(90deg, #10B981 0%, #34D399 60%, transparent 100%);
-          box-shadow: 0 2px 10px rgba(16, 185, 129, 0.45);
-        }
-
-        .heatmap-glass-card {
+        /* Flat, Crisp Frosted Consistency Card (Upright, not rotated) */
+        .consistency-glass-card {
           position: absolute;
           top: 14px;
-          right: 12px;
-          width: 164px;
-          padding: 10px 10px 9px;
+          right: 14px;
+          width: 154px;
+          padding: 9px 10px 8px;
           border-radius: 18px;
-          background: linear-gradient(155deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 250, 246, 0.76) 100%);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border: 1px solid rgba(255, 255, 255, 0.95);
           box-shadow:
-            0 18px 34px -8px rgba(7, 26, 18, 0.13),
-            0 4px 12px -2px rgba(16, 185, 129, 0.10),
-            inset 0 1px 0 rgba(255, 255, 255, 1),
-            0 0 0 1px rgba(16, 185, 129, 0.16);
-          transform: perspective(650px) rotateY(-8deg) rotateX(4deg) rotateZ(1.2deg);
-          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+            0 12px 28px -6px rgba(7, 26, 18, 0.10),
+            0 2px 8px rgba(16, 185, 129, 0.08),
+            inset 0 1px 0 #FFFFFF;
           z-index: 15;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
+        .consistency-glass-card:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 32px -6px rgba(7, 26, 18, 0.14);
+        }
+
+        /* Heatmap cell */
         .hm-cell {
           aspect-ratio: 1;
-          border-radius: 3.5px;
-          transition: transform 0.18s ease, box-shadow 0.18s ease;
+          border-radius: 3px;
+          transition: transform 0.15s ease;
           cursor: pointer;
         }
         .hm-cell:hover {
-          transform: scale(1.28);
+          transform: scale(1.25);
           z-index: 5;
         }
-        .hm-0 {
-          background: rgba(7, 26, 18, 0.06);
-          box-shadow: inset 0 1px 1px rgba(7, 26, 18, 0.04);
-        }
-        .hm-1 {
-          background: #D1FAE5;
-          border: 0.5px solid rgba(16, 185, 129, 0.2);
-        }
-        .hm-2 {
-          background: #6EE7B7;
-          border: 0.5px solid rgba(16, 185, 129, 0.35);
-        }
-        .hm-3 {
-          background: #34D399;
-          border: 0.5px solid rgba(5, 150, 105, 0.4);
-        }
-        .hm-4 {
-          background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-        }
+        .hm-0 { background: #E6ECE8; }
+        .hm-1 { background: #C8E8D9; }
+        .hm-2 { background: #71D4A6; }
+        .hm-3 { background: #22B577; }
+        .hm-4 { background: #0B7345; }
 
+        /* Progress ring dial */
         .gauge-disc {
           position: absolute;
-          right: 20px;
+          right: 18px;
           bottom: 10px;
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 244, 0.88) 100%);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.95);
           box-shadow:
-            0 14px 28px -4px rgba(7, 26, 18, 0.16),
-            0 0 20px rgba(16, 185, 129, 0.22),
-            inset 0 1.5px 0 rgba(255, 255, 255, 1),
-            0 0 0 1px rgba(16, 185, 129, 0.22);
+            0 14px 28px -6px rgba(7, 26, 18, 0.12),
+            0 2px 8px rgba(16, 185, 129, 0.12);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 20;
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.2s ease;
           cursor: pointer;
         }
 
         .gauge-disc:hover {
-          transform: scale(1.06) translateY(-2px);
+          transform: scale(1.05);
         }
 
         .step-node {
-          width: 30px;
-          height: 30px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.25s ease;
+          transition: transform 0.2s ease;
           position: relative;
           z-index: 2;
         }
-
-        .step-connector {
-          width: 11px;
-          height: 1.5px;
-          border-radius: 2px;
-          margin-bottom: 13px;
+        .step-node:hover {
+          transform: scale(1.08);
         }
 
-        /* ── Bottom Form Section: Tight & Centered (No dead space) ── */
+        .step-connector {
+          width: 10px;
+          height: 1.5px;
+          border-radius: 1px;
+          margin-bottom: 12px;
+        }
+
+        /* ── Bottom Form Section: Middle-Centered, No Dead Space ── */
         .form-section {
-          padding: 12px 20px 14px;
+          flex: 1 1 auto;
           background: #FFFFFF;
+          border-top-left-radius: 34px;
+          border-top-right-radius: 34px;
+          margin-top: -16px;
+          padding: 12px 18px 12px;
           display: flex;
           flex-direction: column;
-          gap: 9px;
-          z-index: 10;
+          justify-content: center;
+          gap: 7px;
+          z-index: 30;
+          box-shadow: 0 -8px 24px -6px rgba(7, 26, 18, 0.06);
           box-sizing: border-box;
         }
 
         .pearl-input {
           width: 100%;
-          height: 40px;
-          padding: 0 13px;
-          border-radius: 12px;
-          background: #F3F7F5;
-          border: 1px solid #E2EBE6;
-          color: var(--ink);
-          font-size: 13.5px;
+          height: 39px;
+          padding-left: 36px;
+          padding-right: 12px;
+          border-radius: 14px;
+          background: #F4F7F5;
+          border: 1px solid #DFE7E2;
+          color: #071A12;
+          font-size: 13px;
           font-weight: 500;
           transition: all 0.2s ease;
           outline: none;
@@ -503,22 +426,21 @@ export default function Login() {
         }
 
         .pearl-input::placeholder {
-          color: #82968C;
+          color: #83978E;
           font-weight: 400;
         }
 
         .pearl-input:focus {
           background: #FFFFFF;
           border-color: #10B981;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14), 0 2px 6px rgba(7, 26, 18, 0.04);
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         .cta-primary {
-          position: relative;
           width: 100%;
-          height: 42px;
-          border-radius: 13px;
-          background: linear-gradient(135deg, #071A12 0%, #0E3323 55%, #072016 100%);
+          height: 41px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, #072217 0%, #0D3524 60%, #072217 100%);
           color: #FFFFFF;
           font-size: 13.5px;
           font-weight: 700;
@@ -528,58 +450,53 @@ export default function Login() {
           justify-content: center;
           gap: 8px;
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.22),
-            0 10px 20px -5px rgba(16, 185, 129, 0.34),
-            0 4px 10px rgba(7, 26, 18, 0.22);
-          transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow: hidden;
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            0 8px 18px -4px rgba(7, 34, 23, 0.32);
+          transition: all 0.2s ease;
           cursor: pointer;
           border: none;
         }
 
         .cta-primary:hover {
-          transform: translateY(-1px);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.28),
-            0 14px 24px -4px rgba(16, 185, 129, 0.42),
-            0 6px 14px rgba(7, 26, 18, 0.26);
+          transform: translateY(-0.5px);
+          box-shadow: 0 10px 22px -4px rgba(7, 34, 23, 0.38);
         }
 
         .cta-primary:active {
           transform: translateY(0.5px) scale(0.99);
         }
 
-        /* ── Compact adjustments for smaller heights (e.g. iPhone SE / Browser bars) ── */
+        /* Extra compact for shorter screen heights (e.g. iPhone SE 667px) */
         @media (max-height: 700px) {
           .hero-section {
-            height: 275px;
-            padding: 12px 16px 10px 18px;
+            height: 255px;
+            padding: 10px 14px 6px 16px;
           }
           .editorial-title {
-            font-size: 24px;
+            font-size: 22px;
           }
-          .heatmap-glass-card {
-            transform: scale(0.88) perspective(650px) rotateY(-8deg) rotateX(4deg);
-            transform-origin: top right;
+          .consistency-glass-card {
+            width: 142px;
+            padding: 7px 8px 6px;
             top: 10px;
-            right: 8px;
+            right: 10px;
           }
           .gauge-disc {
-            width: 70px;
-            height: 70px;
+            width: 68px;
+            height: 68px;
             bottom: 6px;
-            right: 14px;
+            right: 12px;
           }
           .form-section {
-            padding: 10px 16px 12px;
-            gap: 7px;
+            padding: 8px 14px 10px;
+            gap: 6px;
           }
           .pearl-input {
             height: 36px;
             font-size: 12.5px;
           }
           .cta-primary {
-            height: 39px;
+            height: 38px;
             font-size: 13px;
           }
         }
@@ -589,70 +506,78 @@ export default function Login() {
       <main className="phone-frame">
         {/* Subtle In-Frame Interactive Toast Notification */}
         <div 
-          className={`pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 transition-all duration-300 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-[#071A12]/95 text-white shadow-xl border border-emerald-400/30 backdrop-blur-md ${
+          className={`pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 transition-all duration-300 z-50 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#071A12]/95 text-white shadow-xl border border-emerald-400/30 backdrop-blur-md ${
             toastActive ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0'
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
           <span className="text-[11px] font-semibold tracking-wide whitespace-nowrap">{toastText}</span>
         </div>
 
         {/* ========================================================
-             TOP HERO SECTION (PERFECTLY PROPORTIONED)
+             TOP HERO SECTION
              ======================================================== */}
         <section className="hero-section">
           <div className="hero-grid"></div>
 
-          {/* Sunlit Orbital Prism Core */}
-          <div className="sunlit-beam"></div>
-          <div className="orbital-core" aria-hidden="true">
-            <div className="orbital-aura"></div>
-            <div className="orbital-ring-outer"></div>
-            <div className="orbital-ring-dashed"></div>
-            <div className="orbital-ring-inner"></div>
-          </div>
+          {/* Background flowing wave curve */}
+          <svg className="hero-wave-curve" viewBox="0 0 390 300" fill="none" preserveAspectRatio="none">
+            <path
+              d="M-20 220 C 80 240, 140 180, 240 210 C 290 225, 330 200, 410 160"
+              stroke="#A8DCC2"
+              strokeWidth="2"
+              strokeDasharray="4 4"
+            />
+            <circle cx="365" cy="170" r="4.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="2.5" />
+          </svg>
 
-          {/* LEFT COLUMN: Eyebrow + Headline + Subcopy */}
-          <div className="relative z-20 max-w-[56%]">
-            {/* Glass Pill Eyebrow Badge */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/85 border border-emerald-600/20 shadow-[0_2px_8px_rgba(7,26,18,0.05),inset_0_1px_0_#FFF] mb-2.5">
+          {/* TOP-LEFT: Eyebrow + Headline + Subcopy */}
+          <div className="relative z-20 max-w-[55%]">
+            {/* Pill Eyebrow Badge */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/90 border border-emerald-600/25 shadow-xs mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_#10B981]"></span>
               </span>
-              <span className="text-[8.5px] font-extrabold tracking-[0.14em] uppercase text-[#0F3826]">
+              <span className="text-[8px] font-extrabold tracking-[0.12em] uppercase text-[#0B3522]">
                 Understand the pattern
               </span>
+              <span className="text-emerald-700 font-bold text-[9px] leading-none">→</span>
             </div>
 
-            {/* Editorial Headline */}
+            {/* Editorial Headline with Brush Underline under "checkbox." */}
             <h1 className="editorial-title">
               A habit<br />
               isn’t just a<br />
-              <span className="emerald-metallic">checkbox.</span>
+              <span className="relative inline-block text-[#065F46]">
+                checkbox.
+                <svg className="absolute -bottom-1 left-0 w-full h-2.5 text-[#10B981]" viewBox="0 0 130 10" fill="none">
+                  <path d="M2 6C32 2 95 2 128 5C100 8 48 8 16 9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                </svg>
+              </span>
             </h1>
 
             {/* Subcopy */}
-            <p className="mt-2 text-[12px] leading-snug text-[#465E52] font-medium">
-              It’s a pattern of <strong className="text-[#071A12] font-bold">your future.</strong>
+            <p className="mt-2 text-[11px] leading-tight text-[#455D51] font-medium">
+              It’s a pattern of <strong className="text-[#071A12] font-extrabold">your future.</strong>
             </p>
           </div>
 
-          {/* BOTTOM-LEFT: 4-Step Connected Icon Timeline */}
-          <div className="relative z-20 flex items-center mt-auto pt-2 max-w-[66%]">
+          {/* BOTTOM-LEFT: 4-Step Connected Sequence Timeline */}
+          <div className="relative z-20 flex items-center mt-auto pt-2 max-w-[68%]">
             {/* 1. THOUGHT */}
             <div 
               className="flex flex-col items-center gap-1 group cursor-pointer" 
               onClick={() => triggerToast('Step 1: Every habit begins as a single thought')}
             >
-              <div className="step-node bg-white/85 border border-slate-300/80 shadow-xs text-slate-600 group-hover:border-emerald-500 group-hover:text-emerald-700">
+              <div className="step-node bg-white/90 border border-slate-300 text-slate-600 shadow-2xs group-hover:border-emerald-500 group-hover:text-emerald-700">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18h6" />
                   <path d="M10 22h4" />
                   <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
                 </svg>
               </div>
-              <span className="text-[7.5px] font-bold tracking-[0.11em] uppercase text-[#5A7065]">Thought</span>
+              <span className="text-[7px] font-bold tracking-[0.1em] uppercase text-[#566B60]">Thought</span>
             </div>
 
             <div className="step-connector bg-gradient-to-r from-slate-300 to-emerald-400"></div>
@@ -662,12 +587,12 @@ export default function Login() {
               className="flex flex-col items-center gap-1 group cursor-pointer" 
               onClick={() => triggerToast('Step 2: Spark daily micro-actions')}
             >
-              <div className="step-node bg-emerald-50/95 border border-emerald-400/70 shadow-[0_2px_10px_rgba(16,185,129,0.18)] text-emerald-600 group-hover:scale-105">
+              <div className="step-node bg-emerald-100 border border-emerald-400/80 text-emerald-600 shadow-xs">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M13 2L4.09 12.63a1 1 0 0 0 .77 1.64H11v7.73l8.91-10.63a1 1 0 0 0-.77-1.64H13V2z" />
                 </svg>
               </div>
-              <span className="text-[7.5px] font-bold tracking-[0.11em] uppercase text-emerald-700">Action</span>
+              <span className="text-[7px] font-bold tracking-[0.1em] uppercase text-emerald-700">Action</span>
             </div>
 
             <div className="step-connector bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
@@ -677,48 +602,48 @@ export default function Login() {
               className="flex flex-col items-center gap-1 group cursor-pointer" 
               onClick={() => triggerToast('Step 3: Compound into automatic habits')}
             >
-              <div className="step-node bg-gradient-to-br from-emerald-500 to-emerald-600 border border-emerald-400 shadow-[0_4px_12px_rgba(16,185,129,0.35)] text-white group-hover:scale-105">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <div className="step-node bg-emerald-600 text-white shadow-xs">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="6" y1="20" x2="6" y2="14" />
                   <line x1="12" y1="20" x2="12" y2="10" />
                   <line x1="18" y1="20" x2="18" y2="4" />
                 </svg>
               </div>
-              <span className="text-[7.5px] font-extrabold tracking-[0.11em] uppercase text-emerald-800">Habit</span>
+              <span className="text-[7px] font-extrabold tracking-[0.1em] uppercase text-emerald-800">Habit</span>
             </div>
 
-            <div className="step-connector bg-gradient-to-r from-emerald-600 to-amber-500"></div>
+            <div className="step-connector bg-gradient-to-r from-emerald-600 to-amber-400"></div>
 
             {/* 4. FUTURE */}
             <div 
               className="flex flex-col items-center gap-1 group cursor-pointer" 
               onClick={() => triggerToast('Step 4: Design your inevitable future')}
             >
-              <div className="step-node bg-gradient-to-br from-amber-50 to-amber-100/90 border border-amber-400/90 shadow-[0_4px_14px_rgba(245,158,11,0.28)] text-amber-600 group-hover:scale-105">
+              <div className="step-node bg-amber-100 border border-amber-400/90 text-amber-600 shadow-xs">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <circle cx="12" cy="12" r="9" />
                   <circle cx="12" cy="12" r="5" />
                   <circle cx="12" cy="12" r="1.5" fill="currentColor" />
                 </svg>
               </div>
-              <span className="text-[7.5px] font-extrabold tracking-[0.11em] uppercase text-amber-700">Future</span>
+              <span className="text-[7px] font-extrabold tracking-[0.1em] uppercase text-amber-700">Future</span>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: 3D Floating Frosted Heatmap Card */}
-          <div className="heatmap-glass-card">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[8px] font-extrabold tracking-[0.14em] uppercase text-[#4B6358]">
+          {/* TOP-RIGHT: Upright Flat Frosted Heatmap Card */}
+          <div className="consistency-glass-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[8px] font-extrabold tracking-[0.12em] uppercase text-[#0B2519]">
                 Consistency
               </span>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                <span className="text-[9.5px] leading-none">🔥</span>
-                <span className="text-[8.5px] font-extrabold text-[#78350F] tracking-tight">27 days</span>
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                <span className="text-[9px] leading-none">🔥</span>
+                <span className="text-[8px] font-extrabold text-[#78350F] tracking-tight">27 days</span>
               </div>
             </div>
 
-            {/* 7-Day Header */}
-            <div className="grid grid-cols-7 gap-1 mb-1 text-center text-[7.5px] font-bold text-[#6C8277]">
+            {/* 7-Day Weekday Header */}
+            <div className="grid grid-cols-7 gap-1 mb-1 text-center text-[7.5px] font-bold text-[#677F73]">
               <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span className="text-emerald-700">S</span><span>S</span>
             </div>
 
@@ -734,68 +659,85 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Overlapping Circular Progress Gauge Ring (76% TODAY) */}
+          {/* BOTTOM-RIGHT: Circular Progress Gauge Ring (76% TODAY) */}
           <div className="gauge-disc" onClick={cycleProgress} title="Tap to preview daily momentum">
-            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 p-1.5">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 p-1">
               <defs>
-                <linearGradient id="dayEmeraldArc" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="dialEmeraldArc" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#34D399" />
-                  <stop offset="55%" stopColor="#10B981" />
+                  <stop offset="50%" stopColor="#10B981" />
                   <stop offset="100%" stopColor="#047857" />
                 </linearGradient>
-                <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="1" stdDeviation="2.2" floodColor="#10B981" floodOpacity="0.45" />
-                </filter>
               </defs>
-              <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(7, 26, 18, 0.06)" strokeWidth="1" strokeDasharray="2 3" />
               <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(7, 26, 18, 0.08)" strokeWidth="7.5" />
               <circle
                 cx="50"
                 cy="50"
                 r="41"
                 fill="none"
-                stroke="url(#dayEmeraldArc)"
+                stroke="url(#dialEmeraldArc)"
                 strokeWidth="7.5"
                 strokeLinecap="round"
                 strokeDasharray="257.6"
                 strokeDashoffset={strokeOffset}
-                filter="url(#emeraldGlow)"
-                style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[16px] font-extrabold text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
-              <span className="text-[6.5px] font-extrabold tracking-[0.18em] text-emerald-700 mt-1 uppercase">Today</span>
+              <span className="text-[15px] font-black text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
+              <span className="text-[6.5px] font-extrabold tracking-[0.16em] text-emerald-700 mt-0.5 uppercase">Today</span>
+            </div>
+          </div>
+
+          {/* Overlapping Dark Badge: Small steps. Big results. */}
+          <div 
+            onClick={cycleProgress}
+            className="absolute bottom-2.5 right-2 z-25 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A1D15] text-white shadow-lg border border-emerald-500/20 cursor-pointer hover:bg-[#071A12] transition-colors"
+          >
+            <svg className="w-3 h-3 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="3" y="12" width="4" height="8" rx="1" />
+              <rect x="10" y="8" width="4" height="12" rx="1" />
+              <rect x="17" y="4" width="4" height="16" rx="1" />
+            </svg>
+            <div className="flex flex-col text-left">
+              <span className="text-[7.5px] font-bold leading-none text-slate-100">Small steps.</span>
+              <span className="text-[7.5px] font-semibold leading-none text-emerald-400 mt-0.5">Big results.</span>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-             BOTTOM FORM SECTION (TIGHT & COHESIVE - NO DEAD SPACE)
+             BOTTOM FORM SECTION (MIDDLE-CENTERED, NO DEAD SPACE)
              ======================================================== */}
         <section className="form-section">
-          {/* Definite Brand Logo */}
-          <div className="flex items-center justify-center pt-0.5">
-            <img 
-              src="/logo-black.svg" 
-              alt="Definite" 
-              className="h-5 sm:h-5.5 w-auto object-contain" 
-            />
+          {/* Centered D1 Brand Logo */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/clean_d_only.svg" 
+                alt="D1" 
+                className="h-7 w-auto object-contain" 
+              />
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">D1</span>
+            </div>
+            <span className="text-[8px] tracking-[0.28em] font-extrabold text-slate-400 uppercase mt-0.5">
+              HABIT TRACKER
+            </span>
           </div>
 
           {/* Error Alert */}
           {error && (
-            <div className="py-1 px-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-center animate-in fade-in">
+            <div className="py-1 px-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-center animate-in fade-in">
               {error}
             </div>
           )}
 
-          {/* 1. Google OAuth Button */}
+          {/* 1. Continue with Google Button */}
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full h-[40px] rounded-xl bg-white hover:bg-[#F8FBF9] active:scale-[0.99] border border-[#DCE5E0] shadow-[0_2px_6px_rgba(7,26,18,0.04),inset_0_1px_0_#FFF] flex items-center justify-center gap-2.5 text-[13px] font-semibold text-[#12241B] transition-all cursor-pointer"
+            className="w-full h-[40px] rounded-2xl bg-white hover:bg-slate-50 active:scale-[0.99] border border-slate-200/90 shadow-[0_2px_6px_rgba(7,26,18,0.04)] flex items-center justify-center gap-2.5 text-[13.5px] font-semibold text-slate-800 transition-all cursor-pointer"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -803,58 +745,64 @@ export default function Login() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            <span>Sign in with Google</span>
+            <span>Continue with Google</span>
           </button>
 
-          {/* 2. Crisp Divider */}
-          <div className="flex items-center gap-3 my-0.5">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#E2EAE5] to-[#E2EAE5]"></div>
-            <span className="text-[10px] font-semibold text-[#85988E] lowercase tracking-wider">or</span>
-            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#E2EAE5] to-[#E2EAE5]"></div>
+          {/* 2. Crisp OR Divider */}
+          <div className="flex items-center gap-2.5 my-0.5">
+            <div className="h-px flex-1 bg-slate-200"></div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">or</span>
+            <div className="h-px flex-1 bg-slate-200"></div>
           </div>
 
           {/* 3. Form Inputs */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-1.5">
             {isSignUp && (
-              <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-150">
+              <div className="grid grid-cols-2 gap-1.5 animate-in fade-in duration-150">
                 <input
                   type="text"
                   placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="pearl-input"
+                  className="pearl-input !pl-3"
                 />
                 <input
                   type="text"
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="pearl-input"
+                  className="pearl-input !pl-3"
                 />
               </div>
             )}
 
-            {/* Email Input */}
+            {/* Email Input with Envelope on LEFT */}
             <div className="relative">
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                maxLength={100}
-                className="pearl-input pr-10"
-              />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#889B91]">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <rect width="20" height="16" x="2" y="4" rx="3" />
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
               </span>
+              <input
+                type="email"
+                placeholder="Email address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                maxLength={100}
+                className="pearl-input"
+              />
             </div>
 
-            {/* Password Input with Show/Hide Toggle */}
+            {/* Password Input with Lock on LEFT and Eye on RIGHT */}
             <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
@@ -863,13 +811,13 @@ export default function Login() {
                 maxLength={100}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pearl-input pr-11"
+                className="pearl-input !pr-9"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label="Toggle password visibility"
-                className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-[#6E8278] hover:text-[#071A12] border-l border-[#E2EBE6] transition-colors cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.9" viewBox="0 0 24 24">
@@ -893,19 +841,20 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Explore Demo (Preserved Invariant 1) */}
+          {/* Explore Demo CTA Button */}
           <button
             type="button"
             onClick={handleGuestMode}
-            className="w-full h-[33px] rounded-xl bg-[#F0F5F2] hover:bg-[#E5EFE9] text-[#071A12] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-[0.99] border border-[#D8E6DE]"
+            className="w-full h-[36px] rounded-2xl bg-[#EAF5EF] hover:bg-[#DDF0E4] active:scale-[0.99] text-[#0A3D27] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-emerald-300/40"
           >
-            <span className="text-emerald-700 text-sm">👁</span>
+            <span className="text-emerald-600 text-sm">🌿</span>
             <span>Explore Demo — No Sign-up Needed</span>
+            <span className="text-emerald-700 text-xs">→</span>
           </button>
 
-          {/* 4. Ultra-Compact Footer with Working Redirects */}
+          {/* 4. Compact Footer with Working Policy & Terms Redirections */}
           <div className="text-center space-y-0.5 pt-0.5">
-            <p className="text-[12px] text-[#2B3E34] font-medium">
+            <p className="text-[11.5px] text-[#2B3E34] font-medium">
               {isSignUp ? 'Have an account?' : 'New to D1?'}
               <button
                 type="button"
@@ -913,18 +862,18 @@ export default function Login() {
                   setIsSignUp(!isSignUp);
                   setError('');
                 }}
-                className="text-[#071A12] font-bold underline underline-offset-3 decoration-emerald-500/70 hover:text-emerald-700 ml-1 cursor-pointer"
+                className="text-emerald-700 font-bold hover:underline ml-1 cursor-pointer"
               >
-                {isSignUp ? 'Log in here' : 'Create account'}
+                {isSignUp ? 'Log in' : 'Create account'}
               </button>
             </p>
 
-            <p className="text-[10px] leading-tight text-[#73867C] max-w-[320px] mx-auto">
-              Signing up means you agree to the{' '}
+            <p className="text-[9.5px] leading-tight text-slate-500 max-w-[320px] mx-auto">
+              By continuing, you agree to our{' '}
               <button
                 type="button"
                 onClick={() => navigate('/privacy')}
-                className="text-[#071A12] font-semibold underline underline-offset-2 decoration-[#B7C8BF] hover:text-emerald-700 cursor-pointer"
+                className="text-slate-800 font-semibold underline hover:text-emerald-700 cursor-pointer"
               >
                 Privacy Policy
               </button>
@@ -932,7 +881,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => navigate('/terms')}
-                className="text-[#071A12] font-semibold underline underline-offset-2 decoration-[#B7C8BF] hover:text-emerald-700 cursor-pointer"
+                className="text-slate-800 font-semibold underline hover:text-emerald-700 cursor-pointer"
               >
                 Terms of Service
               </button>.

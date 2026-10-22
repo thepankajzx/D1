@@ -74,7 +74,7 @@ const JoinOrgDoctorPage = lazyRetry(() => import('./pro/pages/JoinOrgDoctorPage'
 const SuperAdminPortal = lazyRetry(() => import('./pro/pages/SuperAdminPortal'));
 
 function Layout({ children }) {
-  const { logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
@@ -213,16 +213,28 @@ function Layout({ children }) {
               </button>
             )}
 
-            {/* Profile Icon (Available to everyone, including guests to preview profile & milestones) */}
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors text-sm font-medium p-1 rounded-lg hover:bg-surface-container"
-              title="Profile"
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                <Icon name="person" className="text-xl" />
-              </div>
-            </Link>
+            {!currentUser && !isGuest && (
+              <Link
+                to="/login"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
+              >
+                <Icon name="login" className="text-sm" />
+                <span>Log In</span>
+              </Link>
+            )}
+
+            {/* Profile Icon (Available to everyone authenticated or in guest mode) */}
+            {(currentUser || isGuest) && (
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors text-sm font-medium p-1 rounded-lg hover:bg-surface-container"
+                title="Profile"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <Icon name="person" className="text-xl" />
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -366,6 +378,8 @@ function App() {
                 }>
                 <Routes>
                   <Route path="/login" element={<Login />} />
+                  <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+                  <Route path="/terms" element={<Layout><Terms /></Layout>} />
                   
                   <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<Layout><Dashboard /></Layout>} />
@@ -395,8 +409,6 @@ function App() {
                     <Route path="/habit-tree" element={<Layout><BonsaiTreePage /></Layout>} />
                     <Route path="/bonsai" element={<Layout><BonsaiTreePage /></Layout>} />
                     <Route path="/subscription" element={<Layout><Subscription /></Layout>} />
-                    <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
-                    <Route path="/terms" element={<Layout><Terms /></Layout>} />
                     <Route path="/insights" element={<Layout><InsightFeed /></Layout>} />
                     <Route path="/better-report" element={<Layout><BetterReport /></Layout>} />
                     <Route path="/roadmap" element={<Layout><InsightsRoadmap /></Layout>} />
