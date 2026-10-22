@@ -860,20 +860,7 @@ export default function Profile() {
                 <span>Log Out</span>
               </button>
 
-              {['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email) && (
-                <button 
-                  onClick={async () => {
-                    try { 
-                      await updateDoc(doc(db, 'users', currentUser.uid), { isPro: true }); 
-                      alert('Pro status granted! Please reload.'); 
-                    } catch (e) { alert('Error granting Pro'); }
-                  }} 
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Icon name="workspace_premium" className="text-[16px]" />
-                  <span>Grant Pro (Test)</span>
-                </button>
-              )}
+              
 
               {import.meta.env.DEV && (
                 <button
