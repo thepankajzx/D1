@@ -175,9 +175,7 @@ export default function StreaksPage() {
                     : 'bg-white dark:bg-[#131722] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-white shrink-0" style={{ backgroundColor: h.color }}>
-                  <HabitIcon name={h.icon} size={9} />
-                </div>
+                <HabitIcon habit={h} size={18} />
                 <span className="truncate max-w-[120px]">{h.name}</span>
               </button>
             );
@@ -395,12 +393,7 @@ export default function StreaksPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div
-                      className="w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                      style={{ backgroundColor: h.color }}
-                    >
-                      <HabitIcon name={h.icon} size={15} />
-                    </div>
+                    <HabitIcon habit={h} size={32} className="shrink-0 shadow-2xs" />
                     <div className="min-w-0">
                       <h4 className="text-xs font-black truncate leading-tight">
                         {h.name}

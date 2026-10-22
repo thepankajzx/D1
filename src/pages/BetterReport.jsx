@@ -61,6 +61,7 @@ export default function BetterReport() {
       id: 's1',
       name: 'Water Intake',
       icon: 'water_drop',
+      color: '#3B82F6',
       avgScore: 94,
       perfectDays: 22,
       missedDays: 2,
@@ -75,6 +76,7 @@ export default function BetterReport() {
       id: 's3',
       name: 'Screen Time',
       icon: 'smartphone',
+      color: '#EF4444',
       avgScore: 54,
       perfectDays: 8,
       missedDays: 14,
@@ -89,6 +91,7 @@ export default function BetterReport() {
       id: 's2',
       name: 'Deep Work',
       icon: 'psychology',
+      color: '#8B5CF6',
       avgScore: 82,
       perfectDays: 16,
       missedDays: 5,
@@ -116,9 +119,9 @@ export default function BetterReport() {
       resilienceBadge: 'Resilience Master'
     },
     habitReports: [
-      { id: 's1', name: 'Water Intake', icon: 'water_drop', avgScore: 94, perfectDays: 22, streak: 18, delta: 12, weekly: [80, 88, 95, 98] },
-      { id: 's2', name: 'Morning Workout', icon: 'fitness_center', avgScore: 88, perfectDays: 19, streak: 12, delta: 18, weekly: [70, 82, 92, 96] },
-      { id: 's3', name: 'Deep Work', icon: 'psychology', avgScore: 82, perfectDays: 16, streak: 9, delta: 28, weekly: [55, 68, 85, 90] }
+      { id: 's1', name: 'Water Intake', icon: 'water_drop', color: '#3B82F6', avgScore: 94, perfectDays: 22, streak: 18, delta: 12, weekly: [80, 88, 95, 98] },
+      { id: 's2', name: 'Morning Workout', icon: 'fitness_center', color: '#F97316', avgScore: 88, perfectDays: 19, streak: 12, delta: 18, weekly: [70, 82, 92, 96] },
+      { id: 's3', name: 'Deep Work', icon: 'psychology', color: '#8B5CF6', avgScore: 82, perfectDays: 16, streak: 9, delta: 28, weekly: [55, 68, 85, 90] }
     ],
     nextChallenge: {
       targetHabit: 'Screen Time',
@@ -360,7 +363,7 @@ export default function BetterReport() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
-                <HabitIcon name={strongestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-full !bg-emerald-100 !text-emerald-700 shrink-0" />
+                <HabitIcon habit={strongestHabit} size={44} className="shrink-0" />
                 <div className="min-w-0">
                   <h3 className="font-black text-slate-900 text-base sm:text-lg truncate">{strongestHabit.name}</h3>
                   <p className="text-xs text-emerald-800 font-bold">Your Anchor Superpower</p>
@@ -414,7 +417,7 @@ export default function BetterReport() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
-                <HabitIcon name={weakestHabit.icon} boxed={true} size={24} className="!w-11 !h-11 !rounded-full !bg-rose-100 !text-rose-700 shrink-0" />
+                <HabitIcon habit={weakestHabit} size={44} className="shrink-0" />
                 <div className="min-w-0">
                   <h3 className="font-black text-slate-900 text-base sm:text-lg truncate">{weakestHabit.name}</h3>
                   <p className="text-xs text-rose-800 font-bold">Highest Leverage Growth Area</p>
@@ -601,7 +604,7 @@ export default function BetterReport() {
               {/* Left Details: Rank + Icon + Name + Subtitle */}
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className="font-mono text-xs font-bold text-slate-400 w-5 shrink-0">#{idx + 1}</span>
-                <HabitIcon name={item.icon} habitId={item.id} boxed={true} size={20} className="!w-11 !h-11 !rounded-full shrink-0 shadow-2xs" />
+                <HabitIcon habit={item} size={44} className="shrink-0 shadow-2xs" />
                 <div className="min-w-0 flex flex-col">
                   <h4 className="font-black text-sm text-slate-900 truncate leading-tight">{item.name}</h4>
                   <span className="text-[11px] text-slate-500 font-medium truncate mt-0.5">

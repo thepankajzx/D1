@@ -499,12 +499,7 @@ export default function HabitDiagnostics() {
             className="flex items-center gap-1.5 px-2.5 h-[32px] rounded-full bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 shadow-2xs cursor-pointer text-xs font-black text-slate-900 dark:text-white max-w-[130px] xs:max-w-[160px] select-none group"
             title="Switch Habit"
           >
-            <div 
-              className="w-4 h-4 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-              style={{ backgroundColor: habit?.color || '#3b82f6' }}
-            >
-              <HabitIcon name={habit?.icon} size={9} className="text-white" />
-            </div>
+            <HabitIcon habit={habit} size={16} className="shrink-0 shadow-2xs" />
             <span className="truncate">{habit?.name}</span>
             <CaretDown size={11} weight="bold" className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:translate-y-0.5 shrink-0" />
           </button>
@@ -597,11 +592,9 @@ export default function HabitDiagnostics() {
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
               {/* Habit Standard Boxed Icon */}
               <HabitIcon 
-                name={habit?.icon} 
-                habitId={habit?.id} 
-                boxed={true} 
-                size={26} 
-                className="!w-12 !h-12 sm:!w-14 sm:!h-14 !rounded-xl shrink-0 shadow-lg border border-white/10" 
+                habit={habit}
+                size={52} 
+                className="shrink-0 shadow-lg border border-white/10" 
               />
 
               <div className="min-w-0 flex-1">
@@ -977,9 +970,7 @@ export default function HabitDiagnostics() {
               {crossHabitImpact.catalysts.map(c => (
                 <div key={c.habit.id} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200/80 dark:border-emerald-900/60 flex items-center justify-between gap-2 shadow-2xs">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0" style={{ backgroundColor: c.habit.color }}>
-                      <HabitIcon name={c.habit.icon} size={11} />
-                    </div>
+                    <HabitIcon habit={c.habit} size={24} className="shrink-0" />
                     <span className="text-xs font-black text-slate-900 dark:text-white truncate">{c.habit.name}</span>
                   </div>
                   <span className="text-[10.5px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md shrink-0">
@@ -1008,9 +999,7 @@ export default function HabitDiagnostics() {
               {crossHabitImpact.dominoRisks.map(c => (
                 <div key={c.habit.id} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-between gap-2 shadow-2xs">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0" style={{ backgroundColor: c.habit.color }}>
-                      <HabitIcon name={c.habit.icon} size={11} />
-                    </div>
+                    <HabitIcon habit={c.habit} size={24} className="shrink-0" />
                     <span className="text-xs font-black text-slate-900 dark:text-white truncate">{c.habit.name}</span>
                   </div>
                   <span className="text-[10.5px] font-black text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md shrink-0">
@@ -1526,9 +1515,7 @@ export default function HabitDiagnostics() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                        <HabitIcon name={h.icon} size={13} />
-                      </div>
+                      <HabitIcon habit={h} size={28} className="shrink-0 shadow-2xs" />
                       <span className="text-xs truncate">{h.name}</span>
                     </div>
                     {isSelected && <Check size={14} weight="bold" />}

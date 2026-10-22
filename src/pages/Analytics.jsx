@@ -23,6 +23,7 @@ echarts.use([LineChart, ScatterChart, GridComponent, TooltipComponent, LegendCom
 import { Link, useSearchParams } from 'react-router-dom';
 import RadialGauge from '../components/RadialGauge';
 import Icon from '../components/Icon';
+import HabitIcon from '../components/HabitIcon';
 import ProModal from '../components/ProModal';
 import ProCustomDateModal from '../components/ProCustomDateModal';
 import HabitStreakTimeline from '../components/HabitStreakTimeline';
@@ -1280,7 +1281,7 @@ function formatLocalYMD(d) {
                               return (
                                 <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container/40 border border-outline-variant/20 rounded-[14px] opacity-80">
                                   <div className="flex items-center gap-3">
-                                    <Icon name={h.icon} className="text-[20px] text-on-surface-variant" />
+                                    <HabitIcon habit={h} size={28} className="shrink-0" />
                                     <span className="text-[14px] font-semibold text-on-surface-variant">{h.name}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1297,7 +1298,7 @@ function formatLocalYMD(d) {
                             return (
                               <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
                                 <div className="flex items-center gap-3">
-                                  <Icon name={h.icon} className="text-[20px] text-on-surface" />
+                                  <HabitIcon habit={h} size={28} className="shrink-0" />
                                   <span className="text-[14px] font-semibold text-on-surface">{h.name}</span>
                                 </div>
                                 <div className="flex items-center gap-3">

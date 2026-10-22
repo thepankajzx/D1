@@ -160,9 +160,7 @@ export default function RecoveryDeepDive() {
 
       {/* ── 2. HABIT TITLE & ICON (OUTSIDE WRAPPER, TOP-LEFT) ── */}
       <div className="flex items-center gap-3.5 px-1">
-        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0 shadow-xs">
-          <HabitIcon name={habit.icon} habitId={habit.id} size={26}  color={habit.color} />
-        </div>
+        <HabitIcon habit={habit} size={48} className="shrink-0 shadow-xs" />
         <div className="min-w-0 flex-1">
           {activeHabits.length > 1 ? (
             <div className="relative inline-flex items-center max-w-full group">

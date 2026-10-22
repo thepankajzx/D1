@@ -3,7 +3,8 @@ import {
   X, 
   ShareNetwork, 
   SquaresFour,
-  Percent
+  Percent,
+  Sparkle
 } from '@phosphor-icons/react';
 import HabitIcon from './HabitIcon';
 import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
@@ -514,12 +515,13 @@ export default function HabitShareCardModal({
 
             {/* Habit Name & Icon */}
             <div className="flex items-center gap-2">
-              <div 
-                className="w-8 h-8 rounded-lg text-white flex items-center justify-center shrink-0 shadow-xs"
-                style={{ backgroundColor: habitColor }}
-              >
-                <HabitIcon name={habitIcon} size={16} className="text-white" />
-              </div>
+              {isOverall ? (
+                <div className="w-8 h-8 rounded-lg text-white bg-emerald-500 flex items-center justify-center shrink-0 shadow-xs">
+                  <Sparkle size={16} weight="fill" />
+                </div>
+              ) : (
+                <HabitIcon habit={habit} size={32} className="shrink-0 shadow-xs" />
+              )}
               <div className="min-w-0">
                 <h4 className="font-black text-sm sm:text-base text-slate-900 leading-tight truncate">
                   {habitName}

@@ -4,8 +4,10 @@
  * Fully compatible with all analytics, deep dive, heatmap, streaks, resilience, and profile screens.
  */
 
+import { canonicalizeHabit } from './habitColors';
+
 // 1. DEMO HABITS
-export const DEMO_HABITS = [
+const RAW_DEMO_HABITS = [
   {
     id: 'demo-workout',
     name: 'Morning Workout',
@@ -100,6 +102,8 @@ export const DEMO_HABITS = [
     color: '#8b5cf6',
   },
 ];
+
+export const DEMO_HABITS = RAW_DEMO_HABITS.map(canonicalizeHabit);
 
 function clamp(v, min = 0, max = 100) {
   return Math.max(min, Math.min(max, v));

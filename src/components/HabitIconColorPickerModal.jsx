@@ -161,7 +161,11 @@ export default function HabitIconColorPickerModal({
     }
     onSelect({
       icon: currentIcon,
-      color: currentColor
+      iconId: currentIcon,
+      color: currentColor,
+      iconColor: currentColor,
+      iconBackgroundColor: bgRgba,
+      iconStyle: 'circle'
     });
     onClose();
   };

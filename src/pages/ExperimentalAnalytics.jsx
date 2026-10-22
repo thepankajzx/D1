@@ -1684,12 +1684,7 @@ export default function ExperimentalAnalytics() {
                 </>
               ) : (
                 <>
-                  <div
-                    className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                    style={{ backgroundColor: currentSelectedHabit?.color || '#3b82f6' }}
-                  >
-                    <HabitIcon name={currentSelectedHabit?.icon} size={10} className="text-white" />
-                  </div>
+                  <HabitIcon habit={currentSelectedHabit} size={20} className="shrink-0 shadow-2xs" />
                   <span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[130px]">
                     {currentSelectedHabit?.name}
                   </span>
@@ -1782,12 +1777,7 @@ export default function ExperimentalAnalytics() {
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                          style={{ backgroundColor: h.color }}
-                        >
-                          <HabitIcon name={h.icon} size={11} className="text-white" />
-                        </div>
+                        <HabitIcon habit={h} size={24} className="shrink-0 shadow-2xs" />
                         <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[110px] sm:max-w-[130px]">
                           {h.name}
                         </span>
@@ -1891,12 +1881,7 @@ export default function ExperimentalAnalytics() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs select-none">
-                  <div 
-                    className="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                    style={{ backgroundColor: currentSelectedHabit?.color || '#3b82f6' }}
-                  >
-                    <HabitIcon name={currentSelectedHabit?.icon} size={8} className="text-white" />
-                  </div>
+                  <HabitIcon habit={currentSelectedHabit} size={16} className="shrink-0 shadow-2xs" />
                   <span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[120px]">
                     {currentSelectedHabit?.name} Avg
                   </span>
@@ -2120,12 +2105,13 @@ export default function ExperimentalAnalytics() {
                 className="flex items-center gap-1.5 px-2.5 h-[32px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer shadow-2xs shrink-0 max-w-[150px] xs:max-w-[180px] sm:max-w-[210px] select-none group"
                 title="Tap to switch habit"
               >
-                <div 
-                  className="w-4 h-4 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                  style={{ backgroundColor: selectedHabitId === 'all' ? '#10b981' : (currentSelectedHabit?.color || '#3b82f6') }}
-                >
-                  {selectedHabitId === 'all' ? <Sparkle size={9} weight="fill" /> : <HabitIcon name={currentSelectedHabit?.icon} size={9} className="text-white" />}
-                </div>
+                {selectedHabitId === 'all' ? (
+                  <div className="w-4 h-4 rounded-full text-white bg-emerald-500 flex items-center justify-center shrink-0 shadow-2xs">
+                    <Sparkle size={9} weight="fill" />
+                  </div>
+                ) : (
+                  <HabitIcon habit={currentSelectedHabit} size={16} className="shrink-0 shadow-2xs" />
+                )}
                 <span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[85px] xs:max-w-[115px] sm:max-w-[145px]">
                   {selectedHabitId === 'all' ? 'Overall' : currentSelectedHabit?.name}
                 </span>
@@ -2758,12 +2744,13 @@ export default function ExperimentalAnalytics() {
               className="flex items-center gap-1.5 px-2.5 h-[28px] rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer shadow-2xs shrink-0 max-w-[160px] select-none group"
               title="Tap to switch habit"
             >
-              <div 
-                className="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                style={{ backgroundColor: selectedHabitId === 'all' ? '#10b981' : (currentSelectedHabit?.color || '#3b82f6') }}
-              >
-                {selectedHabitId === 'all' ? <Sparkle size={8} weight="fill" /> : <HabitIcon name={currentSelectedHabit?.icon} size={8} className="text-white" />}
-              </div>
+              {selectedHabitId === 'all' ? (
+                <div className="w-3.5 h-3.5 rounded-full text-white bg-emerald-500 flex items-center justify-center shrink-0 shadow-2xs">
+                  <Sparkle size={8} weight="fill" />
+                </div>
+              ) : (
+                <HabitIcon habit={currentSelectedHabit} size={15} className="shrink-0 shadow-2xs" />
+              )}
               <span className="text-[11px] font-black text-slate-900 dark:text-white truncate max-w-[95px]">
                 {selectedHabitId === 'all' ? 'Overall' : currentSelectedHabit?.name}
               </span>
@@ -3144,12 +3131,7 @@ export default function ExperimentalAnalytics() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-7 h-7 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                        style={{ backgroundColor: h.color }}
-                      >
-                        <HabitIcon name={h.icon} size={13} />
-                      </div>
+                      <HabitIcon habit={h} size={28} className="shrink-0 shadow-2xs" />
                       <div>
                         <span className="text-sm block">{h.name}</span>
                         <span className="text-[10px] text-slate-400 font-medium capitalize">
@@ -3259,9 +3241,7 @@ export default function ExperimentalAnalytics() {
                     }`}>
                       <div className="flex items-center gap-2.5 min-w-0">
                         {isSelectedHabit && currentHabitObj && (
-                          <div className="w-7 h-7 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: currentHabitObj.color }}>
-                            <HabitIcon name={currentHabitObj.icon} size={14} className="text-white" />
-                          </div>
+                          <HabitIcon habit={currentHabitObj} size={28} className="shrink-0 shadow-2xs" />
                         )}
                         <div className="min-w-0">
                           <span className="text-xs font-black text-slate-900 dark:text-white block truncate">
@@ -3333,9 +3313,7 @@ export default function ExperimentalAnalytics() {
                                   return (
                                     <div key={h.id} className="py-2 px-1 flex items-center justify-between gap-2.5 opacity-60">
                                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                        <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                                          <HabitIcon name={h.icon} size={12} className="text-white" />
-                                        </div>
+                                        <HabitIcon habit={h} size={24} className="shrink-0 shadow-2xs" />
                                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{h.name}</span>
                                       </div>
                                       <div className="flex items-center gap-1.5 shrink-0">
@@ -3353,9 +3331,7 @@ export default function ExperimentalAnalytics() {
                                     isSelected ? 'bg-indigo-50/60 dark:bg-indigo-950/30 px-2 my-0.5 border border-indigo-200/50 dark:border-indigo-900/40' : ''
                                   }`}>
                                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                      <div className="w-6 h-6 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                                        <HabitIcon name={h.icon} size={12} className="text-white" />
-                                      </div>
+                                      <HabitIcon habit={h} size={24} className="shrink-0 shadow-2xs" />
                                       <div className="min-w-0">
                                         <span className={`text-xs truncate block ${isSelected ? 'font-black text-indigo-900 dark:text-indigo-200' : 'font-bold text-slate-900 dark:text-white'}`}>
                                           {h.name} {isSelected && <span className="text-[9px] font-black uppercase text-indigo-500 ml-1">(Selected)</span>}
@@ -3405,12 +3381,7 @@ export default function ExperimentalAnalytics() {
                     <Sparkle size={16} weight="fill" />
                   </div>
                 ) : (
-                  <div 
-                    className="w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs"
-                    style={{ backgroundColor: currentSelectedHabit?.color || '#3b82f6' }}
-                  >
-                    <HabitIcon name={currentSelectedHabit?.icon} size={15} className="text-white" />
-                  </div>
+                  <HabitIcon habit={currentSelectedHabit} size={32} className="shrink-0 shadow-2xs" />
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -4111,9 +4082,7 @@ export default function ExperimentalAnalytics() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-7 h-7 rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs" style={{ backgroundColor: h.color }}>
-                        <HabitIcon name={h.icon} size={13} className="text-white" />
-                      </div>
+                      <HabitIcon habit={h} size={28} className="shrink-0 shadow-2xs" />
                       <span className="text-xs font-black truncate">{h.name}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">

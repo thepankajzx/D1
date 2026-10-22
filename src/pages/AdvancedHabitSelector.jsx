@@ -10,6 +10,7 @@ import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import PriorityIcon from '../components/PriorityIcon';
 import HabitIcon from '../components/HabitIcon';
+import { getCanonicalHabitIconConfig } from '../lib/habitColors';
 import ScoringModal from '../components/ScoringModal';
 import BinaryGoalExplainerModal from '../components/BinaryGoalExplainerModal';
 import ProModal from '../components/ProModal';
@@ -475,12 +476,24 @@ export default function AdvancedHabitSelector() {
       const allToSave = [...selectedHabits, ...customHabits];
       for (const habit of allToSave) {
         const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
+        const iconConfig = getCanonicalHabitIconConfig({
+          id: habit.id,
+          icon: customizedHabits[habit.id]?.icon || habit.icon,
+          color: customizedHabits[habit.id]?.color || habit.color,
+          iconBackgroundColor: customizedHabits[habit.id]?.iconBackgroundColor || habit.iconBackgroundColor,
+          iconStyle: customizedHabits[habit.id]?.iconStyle || habit.iconStyle
+        });
+
         const habitData = {
           habitLibraryId: habit.isCustom ? 'custom' : habit.id,
           name: habit.name || 'Unnamed',
           category: habit.category || 'Other',
-          icon: customizedHabits[habit.id]?.icon || habit.icon || 'star',
-          color: customizedHabits[habit.id]?.color || habit.color || null,
+          icon: iconConfig.icon,
+          iconId: iconConfig.iconId,
+          color: iconConfig.color,
+          iconColor: iconConfig.iconColor,
+          iconBackgroundColor: iconConfig.iconBackgroundColor,
+          iconStyle: iconConfig.iconStyle,
           scoringType: habit.scoringType || 'number',
           direction: habit.direction || 'higher_is_better',
           unit: habit.unit || '',
@@ -489,7 +502,8 @@ export default function AdvancedHabitSelector() {
           tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
           isActive: true,
           priority: 'medium',
-          createdAt: new Date().toISOString(),
+          createdAt: habit.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           isCustom: !!habit.isCustom,
           priorityRank: priorityRanks[habit.id] || null,
           prioritySetAt: priorityRanks[habit.id] ? new Date().toISOString() : null
@@ -2018,25 +2032,50 @@ export default function AdvancedHabitSelector() {
           habitName={pickerHabit ? (draftHabit?.id === pickerHabit.id ? draftHabit.name : pickerHabit.name) : (cbName || 'Custom Habit')}
           existingHabits={[...existingHabits, ...selectedHabits, ...customHabits]}
           currentHabitId={pickerHabit?.id || editingCustomHabitId}
-          onSelect={({ icon, color }) => {
+          onSelect={({ icon, iconId, color, iconColor, iconBackgroundColor, iconStyle }) => {
+            const finalIcon = iconId || icon;
+            const finalColor = iconColor || color;
             if (pickerHabit) {
               const targetId = pickerHabit.id;
               // 1. Instant override in state so all icons and colors update immediately
               setCustomizedHabits(prev => ({
                 ...prev,
-                [targetId]: { icon, color }
+                [targetId]: { 
+                  icon: finalIcon, 
+                  iconId: finalIcon, 
+                  color: finalColor, 
+                  iconColor: finalColor,
+                  iconBackgroundColor,
+                  iconStyle: iconStyle || 'circle'
+                }
               }));
 
               // 2. Update in draftHabit if active
               if (draftHabit && draftHabit.id === targetId) {
-                setDraftHabit(prev => ({ ...prev, icon, color }));
+                setDraftHabit(prev => ({ 
+                  ...prev, 
+                  icon: finalIcon, 
+                  iconId: finalIcon, 
+                  color: finalColor, 
+                  iconColor: finalColor,
+                  iconBackgroundColor,
+                  iconStyle: iconStyle || 'circle'
+                }));
               }
 
               // 3. Update or auto-select in selectedHabits
               setSelectedHabits(prev => {
                 const exists = prev.some(h => h.id === targetId);
                 if (exists) {
-                  return prev.map(h => h.id === targetId ? { ...h, icon, color } : h);
+                  return prev.map(h => h.id === targetId ? { 
+                    ...h, 
+                    icon: finalIcon, 
+                    iconId: finalIcon, 
+                    color: finalColor, 
+                    iconColor: finalColor,
+                    iconBackgroundColor,
+                    iconStyle: iconStyle || 'circle'
+                  } : h);
                 } else {
                   const base = (draftHabit && draftHabit.id === targetId) ? draftHabit : pickerHabit;
                   return [
@@ -2044,8 +2083,12 @@ export default function AdvancedHabitSelector() {
                     {
                       ...base,
                       id: targetId,
-                      icon,
-                      color,
+                      icon: finalIcon,
+                      iconId: finalIcon,
+                      color: finalColor,
+                      iconColor: finalColor,
+                      iconBackgroundColor,
+                      iconStyle: iconStyle || 'circle',
                       userTarget0: base.userTarget0 !== undefined ? base.userTarget0 : (base.target0 ?? 0),
                       userTarget100: base.userTarget100 !== undefined ? base.userTarget100 : (base.target100 ?? 100),
                       direction: base.direction || 'higher_is_better'
@@ -2055,11 +2098,27 @@ export default function AdvancedHabitSelector() {
               });
 
               // 4. Update in customHabits
-              setCustomHabits(prev => prev.map(h => h.id === targetId ? { ...h, icon, color } : h));
-              setPickerHabit(prev => prev ? { ...prev, icon, color } : null);
+              setCustomHabits(prev => prev.map(h => h.id === targetId ? { 
+                ...h, 
+                icon: finalIcon, 
+                iconId: finalIcon, 
+                color: finalColor, 
+                iconColor: finalColor,
+                iconBackgroundColor,
+                iconStyle: iconStyle || 'circle'
+              } : h));
+              setPickerHabit(prev => prev ? { 
+                ...prev, 
+                icon: finalIcon, 
+                iconId: finalIcon, 
+                color: finalColor, 
+                iconColor: finalColor,
+                iconBackgroundColor,
+                iconStyle: iconStyle || 'circle'
+              } : null);
             } else {
-              setCbIcon(icon);
-              setCbColor(color);
+              setCbIcon(finalIcon);
+              setCbColor(finalColor);
             }
             setShowIconPickerModal(false);
           }}

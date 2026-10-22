@@ -1,8 +1,26 @@
 import React from 'react';
 import * as PhosphorIcons from '@phosphor-icons/react';
-import { resolveHabitColor, resolveHabitIcon, HABIT_DEFAULT_COLORS, HABIT_DEFAULT_ICONS, PALETTE, hashString } from '../lib/habitColors';
+import { 
+  resolveHabitColor, 
+  resolveHabitIcon, 
+  getCanonicalHabitIconConfig,
+  getReadableIconColor,
+  getCanonicalRgbaColors,
+  HABIT_DEFAULT_COLORS, 
+  HABIT_DEFAULT_ICONS, 
+  PALETTE, 
+  hashString 
+} from '../lib/habitColors';
 
-export { HABIT_DEFAULT_COLORS, HABIT_DEFAULT_ICONS, PALETTE, hashString };
+export { 
+  getReadableIconColor,
+  getCanonicalRgbaColors,
+  getCanonicalHabitIconConfig,
+  HABIT_DEFAULT_COLORS, 
+  HABIT_DEFAULT_ICONS, 
+  PALETTE, 
+  hashString 
+};
 
 // Map Google Material icon names to Phosphor Icon Components
 const ICON_MAP = {
@@ -60,71 +78,102 @@ export const getPhosphorIcon = (iconName) => {
   return PhosphorIcons.Star;
 };
 
-// Helper: Darken overly bright / neon colors so foreground icon pops with high contrast
-export function getReadableIconColor(hexColor) {
-  if (!hexColor || typeof hexColor !== 'string' || !hexColor.startsWith('#')) return hexColor || '#10b981';
-  let hex = hexColor.trim();
-  if (hex.length === 4) {
-    hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
-  }
-  if (hex.length !== 7) return hexColor;
-  
-  const r = parseInt(hex.slice(1, 3), 16) || 0;
-  const g = parseInt(hex.slice(3, 5), 16) || 0;
-  const b = parseInt(hex.slice(5, 7), 16) || 0;
-  
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  
-  if (lum > 0.58) {
-    const factor = 0.65;
-    const darkR = Math.max(0, Math.min(255, Math.round(r * factor)));
-    const darkG = Math.max(0, Math.min(255, Math.round(g * factor)));
-    const darkB = Math.max(0, Math.min(255, Math.round(b * factor)));
-    return `rgb(${darkR}, ${darkG}, ${darkB})`;
-  }
-  
-  return hexColor;
-}
+/**
+ * ONE GLOBAL HABIT ICON COMPONENT
+ * Implements D1 Global Habit Icon Consistency Rule.
+ * Renders the habit's immutable canonical visual identity:
+ * - Canonical Icon (Phosphor / Material identifier)
+ * - Canonical Icon Color (high-contrast readable foreground)
+ * - Canonical Wrapper / Background Color & Border
+ * - Canonical Wrapper Shape (circle / rounded-square)
+ *
+ * Screen-specific recoloring (e.g. text-white, !bg-rose-100) is strictly disallowed
+ * so that habits maintain identical visual identity across every screen.
+ */
+export default function HabitIcon({ 
+  habit, 
+  name, 
+  icon, 
+  iconId, 
+  habitId, 
+  id, 
+  color, 
+  iconColor, 
+  backgroundColor, 
+  iconBackgroundColor, 
+  iconStyle, 
+  boxed = true, 
+  size = 24, 
+  className = '', 
+  style = {},
+  weight = 'fill'
+}) {
+  // 1. Resolve canonical configuration from habit object or direct props
+  const targetObj = habit || {
+    id: id || habitId,
+    habitId: habitId || id,
+    icon: icon || iconId || name,
+    iconId: iconId || icon || name,
+    color: color || iconColor,
+    iconColor: iconColor || color,
+    iconBackgroundColor: iconBackgroundColor || backgroundColor,
+    iconStyle
+  };
 
-export default function HabitIcon({ name, habitId, boxed = false, size = 20, className = '', color }) {
-  const iconName = resolveHabitIcon({ id: habitId, icon: name });
-  const IconComponent = getPhosphorIcon(iconName);
-  const cleanHex = resolveHabitColor({ id: habitId, icon: iconName, color });
+  const config = getCanonicalHabitIconConfig(targetObj);
+  const IconComponent = getPhosphorIcon(config.iconId);
+  const readableIconColor = getReadableIconColor(config.iconColor);
 
-  const r = parseInt(cleanHex.slice(1, 3), 16) || 16;
-  const g = parseInt(cleanHex.slice(3, 5), 16) || 185;
-  const b = parseInt(cleanHex.slice(5, 7), 16) || 129;
-  
-  // Ultra-soft airy tint (9%) + subtle crisp border (22%)
-  const bgRgba = `rgba(${r}, ${g}, ${b}, 0.09)`;
-  const borderRgba = `rgba(${r}, ${g}, ${b}, 0.22)`;
-  const iconColor = getReadableIconColor(cleanHex);
+  // Filter out any screen-specific recoloring classes that attempt to override identity
+  // e.g. text-white, text-slate-*, bg-rose-*, text-rose-*, bg-emerald-*, text-emerald-*
+  const sanitizedClassName = className
+    ? className
+        .replace(/(!?text-(white|slate-\d+|rose-\d+|emerald-\d+|amber-\d+|primary|blue-\d+))/g, '')
+        .replace(/(!?bg-(rose-\d+|emerald-\d+|amber-\d+|slate-\d+|blue-\d+))/g, '')
+        .trim()
+    : '';
 
-  if (boxed) {
+  // 2. Unboxed mode (explicitly requested naked glyph)
+  if (boxed === false) {
     return (
-      <div 
-        className={`flex items-center justify-center shrink-0 rounded-full ${className}`}
-        style={{
-          width: size + 14,
-          height: size + 14,
-          backgroundColor: bgRgba,
-          border: `1px solid ${borderRgba}`,
-          color: iconColor,
-        }}
-      >
-        <IconComponent size={size} weight="fill" />
-      </div>
+      <IconComponent 
+        size={size} 
+        weight={weight} 
+        style={{ ...style, color: readableIconColor }} 
+        className={sanitizedClassName} 
+      />
     );
   }
 
-  const hasTextColor = className && (className.includes('text-white') || className.includes('text-slate') || className.includes('text-primary'));
+  // 3. Boxed / Badge mode (Default Canonical Representation)
+  // Calculate proportional dimensions
+  let badgeSize = size;
+  let glyphSize = Math.max(10, Math.round(size * 0.54));
+
+  // If size passed was the small glyph dimension (legacy callers passing size <= 20)
+  if (size <= 22) {
+    badgeSize = size + 12;
+    glyphSize = size;
+  }
+
+  const isSquare = config.iconStyle === 'rounded-square';
+  const shapeClass = isSquare ? 'rounded-xl' : 'rounded-full';
 
   return (
-    <IconComponent 
-      size={size} 
-      weight="fill" 
-      style={color ? { color: iconColor } : (hasTextColor ? undefined : { color: iconColor })} 
-      className={className} 
-    />
+    <div 
+      className={`inline-flex items-center justify-center shrink-0 ${shapeClass} ${sanitizedClassName}`}
+      style={{
+        width: badgeSize,
+        height: badgeSize,
+        minWidth: badgeSize,
+        minHeight: badgeSize,
+        backgroundColor: config.iconBackgroundColor,
+        border: `1px solid ${config.borderColor}`,
+        color: readableIconColor,
+        ...style
+      }}
+    >
+      <IconComponent size={glyphSize} weight={weight} style={{ color: readableIconColor }} />
+    </div>
   );
 }

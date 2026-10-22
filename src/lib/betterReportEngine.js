@@ -116,6 +116,7 @@ export function generateBetterReport(habits = [], allSummaries = [], requestedWi
     }
 
     return {
+      ...h,
       id: h.id,
       name: h.name,
       icon: h.icon || 'star',

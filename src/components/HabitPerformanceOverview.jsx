@@ -165,21 +165,9 @@ export default function HabitPerformanceOverview({
                 {/* ── BELOW THE BAR: CIRCULAR HABIT SYMBOL + NAME + DELTA ── */}
                 <div className="absolute left-0 right-0 bottom-0 h-[70px] sm:h-[74px] flex flex-col items-center justify-start z-20 px-0.5 pt-1.5">
                   
-                  {/* ROUND HABIT SYMBOL (Clean SVG icon, never text!) */}
-                  <div 
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shrink-0 shadow-2xs transition-transform group-hover:scale-110 mb-0.5 overflow-hidden"
-                    style={{
-                      backgroundColor: `${color}18`,
-                      color: color,
-                      border: `1.5px solid ${color}60`
-                    }}
-                  >
-                    <HabitIcon 
-                      name={habit.icon} 
-                      habitId={habit.id} 
-                      color={color} 
-                      size={12} 
-                    />
+                  {/* ROUND HABIT SYMBOL (Canonical HabitIcon) */}
+                  <div className="shrink-0 transition-transform group-hover:scale-110 mb-0.5">
+                    <HabitIcon habit={habit} size={22} />
                   </div>
 
                   {/* HABIT NAME (Compact & Truncated with full tooltip) */}

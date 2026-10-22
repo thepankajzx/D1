@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { useGuest } from './GuestContext';
 import { DEMO_DATA } from '../lib/demoData';
-import { resolveHabitColor, resolveHabitIcon } from '../lib/habitColors';
+import { resolveHabitColor, resolveHabitIcon, canonicalizeHabit } from '../lib/habitColors';
 import { isNightHabit } from '../lib/scoring';
 
 const DataContext = createContext();
@@ -16,8 +16,7 @@ const normalizeHabits = (habits) => {
   if (!Array.isArray(habits)) return habits;
   return habits.map(h => {
     const seed = HABITS_SEED_DATA.find(s => s.id === h.id || s.name === h.name);
-    const icon = resolveHabitIcon(h);
-    const color = resolveHabitColor(h);
+    const canonical = canonicalizeHabit(h);
     
     let unit = h.unit || h.defaultUnit || h.customUnit || (seed ? seed.defaultUnit : '') || '';
     if (unit === 'time' || unit === 'Time') unit = '';
@@ -32,9 +31,7 @@ const normalizeHabits = (habits) => {
     }
 
     return { 
-      ...h, 
-      icon, 
-      color, 
+      ...canonical, 
       unit, 
       defaultUnit: h.defaultUnit || (seed ? seed.defaultUnit : unit), 
       target100, 

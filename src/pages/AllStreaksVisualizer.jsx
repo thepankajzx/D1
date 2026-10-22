@@ -200,8 +200,8 @@ export default function AllStreaksVisualizer() {
                 <div className="flex flex-col items-center p-2.5 sm:p-3 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative">
                   {/* Avatar */}
                   <div className="relative mb-1">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-md ring-2 ring-slate-300 dark:ring-slate-600 relative" style={{ backgroundColor: top3Best[1].color }}>
-                      <HabitIcon name={top3Best[1].icon} habitId={top3Best[1].id} className="text-white" size={20}  color={top3Best[1].color} />
+                    <div className="relative">
+                      <HabitIcon habit={top3Best[1]} size={46} className="shadow-md ring-2 ring-slate-300 dark:ring-slate-600" />
                     </div>
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-slate-500 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full shadow-xs border border-white dark:border-[#0B0F19]">
                       2ND
@@ -222,8 +222,8 @@ export default function AllStreaksVisualizer() {
               <div className="flex flex-col items-center p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 dark:to-transparent border-2 border-amber-400/60 dark:border-amber-500/40 shadow-md shadow-amber-500/10 relative -translate-y-2 z-10">
                 {/* Avatar */}
                 <div className="relative mb-1 mt-1">
-                  <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-lg ring-3 ring-amber-400 dark:ring-amber-400 relative" style={{ backgroundColor: top3Best[0].color }}>
-                    <HabitIcon name={top3Best[0].icon} habitId={top3Best[0].id} className="text-white" size={24}  color={top3Best[0].color} />
+                  <div className="relative">
+                    <HabitIcon habit={top3Best[0]} size={52} className="shadow-lg ring-3 ring-amber-400 dark:ring-amber-400" />
                   </div>
                   <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black px-2 py-0.2 rounded-full shadow-xs border-2 border-white dark:border-[#0B0F19]">
                     1ST
@@ -244,8 +244,8 @@ export default function AllStreaksVisualizer() {
                 <div className="flex flex-col items-center p-2.5 sm:p-3 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative">
                   {/* Avatar */}
                   <div className="relative mb-1">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-md ring-2 ring-orange-300 dark:ring-orange-800 relative" style={{ backgroundColor: top3Best[2].color }}>
-                      <HabitIcon name={top3Best[2].icon} habitId={top3Best[2].id} className="text-white" size={20}  color={top3Best[2].color} />
+                    <div className="relative">
+                      <HabitIcon habit={top3Best[2]} size={46} className="shadow-md ring-2 ring-orange-300 dark:ring-orange-800" />
                     </div>
                     <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full shadow-xs border border-white dark:border-[#0B0F19]">
                       3RD
@@ -340,9 +340,7 @@ export default function AllStreaksVisualizer() {
                     {/* Left: Rank + Icon + Full Habit Name */}
                     <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
                       <span className="text-xs font-black text-slate-400 w-3.5 text-right shrink-0">{index + 1}.</span>
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform" style={{ backgroundColor: h.color }}>
-                        <HabitIcon name={h.icon} habitId={h.id} className="text-white" size={15}  color={h.color} />
-                      </div>
+                      <HabitIcon habit={h} size={30} className="shadow-xs group-hover:scale-105 transition-transform shrink-0" />
                       <span className="text-xs sm:text-sm font-bold truncate text-slate-900 dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {h.name}
                       </span>

@@ -1,4 +1,6 @@
-export const HABITS_SEED_DATA = [
+import { canonicalizeHabit } from './habitColors';
+
+const RAW_HABITS_SEED_DATA = [
   { id: 'wakeup', name: 'Wake Up Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 360, target0: 480, icon: 'alarm', color: '#f59e0b' },
   { id: 'sleep', name: 'Sleep Time', category: 'Morning', scoringType: 'time', direction: 'lower_is_better', defaultUnit: 'time', target100: 1320, target0: 1440, icon: 'bedtime', color: '#8b5cf6' },
   { id: 'sleep_duration', name: 'Sleep Duration', category: 'Morning', scoringType: 'duration', direction: 'higher_is_better', defaultUnit: 'minutes', target100: 480, target0: 300, icon: 'hourglass_empty', color: '#6366f1' },
@@ -20,3 +22,5 @@ export const HABITS_SEED_DATA = [
   { id: 'alcoholfree', name: 'Alcohol Free', category: 'Lifestyle', scoringType: 'binary', direction: 'n/a', defaultUnit: '', target100: null, target0: null, icon: 'no_drinks', color: '#10b981' },
   { id: 'smokingfree', name: 'Smoking / Nicotine Free', category: 'Lifestyle', scoringType: 'binary', direction: 'n/a', defaultUnit: '', target100: null, target0: null, icon: 'smoke_free', color: '#10b981' }
 ];
+
+export const HABITS_SEED_DATA = RAW_HABITS_SEED_DATA.map(h => canonicalizeHabit(h));
