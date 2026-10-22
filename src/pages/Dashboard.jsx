@@ -12,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import StreakWidget from '../components/StreakWidget';
 import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useGuest } from '../contexts/GuestContext';
 import D1OnboardingCarousel from '../components/D1OnboardingCarousel';
 
 
@@ -39,6 +40,7 @@ function getTodayDate() {
 
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
+  const { isGuest } = useGuest();
   const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData, streakTrackingEnabled } = useData();
   const { isHinglish } = useLanguage();
   const navigate = useNavigate();
@@ -70,6 +72,25 @@ export default function Dashboard() {
 
   // Fetch entries when selectedDate changes
   useEffect(() => {
+    if (isGuest && !user) {
+      const existingSummary = (allSummaries || []).find(s => s.id === selectedDate) || allSummaries?.[0];
+      if (existingSummary) {
+        setEntries(existingSummary.entries || []);
+        setDailySummary(existingSummary);
+        setSavedHabitIds(new Set((existingSummary.entries || []).map(e => e.habitId)));
+      } else {
+        setDailySummary({
+          overallScore: 0,
+          habitsCompleted: 0,
+          habitsTotal: habits.length
+        });
+        setEntries([]);
+      }
+      setLoadingEntries(false);
+      setPendingChanges(false);
+      return;
+    }
+
     if (!user || loadingData) return;
     if (habits.length === 0) {
       setLoadingEntries(false);
@@ -125,11 +146,47 @@ export default function Dashboard() {
 
 
   const handleSaveProgress = async (bypassValidation = false) => {
-    if (!user || !pendingChanges) return;
+    if ((!user && !isGuest) || !pendingChanges) return;
     
     // Allow saving past dates (restriction removed)
     
     setIsSaving(true);
+
+    if (isGuest && !user) {
+      try {
+        let finalEntries = [...entries];
+        if (!bypassValidation) {
+          const missingHabits = habits.filter(habit => !finalEntries.some(e => e.habitId === habit.id));
+          if (missingHabits.length > 0) {
+            setMissingHabitsForSave(missingHabits);
+            setShowPartialSaveModal(true);
+            setIsSaving(false);
+            return;
+          }
+        }
+        setPendingChanges(false);
+        setSavedHabitIds(new Set(finalEntries.map(e => e.habitId)));
+        if (dailySummary) {
+          const updatedSummary = { id: selectedDate, ...dailySummary };
+          updatedSummary.habitScores = {};
+          updatedSummary.habitValues = {};
+          finalEntries.forEach(e => {
+            updatedSummary.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+            if (e.rawValue !== undefined && e.rawValue !== null) {
+              updatedSummary.habitValues[e.habitId] = e.rawValue;
+            }
+          });
+          setAllSummaries(prev => {
+            const newSummaries = (prev || []).filter(s => s.id !== selectedDate);
+            newSummaries.unshift(updatedSummary);
+            return newSummaries;
+          });
+        }
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
     
     try {
         const batch = writeBatch(db);
@@ -248,7 +305,7 @@ export default function Dashboard() {
 
   // Handle Entry Update from Card
   const handleEntryUpdate = (habitId, rawValue, computedScore) => {
-    if (!user) return;
+    if (!user && !isGuest) return;
     // Lock removed - allow editing anytime
     
     // 1. Optimistically update local entries array

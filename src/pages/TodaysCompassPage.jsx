@@ -42,9 +42,13 @@ export default function TodaysCompassPage() {
   const [selectedDate] = useState(() => getTodayDateStr());
   const [localEntries] = useState(() => {
     try {
-      const cacheKey = `entries_${user?.uid}_${getTodayDateStr()}`;
-      const cached = localStorage.getItem(cacheKey);
-      return cached ? JSON.parse(cached) : [];
+      if (user?.uid) {
+        const cacheKey = `entries_${user.uid}_${getTodayDateStr()}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) return JSON.parse(cached);
+      }
+      const todaySummary = (allSummaries || []).find(s => s.id === getTodayDateStr()) || allSummaries?.[0];
+      return todaySummary?.entries || [];
     } catch (e) {
       return [];
     }

@@ -194,30 +194,10 @@ export function DataProvider({ children }) {
 
   // ── GUEST MODE: serve demo data, skip all Firebase ONLY if not logged in ──
   if (isGuest && !user) {
-    const noop = () => {};
     return (
-      <DataContext.Provider value={{ 
-        ...DEMO_DATA, 
-        isGuest: true, 
-        setHabits: noop, 
-        setAllSummaries: noop, 
-        setPriorityModeEnabled: noop, 
-        refreshData: noop,
-        streakTrackingEnabled,
-        setStreakTrackingEnabled,
-        coreXEnabled,
-        setCoreXEnabled,
-        todayCompassEnabled,
-        setTodayCompassEnabled,
-        aiCoachEnabled,
-        setAiCoachEnabled,
-        earlyUnlockAll,
-        setEarlyUnlockAll,
-        timeFormat,
-        setTimeFormat
-      }}>
+      <GuestDataProvider timeFormat={timeFormat} setTimeFormat={setTimeFormat}>
         {children}
-      </DataContext.Provider>
+      </GuestDataProvider>
     );
   }
 
@@ -245,6 +225,49 @@ export function DataProvider({ children }) {
     >
       {children}
     </RealDataProvider>
+  );
+}
+
+function GuestDataProvider({ children, timeFormat, setTimeFormat }) {
+  const [habits, setHabits] = useState(DEMO_DATA.habits);
+  const [allSummaries, setAllSummaries] = useState(DEMO_DATA.allSummaries);
+  const [streakTrackingEnabled, setStreakTrackingEnabled] = useState(true);
+  const [coreXEnabled, setCoreXEnabled] = useState(true);
+  const [todayCompassEnabled, setTodayCompassEnabled] = useState(true);
+  const [aiCoachEnabled, setAiCoachEnabled] = useState(true);
+  const [earlyUnlockAll, setEarlyUnlockAll] = useState(true);
+  const [priorityModeEnabled, setPriorityModeEnabled] = useState(true);
+
+  return (
+    <DataContext.Provider value={{
+      habits,
+      deletedHabits: [],
+      setHabits,
+      setDeletedHabits: () => {},
+      allSummaries,
+      dailySummaries: allSummaries,
+      setAllSummaries,
+      userDoc: DEMO_DATA.userDoc,
+      loadingData: false,
+      priorityModeEnabled,
+      setPriorityModeEnabled,
+      refreshData: () => {},
+      isGuest: true,
+      streakTrackingEnabled,
+      setStreakTrackingEnabled,
+      coreXEnabled,
+      setCoreXEnabled,
+      todayCompassEnabled,
+      setTodayCompassEnabled,
+      aiCoachEnabled,
+      setAiCoachEnabled,
+      earlyUnlockAll,
+      setEarlyUnlockAll,
+      timeFormat,
+      setTimeFormat
+    }}>
+      {children}
+    </DataContext.Provider>
   );
 }
 
@@ -411,6 +434,7 @@ function RealDataProvider({
       setHabits, 
       setDeletedHabits,
       allSummaries, 
+      dailySummaries: allSummaries,
       setAllSummaries, 
       priorityModeEnabled, 
       setPriorityModeEnabled, 
