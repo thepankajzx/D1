@@ -133,7 +133,7 @@ function getMilestoneTierIcon(title = '') {
 
 export default function ExperimentalAnalytics() {
   const navigate = useNavigate();
-  const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc, streakTrackingEnabled, timeFormat } = useData();
+  const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc, streakTrackingEnabled, timeFormat, earlyUnlockAll } = useData();
   const { isHinglish, t } = useLanguage();
   const { isDark } = useTheme();
 
@@ -1948,7 +1948,7 @@ export default function ExperimentalAnalytics() {
             <div
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(30);
-                if ((realSummaries?.length || 0) < 14) {
+                if ((realSummaries?.length || 0) < 14 && !earlyUnlockAll) {
                   setShowResilienceLockModal(true);
                 } else {
                   navigate(selectedHabitId === 'all' ? '/analytics/recovery' : `/analytics/recovery?habitId=${selectedHabitId}`);
@@ -1970,7 +1970,7 @@ export default function ExperimentalAnalytics() {
                 <span className="text-[8.5px] xs:text-[9px] sm:text-[9.5px] font-semibold text-emerald-700/75 dark:text-emerald-400/75 whitespace-nowrap truncate">
                   {isHinglish ? 'रिकवरी हब' : 'Bounce-back'}
                 </span>
-                {(realSummaries?.length || 0) < 14 ? (
+                {(realSummaries?.length || 0) < 14 && !earlyUnlockAll ? (
                   <Lock size={11} weight="bold" className="text-amber-500 shrink-0" />
                 ) : (
                   <CaretRight size={10} weight="bold" className="text-emerald-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
@@ -2697,7 +2697,7 @@ export default function ExperimentalAnalytics() {
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 {isHinglish ? 'रिकवरी इनसाइट्स चाहिए?' : 'Need recovery insights?'}
               </span>
-              {(realSummaries?.length || 0) < 14 ? (
+              {(realSummaries?.length || 0) < 14 && !earlyUnlockAll ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -2866,7 +2866,7 @@ export default function ExperimentalAnalytics() {
           </div>
 
           {/* Clean Static Preview Mode Pill (Shown when < 30 days) */}
-          {(realSummaries?.length || 0) < 30 && (
+          {(realSummaries?.length || 0) < 30 && !earlyUnlockAll && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 text-[10px] font-black tracking-wider uppercase select-none">
               <Lock size={11} weight="bold" className="text-amber-500" />
               <span>{isHinglish ? 'सैंपल प्रीव्यू • 30 दिन पर अनलॉक' : 'Preview Mode • Unlocks at 30D'}</span>
@@ -2875,8 +2875,8 @@ export default function ExperimentalAnalytics() {
         </div>
 
         {/* 3 Insight Cards Grid: Best Day, Vulnerable Day, Weekday vs Weekend */}
-        <div className={`relative ${(realSummaries?.length || 0) < 30 ? 'min-h-[280px]' : ''}`}>
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${(realSummaries?.length || 0) < 30 ? 'filter blur-[3px] select-none pointer-events-none opacity-50' : ''}`}>
+        <div className={`relative ${(realSummaries?.length || 0) < 30 && !earlyUnlockAll ? 'min-h-[280px]' : ''}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${(realSummaries?.length || 0) < 30 && !earlyUnlockAll ? 'filter blur-[3px] select-none pointer-events-none opacity-50' : ''}`}>
           
           {/* Card 1: Best Day */}
           <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-slate-200/70 dark:border-slate-800 flex flex-col justify-between gap-3">
@@ -3007,7 +3007,7 @@ export default function ExperimentalAnalytics() {
         </div>
 
           {/* 30-Day Lock Overlay for Day Rhythm Patterns */}
-          {(realSummaries?.length || 0) < 30 && (
+          {(realSummaries?.length || 0) < 30 && !earlyUnlockAll && (
             <div className="absolute inset-0 z-10 flex items-center justify-center p-3 sm:p-4 bg-white/75 dark:bg-[#0b0f19]/85 backdrop-blur-xs rounded-3xl animate-in fade-in duration-150">
               <div className="w-full max-w-[320px] bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-3.5 text-center">
                 

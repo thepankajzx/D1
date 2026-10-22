@@ -21,7 +21,7 @@ export default function TodayTopKpis({
 }) {
   const navigate = useNavigate();
   const { isHinglish } = useLanguage();
-  const { todayCompassEnabled } = useData();
+  const { todayCompassEnabled, earlyUnlockAll } = useData();
 
   const [isCompassOpen, setIsCompassOpen] = useState(false);
   const [showInsightsLockModal, setShowInsightsLockModal] = useState(false);
@@ -31,8 +31,8 @@ export default function TodayTopKpis({
     return allSummaries.filter(s => (s.overallScore > 0 || s.habitsCompleted > 0)).length;
   }, [allSummaries]);
 
-  const isInsightsLocked = trackedDays < 7;
-  const daysRemaining = Math.max(1, 7 - trackedDays);
+  const isInsightsLocked = !earlyUnlockAll && trackedDays < 7;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(1, 7 - trackedDays);
 
   const handleInsightsClick = () => {
     if (navigator.vibrate) navigator.vibrate(15);

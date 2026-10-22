@@ -11,7 +11,7 @@ import Icon from '../components/Icon';
 
 export default function DeepDiveIndex() {
   const { currentUser: user } = useAuth();
-  const { habits = [], allSummaries = [], refreshData } = useData();
+  const { habits = [], allSummaries = [], refreshData, earlyUnlockAll } = useData();
   const { isHinglish, t } = useLanguage();
   const navigate = useNavigate();
   const [showLockModal, setShowLockModal] = useState(false);
@@ -22,8 +22,8 @@ export default function DeepDiveIndex() {
   const [isSavingPriority, setIsSavingPriority] = useState(false);
 
   const trackedDays = Math.max(0, allSummaries.length);
-  const isUnlocked = trackedDays >= 7;
-  const daysRemaining = Math.max(1, 7 - trackedDays);
+  const isUnlocked = earlyUnlockAll || trackedDays >= 7;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(0, 7 - trackedDays);
 
   const priorityHabits = habits?.filter(h => h.priorityRank === 1 || h.priorityRank === 2 || h.priorityRank === 3)
     .sort((a, b) => a.priorityRank - b.priorityRank) || [];

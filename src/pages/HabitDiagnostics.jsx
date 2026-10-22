@@ -58,7 +58,7 @@ export default function HabitDiagnostics() {
   const query = useQuery();
   const habitIdParam = query.get('habitId');
   const navigate = useNavigate();
-  const { habits, allSummaries, userDoc } = useData();
+  const { habits, allSummaries, userDoc, earlyUnlockAll } = useData();
   const { isHinglish } = useLanguage();
 
   const [periodDays, setPeriodDays] = useState(30);
@@ -78,8 +78,8 @@ export default function HabitDiagnostics() {
 
   // Tier 2 (14 Days) Unlock Check
   const trackedDaysCount = (allSummaries || []).length;
-  const isLocked = trackedDaysCount < 14;
-  const daysRemaining = Math.max(0, 14 - trackedDaysCount);
+  const isLocked = !earlyUnlockAll && trackedDaysCount < 14;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(0, 14 - trackedDaysCount);
 
   // Active user habits
   const activeHabits = useMemo(() => {

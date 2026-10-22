@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from './Icon';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useData } from '../contexts/DataContext';
 import { generateDailyInsights } from '../lib/insightEngine';
 import ArchetypeExplainerModal from './ArchetypeExplainerModal';
 import { Sparkle, Lock, CaretRight, X } from '@phosphor-icons/react';
@@ -9,6 +10,7 @@ import { Sparkle, Lock, CaretRight, X } from '@phosphor-icons/react';
 export default function TodayInsightHighlightCard({ habits = [], allSummaries = [] }) {
   const navigate = useNavigate();
   const { isHinglish } = useLanguage();
+  const { earlyUnlockAll } = useData();
   const [explainerBadge, setExplainerBadge] = useState(null);
   const [showLockModal, setShowLockModal] = useState(false);
 
@@ -16,8 +18,8 @@ export default function TodayInsightHighlightCard({ habits = [], allSummaries = 
     return allSummaries.filter(s => (s.overallScore > 0 || s.habitsCompleted > 0)).length;
   }, [allSummaries]);
 
-  const isLocked = trackedDays < 7;
-  const daysRemaining = Math.max(1, 7 - trackedDays);
+  const isLocked = !earlyUnlockAll && trackedDays < 7;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(1, 7 - trackedDays);
 
   const insights = useMemo(() => {
     return generateDailyInsights(habits, allSummaries, isHinglish);

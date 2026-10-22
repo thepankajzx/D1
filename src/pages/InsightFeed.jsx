@@ -35,7 +35,7 @@ export default function InsightFeed() {
     window.scrollTo(0, 0);
   }, []);
   const navigate = useNavigate();
-  const { habits, allSummaries } = useData();
+  const { habits, allSummaries, earlyUnlockAll } = useData();
   const { isHinglish, t } = useLanguage();
 
   const todayStr = useMemo(() => {
@@ -53,8 +53,8 @@ export default function InsightFeed() {
     });
   }, [allSummaries, todayStr]);
 
-  const isLocked = (completedSummaries?.length || 0) < 7;
-  const daysRemaining = Math.max(0, 7 - (completedSummaries?.length || 0));
+  const isLocked = !earlyUnlockAll && (completedSummaries?.length || 0) < 7;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(0, 7 - (completedSummaries?.length || 0));
 
   const [shareInsight, setShareInsight] = useState(null);
   const [showGuideModal, setShowGuideModal] = useState(false);

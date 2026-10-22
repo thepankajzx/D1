@@ -37,9 +37,9 @@ export default function DeepDive() {
   const habitId = query.get('habitId');
   const navigate = useNavigate();
   
-  const { habits, deletedHabits, allSummaries } = useData();
+  const { habits, deletedHabits, allSummaries, earlyUnlockAll } = useData();
   const isSamplePreview = habitId === 'sample_workout' || habitId?.startsWith('sample_');
-  const daysRemaining = Math.max(0, 7 - (allSummaries?.length || 0));
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(0, 7 - (allSummaries?.length || 0));
   
   const [periodDays, setPeriodDays] = useState(30);
   
@@ -157,32 +157,34 @@ export default function DeepDive() {
           </div>
 
           {/* Dark Card with Lock, Text & Bottom-Right View Roadmap */}
-          <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 border border-slate-700/60 shadow-lg flex flex-col gap-3">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
-                <Icon name="lock" filled={true} className="text-xl" />
+          {!earlyUnlockAll && (
+            <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 border border-slate-700/60 shadow-lg flex flex-col gap-3">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon name="lock" filled={true} className="text-xl" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm sm:text-base font-bold text-white leading-tight">
+                    {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} left to unlock live data
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed mt-1">
+                    Explore a realistic 30-day simulation with trend curves, recovery rates &amp; weekday patterns.
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm sm:text-base font-bold text-white leading-tight">
-                  {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} left to unlock live data
-                </p>
-                <p className="text-xs text-slate-400 font-medium leading-relaxed mt-1">
-                  Explore a realistic 30-day simulation with trend curves, recovery rates &amp; weekday patterns.
-                </p>
-              </div>
-            </div>
 
-            {/* Bottom-Right View Roadmap */}
-            <div className="flex justify-end pt-1">
-              <button
-                onClick={() => navigate('/roadmap')}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-              >
-                <span>View Roadmap</span>
-                <Icon name="arrow_forward" className="text-[13px]" />
-              </button>
+              {/* Bottom-Right View Roadmap */}
+              <div className="flex justify-end pt-1">
+                <button
+                  onClick={() => navigate('/roadmap')}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                >
+                  <span>View Roadmap</span>
+                  <Icon name="arrow_forward" className="text-[13px]" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

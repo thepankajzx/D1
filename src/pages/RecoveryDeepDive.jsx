@@ -100,7 +100,7 @@ export default function RecoveryDeepDive() {
   const hasRealData = useMemo(() => {
     if (isSamplePreview || !allSummaries || (!earlyUnlockAll && allSummaries.length < 14) || !habit?.id) return false;
     return allSummaries.some(s => s.habitScores && s.habitScores[habit.id] !== undefined);
-  }, [allSummaries, habit, isSamplePreview]);
+  }, [allSummaries, habit, isSamplePreview, earlyUnlockAll]);
 
   const resolvedSummaries = useMemo(() => {
     if (!hasRealData) {

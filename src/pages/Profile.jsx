@@ -250,6 +250,7 @@ export default function Profile() {
 
   // Check priority lock status
   const getPriorityLockStatus = () => {
+    if (earlyUnlockAll) return { locked: false, daysRemaining: 0 };
     const priorityCount = habits.filter(h => h.priorityRank && h.priorityRank >= 1 && h.priorityRank <= 3).length;
     if (priorityCount < 3) return { locked: false, daysRemaining: 0 };
 

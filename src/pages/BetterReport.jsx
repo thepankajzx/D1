@@ -9,14 +9,14 @@ import confetti from 'canvas-confetti';
 
 export default function BetterReport() {
   const navigate = useNavigate();
-  const { habits = [], allSummaries = [] } = useData();
+  const { habits = [], allSummaries = [], earlyUnlockAll } = useData();
   const [selectedWindow] = useState(30);
   const [showShareModal, setShowShareModal] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
 
-  const isLocked = (allSummaries?.length || 0) < 30;
-  const daysRemaining = Math.max(0, 30 - (allSummaries?.length || 0));
+  const isLocked = !earlyUnlockAll && (allSummaries?.length || 0) < 30;
+  const daysRemaining = earlyUnlockAll ? 0 : Math.max(0, 30 - (allSummaries?.length || 0));
 
   useEffect(() => {
     if (!isLocked) {

@@ -11,18 +11,18 @@ import {
 
 export default function InsightsRoadmap() {
   const navigate = useNavigate();
-  const { allSummaries } = useData();
+  const { allSummaries, earlyUnlockAll } = useData();
   const { isHinglish } = useLanguage();
 
   const trackedDays = allSummaries ? allSummaries.length : 0;
 
-  const tier1Unlocked = trackedDays >= 7;
-  const tier2Unlocked = trackedDays >= 14;
-  const tier3Unlocked = trackedDays >= 30;
+  const tier1Unlocked = earlyUnlockAll || trackedDays >= 7;
+  const tier2Unlocked = earlyUnlockAll || trackedDays >= 14;
+  const tier3Unlocked = earlyUnlockAll || trackedDays >= 30;
 
-  const tier1Remaining = Math.max(0, 7 - trackedDays);
-  const tier2Remaining = Math.max(0, 14 - trackedDays);
-  const tier3Remaining = Math.max(0, 30 - trackedDays);
+  const tier1Remaining = earlyUnlockAll ? 0 : Math.max(0, 7 - trackedDays);
+  const tier2Remaining = earlyUnlockAll ? 0 : Math.max(0, 14 - trackedDays);
+  const tier3Remaining = earlyUnlockAll ? 0 : Math.max(0, 30 - trackedDays);
 
   const handleItemClick = (route, isUnlocked) => {
     if (!isUnlocked) return;
