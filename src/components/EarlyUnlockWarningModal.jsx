@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { WarningCircle, ShieldCheck, LockOpen, Lock, Sparkle, X, CalendarCheck } from '@phosphor-icons/react';
+import { WarningCircle, ShieldCheck, LockOpen, Sparkle, X } from '@phosphor-icons/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useData } from '../contexts/DataContext';
 
@@ -18,152 +18,131 @@ export default function EarlyUnlockWarningModal({ isOpen, onClose, onUnlocked })
   if (!isOpen) return null;
 
   const handleConfirmUnlock = async () => {
-    if (navigator.vibrate) navigator.vibrate(40);
+    if (navigator?.vibrate) navigator.vibrate(35);
     await setEarlyUnlockAll(true);
     if (onUnlocked) onUnlocked();
     onClose();
   };
 
   const handleRestoreRecommended = async () => {
-    if (navigator.vibrate) navigator.vibrate(20);
+    if (navigator?.vibrate) navigator.vibrate(20);
     await setEarlyUnlockAll(false);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-[200] bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div 
-        className="bg-white dark:bg-[#151a26] rounded-3xl p-5 sm:p-6 max-w-lg w-full shadow-2xl border border-slate-200/90 dark:border-slate-800 text-left space-y-4 max-h-[92dvh] overflow-y-auto animate-in zoom-in-95 duration-200"
+        className="bg-white dark:bg-[#151a26] rounded-3xl p-4 sm:p-5 max-w-sm sm:max-w-md w-full shadow-2xl border border-slate-200/90 dark:border-slate-800 text-left space-y-3.5 animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
         {/* Top Header with Warning Icon */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
-              <WarningCircle size={22} weight="fill" />
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
+              <WarningCircle size={19} weight="fill" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 block leading-tight">
-                {isHinglish ? "वैज्ञानिक डेटा चेतावनी" : "SCIENTIFIC ACCURACY WARNING"}
+              <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 block leading-none">
+                {isHinglish ? "डेटा सुरक्षा चेतावनी" : "SCIENTIFIC ACCURACY WARNING"}
               </span>
-              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">
-                {isHinglish ? "समय से पहले इनसाइट्स अनलॉक करने का निर्णय" : "Early Insights Unlock & Scientific Rationale"}
+              <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight mt-0.5">
+                {isHinglish ? "समय से पहले इनसाइट्स अनलॉक?" : "Unlock Insights Early?"}
               </h3>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+            className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors"
           >
-            <X size={16} weight="bold" />
+            <X size={14} weight="bold" />
           </button>
         </div>
 
-        {/* Core Rationale Paragraph */}
-        <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/60 rounded-2xl p-3 sm:p-3.5 text-xs text-amber-950 dark:text-amber-200 leading-relaxed space-y-1.5">
-          <p className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300">
-            <Sparkle size={14} weight="fill" className="shrink-0 text-amber-500" />
-            <span>{isHinglish ? "हम दृढ़ता से सलाह देते हैं कि इसे अभी अनलॉक न करें!" : "We strongly recommend keeping time-gated locks active!"}</span>
+        {/* Compact Core Rationale Banner */}
+        <div className="bg-amber-50/90 dark:bg-amber-950/35 border border-amber-200/80 dark:border-amber-800/60 rounded-2xl p-2.5 sm:p-3 text-xs text-amber-950 dark:text-amber-200 leading-relaxed">
+          <p className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-[11.5px]">
+            <Sparkle size={13} weight="fill" className="shrink-0 text-amber-500" />
+            <span>{isHinglish ? "सलाह: टाइम-गेट लॉक चालू रखें" : "Recommended: Keep time gates active"}</span>
           </p>
-          <p className="text-[11.5px] font-medium leading-relaxed opacity-95">
+          <p className="text-[11px] font-medium leading-snug mt-1 text-amber-900/90 dark:text-amber-200/90">
             {isHinglish ? (
-              <>कम डेटा (1–3 दिन) में कोई भी एल्गोरिदम केवल <strong>रैंडम संयोग (Coincidence)</strong> पकड़ता है, असली आदत नहीं। जब तक आपकी आदतों का असली डेटाबेस नहीं बनता, तब तक इनसाइट्स आपको गलत दिशा में ले जा सकती हैं। इसलिए हमने हर फ़ीचर के लिए एक वैज्ञानिक टाइमफ्रेम तय किया है:</>
+              <>कम डेटा (1–3 दिन) में एल्गोरिदम केवल <strong>संयोग</strong> पकड़ता है। सच्ची आदत व सटीक न्यूरोबायोलॉजिकल पैटर्न्स के लिए साइंटिफिक टाइम-फ्रेम आवश्यक है:</>
             ) : (
-              <>Statistical models cannot differentiate temporary coincidences from genuine neurobiological habit formation with under 7–30 days of logs. Incomplete data generates false patterns and cognitive biases. Here is why each time gate was intentionally constructed:</>
+              <>Under 7–30 days of logs, statistical noise mimics true habit formation. Time gates prevent premature cognitive bias and preserve scientific accuracy:</>
             )}
           </p>
         </div>
 
-        {/* The 3 Scientific Time-Gate Thresholds */}
-        <div className="space-y-2 pt-0.5">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-            {isHinglish ? "D1 टाइम-गेट क्यों लगाए गए हैं:" : "Why These Time Gates Exist in D1:"}
+        {/* The 3 Scientific Time-Gate Thresholds (Compact 3-Column Milestone Grid) */}
+        <div className="space-y-1.5">
+          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+            {isHinglish ? "D1 टाइम-गेट लॉक्स:" : "Intentional Time Gates in D1:"}
           </span>
+          <div className="grid grid-cols-3 gap-1.5 text-center">
+            {/* 7D */}
+            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 flex flex-col items-center justify-center">
+              <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                7D
+              </span>
+              <span className="text-[10px] font-bold text-slate-900 dark:text-white mt-1 leading-tight">
+                {isHinglish ? "वीकली रिदम" : "Weekly Rhythm"}
+              </span>
+              <span className="text-[8.5px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate max-w-full">
+                Keystones
+              </span>
+            </div>
 
-          {/* 7 Days Gate */}
-          <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 text-left">
-            <div className="w-7 h-7 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-xs shrink-0 mt-0.5">
-              7D
+            {/* 14D */}
+            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 flex flex-col items-center justify-center">
+              <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300">
+                14D
+              </span>
+              <span className="text-[10px] font-bold text-slate-900 dark:text-white mt-1 leading-tight">
+                {isHinglish ? "बाउंस-बैक" : "Bounce-Back"}
+              </span>
+              <span className="text-[8.5px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate max-w-full">
+                Resilience
+              </span>
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center justify-between gap-1 flex-wrap">
-                <span className="text-xs font-black text-slate-900 dark:text-white">
-                  {isHinglish ? "7 Days: वीकली रिदम & कीस्टोन हैबिट्स" : "7 Days: Weekly Rhythm & Keystone Habits"}
-                </span>
-                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  Weekdays vs Weekend
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
-                {isHinglish 
-                  ? "सोमवार से रविवार तक का पूरा 1 चक्र देखना आवश्यक है ताकि कामकाजी दिनों और सप्ताहांत के ड्रॉप्स का सही फ़र्क पता चल सके।"
-                  : "A full Monday-to-Sunday cycle is mathematically required to detect variance between weekday work routines and weekend execution drops."}
-              </p>
-            </div>
-          </div>
 
-          {/* 14 Days Gate */}
-          <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 text-left">
-            <div className="w-7 h-7 rounded-xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-black text-xs shrink-0 mt-0.5">
-              14D
-            </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center justify-between gap-1 flex-wrap">
-                <span className="text-xs font-black text-slate-900 dark:text-white">
-                  {isHinglish ? "14 Days: बाउंस-बैक & रेज़िलिएंस शील्ड" : "14 Days: Bounce-Back & Resilience Shield"}
-                </span>
-                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
-                  Recovery Score
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
-                {isHinglish 
-                  ? "किसी मिस के बाद वापस कमबैक करने की मानसिक ताकत मापने के लिए कम से कम 2 हफ़्ते के कमबैक साइकल्स ज़रूरी होते हैं।"
-                  : "Psychological resilience cannot be scored without tracking through at least two complete off-track and comeback recovery windows."}
-              </p>
-            </div>
-          </div>
-
-          {/* 30 Days Gate */}
-          <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 text-left">
-            <div className="w-7 h-7 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs shrink-0 mt-0.5">
-              30D
-            </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center justify-between gap-1 flex-wrap">
-                <span className="text-xs font-black text-slate-900 dark:text-white">
-                  {isHinglish ? "30 Days: 30-Day Better Report & Deep Curves" : "30 Days: 30-Day Better Report & Correlations"}
-                </span>
-                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Full Documentary
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
-                {isHinglish 
-                  ? "मंथली ट्रेंड्स, पावर डुओ और आदतों के आपसी कनेक्शन के लिए 30 दिनों का ठोस स्टैटिस्टिकल डेटा अनिवार्य है।"
-                  : "Full behavioral recap, time-of-day anchors, and inter-habit correlations require 30 calendar days to reach 95% statistical confidence."}
-              </p>
+            {/* 30D */}
+            <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 flex flex-col items-center justify-center">
+              <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                30D
+              </span>
+              <span className="text-[10px] font-bold text-slate-900 dark:text-white mt-1 leading-tight">
+                {isHinglish ? "बेटर रिपोर्ट" : "Better Report"}
+              </span>
+              <span className="text-[8.5px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate max-w-full">
+                Correlations
+              </span>
             </div>
           </div>
         </div>
 
         {/* Current State Indicator */}
-        <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+        <div className="p-2 px-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
             {earlyUnlockAll ? (
-              <LockOpen size={16} weight="fill" className="text-amber-500 shrink-0" />
+              <LockOpen size={14} weight="fill" className="text-amber-500 shrink-0" />
             ) : (
-              <ShieldCheck size={16} weight="fill" className="text-emerald-600 shrink-0" />
+              <ShieldCheck size={14} weight="fill" className="text-emerald-600 shrink-0" />
             )}
-            <div className="text-xs font-bold text-slate-900 dark:text-white">
+            <div className="text-[11px] font-bold text-slate-900 dark:text-white">
               {earlyUnlockAll 
-                ? (isHinglish ? "वर्तमान स्थिति: समय से पहले अनलॉक एक्टिव" : "Current: Unlocked Early (Active)")
-                : (isHinglish ? "वर्तमान स्थिति: अनुशंसित लॉक मोड (सक्रिय)" : "Current: Recommended Lock Mode (Active)")}
+                ? (isHinglish ? "स्थिति: अर्ली अनलॉक सक्रिय" : "Status: Early Unlock Active")
+                : (isHinglish ? "स्थिति: अनुशंसित लॉक सक्रिय" : "Status: Recommended Lock Active")}
             </div>
           </div>
-          <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full ${
+          <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-full ${
             earlyUnlockAll 
               ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-300' 
               : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300'
@@ -173,46 +152,49 @@ export default function EarlyUnlockWarningModal({ isOpen, onClose, onUnlocked })
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2 pt-1">
-          {/* Button 1: Recommended Keep Locked */}
+        <div className="space-y-1.5 pt-0.5">
           {!earlyUnlockAll ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm tracking-wide shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck size={16} weight="bold" />
-              <span>{isHinglish ? "सलाह मानें — लॉक रहने दें (अनुशंसित)" : "Keep Recommended Lock (Recommended)"}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleRestoreRecommended}
-              className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm tracking-wide shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck size={16} weight="bold" />
-              <span>{isHinglish ? "अनुशंसित लॉक मोड वापस चालू करें" : "Restore Recommended Lock Mode"}</span>
-            </button>
-          )}
+            <>
+              {/* Button 1: Recommended Keep Locked */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-[13px] tracking-wide shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck size={15} weight="bold" />
+                <span>{isHinglish ? "सलाह मानें — लॉक रहने दें (अनुशंसित)" : "Keep Recommended Lock (Recommended)"}</span>
+              </button>
 
-          {/* Button 2: Danger / Override Unlock All Now */}
-          {!earlyUnlockAll ? (
-            <button
-              type="button"
-              onClick={handleConfirmUnlock}
-              className="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-bold text-xs transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <LockOpen size={14} weight="bold" className="text-amber-600" />
-              <span>{isHinglish ? "मैं समझ गया, फिर भी सारे लॉक्स अभी तोड़ें" : "I Understand the Risk — Unlock Everything Now"}</span>
-            </button>
+              {/* Button 2: Danger / Override Unlock All Now */}
+              <button
+                type="button"
+                onClick={handleConfirmUnlock}
+                className="w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-bold text-[11px] transition-all active:scale-[0.99] flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <LockOpen size={13} weight="bold" className="text-amber-600" />
+                <span>{isHinglish ? "मैं समझ गया, फिर भी अभी अनलॉक करें" : "I Understand — Unlock Early Anyway"}</span>
+              </button>
+            </>
           ) : (
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer text-center"
-            >
-              {isHinglish ? "बंद करें" : "Close"}
-            </button>
+            <>
+              {/* Restore Recommended */}
+              <button
+                type="button"
+                onClick={handleRestoreRecommended}
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-[13px] tracking-wide shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck size={15} weight="bold" />
+                <span>{isHinglish ? "अनुशंसित लॉक मोड वापस चालू करें" : "Restore Recommended Lock Mode"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-1 text-center text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                {isHinglish ? "बंद करें" : "Close"}
+              </button>
+            </>
           )}
         </div>
       </div>
