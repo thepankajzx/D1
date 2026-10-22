@@ -335,9 +335,11 @@ function ScrollToTop() {
 
 function BotLayer() {
   const location = useLocation();
-  const { aiCoachEnabled } = useData();
-  const { userRole } = useAuth();
+  if (location.pathname === '/login') return null;
+
   const { isGuest } = useGuest();
+  const { aiCoachEnabled } = useData() || {};
+  const { userRole } = useAuth() || {};
 
   const isEnabled = isGuest ? (aiCoachEnabled !== false) : (aiCoachEnabled === true && localStorage.getItem('preference_ai_coach_enabled') !== 'false');
   if (!isEnabled) return null;

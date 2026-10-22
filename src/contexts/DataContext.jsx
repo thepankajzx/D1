@@ -9,8 +9,8 @@ import { DEMO_DATA } from '../lib/demoData';
 import { resolveHabitColor, resolveHabitIcon, canonicalizeHabit } from '../lib/habitColors';
 import { isNightHabit } from '../lib/scoring';
 
-const DataContext = createContext();
-export function useData() { return useContext(DataContext); }
+const DataContext = createContext({});
+export function useData() { return useContext(DataContext) || {}; }
 
 const normalizeHabits = (habits) => {
   if (!Array.isArray(habits)) return habits;
