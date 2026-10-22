@@ -196,9 +196,8 @@ export default function Login() {
 
         .login-stage-wrapper {
           width: 100vw;
-          height: 100dvh;
           min-height: 100dvh;
-          max-height: 100dvh;
+          height: 100dvh;
           overflow-y: auto;
           overflow-x: hidden;
           background: #0E1612;
@@ -221,26 +220,25 @@ export default function Login() {
           }
         }
 
-        /* ── Centered Phone Shell: 100dvh on mobile, Titanium bezel on desktop ── */
         .phone-frame {
           position: relative;
           width: 100%;
           max-width: 390px;
-          height: 100dvh;
-          max-height: 100dvh;
+          min-height: 100dvh;
           background: #FFFFFF;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
-          overflow: hidden;
+          overflow-x: hidden;
           box-sizing: border-box;
         }
 
         @media (min-width: 481px) {
           .phone-frame {
-            height: min(840px, 96dvh);
-            max-height: 840px;
-            border-radius: 40px;
+            min-height: auto;
+            height: auto;
+            max-height: 96dvh;
+            border-radius: 38px;
+            overflow-y: auto;
             box-shadow:
               0 0 0 1px rgba(255, 255, 255, 0.1),
               0 0 0 8px #1A2620,
@@ -250,30 +248,11 @@ export default function Login() {
           }
         }
 
-        /* ── Top Hero Canvas (~44% height) ── */
-        .hero-section {
-          position: relative;
-          flex: 0 0 auto;
-          height: clamp(280px, 42vh, 325px);
-          padding: 16px 16px 10px 18px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          overflow: hidden;
-          isolation: isolate;
-          background:
-            radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.22), transparent 44%),
-            radial-gradient(circle at 75% 85%, rgba(245, 158, 11, 0.15), transparent 42%),
-            radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.95), transparent 48%),
-            linear-gradient(160deg, #F3F9F5 0%, #E8F4ED 50%, #DAEDE1 100%);
-          border-bottom: 1px solid rgba(16, 185, 129, 0.15);
-          box-sizing: border-box;
-        }
-
         .hero-grid {
           position: absolute;
           inset: 0;
-          z-index: -2;
+          z-index: 1;
+          pointer-events: none;
           background-image:
             linear-gradient(to right, rgba(7, 26, 18, 0.035) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(7, 26, 18, 0.035) 1px, transparent 1px);
@@ -282,51 +261,14 @@ export default function Login() {
           -webkit-mask-image: radial-gradient(ellipse at 60% 45%, black 35%, transparent 88%);
         }
 
-        /* Background flowing momentum path */
         .hero-wave-curve {
           position: absolute;
           inset: 0;
-          z-index: -1;
+          z-index: 2;
           pointer-events: none;
           opacity: 0.75;
         }
 
-        /* Editorial Typography */
-        .editorial-title {
-          font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Inter', sans-serif;
-          font-size: 27px;
-          font-weight: 800;
-          line-height: 1.0;
-          letter-spacing: -0.04em;
-          color: #0A1E14;
-        }
-
-        /* Flat, Crisp Frosted Consistency Card (Upright, not rotated) */
-        .consistency-glass-card {
-          position: absolute;
-          top: 14px;
-          right: 14px;
-          width: 154px;
-          padding: 9px 10px 8px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.92);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          box-shadow:
-            0 12px 28px -6px rgba(7, 26, 18, 0.10),
-            0 2px 8px rgba(16, 185, 129, 0.08),
-            inset 0 1px 0 #FFFFFF;
-          z-index: 15;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .consistency-glass-card:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 14px 32px -6px rgba(7, 26, 18, 0.14);
-        }
-
-        /* Heatmap cell */
         .hm-cell {
           aspect-ratio: 1;
           border-radius: 3px;
@@ -342,72 +284,6 @@ export default function Login() {
         .hm-2 { background: #71D4A6; }
         .hm-3 { background: #22B577; }
         .hm-4 { background: #0B7345; }
-
-        /* Progress ring dial */
-        .gauge-disc {
-          position: absolute;
-          right: 18px;
-          bottom: 10px;
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.94);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.95);
-          box-shadow:
-            0 14px 28px -6px rgba(7, 26, 18, 0.12),
-            0 2px 8px rgba(16, 185, 129, 0.12);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 20;
-          transition: transform 0.2s ease;
-          cursor: pointer;
-        }
-
-        .gauge-disc:hover {
-          transform: scale(1.05);
-        }
-
-        .step-node {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform 0.2s ease;
-          position: relative;
-          z-index: 2;
-        }
-        .step-node:hover {
-          transform: scale(1.08);
-        }
-
-        .step-connector {
-          width: 10px;
-          height: 1.5px;
-          border-radius: 1px;
-          margin-bottom: 12px;
-        }
-
-        /* ── Bottom Form Section: Middle-Centered, No Dead Space ── */
-        .form-section {
-          flex: 1 1 auto;
-          background: #FFFFFF;
-          border-top-left-radius: 34px;
-          border-top-right-radius: 34px;
-          margin-top: -16px;
-          padding: 12px 18px 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 7px;
-          z-index: 30;
-          box-shadow: 0 -8px 24px -6px rgba(7, 26, 18, 0.06);
-          box-sizing: border-box;
-        }
 
         .pearl-input {
           width: 100%;
@@ -465,46 +341,11 @@ export default function Login() {
         .cta-primary:active {
           transform: translateY(0.5px) scale(0.99);
         }
-
-        /* Extra compact for shorter screen heights (e.g. iPhone SE 667px) */
-        @media (max-height: 700px) {
-          .hero-section {
-            height: 255px;
-            padding: 10px 14px 6px 16px;
-          }
-          .editorial-title {
-            font-size: 22px;
-          }
-          .consistency-glass-card {
-            width: 142px;
-            padding: 7px 8px 6px;
-            top: 10px;
-            right: 10px;
-          }
-          .gauge-disc {
-            width: 68px;
-            height: 68px;
-            bottom: 6px;
-            right: 12px;
-          }
-          .form-section {
-            padding: 8px 14px 10px;
-            gap: 6px;
-          }
-          .pearl-input {
-            height: 36px;
-            font-size: 12.5px;
-          }
-          .cta-primary {
-            height: 38px;
-            font-size: 13px;
-          }
-        }
       `}</style>
 
       {/* Main Centered Phone Shell */}
       <main className="phone-frame">
-        {/* Subtle In-Frame Interactive Toast Notification */}
+        {/* Toast Notification */}
         <div 
           className={`pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 transition-all duration-300 z-50 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#071A12]/95 text-white shadow-xl border border-emerald-400/30 backdrop-blur-md ${
             toastActive ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0'
@@ -515,212 +356,227 @@ export default function Login() {
         </div>
 
         {/* ========================================================
-             TOP HERO SECTION
+             TOP HERO SECTION (CLEAN 2-COLUMN, NEVER CHOPPED OFF)
              ======================================================== */}
-        <section className="hero-section">
+        <section className="relative w-full bg-gradient-to-b from-[#F3F9F5] via-[#E8F4ED] to-[#DBEEE1] p-3.5 sm:p-4 border-b border-emerald-500/15 overflow-hidden">
           <div className="hero-grid"></div>
 
           {/* Background flowing wave curve */}
-          <svg className="hero-wave-curve" viewBox="0 0 390 300" fill="none" preserveAspectRatio="none">
+          <svg className="hero-wave-curve" viewBox="0 0 390 280" fill="none" preserveAspectRatio="none">
             <path
-              d="M-20 220 C 80 240, 140 180, 240 210 C 290 225, 330 200, 410 160"
+              d="M-20 180 C 80 210, 140 140, 240 170 C 290 190, 330 160, 410 130"
               stroke="#A8DCC2"
               strokeWidth="2"
               strokeDasharray="4 4"
             />
-            <circle cx="365" cy="170" r="4.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="2.5" />
+            <circle cx="355" cy="140" r="4" fill="#FFFFFF" stroke="#10B981" strokeWidth="2.5" />
           </svg>
 
-          {/* TOP-LEFT: Eyebrow + Headline + Subcopy */}
-          <div className="relative z-20 max-w-[55%]">
-            {/* Pill Eyebrow Badge */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/90 border border-emerald-600/25 shadow-xs mb-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_#10B981]"></span>
-              </span>
-              <span className="text-[8px] font-extrabold tracking-[0.12em] uppercase text-[#0B3522]">
-                Understand the pattern
-              </span>
-              <span className="text-emerald-700 font-bold text-[9px] leading-none">→</span>
-            </div>
+          {/* 2-Column Content Row */}
+          <div className="relative z-10 flex items-start justify-between gap-2">
+            {/* LEFT COLUMN: Eyebrow + Headline + Subcopy + 4 Steps (Tightly Placed) */}
+            <div className="flex flex-col justify-between flex-1 min-w-0 pr-1">
+              <div>
+                {/* Eyebrow Pill: whitespace-nowrap so it never breaks onto 2 lines */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/90 border border-emerald-600/25 shadow-xs mb-2 whitespace-nowrap">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_#10B981]"></span>
+                  </span>
+                  <span className="text-[8px] font-extrabold tracking-[0.12em] uppercase text-[#0B3522]">
+                    Understand the pattern
+                  </span>
+                  <span className="text-emerald-700 font-bold text-[9px] leading-none">→</span>
+                </div>
 
-            {/* Editorial Headline with Brush Underline under "checkbox." */}
-            <h1 className="editorial-title">
-              A habit<br />
-              isn’t just a<br />
-              <span className="relative inline-block text-[#065F46]">
-                checkbox.
-                <svg className="absolute -bottom-1 left-0 w-full h-2.5 text-[#10B981]" viewBox="0 0 130 10" fill="none">
-                  <path d="M2 6C32 2 95 2 128 5C100 8 48 8 16 9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-                </svg>
-              </span>
-            </h1>
+                {/* Editorial Headline with brush underline */}
+                <h1 className="text-[23px] sm:text-[25px] font-black tracking-tight leading-[1.0] text-[#0A1E14]">
+                  A habit<br />
+                  isn’t just a<br />
+                  <span className="relative inline-block text-[#065F46]">
+                    checkbox.
+                    <svg className="absolute -bottom-1 left-0 w-full h-2 text-[#10B981]" viewBox="0 0 130 10" fill="none">
+                      <path d="M2 6C32 2 95 2 128 5C100 8 48 8 16 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                </h1>
 
-            {/* Subcopy */}
-            <p className="mt-2 text-[11px] leading-tight text-[#455D51] font-medium">
-              It’s a pattern of <strong className="text-[#071A12] font-extrabold">your future.</strong>
-            </p>
-          </div>
-
-          {/* BOTTOM-LEFT: 4-Step Connected Sequence Timeline */}
-          <div className="relative z-20 flex items-center mt-auto pt-2 max-w-[68%]">
-            {/* 1. THOUGHT */}
-            <div 
-              className="flex flex-col items-center gap-1 group cursor-pointer" 
-              onClick={() => triggerToast('Step 1: Every habit begins as a single thought')}
-            >
-              <div className="step-node bg-white/90 border border-slate-300 text-slate-600 shadow-2xs group-hover:border-emerald-500 group-hover:text-emerald-700">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18h6" />
-                  <path d="M10 22h4" />
-                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
-                </svg>
+                {/* Subcopy */}
+                <p className="mt-1.5 text-[11px] leading-tight text-[#455D51] font-medium">
+                  It’s a pattern of <strong className="text-[#071A12] font-black">your future.</strong>
+                </p>
               </div>
-              <span className="text-[7px] font-bold tracking-[0.1em] uppercase text-[#566B60]">Thought</span>
-            </div>
 
-            <div className="step-connector bg-gradient-to-r from-slate-300 to-emerald-400"></div>
+              {/* 4 Connected Sequence Nodes (Right under subcopy, perfectly visible) */}
+              <div className="flex items-center mt-3 pt-0.5">
+                {/* Thought */}
+                <div 
+                  className="flex flex-col items-center gap-0.5 cursor-pointer group"
+                  onClick={() => triggerToast('Step 1: Every habit begins as a single thought')}
+                >
+                  <div className="w-[26px] h-[26px] rounded-full bg-white border border-slate-300 text-slate-600 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18h6"/>
+                      <path d="M10 22h4"/>
+                      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+                    </svg>
+                  </div>
+                  <span className="text-[6.5px] font-extrabold uppercase tracking-wider text-[#566B60]">Thought</span>
+                </div>
 
-            {/* 2. ACTION */}
-            <div 
-              className="flex flex-col items-center gap-1 group cursor-pointer" 
-              onClick={() => triggerToast('Step 2: Spark daily micro-actions')}
-            >
-              <div className="step-node bg-emerald-100 border border-emerald-400/80 text-emerald-600 shadow-xs">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M13 2L4.09 12.63a1 1 0 0 0 .77 1.64H11v7.73l8.91-10.63a1 1 0 0 0-.77-1.64H13V2z" />
-                </svg>
-              </div>
-              <span className="text-[7px] font-bold tracking-[0.1em] uppercase text-emerald-700">Action</span>
-            </div>
+                <div className="w-2 sm:w-2.5 h-[1.5px] bg-gradient-to-r from-slate-300 to-emerald-400 mb-2.5 mx-0.5"></div>
 
-            <div className="step-connector bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+                {/* Action */}
+                <div 
+                  className="flex flex-col items-center gap-0.5 cursor-pointer group"
+                  onClick={() => triggerToast('Step 2: Spark daily micro-actions')}
+                >
+                  <div className="w-[26px] h-[26px] rounded-full bg-emerald-100 border border-emerald-400/80 text-emerald-600 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13 2L4.09 12.63a1 1 0 0 0 .77 1.64H11v7.73l8.91-10.63a1 1 0 0 0-.77-1.64H13V2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[6.5px] font-extrabold uppercase tracking-wider text-emerald-700">Action</span>
+                </div>
 
-            {/* 3. HABIT */}
-            <div 
-              className="flex flex-col items-center gap-1 group cursor-pointer" 
-              onClick={() => triggerToast('Step 3: Compound into automatic habits')}
-            >
-              <div className="step-node bg-emerald-600 text-white shadow-xs">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="6" y1="20" x2="6" y2="14" />
-                  <line x1="12" y1="20" x2="12" y2="10" />
-                  <line x1="18" y1="20" x2="18" y2="4" />
-                </svg>
-              </div>
-              <span className="text-[7px] font-extrabold tracking-[0.1em] uppercase text-emerald-800">Habit</span>
-            </div>
+                <div className="w-2 sm:w-2.5 h-[1.5px] bg-gradient-to-r from-emerald-400 to-emerald-600 mb-2.5 mx-0.5"></div>
 
-            <div className="step-connector bg-gradient-to-r from-emerald-600 to-amber-400"></div>
+                {/* Habit */}
+                <div 
+                  className="flex flex-col items-center gap-0.5 cursor-pointer group"
+                  onClick={() => triggerToast('Step 3: Compound into automatic habits')}
+                >
+                  <div className="w-[26px] h-[26px] rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="6" y1="20" x2="6" y2="14"/>
+                      <line x1="12" y1="20" x2="12" y2="10"/>
+                      <line x1="18" y1="20" x2="18" y2="4"/>
+                    </svg>
+                  </div>
+                  <span className="text-[6.5px] font-extrabold uppercase tracking-wider text-emerald-800">Habit</span>
+                </div>
 
-            {/* 4. FUTURE */}
-            <div 
-              className="flex flex-col items-center gap-1 group cursor-pointer" 
-              onClick={() => triggerToast('Step 4: Design your inevitable future')}
-            >
-              <div className="step-node bg-amber-100 border border-amber-400/90 text-amber-600 shadow-xs">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="9" />
-                  <circle cx="12" cy="12" r="5" />
-                  <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-                </svg>
-              </div>
-              <span className="text-[7px] font-extrabold tracking-[0.1em] uppercase text-amber-700">Future</span>
-            </div>
-          </div>
+                <div className="w-2 sm:w-2.5 h-[1.5px] bg-gradient-to-r from-emerald-600 to-amber-400 mb-2.5 mx-0.5"></div>
 
-          {/* TOP-RIGHT: Upright Flat Frosted Heatmap Card */}
-          <div className="consistency-glass-card">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[8px] font-extrabold tracking-[0.12em] uppercase text-[#0B2519]">
-                Consistency
-              </span>
-              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
-                <span className="text-[9px] leading-none">🔥</span>
-                <span className="text-[8px] font-extrabold text-[#78350F] tracking-tight">27 days</span>
+                {/* Future */}
+                <div 
+                  className="flex flex-col items-center gap-0.5 cursor-pointer group"
+                  onClick={() => triggerToast('Step 4: Design your inevitable future')}
+                >
+                  <div className="w-[26px] h-[26px] rounded-full bg-amber-100 border border-amber-400/90 text-amber-600 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <circle cx="12" cy="12" r="9"/>
+                      <circle cx="12" cy="12" r="5"/>
+                      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <span className="text-[6.5px] font-extrabold uppercase tracking-wider text-amber-700">Future</span>
+                </div>
               </div>
             </div>
 
-            {/* 7-Day Weekday Header */}
-            <div className="grid grid-cols-7 gap-1 mb-1 text-center text-[7.5px] font-bold text-[#677F73]">
-              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span className="text-emerald-700">S</span><span>S</span>
-            </div>
+            {/* RIGHT COLUMN: Consistency Card + Progress Gauge + Pill (Stacked Cleanly) */}
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {/* 1. Consistency Card */}
+              <div className="w-[144px] sm:w-[150px] p-2 rounded-2xl bg-white/92 backdrop-blur-md border border-white/95 shadow-[0_8px_20px_rgba(7,26,18,0.08)]">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[7.5px] font-black tracking-[0.12em] uppercase text-[#0B2519]">
+                    Consistency
+                  </span>
+                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                    <span className="text-[8.5px] leading-none">🔥</span>
+                    <span className="text-[7.5px] font-extrabold text-[#78350F] tracking-tight">27 days</span>
+                  </div>
+                </div>
 
-            {/* 5x7 Habit Matrix (35 Rounded Cells) */}
-            <div className="grid grid-cols-7 gap-1">
-              {cells.map((lvl, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleCellClick(i)}
-                  className={`hm-cell hm-${lvl}`}
-                />
-              ))}
-            </div>
-          </div>
+                {/* 7-Day Weekday Header */}
+                <div className="grid grid-cols-7 gap-1 mb-1 text-center text-[7px] font-bold text-[#677F73]">
+                  <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span className="text-emerald-700">S</span><span>S</span>
+                </div>
 
-          {/* BOTTOM-RIGHT: Circular Progress Gauge Ring (76% TODAY) */}
-          <div className="gauge-disc" onClick={cycleProgress} title="Tap to preview daily momentum">
-            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 p-1">
-              <defs>
-                <linearGradient id="dialEmeraldArc" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#34D399" />
-                  <stop offset="50%" stopColor="#10B981" />
-                  <stop offset="100%" stopColor="#047857" />
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(7, 26, 18, 0.08)" strokeWidth="7.5" />
-              <circle
-                cx="50"
-                cy="50"
-                r="41"
-                fill="none"
-                stroke="url(#dialEmeraldArc)"
-                strokeWidth="7.5"
-                strokeLinecap="round"
-                strokeDasharray="257.6"
-                strokeDashoffset={strokeOffset}
-                style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[15px] font-black text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
-              <span className="text-[6.5px] font-extrabold tracking-[0.16em] text-emerald-700 mt-0.5 uppercase">Today</span>
-            </div>
-          </div>
+                {/* 5x7 Cells */}
+                <div className="grid grid-cols-7 gap-1">
+                  {cells.map((lvl, i) => (
+                    <div
+                      key={i}
+                      onClick={() => handleCellClick(i)}
+                      className={`hm-cell hm-${lvl}`}
+                    />
+                  ))}
+                </div>
+              </div>
 
-          {/* Overlapping Dark Badge: Small steps. Big results. */}
-          <div 
-            onClick={cycleProgress}
-            className="absolute bottom-2.5 right-2 z-25 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A1D15] text-white shadow-lg border border-emerald-500/20 cursor-pointer hover:bg-[#071A12] transition-colors"
-          >
-            <svg className="w-3 h-3 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="12" width="4" height="8" rx="1" />
-              <rect x="10" y="8" width="4" height="12" rx="1" />
-              <rect x="17" y="4" width="4" height="16" rx="1" />
-            </svg>
-            <div className="flex flex-col text-left">
-              <span className="text-[7.5px] font-bold leading-none text-slate-100">Small steps.</span>
-              <span className="text-[7.5px] font-semibold leading-none text-emerald-400 mt-0.5">Big results.</span>
+              {/* 2. Progress Gauge & Pill (Side-by-side, fully visible, never chopped off) */}
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {/* Dark Pill: Small steps. Big results. */}
+                <div 
+                  onClick={cycleProgress}
+                  className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#0A1D15] text-white shadow-md border border-emerald-500/25 cursor-pointer hover:bg-[#071A12] transition-colors"
+                >
+                  <svg className="w-2.5 h-2.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="12" width="4" height="8" rx="1" />
+                    <rect x="10" y="8" width="4" height="12" rx="1" />
+                    <rect x="17" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                  <div className="flex flex-col text-left">
+                    <span className="text-[6.5px] font-bold leading-none text-slate-100">Small steps.</span>
+                    <span className="text-[6.5px] font-semibold leading-none text-emerald-400 mt-0.5">Big results.</span>
+                  </div>
+                </div>
+
+                {/* Progress Gauge Ring */}
+                <div 
+                  className="relative w-[50px] h-[50px] rounded-full bg-white/95 backdrop-blur-md border border-white/90 shadow-md flex items-center justify-center cursor-pointer shrink-0" 
+                  onClick={cycleProgress} 
+                  title="Tap to preview daily momentum"
+                >
+                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 p-0.5">
+                    <defs>
+                      <linearGradient id="dialEmeraldArc" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#34D399" />
+                        <stop offset="50%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(7, 26, 18, 0.08)" strokeWidth="8" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="41"
+                      fill="none"
+                      stroke="url(#dialEmeraldArc)"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeDasharray="257.6"
+                      strokeDashoffset={strokeOffset}
+                      style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[12px] font-black text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
+                    <span className="text-[5.5px] font-extrabold tracking-[0.16em] text-emerald-700 uppercase">Today</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-             BOTTOM FORM SECTION (MIDDLE-CENTERED, NO DEAD SPACE)
+             BOTTOM FORM SECTION (TIGHT & COHESIVE, ZERO DEAD SPACE)
              ======================================================== */}
-        <section className="form-section">
-          {/* Centered D1 Brand Logo */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2">
+        <section className="flex-1 bg-white rounded-t-[28px] -mt-3 relative z-20 px-4 py-3 sm:px-5 sm:py-3.5 flex flex-col justify-center gap-2 shadow-[0_-6px_20px_rgba(7,26,18,0.06)]">
+          {/* Centered Brand Logo: [D icon] + 1 = D1 (No duplicate D) */}
+          <div className="flex flex-col items-center justify-center pt-0.5">
+            <div className="flex items-center gap-1.5">
               <img 
                 src="/clean_d_only.svg" 
-                alt="D1" 
+                alt="D" 
                 className="h-7 w-auto object-contain" 
               />
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">D1</span>
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans leading-none">1</span>
             </div>
-            <span className="text-[8px] tracking-[0.28em] font-extrabold text-slate-400 uppercase mt-0.5">
+            <span className="text-[8px] tracking-[0.3em] font-extrabold text-slate-400 uppercase mt-0.5">
               HABIT TRACKER
             </span>
           </div>
@@ -887,7 +743,6 @@ export default function Login() {
               </button>.
             </p>
           </div>
-
         </section>
       </main>
     </div>
