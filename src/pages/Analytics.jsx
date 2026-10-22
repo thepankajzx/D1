@@ -744,7 +744,7 @@ function formatLocalYMD(d) {
               }}
               onChange={(e) => {
                 const val = e.target.value;
-                if (val === 'custom' && !userDoc?.isPro) {
+                if ((val === '365' || val === 'all') && !userDoc?.isPro) {
                   setShowProUpgradeModal(true);
                   return;
                 }
@@ -760,7 +760,9 @@ function formatLocalYMD(d) {
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
               <option value="90">Last 90 Days</option>
-              <option value="custom">Custom{userDoc?.isPro ? '' : ' (PRO)'}</option>
+              <option value="180">Last 180 Days</option>
+              <option value="365">Last 365 Days{userDoc?.isPro ? '' : ' (PRO)'}</option>
+              <option value="custom">Custom Range</option>
             </select>
             <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
             
@@ -777,6 +779,13 @@ function formatLocalYMD(d) {
                 <button 
                   onClick={() => {
                      if(customStart && customEnd) {
+                        const s = new Date(customStart);
+                        const e = new Date(customEnd);
+                        const diffDays = Math.round(Math.abs(e - s) / (1000 * 60 * 60 * 24)) + 1;
+                        if (diffDays > 180 && !userDoc?.isPro) {
+                          setShowProUpgradeModal(true);
+                          return;
+                        }
                         setAppliedCustomStart(customStart);
                         setAppliedCustomEnd(customEnd);
                         setIsCustomDropdownOpen(false);

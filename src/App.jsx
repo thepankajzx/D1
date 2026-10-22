@@ -49,6 +49,7 @@ const InsightsRoadmap = lazyRetry(() => import('./pages/InsightsRoadmap'));
 const ScoringGuide = lazyRetry(() => import('./pages/ScoringGuide'));
 const StreaksPage = lazyRetry(() => import('./pages/StreaksPage'));
 const StreakMilestonesPage = lazyRetry(() => import('./pages/StreakMilestonesPage'));
+const AllStreaksVisualizer = lazyRetry(() => import('./pages/AllStreaksVisualizer'));
 
 const TodaysCompassPage = lazyRetry(() => import('./pages/TodaysCompassPage'));
 const Profile = lazyRetry(() => import('./pages/Profile'));
@@ -60,6 +61,7 @@ const OnboardingTargets = lazyRetry(() => import('./pages/OnboardingTargets'));
 const Subscription = lazyRetry(() => import('./pages/Subscription'));
 const Privacy = lazyRetry(() => import('./pages/Privacy'));
 const Terms = lazyRetry(() => import('./pages/Terms'));
+const D1OnboardingCarousel = lazyRetry(() => import('./components/D1OnboardingCarousel'));
 
 function Layout({ children }) {
   const { logout } = useAuth();
@@ -374,14 +376,19 @@ function App() {
                     <Route path="/milestones" element={<Layout><StreakMilestonesPage /></Layout>} />
                     <Route path="/analytics/streaks" element={<Layout><StreakMilestonesPage /></Layout>} />
                     <Route path="/streaks" element={<Layout><StreakMilestonesPage /></Layout>} />
+                    <Route path="/analytics/all-streaks" element={<Layout><AllStreaksVisualizer /></Layout>} />
+                    <Route path="/all-streaks" element={<Layout><AllStreaksVisualizer /></Layout>} />
+                    <Route path="/streaks/compare" element={<Layout><AllStreaksVisualizer /></Layout>} />
                     <Route path="/scoring-guide" element={<Layout><ScoringGuide /></Layout>} />
                     <Route path="/scoring" element={<Layout><ScoringGuide /></Layout>} />
                     <Route path="/onboarding/select" element={<OnboardingSelect />} />
                   </Route>
 
-                  <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
-                  <Route path="/landing" element={<OnboardingWelcome />} />
-                  <Route path="/welcome" element={<OnboardingWelcome />} />
+                  <Route path="/onboarding/welcome" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
+                  <Route path="/intro" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
+                  <Route path="/carousel" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
+                  <Route path="/landing" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
+                  <Route path="/welcome" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
                   <Route path="/onboarding/targets" element={<OnboardingTargets />} />
                   
                   <Route path="*" element={<Layout><Dashboard /></Layout>} />

@@ -4,6 +4,7 @@ import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import HabitTargetEditModal from '../components/HabitTargetEditModal';
 import PriorityIcon from '../components/PriorityIcon';
+import EarlyUnlockWarningModal from '../components/EarlyUnlockWarningModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { useGuest } from '../contexts/GuestContext';
@@ -54,6 +55,8 @@ export default function Profile() {
     setTimeFormat,
     aiCoachEnabled,
     setAiCoachEnabled,
+    earlyUnlockAll,
+    setEarlyUnlockAll,
   } = useData();
   const { exitGuestMode } = useGuest();
   const { language, setLanguage, t, isHinglish } = useLanguage();
@@ -64,6 +67,7 @@ export default function Profile() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
   const [showInsightsLockModal, setShowInsightsLockModal] = useState(false);
+  const [showEarlyUnlockModal, setShowEarlyUnlockModal] = useState(false);
   const [habitPendingDelete, setHabitPendingDelete] = useState(null);
   const [deleteLockDays, setDeleteLockDays] = useState(0);
   const [showDeleteLockedModal, setShowDeleteLockedModal] = useState(false);
@@ -1434,6 +1438,55 @@ export default function Profile() {
         </section>
       )}
 
+            {/* ── TIME-GATED INSIGHTS MASTERY (USER PREFERENCE) ── */}
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-3.5 shadow-2xs space-y-2.5 text-left">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black shrink-0 shadow-2xs ${
+              earlyUnlockAll 
+                ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400' 
+                : 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+            }`}>
+              {earlyUnlockAll ? <Lock size={18} weight="bold" /> : <Lock size={18} weight="fill" />}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white">
+                  {isHinglish ? 'समय-आधारित इनसाइट्स मोड' : 'Time-Gated Insights Mode'}
+                </h3>
+                <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full ${
+                  earlyUnlockAll 
+                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-300' 
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300'
+                }`}>
+                  {earlyUnlockAll ? (isHinglish ? 'समय पूर्व अनलॉक' : 'UNLOCKED EARLY') : (isHinglish ? 'अनुशंसित (Recommended)' : 'RECOMMENDED')}
+                </span>
+              </div>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
+                {earlyUnlockAll
+                  ? (isHinglish ? 'सारे 7D, 14D व 30D लॉक्स खुले हैं। कम सैंपल डेटा में शुरुआती शोर दिख सकता है।' : 'All 7D, 14D, and 30D insight locks are bypassed. Early data may show noise.')
+                  : (isHinglish ? '7D, 14D और 30D के बाद ही इनसाइट्स अनलॉक होते हैं ताकि आपको सिर्फ सच्चा और वैज्ञानिक डेटा दिखे।' : '7D, 14D, and 30D time gates prevent premature cognitive bias and coincidence.')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-1 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setShowEarlyUnlockModal(true)}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+              earlyUnlockAll
+                ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200'
+                : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300'
+            }`}
+          >
+            <Sparkle size={14} weight="bold" />
+            <span>{earlyUnlockAll ? (isHinglish ? 'लॉक मोड बदलें / जानकारी' : 'Change Mode / Info') : (isHinglish ? 'समय से पहले अनलॉक करें (चेतावनी)' : 'Unlock Early (Warning)')}</span>
+          </button>
+        </div>
+      </section>
+
       {/* ── 3. UNLOCK ADVANCED INSIGHTS (THIRD ACCORDION COLUMN) ────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <button 
@@ -1469,7 +1522,7 @@ export default function Profile() {
                   type="button"
                   onClick={() => {
                     try { navigator?.vibrate?.(30); } catch(e) {}
-                    if (trackedDays < 7) {
+                    if (trackedDays < 7 && !earlyUnlockAll) {
                       setShowInsightsLockModal(true);
                     } else {
                       navigate('/insights');
@@ -1506,7 +1559,7 @@ export default function Profile() {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">30-Day Better Report</h2>
                 <span className="text-[10px] font-black text-sky-800 dark:text-sky-300 bg-sky-100 dark:bg-sky-950 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
-                  {trackedDays >= 30 ? 'Ready' : 'In Progress'}
+                  {trackedDays >= 30 || earlyUnlockAll ? 'Ready' : 'In Progress'}
                 </span>
               </div>
               <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Your personal 30-day habit documentary &amp; growth story</p>
@@ -1529,7 +1582,7 @@ export default function Profile() {
               <button 
                 onClick={() => {
                   try { navigator?.vibrate?.(30); } catch(e) {}
-                  if (trackedDays < 30) {
+                  if (trackedDays < 30 && !earlyUnlockAll) {
                     setShowBetterReportLockModal(true);
                   } else {
                     navigate('/better-report');

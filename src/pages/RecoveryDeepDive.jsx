@@ -6,6 +6,7 @@ import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { calculateRecoveryScore, getResilienceBadgeClasses } from '../lib/recoveryAnalytics';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
+import RecoveryBounceBackCurve from '../components/RecoveryBounceBackCurve';
 import {
   ShieldCheck, Lock, Flame, Trophy, Star, CheckCircle,
   XCircle, HourglassSimple, Sparkle, ArrowRight,
@@ -61,7 +62,7 @@ export default function RecoveryDeepDive() {
   const query = useQuery();
   const habitId = query.get('habitId');
   const navigate = useNavigate();
-  const { habits, allSummaries } = useData();
+  const { habits, allSummaries, earlyUnlockAll } = useData();
   const { isHinglish } = useLanguage();
 
   const isSamplePreview = habitId === 'sample_workout' || String(habitId || '').startsWith('sample_');
@@ -70,7 +71,7 @@ export default function RecoveryDeepDive() {
   const [showInfo, setShowInfo] = useState(() => { try { return !localStorage.getItem('has_seen_resilience_guide'); } catch (e) { return false; } });
   const [expandedMisses, setExpandedMisses] = useState([]);
   const [expandedRule, setExpandedRule] = useState(null);
-  const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 14);
+  const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 14 && !earlyUnlockAll);
 
   const handleCloseInfo = () => { try { localStorage.setItem('has_seen_resilience_guide', 'true'); } catch (e) {} setShowInfo(false); };
   const toggleRule = (id) => setExpandedRule(prev => prev === id ? null : id);
@@ -90,7 +91,7 @@ export default function RecoveryDeepDive() {
   }, [habits, habitId, isSamplePreview, activeHabits]);
 
   const hasRealData = useMemo(() => {
-    if (isSamplePreview || !allSummaries || allSummaries.length < 14 || !habit?.id) return false;
+    if (isSamplePreview || !allSummaries || (!earlyUnlockAll && allSummaries.length < 14) || !habit?.id) return false;
     return allSummaries.some(s => s.habitScores && s.habitScores[habit.id] !== undefined);
   }, [allSummaries, habit, isSamplePreview]);
 
@@ -160,70 +161,82 @@ export default function RecoveryDeepDive() {
       {/* ── 2. HABIT TITLE & ICON (OUTSIDE WRAPPER, TOP-LEFT) ── */}
       <div className="flex items-center gap-3.5 px-1">
         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0 shadow-xs">
-          <HabitIcon name={habit.icon} habitId={habit.id} size={26} />
+          <HabitIcon name={habit.icon} habitId={habit.id} size={26}  color={habit.color} />
         </div>
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
-            {habit.name}
-          </h1>
+        <div className="min-w-0 flex-1">
+          {activeHabits.length > 1 ? (
+            <div className="relative inline-flex items-center max-w-full group">
+              <select 
+                value={habit.id} 
+                onChange={(e) => navigate(`/analytics/deep-dive/recovery?habitId=${e.target.value}`)}
+                className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate bg-transparent border-none outline-none cursor-pointer pr-6 appearance-none leading-tight"
+                title="Switch habit"
+              >
+                {activeHabits.map(h => (
+                  <option key={h.id} value={h.id} className="text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 text-sm font-bold">
+                    {h.name}
+                  </option>
+                ))}
+              </select>
+              <CaretDown size={15} weight="bold" className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors" />
+            </div>
+          ) : (
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+              {habit.name}
+            </h1>
+          )}
           <span className="text-xs text-slate-400 font-medium truncate block">
             {habit.category ? habit.category + ' Focus • Resilience Hub' : 'Habit Resilience Hub'}
           </span>
         </div>
       </div>
 
-      {/* ── 3. ORANGE & BLACK GRADIENT WRAPPER (RESILIENCE SCORE + TOP-RIGHT (i) BUTTON) ── */}
-      <section className="bg-gradient-to-b from-[#140b05] via-[#0d0703] to-[#0a0502] text-white rounded-3xl p-5 sm:p-6 md:p-7 border border-orange-900/40 shadow-xl relative overflow-hidden flex flex-col gap-4 w-full">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        
-        {/* Top Row: Shield Icon + Resilience Title + Top-Right (i) Button */}
-        <div className="flex items-center justify-between gap-3 w-full relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#281508] border border-orange-500/30 text-orange-500 flex items-center justify-center flex-shrink-0 shadow-xs">
-              <ShieldCheck size={20} weight="fill" />
-            </div>
-            <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-orange-400">
-              Resilience Score & Bounce-Back Rate
-            </span>
+      {/* ── 3. SLEEK COMPACT RESILIENCE SCORE BANNER (MATCHES SCREENSHOT) ── */}
+      <section className="bg-gradient-to-r from-[#110a05] via-[#0d0703] to-[#1a0e05] text-white rounded-2xl md:rounded-3xl p-3.5 sm:p-4 border border-orange-900/50 shadow-md flex items-center justify-between gap-3 w-full">
+        {/* Left: Shield Icon + Title + Status Pill + Subtitle */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-[#281508] border border-orange-500/30 text-orange-500 flex items-center justify-center flex-shrink-0 shadow-xs">
+            <ShieldCheck size={22} weight="fill" />
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xs sm:text-sm font-black text-white tracking-tight leading-none truncate">
+                Resilience Score
+              </h2>
+              {/* Rating Pill: DEVELOPING / MODERATE / HIGH */}
+              <span className={`text-[9px] sm:text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full leading-none shrink-0 ${
+                recoveryScore >= 80 
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : recoveryScore >= 50
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+              }`}>
+                {recoveryScore >= 80 ? 'High' : recoveryScore >= 50 ? 'Moderate' : 'Developing'}
+              </span>
+            </div>
+            <p className="text-[10.5px] sm:text-xs text-stone-400 font-medium truncate mt-1 leading-none">
+              7-day comeback velocity & bounce-back rate
+            </p>
+          </div>
+        </div>
 
-          {/* Clean (i) Button */}
+        {/* Right: Score % + Info (i) Button */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <span className="text-xl sm:text-2xl md:text-3xl font-black text-orange-500 leading-none">
+            {recoveryScore !== null && recoveryScore !== undefined ? formatNum1(recoveryScore) + '%' : '—'}
+          </span>
           <button 
             type="button" 
             onClick={() => {
               if (navigator.vibrate) navigator.vibrate(25);
               setShowInfo(true);
             }} 
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-orange-950/70 hover:bg-orange-900/90 active:scale-95 text-orange-400 hover:text-white flex items-center justify-center transition-all border border-orange-500/40 hover:border-orange-400 cursor-pointer shadow-sm hover:shadow-orange-500/20 shrink-0"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-orange-950/70 hover:bg-orange-900/90 active:scale-95 text-orange-400 hover:text-white flex items-center justify-center transition-all border border-orange-500/40 hover:border-orange-400 cursor-pointer shadow-xs shrink-0"
             title="How Resilience Works"
             aria-label="Information"
           >
-            <Info size={17} weight="bold" />
+            <Info size={15} weight="bold" />
           </button>
-        </div>
-
-        {/* Thin dashed line */}
-        <div className="w-full border-t border-dashed border-orange-900/50 relative z-10" />
-
-        {/* Resilience Score Display */}
-        <div className="w-full bg-[#170c06]/80 hover:bg-[#1f1008] transition-all rounded-2xl border border-orange-900/40 p-4 sm:p-5 flex items-center justify-between gap-4 relative z-10 shadow-sm">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#281508] border border-orange-500/30 text-orange-500 flex items-center justify-center flex-shrink-0 shadow-md">
-              <ShieldCheck size={28} weight="fill" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-orange-400">Overall Resilience</span>
-              <span className="text-xs sm:text-sm text-stone-300 font-medium mt-0.5 truncate">7-day comeback and recovery velocity</span>
-            </div>
-          </div>
-          <div className="flex flex-col items-end flex-shrink-0 text-right">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-black text-orange-500 leading-tight">
-              {recoveryScore !== null && recoveryScore !== undefined ? formatNum1(recoveryScore) + '%' : ' - '}
-            </div>
-            <span className="text-[11px] sm:text-xs text-orange-200/80 font-bold tracking-wide mt-0.5 capitalize">
-              {recoveryScore >= 80 ? 'High Resilience' : recoveryScore >= 50 ? 'Moderate' : 'Needs Work'}
-            </span>
-          </div>
         </div>
       </section>
 
@@ -370,6 +383,14 @@ export default function RecoveryDeepDive() {
         ))}
       </div>
 
+      {/* ── 5.5. 7-DAY BOUNCE-BACK CURVE BAR CHART ── */}
+      <RecoveryBounceBackCurve
+        habit={habit}
+        summaries={resolvedSummaries}
+        misses={misses}
+        isHinglish={isHinglish}
+      />
+
       {/* ── 6. BOUNCE-BACK & RECOVERY TIMELINE (DASHED SEPARATORS) ── */}
       <div className="space-y-4 w-full pt-1">
         <div className="flex flex-col sm:flex-row sm:items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
@@ -430,14 +451,21 @@ export default function RecoveryDeepDive() {
                     </div>
                   </div>
 
-                  {/* Prominent Action Line: Tells exactly what is required to recover */}
+                  {/* Prominent Action Line: Tells exact progress and days needed */}
                   {item.isInProgress && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] font-bold text-amber-900 dark:text-amber-200">
-                      <Sparkle size={13} weight="fill" className="text-amber-500 shrink-0" />
-                      <span>
-                        {isHinglish 
-                          ? 'रिकवर करने के लिए: अगले 7 दिनों में कम से कम 5 दिन 70%+ स्कोर लाएं' 
-                          : 'To recover: Score 70%+ on at least 5 of the next 7 days'}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] font-bold text-amber-900 dark:text-amber-200">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkle size={13} weight="fill" className="text-amber-500 shrink-0" />
+                        <span>
+                          {isHinglish 
+                            ? `प्रोग्रेस: 5 में से ${daysCompleted} दिन पूरे (70%+ स्कोर)` 
+                            : `Progress: ${daysCompleted} of 5 days completed (70%+ score)`}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold">
+                        {isHinglish
+                          ? `रिकवर होने के लिए ${Math.max(0, 5 - daysCompleted)} दिन और चाहिए (${Math.max(0, 7 - (item.daysEvaluated || 0))} दिन बाकी)`
+                          : `Need ${Math.max(0, 5 - daysCompleted)} more to recover (${Math.max(0, 7 - (item.daysEvaluated || 0))}d left)`}
                       </span>
                     </div>
                   )}
@@ -494,12 +522,12 @@ export default function RecoveryDeepDive() {
                           ) : item.isInProgress ? (
                             <>
                               <strong className="font-black text-amber-950 block mb-0.5">
-                                {isHinglish ? 'कमबैक चैलेंज एक्टिव है' : 'Active Comeback Challenge'}
+                                {isHinglish ? 'कमबैक चैलेंज एक्टिव है (In Progress)' : 'Active Comeback Challenge (In Progress)'}
                               </strong>
                               <span>
                                 {isHinglish
-                                  ? `विंडो समाप्त (${formatDateShort(item.endDate)}) होने से पहले बचे हुए दिनों में 70%+ स्कोर लाकर कम से कम 5/7 दिन पूरे करें और Recovery हासिल करें!`
-                                  : `Score ≥70% on at least 5 of 7 days before ${formatDateShort(item.endDate)} to secure your recovery!`}
+                                  ? `आपने अब तक 5 में से ${daysCompleted} दिन 70%+ स्कोर के साथ पूरे कर लिए हैं। विंडो समाप्त (${formatDateShort(item.endDate)}) होने से पहले ${Math.max(0, 5 - daysCompleted)} दिन और 70%+ स्कोर लाएं और 5/7 दिन पूरे करके Recovery हासिल करें!`
+                                  : `You have completed ${daysCompleted} of 5 required days (≥70% score). Score ≥70% on ${Math.max(0, 5 - daysCompleted)} more days before ${formatDateShort(item.endDate)} to secure your recovery!`}
                               </span>
                             </>
                           ) : (

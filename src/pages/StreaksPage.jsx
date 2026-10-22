@@ -14,7 +14,8 @@ import {
   CaretRight, 
   ShieldCheck, 
   Lightning,
-  ArrowsClockwise
+  ArrowsClockwise,
+  ChartBar
 } from '@phosphor-icons/react';
 import { 
   calculateStreakData, 
@@ -121,13 +122,22 @@ export default function StreaksPage() {
 
         {/* ── TOP NAVIGATION BAR ────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-3 pt-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black shadow-2xs transition-all cursor-pointer"
-          >
-            <ArrowLeft size={15} weight="bold" />
-            <span>{isHinglish ? 'पीछे जाएँ' : 'Back'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black shadow-2xs transition-all cursor-pointer"
+            >
+              <ArrowLeft size={15} weight="bold" />
+              <span>{isHinglish ? 'पीछे जाएँ' : 'Back'}</span>
+            </button>
+            <Link
+              to="/analytics/all-streaks"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-black shadow-2xs hover:bg-indigo-100 transition-all cursor-pointer"
+            >
+              <ChartBar size={14} weight="fill" />
+              <span>{isHinglish ? 'तुलना (Compare Race)' : 'Compare Race'}</span>
+            </Link>
+          </div>
 
           <div className="text-right">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500 block">

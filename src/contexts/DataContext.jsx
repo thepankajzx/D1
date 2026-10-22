@@ -127,6 +127,29 @@ export function DataProvider({ children }) {
     }
   };
 
+  // Early Unlock All Insights Preference (Default: false / locked)
+  const [earlyUnlockAll, setEarlyUnlockAllState] = useState(() => {
+    try {
+      const localVal = localStorage.getItem('preference_early_unlock_all');
+      if (localVal !== null) return localVal === 'true';
+    } catch (e) {}
+    return false;
+  });
+
+  const setEarlyUnlockAll = async (enabled) => {
+    setEarlyUnlockAllState(enabled);
+    try {
+      localStorage.setItem('preference_early_unlock_all', String(enabled));
+      if (user?.uid && !isGuest) {
+        await updateDoc(doc(db, 'users', user.uid), {
+          earlyUnlockAll: enabled
+        });
+      }
+    } catch (e) {
+      console.error('Error saving earlyUnlockAll preference:', e);
+    }
+  };
+
   const setStreakTrackingEnabled = async (enabled) => {
     setStreakTrackingEnabledState(enabled);
     try {
@@ -191,6 +214,8 @@ export function DataProvider({ children }) {
         setTodayCompassEnabled,
         aiCoachEnabled,
         setAiCoachEnabled,
+        earlyUnlockAll,
+        setEarlyUnlockAll,
         timeFormat,
         setTimeFormat
       }}>
@@ -214,6 +239,9 @@ export function DataProvider({ children }) {
       aiCoachEnabled={aiCoachEnabled}
       setAiCoachEnabled={setAiCoachEnabled}
       setAiCoachEnabledState={setAiCoachEnabledState}
+      earlyUnlockAll={earlyUnlockAll}
+      setEarlyUnlockAll={setEarlyUnlockAll}
+      setEarlyUnlockAllState={setEarlyUnlockAllState}
       timeFormat={timeFormat}
       setTimeFormat={setTimeFormat}
       setTimeFormatState={setTimeFormatState}
@@ -238,6 +266,9 @@ function RealDataProvider({
   aiCoachEnabled,
   setAiCoachEnabled,
   setAiCoachEnabledState,
+  earlyUnlockAll,
+  setEarlyUnlockAll,
+  setEarlyUnlockAllState,
   timeFormat,
   setTimeFormat,
   setTimeFormatState
@@ -312,6 +343,14 @@ function RealDataProvider({
             const localVal = localStorage.getItem('preference_ai_coach_enabled');
             if (localVal === null && typeof data.aiCoachEnabled === 'boolean') {
               setAiCoachEnabledState(data.aiCoachEnabled);
+            }
+          } catch (e) {}
+
+          // Sync earlyUnlockAll preference from user doc if no local override
+          try {
+            const localVal = localStorage.getItem('preference_early_unlock_all');
+            if (localVal === null && typeof data.earlyUnlockAll === 'boolean') {
+              setEarlyUnlockAllState(data.earlyUnlockAll);
             }
           } catch (e) {}
 
@@ -390,6 +429,8 @@ function RealDataProvider({
       setTodayCompassEnabled,
       aiCoachEnabled,
       setAiCoachEnabled,
+      earlyUnlockAll,
+      setEarlyUnlockAll,
       timeFormat,
       setTimeFormat
     }}>

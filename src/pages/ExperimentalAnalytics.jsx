@@ -46,7 +46,8 @@ import {
   Crown,
   RocketLaunch,
   Lock,
-  Info
+  Info,
+  ChartBar
 } from '@phosphor-icons/react';
 import { calculateStreakData, calculateConsistencyRate, getNextMilestone, getCurrentMilestone } from '../lib/streakEngine';
 import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
@@ -2770,15 +2771,27 @@ export default function ExperimentalAnalytics() {
             </button>
           </div>
 
-          {/* Right: Trophy Wall link */}
-          <Link
-            to="/streak-milestones"
-            className="flex items-center gap-1 text-[11px] font-black text-amber-600 dark:text-amber-400 hover:underline cursor-pointer group shrink-0"
-          >
-            <Trophy size={13} weight="fill" className="text-amber-500" />
-            <span>{isHinglish ? 'Milestones' : 'Milestones'}</span>
-            <CaretRight size={11} weight="bold" className="group-hover:translate-x-0.5 transition-transform opacity-70" />
-          </Link>
+          {/* Right: Compare + Milestones */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Link
+              to="/analytics/all-streaks"
+              className="flex items-center gap-1 text-[11px] font-black text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer group shrink-0"
+              title="Compare all habit streaks"
+            >
+              <ChartBar size={13} weight="fill" />
+              <span>{isHinglish ? 'तुलना' : 'Compare'}</span>
+            </Link>
+
+            <Link
+              to="/streak-milestones"
+              className="flex items-center gap-1 text-[11px] font-black text-amber-600 dark:text-amber-400 hover:underline cursor-pointer group shrink-0"
+              title="View milestone tiers"
+            >
+              <Trophy size={13} weight="fill" className="text-amber-500" />
+              <span>{isHinglish ? 'Milestones' : 'Milestones'}</span>
+              <CaretRight size={11} weight="bold" className="group-hover:translate-x-0.5 transition-transform opacity-70" />
+            </Link>
+          </div>
         </div>
 
         {/* 3 Balanced Responsive Columns (Gamification: Current Streak, Best Streak, Current Milestone Tier) */}

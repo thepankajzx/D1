@@ -325,8 +325,8 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
   );
 };
 
-const MAX_FREE_HABITS = 10;
-const MAX_CUSTOM_HABITS = 10;
+const MAX_FREE_HABITS = 8;
+const MAX_CUSTOM_HABITS = 6;
 
 export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
@@ -583,7 +583,7 @@ export default function AdvancedHabitSelector() {
         const newLibrarySelections = selectedHabits.filter(sh => !existingHabits.some(eh => eh.id === sh.id));
         const existingLibraryCount = existingHabits.filter(h => !h.id.startsWith('custom_') && h.category !== 'Custom').length;
         const totalLibraryCount = existingLibraryCount + newLibrarySelections.length;
-        if (totalLibraryCount >= 10 && !isPro) {
+        if (totalLibraryCount >= MAX_FREE_HABITS && !isPro) {
             setPaywallSource("total_habits_limit");
             setShowPaywall(true);
             return;

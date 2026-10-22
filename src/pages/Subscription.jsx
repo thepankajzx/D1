@@ -217,7 +217,7 @@ export default function Subscription() {
                         
                         <div className="pills-container">
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Up to 8 Habits</span>
-                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Up to 5 Custom Habits</span>
+                            <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Up to 6 Custom Habits</span>
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Daily Scoring Engine</span>
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> Streak Tracking</span>
                             <span className="pill pill-free"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg> 9 Milestone Badges (Up to 365D)</span>
@@ -263,12 +263,12 @@ export default function Subscription() {
                                 <div className="radio-left">
                                     <div className="custom-radio"></div>
                                     <div>
-                                        <div className="radio-text-main">91 Days</div>
+                                        <div className="radio-text-main">Quarterly (91 Days)</div>
                                         <div className="radio-text-sub">One-time payment</div>
                                     </div>
                                 </div>
                                 <div className="radio-price">
-                                    <div className="r-price">₹199</div>
+                                    <div className="r-price">₹180</div>
                                 </div>
                             </label>
 
@@ -276,7 +276,7 @@ export default function Subscription() {
                                 <div className="radio-left">
                                     <div className="custom-radio"></div>
                                     <div>
-                                        <div className="radio-text-main">Yearly <span className="save-badge">SAVE 20%</span></div>
+                                        <div className="radio-text-main">365 Days (Yearly) <span className="save-badge">SAVE 20%</span></div>
                                         <div className="radio-text-sub">Billed once a year</div>
                                     </div>
                                 </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, LockOpen, Eye, EyeSlash, Sparkle } from '@phosphor-icons/react';
+import { Lock, LockOpen, Eye, EyeSlash, Sparkle, WarningCircle } from '@phosphor-icons/react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useData } from '../contexts/DataContext';
+import EarlyUnlockWarningModal from './EarlyUnlockWarningModal';
 
 export default function ProgressiveDataLockWrapper({
   requiredDays = 30,
@@ -13,9 +15,11 @@ export default function ProgressiveDataLockWrapper({
   className = ''
 }) {
   const { isHinglish } = useLanguage();
+  const { earlyUnlockAll } = useData();
   const [peekSample, setPeekSample] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
-  const isUnlocked = currentDays >= requiredDays;
+  const isUnlocked = currentDays >= requiredDays || earlyUnlockAll;
 
   if (isUnlocked) {
     return <div className={className}>{children}</div>;
@@ -84,24 +88,39 @@ export default function ProgressiveDataLockWrapper({
               </div>
             </div>
 
-            {/* Interactive Peek Button */}
-            <div className="pt-1 flex items-center justify-center">
+            {/* Interactive Peek & Early Unlock Buttons */}
+            <div className="pt-1 flex flex-col sm:flex-row items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(30);
                   setPeekSample(true);
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-black tracking-wide hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-black tracking-wide hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
               >
                 <Eye size={14} weight="bold" />
-                <span>{isHinglish ? 'सैंपल प्रीव्यू देखें (Peek Preview)' : 'Peek Sample Preview'}</span>
+                <span>{isHinglish ? 'सैंपल प्रीव्यू देखें' : 'Peek Preview'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowWarningModal(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300 text-[10.5px] font-bold tracking-wide hover:bg-amber-100 dark:hover:bg-amber-900/60 active:scale-95 transition-all cursor-pointer"
+              >
+                <LockOpen size={13} weight="bold" />
+                <span>{isHinglish ? 'समय से पहले अनलॉक करें' : 'Unlock All Early'}</span>
               </button>
             </div>
 
           </div>
         </div>
       )}
+
+      {/* Early Unlock Warning Modal */}
+      <EarlyUnlockWarningModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+      />
 
     </div>
   );

@@ -647,9 +647,8 @@ export default function HabitAiCoachBot() {
                     Definite AI Coach
                   </h3>
                   <ProPill size="xs" />
-                  <span className="flex items-center gap-1 text-[8.5px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 px-1.5 py-0.5 rounded-full leading-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live
+                  <span className="flex items-center gap-1 text-[8.5px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/80 px-1.5 py-0.5 rounded-full leading-none">
+                    Upcoming
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-none mt-1">

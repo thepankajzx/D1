@@ -12,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import StreakWidget from '../components/StreakWidget';
 import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
+import D1OnboardingCarousel from '../components/D1OnboardingCarousel';
 
 
 const getPerfColor = (score) => {
@@ -308,30 +309,14 @@ export default function Dashboard() {
       );
   }
 
-  // Handle Empty State
+  // Handle Empty State: When user has 0 habits, show D1 Value Reveal Carousel directly!
   if (habits.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
-        <div className="mt-4 md:mt-8 flex justify-between items-end mb-8 relative">
-          <div className="flex flex-col z-10">
-            <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 flex items-center gap-2">
-              Dashboard
-            </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-2">
-              You don't have any habits tracked yet. Start your journey by setting up your first daily habits.
-            </p>
-          </div>
-        </div>
-        <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
-          <Icon name="rocket_launch" className=" text-5xl text-primary" />
-        </div>
-        <Link 
-          to="/onboarding/welcome" 
-          className="mt-4 bg-primary text-on-primary px-8 py-4 rounded-full font-label-lg text-label-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 flex items-center gap-2"
-        >
-          Get Started <Icon name="arrow_forward"  />
-        </Link>
-      </div>
+      <D1OnboardingCarousel
+        onComplete={() => navigate('/onboarding/select')}
+        onChooseBundle={() => navigate('/onboarding/select')}
+        onAddHabit={() => navigate('/onboarding/select')}
+      />
     );
   }
 
@@ -451,7 +436,7 @@ export default function Dashboard() {
       </div>
 
       {showPaywall && (
-        <UpgradeModal onClose={() => setShowPaywall(false)} />
+        <ProModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
       )}
 
       {/* Partial Save Modal */}

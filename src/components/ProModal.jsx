@@ -10,15 +10,15 @@ export default function ProModal({ isOpen, onClose, source }) {
   let description = "";
   if (source === "custom_habit_creation") {
     description = (
-      <>Reached your free limit?<br /><strong>Unlock unlimited custom habits</strong> with Pro.</>
+      <>Reached your free limit of 6 custom habits?<br /><strong>Unlock unlimited custom habits</strong> with Pro.</>
     );
   } else if (source === "total_habits_limit") {
     description = (
-      <>Reached your free limit?<br /><strong>Track 10+ habits at once</strong> with Pro.</>
+      <>Reached your free limit of 8 active habits?<br /><strong>Track unlimited habits</strong> with Pro.</>
     );
-  } else if (source === "custom_analytics") {
+  } else if (source === "custom_analytics" || source === "date_range_limit") {
     description = (
-      <>Want deeper insights?<br /><strong>Unlock Advanced Analytics</strong> for Custom Habits with Pro.</>
+      <>Free plan covers up to 180 days of data history.<br /><strong>Unlock 365-day views & unlimited date ranges</strong> with Pro.</>
     );
   } else {
     description = (
