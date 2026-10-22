@@ -26,7 +26,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Interactive state
+  // Interactive UI state
   const [toastText, setToastText] = useState('');
   const [toastActive, setToastActive] = useState(false);
   const toastTimeoutRef = useRef(null);
@@ -198,13 +198,16 @@ export default function Login() {
 
         .login-stage-wrapper {
           width: 100vw;
+          min-height: 100dvh;
           height: 100dvh;
-          max-height: 100dvh;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
           background: #E4ECE7;
           display: flex;
           align-items: center;
           justify-content: center;
+          padding: max(14px, env(safe-area-inset-top, 14px)) 12px max(14px, env(safe-area-inset-bottom, 14px));
+          box-sizing: border-box;
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           user-select: none;
           color: var(--ink);
@@ -219,38 +222,29 @@ export default function Login() {
           }
         }
 
+        /* ── Centered Phone Card (No awkward space in between) ── */
         .phone-frame {
           position: relative;
-          width: 100vw;
-          height: 100dvh;
-          max-height: 100dvh;
+          width: 100%;
+          max-width: 392px;
           background: #FFFFFF;
+          border-radius: 38px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
+          box-shadow:
+            0 0 0 1px rgba(7, 26, 18, 0.08),
+            0 0 0 6px #F7FAF8,
+            0 24px 50px -12px rgba(7, 26, 18, 0.22),
+            0 8px 20px -4px rgba(16, 185, 129, 0.12);
+          margin: auto;
         }
 
-        @media (min-width: 481px) {
-          .phone-frame {
-            width: 392px;
-            height: min(844px, 96dvh);
-            border-radius: 46px;
-            box-shadow:
-              0 0 0 1px rgba(7, 26, 18, 0.08),
-              0 0 0 8px #F7FAF8,
-              0 0 0 9.5px rgba(7, 26, 18, 0.12),
-              0 35px 80px -15px rgba(7, 26, 18, 0.28),
-              0 12px 28px -6px rgba(16, 185, 129, 0.12);
-          }
-        }
-
-        /* ── HERO SECTION (~43% VIEWPORT HEIGHT) ── */
+        /* ── Top Hero Canvas (~44% height of card) ── */
         .hero-section {
           position: relative;
-          flex: 0 0 43.5%;
-          min-height: 300px;
-          max-height: 360px;
-          padding: max(16px, env(safe-area-inset-top, 16px)) 18px 12px 20px;
+          height: 318px;
+          padding: 16px 18px 14px 20px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -386,12 +380,12 @@ export default function Login() {
 
         .heatmap-glass-card {
           position: absolute;
-          top: max(14px, env(safe-area-inset-top, 14px));
-          right: 14px;
-          width: 166px;
-          padding: 11px 11px 10px;
+          top: 14px;
+          right: 12px;
+          width: 164px;
+          padding: 10px 10px 9px;
           border-radius: 18px;
-          background: linear-gradient(155deg, rgba(255, 255, 255, 0.88) 0%, rgba(244, 250, 246, 0.74) 100%);
+          background: linear-gradient(155deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 250, 246, 0.76) 100%);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           border: 1px solid rgba(255, 255, 255, 0.95);
@@ -438,10 +432,10 @@ export default function Login() {
 
         .gauge-disc {
           position: absolute;
-          right: 22px;
-          bottom: 12px;
-          width: 82px;
-          height: 82px;
+          right: 20px;
+          bottom: 10px;
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
           background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 244, 0.88) 100%);
           backdrop-filter: blur(20px);
@@ -482,28 +476,26 @@ export default function Login() {
           margin-bottom: 13px;
         }
 
-        /* ── BOTTOM FORM SECTION ── */
+        /* ── Bottom Form Section: Tight & Centered (No dead space) ── */
         .form-section {
-          flex: 1 1 auto;
-          min-height: 0;
-          padding: 10px 20px max(10px, env(safe-area-inset-bottom, 10px));
+          padding: 12px 20px 14px;
           background: #FFFFFF;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          gap: 9px;
           z-index: 10;
           box-sizing: border-box;
         }
 
         .pearl-input {
           width: 100%;
-          height: 39px;
+          height: 40px;
           padding: 0 13px;
           border-radius: 12px;
           background: #F3F7F5;
           border: 1px solid #E2EBE6;
           color: var(--ink);
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 500;
           transition: all 0.2s ease;
           outline: none;
@@ -557,24 +549,30 @@ export default function Login() {
           transform: translateY(0.5px) scale(0.99);
         }
 
-        /* ── COMPACT ADAPTATIONS FOR SHORTER PHONES (e.g. iPhone SE) ── */
-        @media (max-height: 720px) {
+        /* ── Compact adjustments for smaller heights (e.g. iPhone SE / Browser bars) ── */
+        @media (max-height: 700px) {
           .hero-section {
-            flex: 0 0 41%;
-            min-height: 270px;
-            padding: max(12px, env(safe-area-inset-top, 12px)) 16px 10px 18px;
+            height: 275px;
+            padding: 12px 16px 10px 18px;
           }
           .editorial-title {
-            font-size: 25px;
+            font-size: 24px;
           }
           .heatmap-glass-card {
-            transform: scale(0.9) perspective(650px) rotateY(-8deg) rotateX(4deg);
+            transform: scale(0.88) perspective(650px) rotateY(-8deg) rotateX(4deg);
             transform-origin: top right;
+            top: 10px;
+            right: 8px;
           }
           .gauge-disc {
-            width: 72px;
-            height: 72px;
-            bottom: 8px;
+            width: 70px;
+            height: 70px;
+            bottom: 6px;
+            right: 14px;
+          }
+          .form-section {
+            padding: 10px 16px 12px;
+            gap: 7px;
           }
           .pearl-input {
             height: 36px;
@@ -584,14 +582,12 @@ export default function Login() {
             height: 39px;
             font-size: 13px;
           }
-          .form-section {
-            padding: 8px 16px max(8px, env(safe-area-inset-bottom, 8px));
-          }
         }
       `}</style>
 
+      {/* Main Centered Phone Shell */}
       <main className="phone-frame">
-        {/* Subtle Interactive Toast */}
+        {/* Subtle In-Frame Interactive Toast Notification */}
         <div 
           className={`pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 transition-all duration-300 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-[#071A12]/95 text-white shadow-xl border border-emerald-400/30 backdrop-blur-md ${
             toastActive ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0'
@@ -602,7 +598,7 @@ export default function Login() {
         </div>
 
         {/* ========================================================
-             TOP HERO SECTION (EXACT PROPORTIONS AS USER IMAGE)
+             TOP HERO SECTION (PERFECTLY PROPORTIONED)
              ======================================================== */}
         <section className="hero-section">
           <div className="hero-grid"></div>
@@ -775,11 +771,11 @@ export default function Login() {
         </section>
 
         {/* ========================================================
-             BOTTOM FORM SECTION (WITH BRANDING & WORKING REDIRECTS)
+             BOTTOM FORM SECTION (TIGHT & COHESIVE - NO DEAD SPACE)
              ======================================================== */}
         <section className="form-section">
-          {/* Definite Brand Logo (Cleanly centered above the form) */}
-          <div className="flex items-center justify-center pt-0.5 pb-0.5">
+          {/* Definite Brand Logo */}
+          <div className="flex items-center justify-center pt-0.5">
             <img 
               src="/logo-black.svg" 
               alt="Definite" 
@@ -787,7 +783,7 @@ export default function Login() {
             />
           </div>
 
-          {/* Error Message */}
+          {/* Error Alert */}
           {error && (
             <div className="py-1 px-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-center animate-in fade-in">
               {error}
@@ -898,19 +894,17 @@ export default function Login() {
           </form>
 
           {/* Explore Demo (Preserved Invariant 1) */}
-          <div className="pt-0.5">
-            <button
-              type="button"
-              onClick={handleGuestMode}
-              className="w-full h-[32px] rounded-xl bg-[#F0F5F2] hover:bg-[#E5EFE9] text-[#071A12] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-[0.99] border border-[#D8E6DE]"
-            >
-              <span className="text-emerald-700 text-sm">👁</span>
-              <span>Explore Demo — No Sign-up Needed</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleGuestMode}
+            className="w-full h-[33px] rounded-xl bg-[#F0F5F2] hover:bg-[#E5EFE9] text-[#071A12] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-[0.99] border border-[#D8E6DE]"
+          >
+            <span className="text-emerald-700 text-sm">👁</span>
+            <span>Explore Demo — No Sign-up Needed</span>
+          </button>
 
-          {/* 4. Ultra-Compact Legal & Mode Switcher Footer (With 100% Working Redirects) */}
-          <div className="text-center space-y-1 pt-0.5">
+          {/* 4. Ultra-Compact Footer with Working Redirects */}
+          <div className="text-center space-y-0.5 pt-0.5">
             <p className="text-[12px] text-[#2B3E34] font-medium">
               {isSignUp ? 'Have an account?' : 'New to D1?'}
               <button
