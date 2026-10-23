@@ -5,8 +5,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 export default function DeepDiveInsights({
   habit,
   summary,
-  weakestDay = 'Sunday',
-  improvement = 0,
+  weakestDay = null,
+  improvement = null,
   weekdayPattern = []
 }) {
   const { isHinglish, t } = useLanguage();
@@ -14,14 +14,17 @@ export default function DeepDiveInsights({
   const totalDays = summary?.totalDays || 30;
   const targetPercent = Math.round((daysOnTarget / Math.max(totalDays, 1)) * 100);
 
+  const trackedCount = summary?.trackedDays || 0;
+  const hasTrackedData = trackedCount > 0 || daysOnTarget > 0 || (weekdayPattern && weekdayPattern.some(w => (w.count || 0) > 0));
+
   // Derive weakest day if not explicitly provided
   const derivedWeakestDay = (() => {
     if (weakestDay && weakestDay !== 'None' && weakestDay !== 'N/A') return weakestDay;
     if (weekdayPattern && weekdayPattern.length > 0) {
-      const sorted = [...weekdayPattern].filter(w => w.count > 0).sort((a, b) => a.avg - b.avg);
+      const sorted = [...weekdayPattern].filter(w => (w.count || 0) > 0).sort((a, b) => a.avg - b.avg);
       if (sorted.length > 0) return sorted[0].day;
     }
-    return 'Sunday';
+    return null;
   })();
 
   // Circular progress ring calculation
@@ -31,7 +34,44 @@ export default function DeepDiveInsights({
   const strokeDashoffset = circumference - (clampedPercent / 100) * circumference;
 
   const hasImprovement = improvement !== null && improvement !== undefined;
-  const isPositiveImprovement = improvement >= 0;
+  const isPositiveImprovement = (improvement || 0) >= 0;
+
+  if (!hasTrackedData) {
+    return (
+      <div className="bg-white dark:bg-[#151a26] rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between w-full">
+        <div className="flex items-center justify-between pb-1 mb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center justify-center">
+              <svg className="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                <path d="M9 18h6" />
+                <path d="M10 22h4" />
+                <circle cx="12" cy="2" r="1" fill="currentColor" />
+                <circle cx="4" cy="6" r="1" fill="currentColor" />
+                <circle cx="20" cy="6" r="1" fill="currentColor" />
+                <circle cx="2" cy="12" r="1" fill="currentColor" />
+                <circle cx="22" cy="12" r="1" fill="currentColor" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">
+              {t('insights_suggestions', 'Insights & Suggestions')}
+            </h3>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 dark:text-slate-500 flex-1 my-auto">
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+            {isHinglish ? 'अभी कोई डेटा लॉग नहीं हुआ है' : 'No Habit Data Logged Yet'}
+          </p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 max-w-xs leading-relaxed">
+            {isHinglish 
+              ? 'इस आदत को नियमित रूप से लॉग करें ताकि आपकी व्यक्तिगत कमजोरियां, सुधार और इनसाइट्स यहां दिख सकें।' 
+              : 'Log this habit to unlock personalized weak day patterns, score trends, and actionable suggestions.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-[#151a26] rounded-xl md:rounded-2xl p-4 md:p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between w-full">
@@ -70,14 +110,24 @@ export default function DeepDiveInsights({
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug break-words">
-                {isHinglish ? (
-                  <>{derivedWeakestDay} aapka <span className="text-amber-600 font-extrabold">weakest day</span> rehta hai.</>
+                {derivedWeakestDay ? (
+                  isHinglish ? (
+                    <>{derivedWeakestDay} aapka <span className="text-amber-600 font-extrabold">weakest day</span> rehta hai.</>
+                  ) : (
+                    <>{derivedWeakestDay} tends to be your <span className="text-amber-600 font-extrabold">weakest day</span>.</>
+                  )
                 ) : (
-                  <>{derivedWeakestDay} tends to be your <span className="text-amber-600 font-extrabold">weakest day</span>.</>
+                  isHinglish ? (
+                    <>Abhi tak koi <span className="text-amber-600 font-extrabold">weak day</span> nahi mila.</>
+                  ) : (
+                    <>Consistent performance across tracked days.</>
+                  )
                 )}
               </h4>
               <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
-                {isHinglish ? 'Dopahar ka reminder set karo.' : 'Try a midday reminder.'}
+                {derivedWeakestDay 
+                  ? (isHinglish ? 'Dopahar ka reminder set karo.' : 'Try a midday reminder.')
+                  : (isHinglish ? 'Tracking jari rakhein.' : 'Keep logging to detect subtle dips.')}
               </p>
             </div>
           </div>
@@ -106,20 +156,28 @@ export default function DeepDiveInsights({
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white leading-snug break-words">
-                {isPositiveImprovement ? (
-                  isHinglish 
-                    ? <>Score me <span className="text-emerald-600 font-extrabold">+{improvement}%</span> ka improvement!</> 
-                    : <>Score improved by <span className="text-emerald-600 font-extrabold">+{improvement}%</span></>
+                {hasImprovement ? (
+                  isPositiveImprovement ? (
+                    isHinglish 
+                      ? <>Score me <span className="text-emerald-600 font-extrabold">+{improvement}%</span> ka improvement!</> 
+                      : <>Score improved by <span className="text-emerald-600 font-extrabold">+{improvement}%</span></>
+                  ) : (
+                    isHinglish 
+                      ? <>Score <span className="text-red-500 font-extrabold">{improvement}%</span> thoda gira hai</> 
+                      : <>Score dipped by <span className="text-red-500 font-extrabold">{improvement}%</span></>
+                  )
                 ) : (
                   isHinglish 
-                    ? <>Score <span className="text-red-500 font-extrabold">{improvement}%</span> thoda gira hai</> 
-                    : <>Score dipped by <span className="text-red-500 font-extrabold">{improvement}%</span></>
+                    ? <>Baseline data <span className="text-emerald-600 font-extrabold">establish</span> ho raha hai</>
+                    : <>Baseline performance <span className="text-emerald-600 font-extrabold">established</span></>
                 )}
               </h4>
               <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
-                {isHinglish 
-                  ? (isPositiveImprovement ? 'Pichle period se behtar! Momentum banaye rakho.' : 'Chhoti daily wins par focus karo.') 
-                  : (isPositiveImprovement ? 'vs previous period • Keep momentum!' : 'vs previous period • Focus on daily wins.')}
+                {hasImprovement 
+                  ? (isHinglish 
+                    ? (isPositiveImprovement ? 'Pichle period se behtar! Momentum banaye rakho.' : 'Chhoti daily wins par focus karo.') 
+                    : (isPositiveImprovement ? 'vs previous period • Keep momentum!' : 'vs previous period • Focus on daily wins.'))
+                  : (isHinglish ? 'Compare karne ke liye agle hafte ka data aane dein.' : 'Comparison will appear after the next tracking window.')}
               </p>
             </div>
           </div>

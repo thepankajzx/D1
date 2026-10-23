@@ -1,5 +1,5 @@
 import Icon from '../components/Icon';
-import { Target, Flame, Lightning } from '@phosphor-icons/react';
+import { Target, Flame, Lightning, SlidersHorizontal, Check, Sparkle, ChartLineUp, CaretRight, X } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
@@ -14,6 +14,8 @@ import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useGuest } from '../contexts/GuestContext';
 import D1OnboardingCarousel from '../components/D1OnboardingCarousel';
+import DailyCheckIn from '../corex/ui/DailyCheckIn';
+import { getCoreXConfigs, saveCoreXLog, getCoreXLogs } from '../corex/data/schema';
 
 
 const getPerfColor = (score) => {
@@ -41,10 +43,16 @@ function getTodayDate() {
 export default function Dashboard() {
   const { currentUser: user } = useAuth();
   const { isGuest } = useGuest();
-  const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData, streakTrackingEnabled } = useData();
+  const { habits, allSummaries, setAllSummaries, userDoc, priorityModeEnabled, loadingData, refreshData, streakTrackingEnabled, coreXEnabled } = useData();
   const { isHinglish } = useLanguage();
   const navigate = useNavigate();
 
+  // Core X State
+  const [coreXConfigs, setCoreXConfigs] = useState([]);
+  const [activeCoreXId, setActiveCoreXId] = useState(null);
+  const [coreXLogsTodayMap, setCoreXLogsTodayMap] = useState({});
+  const [coreXLogsYesterdayMap, setCoreXLogsYesterdayMap] = useState({});
+  const [showCoreYCheckIn, setShowCoreYCheckIn] = useState(false);
   
   // Debug log
   useEffect(() => {
@@ -132,6 +140,40 @@ export default function Dashboard() {
                 habitsTotal: habits.length
             });
         }
+
+        // Load Core X configs & daily logs if enabled
+        if (coreXEnabled && user?.uid) {
+          try {
+            const cfgs = await getCoreXConfigs(user.uid);
+            setCoreXConfigs(cfgs || []);
+            if (cfgs && cfgs.length > 0) {
+              if (!activeCoreXId) setActiveCoreXId(cfgs[0].id);
+              const todayLogs = {};
+              const yesterdayLogs = {};
+              const yesterday = new Date(selectedDate);
+              yesterday.setDate(yesterday.getDate() - 1);
+              const yDateStr = yesterday.toISOString().split('T')[0];
+
+              for (const cfg of cfgs) {
+                try {
+                  const allLogs = await getCoreXLogs(user.uid, cfg.id);
+                  todayLogs[cfg.id] = allLogs?.find(l => l.date === selectedDate) || null;
+                  yesterdayLogs[cfg.id] = allLogs?.find(l => l.date === yDateStr) || null;
+                } catch (err) {
+                  console.error(`Error loading logs for corex ${cfg.id}:`, err);
+                }
+              }
+              setCoreXLogsTodayMap(todayLogs);
+              setCoreXLogsYesterdayMap(yesterdayLogs);
+            } else {
+              setCoreXLogsTodayMap({});
+              setCoreXLogsYesterdayMap({});
+            }
+          } catch (cxErr) {
+            console.error("Error loading Core X data in dashboard:", cxErr);
+          }
+        }
+
         setPendingChanges(false);
       } catch (error) {
         console.error("Error loading date data:", error);
@@ -141,7 +183,18 @@ export default function Dashboard() {
     }
     
     loadDateData();
-  }, [selectedDate, habits.length, user?.uid, loadingData]);
+  }, [selectedDate, habits.length, user?.uid, loadingData, coreXEnabled]);
+
+  const activeCoreXConfig = coreXConfigs.find(c => c.id === activeCoreXId) || coreXConfigs[0] || null;
+
+  const handleSaveCoreYLog = async (logData) => {
+    if (!user || !activeCoreXConfig) return;
+    await saveCoreXLog(user.uid, activeCoreXConfig.id, selectedDate, logData);
+    setCoreXLogsTodayMap(prev => ({
+      ...prev,
+      [activeCoreXConfig.id]: logData
+    }));
+  };
 
 
 
@@ -465,32 +518,188 @@ export default function Dashboard() {
           </section>
         )}
       </div>
-      
-      {/* Static Submit Button at Bottom */}
-      <div className="mt-8 flex flex-col items-center justify-center w-full gap-4">
-          <button 
-              onClick={() => handleSaveProgress(false)} 
-              disabled={isSaving || !pendingChanges} 
-              className={`w-full md:w-auto md:min-w-[300px] px-10 py-4 rounded-full font-label-lg transition-all duration-300 flex items-center justify-center gap-3 ${
-                  pendingChanges
-                      ? 'bg-primary text-on-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(var(--color-primary),0.3)] hover:-translate-y-1 cursor-pointer' 
-                      : 'bg-surface-container-high text-on-surface-variant cursor-not-allowed opacity-70'
-              }`}
+
+      {/* ── CORE X DAILY CHECK-IN CARD (BELOW HABIT CARDS) ── */}
+      {coreXEnabled && coreXConfigs && coreXConfigs.length > 0 && (
+        <section className="mt-4 space-y-2">
+          <div 
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(20);
+              setShowCoreYCheckIn(true);
+            }}
+            className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 hover:border-purple-300 dark:hover:border-purple-800/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer shadow-2xs hover:shadow-xs transition-all group"
           >
-              {isSaving ? (
-                  <Icon name="sync" className=" animate-spin text-xl" />
-              ) : (
-                  <Icon name="done_all" className=" text-xl" />
-              )}
-              {isSaving ? 'Saving...' : pendingChanges ? 'Save Progress' : 'All Progress Saved'}
-          </button>
-          
-          {!pendingChanges && !isSaving && (
-            <Link to="/analytics" className="text-primary hover:underline font-label-md flex items-center gap-1">
-              Check your analytics <Icon name="arrow_forward" className=" text-sm" />
-            </Link>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                <SlidersHorizontal size={22} weight="bold" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {activeCoreXConfig?.name || 'Core X Daily Check-in'}
+                  </span>
+                  <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
+                    CORE X
+                  </span>
+                  {coreXLogsTodayMap[activeCoreXConfig?.id] ? (
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Check size={12} weight="bold" /> {isHinglish ? 'लॉग किया गया' : 'Logged'}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-md">
+                      {isHinglish ? 'चेक-इन बाकी' : 'Needs Check-in'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                  {coreXConfigs.length > 1 
+                    ? (isHinglish ? `${coreXConfigs.length} सक्रिय एक्सपेरिमेंट्स • फैक्टर्स भरने के लिए टैप करें` : `${coreXConfigs.length} experiments active • Tap to log factors`)
+                    : (isHinglish ? 'दैनिक फैक्टर्स और आउटकम रेटिंग भरने के लिए टैप करें' : 'Tap to log daily factors and outcome rating')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                <span>{isHinglish ? 'फॉर्म खोलें' : 'Open Form'}</span>
+                <CaretRight size={14} weight="bold" />
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {coreXEnabled && (!coreXConfigs || coreXConfigs.length === 0) && (
+        <section className="mt-4 space-y-2">
+          <div 
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(20);
+              navigate('/deep-dive?tool=builder');
+            }}
+            className="bg-white dark:bg-[#131722] border border-dashed border-indigo-300 dark:border-indigo-800/80 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer shadow-2xs hover:shadow-xs transition-all group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <SlidersHorizontal size={22} weight="bold" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm block truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {isHinglish ? 'Core X: अपना पहला एक्सपेरिमेंट बनाएं' : 'Core X: Build your first experiment'}
+                </span>
+                <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                  {isHinglish ? 'डीप डाइव में जाएं और नोड-ट्री कैनवास में फैक्टर्स सेट करें' : 'Go to Deep Dive to design your outcome & factor tree'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
+              <span>{isHinglish ? 'कैनवास खोलें' : 'Open Canvas'}</span>
+              <CaretRight size={14} weight="bold" />
+            </div>
+          </div>
+        </section>
+      )}
+      
+      {/* ── PREMIUM BOTTOM SAVE & CTA BUTTONS ── */}
+      <div className="mt-8 flex flex-col items-center justify-center w-full gap-3.5">
+        <button 
+          type="button"
+          onClick={() => handleSaveProgress(false)} 
+          disabled={isSaving || !pendingChanges} 
+          className={`w-full sm:w-auto min-w-[260px] px-8 py-3.5 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
+            pendingChanges
+              ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white shadow-indigo-500/25 active:scale-[0.98] cursor-pointer' 
+              : 'bg-surface-container-high text-on-surface-variant/80 border border-outline-variant/30 shadow-2xs opacity-85 cursor-default'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <Icon name="sync" className="animate-spin text-xl text-primary" />
+              <span>{isHinglish ? 'प्रोग्रेस सेव हो रही है...' : 'Saving Progress...'}</span>
+            </>
+          ) : pendingChanges ? (
+            <>
+              <Sparkle size={20} weight="fill" className="text-amber-300 animate-pulse" />
+              <span>{isHinglish ? "आज की प्रोग्रेस सेव करें" : "Save Today's Progress"}</span>
+            </>
+          ) : (
+            <>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Check size={14} weight="bold" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-on-surface">
+                {isHinglish ? 'सब प्रोग्रेस सुरक्षित है' : 'All Progress Saved'}
+              </span>
+            </>
           )}
+        </button>
+        
+        {!pendingChanges && !isSaving && (
+          <Link 
+            to="/analytics" 
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low border border-outline-variant/30 text-on-surface hover:text-primary font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all hover:scale-102 group cursor-pointer"
+          >
+            <ChartLineUp size={16} weight="bold" className="text-primary group-hover:translate-x-0.5 transition-transform" />
+            <span>{isHinglish ? 'डीप डाइव एनालिटिक्स व ट्रेंड्स देखें' : 'Check your deep dive analytics & trends'}</span>
+            <Icon name="arrow_forward" className="text-xs text-on-surface-variant group-hover:text-primary transition-colors" />
+          </Link>
+        )}
       </div>
+
+      {/* ── CORE X DAILY CHECK-IN MODAL ── */}
+      {showCoreYCheckIn && activeCoreXConfig && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" onClick={() => setShowCoreYCheckIn(false)}>
+          <div className="bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center">
+                  <SlidersHorizontal size={18} weight="bold" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
+                    {activeCoreXConfig.name || 'Core X Daily Check-in'}
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-medium">{selectedDate}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowCoreYCheckIn(false)} 
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X size={18} weight="bold" />
+              </button>
+            </div>
+
+            {/* If multiple configs, tabs to switch */}
+            {coreXConfigs.length > 1 && (
+              <div className="flex items-center gap-1.5 px-4 pt-3 overflow-x-auto border-b border-slate-100 dark:border-slate-800 pb-2">
+                {coreXConfigs.map(cfg => (
+                  <button
+                    key={cfg.id}
+                    onClick={() => setActiveCoreXId(cfg.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                      activeCoreXId === cfg.id
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {cfg.name || 'Experiment'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[70vh]">
+              <DailyCheckIn 
+                config={activeCoreXConfig} 
+                dateStr={selectedDate} 
+                existingLog={coreXLogsTodayMap[activeCoreXConfig.id]} 
+                yesterdayLog={coreXLogsYesterdayMap[activeCoreXConfig.id]} 
+                onSave={handleSaveCoreYLog} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {showPaywall && (
         <ProModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />

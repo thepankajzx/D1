@@ -17,6 +17,7 @@ import ProModal from '../components/ProModal';
 import HabitIconColorPickerModal from '../components/HabitIconColorPickerModal';
 import ColorfulPaletteButton from '../components/ColorfulPaletteButton';
 import { formatDuration, normalizeDurationToMinutes, isDurationHabit } from '../lib/formatDuration';
+import { formatTimeVal } from '../lib/timeFormat';
 import './AdvancedHabitSelector.css';
 
 const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime, habitId, habitName }) => {
@@ -163,7 +164,7 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
           </div>
 
           {isTime ? (
-            <div className="flex items-center justify-center my-auto w-full py-1">
+            <div className="flex flex-col items-center justify-center my-auto w-full py-1">
               <input 
                 type="time" 
                 aria-label={`${label} target time`}
@@ -171,6 +172,9 @@ const DualRangeSlider = ({ target0, target100, onChange, direction, unit, isTime
                 value={formatTimeStr(value)} 
                 onChange={e => onChange(field, parseTimeStr(e.target.value))} 
               />
+              <span className="text-[10px] font-bold text-primary mt-1">
+                {formatTimeVal(value)}
+              </span>
             </div>
           ) : showHM ? (
             <div className="flex flex-col items-center justify-center my-auto w-full">
@@ -359,6 +363,7 @@ export default function AdvancedHabitSelector() {
   const [scoringModal, setScoringModal] = useState(null);
   const [showPriorityInfo, setShowPriorityInfo] = useState(false);
   const [showPriorityLockModal, setShowPriorityLockModal] = useState(false);
+  const formatReviewTime = (mins) => formatTimeVal(mins);
   const [showBinaryExplainer, setShowBinaryExplainer] = useState(false);
 
   // Custom Habit Builder State
@@ -1795,10 +1800,8 @@ export default function AdvancedHabitSelector() {
             <div className="ahs-summary-list-container max-w-3xl mx-auto flex flex-col gap-3">
               {[...selectedHabits, ...customHabits].map(h => {
                 const formatReviewTime = (mins) => {
-                    if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
-                    let hStr = Math.floor(mins / 60);
-                    let mStr = Math.floor(mins % 60);
-                    return `${hStr.toString().padStart(2, '0')}:${mStr.toString().padStart(2, '0')}`;
+                  if (typeof mins !== 'number' || isNaN(mins)) return '00:00';
+                  return formatTimeVal(mins);
                 };
 
                 const resolveReviewUnit = () => {

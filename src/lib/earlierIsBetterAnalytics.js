@@ -164,7 +164,7 @@ export function getEarlierIsBetterAnalytics(habit, allSummaries, dateRange) {
   });
 
   const overallScore = trackedDays > 0 ? Math.round(scoreSum / trackedDays) : 0;
-  const rawAvgNormalized = trackedDays > 0 ? (normalizedValueSum / trackedDays) : 0;
+  const rawAvgNormalized = trackedDays > 0 ? (normalizedValueSum / trackedDays) : null;
   const avgValue = denormalizeAvg(rawAvgNormalized);
 
   const prevScore = prevTrackedDays > 0 ? Math.round(prevScoreSum / prevTrackedDays) : null;
@@ -176,11 +176,11 @@ export function getEarlierIsBetterAnalytics(habit, allSummaries, dateRange) {
 
   const weekdayPattern = DAYS_ORDER.map((day, i) => ({
     day,
-    avg: weekdayCounts[i] > 0 ? denormalizeAvg(weekdayValueSum[i] / weekdayCounts[i]) : 0,
+    avg: weekdayCounts[i] > 0 ? denormalizeAvg(weekdayValueSum[i] / weekdayCounts[i]) : null,
     avgScore: weekdayCounts[i] > 0 ? Math.round(weekdayScoreSum[i] / weekdayCounts[i]) : 0,
     count: weekdayCounts[i],
   }));
-  const maxWeekdayAvg = Math.max(...weekdayPattern.map(w => w.avg), 0.0001);
+  const maxWeekdayAvg = Math.max(...weekdayPattern.map(w => w.avg || 0), 0.0001);
 
   const tracked = weekdayPattern.filter(w => w.count > 0);
   const mostConsistentDay = tracked.length

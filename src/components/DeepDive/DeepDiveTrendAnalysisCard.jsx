@@ -92,6 +92,7 @@ export default function DeepDiveTrendAnalysisCard({
   };
 
   const getTrendSummary = () => {
+    if (trend?.currentAvg === null || trend?.currentAvg === undefined) return 'No Data';
     if (isNoChange) return 'No Change';
     
     if (isTimeHabit) {
@@ -117,7 +118,10 @@ export default function DeepDiveTrendAnalysisCard({
   let curHeight = 40;
   let prevHeight = 40;
 
-  if (trend?.currentScore !== undefined && trend?.prevScore !== undefined && trend.currentScore !== null && trend.prevScore !== null) {
+  if (trend?.currentAvg === null || trend?.currentAvg === undefined) {
+    curHeight = 14;
+    prevHeight = 14;
+  } else if (trend?.currentScore !== undefined && trend?.prevScore !== undefined && trend.currentScore !== null && trend.prevScore !== null) {
     curHeight = Math.max(14, Math.min(56, Math.round((trend.currentScore / 100) * 56)));
     prevHeight = Math.max(14, Math.min(56, Math.round((trend.prevScore / 100) * 56)));
   } else if (hasPrev) {
@@ -147,6 +151,14 @@ export default function DeepDiveTrendAnalysisCard({
   const valueLabel = isTimeHabit ? 'average time' : isPercentage ? 'completion rate' : (habit?.name ? `average ${habit.name}` : 'average value');
 
   const renderDescription = () => {
+    if (trend?.currentAvg === null || trend?.currentAvg === undefined) {
+      return (
+        <span className="text-slate-500 dark:text-slate-400">
+          No habit entries logged yet for the selected period. Start logging to track your {valueLabel} and trend comparison.
+        </span>
+      );
+    }
+
     if (!hasPrev) {
       return (
         <>
@@ -320,15 +332,17 @@ export default function DeepDiveTrendAnalysisCard({
 
             <div className="w-11 flex flex-col items-center gap-1 z-10 ml-auto">
               <span className={`text-[10px] font-bold bg-white/90 dark:bg-slate-800/90 px-1 rounded shadow-2xs ${changeColor}`}>
-                {fmtVal(trend.currentAvg)}
+                {trend?.currentAvg !== null && trend?.currentAvg !== undefined ? fmtVal(trend.currentAvg) : '—'}
               </span>
               <div 
                 className={`w-10 rounded-t-lg border-t border-x shadow-xs transition-all ${
-                  isNoChange 
-                    ? 'bg-slate-400 border-slate-300' 
-                    : (isPositiveChange 
-                        ? 'bg-emerald-500 border-emerald-400 dark:bg-emerald-500 dark:border-emerald-400' 
-                        : 'bg-red-500 border-red-400 dark:bg-red-500 dark:border-red-400')
+                  trend?.currentAvg === null || trend?.currentAvg === undefined
+                    ? 'bg-slate-300 dark:bg-slate-700 border-slate-200 dark:border-slate-600'
+                    : (isNoChange 
+                        ? 'bg-slate-400 border-slate-300' 
+                        : (isPositiveChange 
+                            ? 'bg-emerald-500 border-emerald-400 dark:bg-emerald-500 dark:border-emerald-400' 
+                            : 'bg-red-500 border-red-400 dark:bg-red-500 dark:border-red-400'))
                 }`}
                 style={{ height: `${curHeight}px` }}
               />

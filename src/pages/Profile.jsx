@@ -169,7 +169,7 @@ export default function Profile() {
           });
         }
       }
-      setTimeFormat,Feedback(true);
+      setTimeFormatFeedback(true);
       setTimeout(() => setTimeFormatFeedback(false), 2500);
     } catch (e) {
       console.error('Error saving time format preference:', e);
@@ -755,7 +755,10 @@ export default function Profile() {
                 <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/70 dark:border-slate-700/70">
                   <button
                     type="button"
-                    onClick={() => setSelectedTimeFormat('12h')}
+                    onClick={() => {
+                      setSelectedTimeFormat('12h');
+                      handleSaveTimeFormat('12h');
+                    }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                       selectedTimeFormat === '12h'
                         ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
@@ -766,7 +769,10 @@ export default function Profile() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setSelectedTimeFormat('24h')}
+                    onClick={() => {
+                      setSelectedTimeFormat('24h');
+                      handleSaveTimeFormat('24h');
+                    }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                       selectedTimeFormat === '24h'
                         ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
@@ -1428,7 +1434,7 @@ export default function Profile() {
 
             {/* ── TIME-GATED INSIGHTS MASTERY (USER PREFERENCE) ── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-3.5 shadow-2xs space-y-2.5 text-left">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black shrink-0 shadow-2xs ${
               earlyUnlockAll 
@@ -1457,6 +1463,29 @@ export default function Profile() {
               </p>
             </div>
           </div>
+
+          {/* Direct Switch Toggle */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={earlyUnlockAll}
+            onClick={async () => {
+              if (navigator.vibrate) navigator.vibrate(30);
+              if (!earlyUnlockAll) {
+                setShowEarlyUnlockModal(true);
+              } else {
+                await setEarlyUnlockAll(false);
+              }
+            }}
+            className={`w-11 h-6 rounded-full transition-colors p-0.5 flex items-center shrink-0 cursor-pointer ${
+              earlyUnlockAll ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
+            }`}
+            title={earlyUnlockAll ? "Click to relock to recommended mode" : "Click to unlock early"}
+          >
+            <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+              earlyUnlockAll ? 'translate-x-5' : 'translate-x-0'
+            }`} />
+          </button>
         </div>
 
         <div className="pt-1 flex items-center justify-end">

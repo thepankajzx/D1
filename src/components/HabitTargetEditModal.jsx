@@ -8,6 +8,7 @@ import HabitIcon from './HabitIcon';
 import Icon from './Icon';
 import BinaryGoalExplainerModal from './BinaryGoalExplainerModal';
 import { Clock, Target, TrendUp, TrendDown, Check, X, ShieldCheck, Info } from '@phosphor-icons/react';
+import { formatTimeVal } from '../lib/timeFormat';
 
 function minutesToTimeString(minutes) {
   if (typeof minutes !== 'number' || isNaN(minutes)) return '06:00';
@@ -203,6 +204,11 @@ export default function HabitTargetEditModal({
                     onChange={e => setTargetTime100(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 font-black text-sm sm:text-base text-slate-900 dark:text-white rounded-xl border border-emerald-300/80 dark:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center shadow-2xs"
                   />
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md">
+                      {formatTimeVal(targetTime100)}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-slate-500 font-medium text-center">
                     Hit before this time
                   </p>
@@ -219,6 +225,11 @@ export default function HabitTargetEditModal({
                     onChange={e => setTargetTime0(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 font-black text-sm sm:text-base text-slate-900 dark:text-white rounded-xl border border-rose-300/80 dark:border-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-center shadow-2xs"
                   />
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-[10px] font-black text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/80 px-2 py-0.5 rounded-md">
+                      {formatTimeVal(targetTime0)}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-slate-500 font-medium text-center">
                     Zero score after this
                   </p>

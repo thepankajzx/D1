@@ -79,7 +79,7 @@ export default function DeepDiveKPIStrip({
 
   // Format Avg Value display
   const avgDisplay = (() => {
-    if (!summary || summary.avgValue === undefined || summary.avgValue === null) return 'N/A';
+    if (!summary || !summary.trackedDays || summary.avgValue === undefined || summary.avgValue === null) return '—';
     if (isTime) return fmtVal ? fmtVal(summary.avgValue) : summary.avgValue;
     return (
       <span className="flex items-baseline gap-1">
@@ -91,7 +91,7 @@ export default function DeepDiveKPIStrip({
 
   // Format Best Day display
   const bestDayDisplay = (() => {
-    if (!bestDay || bestDay.value === undefined || bestDay.value === null) return 'N/A';
+    if (!bestDay || !summary?.trackedDays || bestDay.value === undefined || bestDay.value === null) return '—';
     if (isTime) return fmtVal ? fmtVal(bestDay.value) : bestDay.value;
     return (
       <span className="flex items-baseline gap-1">

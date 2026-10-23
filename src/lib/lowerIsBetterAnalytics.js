@@ -107,22 +107,22 @@ export function getLowerIsBetterAnalytics(habit, allSummaries, dateRange) {
 
   // ── Derived metrics ────────────────────────────────────────────────────────
   const overallScore = trackedDays > 0 && !isNaN(scoreSum) ? Math.round(scoreSum / trackedDays) : 0;
-  const avgValue     = trackedDays > 0 && !isNaN(valueSum) ? valueSum / trackedDays : 0;
+  const avgValue     = trackedDays > 0 && !isNaN(valueSum) ? valueSum / trackedDays : null;
 
   const prevScore    = prevTrackedDays > 0 && !isNaN(prevScoreSum) ? Math.round(prevScoreSum / prevTrackedDays) : null;
   const prevAvgValue = prevTrackedDays > 0 && !isNaN(prevValueSum) ? prevValueSum / prevTrackedDays : null;
   const improvement  = prevScore !== null ? overallScore - prevScore : null;
   // For lower is better, a negative valueChange is an improvement!
-  const valueChange  = prevAvgValue !== null ? avgValue - prevAvgValue : null;
+  const valueChange  = (avgValue !== null && prevAvgValue !== null) ? avgValue - prevAvgValue : null;
 
   // ── Weekday pattern ────────────────────────────────────────────────────────
   const weekdayPattern = DAYS_ORDER.map((day, i) => ({
     day,
-    avg: weekdayCounts[i] > 0 ? weekdayValueSum[i] / weekdayCounts[i] : 0,
+    avg: weekdayCounts[i] > 0 ? weekdayValueSum[i] / weekdayCounts[i] : null,
     avgScore: weekdayCounts[i] > 0 ? weekdayScoreSum[i] / weekdayCounts[i] : 0,
     count: weekdayCounts[i],
   }));
-  const maxWeekdayAvg = Math.max(...weekdayPattern.map(w => w.avg), 0.0001);
+  const maxWeekdayAvg = Math.max(...weekdayPattern.map(w => w.avg || 0), 0.0001);
 
   // Most consistent (highest score) & weakest day (lowest score)
   const tracked = weekdayPattern.filter(w => w.count > 0);

@@ -366,20 +366,27 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync earlyUnlockAll preference from user doc if no local override
+          // Sync earlyUnlockAll preference from user doc
           try {
-            const localVal = localStorage.getItem('preference_early_unlock_all');
-            if (localVal === null && typeof data.earlyUnlockAll === 'boolean') {
+            if (typeof data.earlyUnlockAll === 'boolean') {
               setEarlyUnlockAllState(data.earlyUnlockAll);
+              localStorage.setItem('preference_early_unlock_all', String(data.earlyUnlockAll));
             }
           } catch (e) {}
 
-          // Sync time format preference from user doc if no local override
+          // Sync time format preference from user doc
           try {
-            const localFormat = localStorage.getItem('preference_time_format');
-            if (!localFormat && (data.timeFormat === '12h' || data.timeFormat === '24h')) {
+            if (data.timeFormat === '12h' || data.timeFormat === '24h') {
               setTimeFormatState(data.timeFormat);
               localStorage.setItem('preference_time_format', data.timeFormat);
+            }
+          } catch (e) {}
+
+          // Sync coreXEnabled preference from user doc
+          try {
+            if (typeof data.coreXEnabled === 'boolean') {
+              setCoreXEnabledState(data.coreXEnabled);
+              localStorage.setItem('preference_corex_enabled', String(data.coreXEnabled));
             }
           } catch (e) {}
         } else {

@@ -844,13 +844,24 @@ export default function ExperimentalAnalytics() {
     const weeksCount = dateSeries.length <= 7 ? 1 : dateSeries.length <= 14 ? 2 : dateSeries.length <= 30 ? 4 : Math.min(12, Math.ceil(dateSeries.length / 7));
     const daysPerWeek = Math.floor(dateSeries.length / weeksCount);
     const result = [];
+    const activeHabitsCount = (realHabits || []).filter(h => h.status !== 'deleted').length || 1;
 
     for (let w = 0; w < weeksCount; w++) {
       const sliceDates = dateSeries.slice(w * daysPerWeek, (w + 1) * daysPerWeek);
+      let totalLoggedEntries = 0;
+      let totalExpectedEntries = 0;
+      let daysWithLogs = 0;
+
       const scores = sliceDates.map(dStr => {
         const sum = summaryMap.get(dStr);
         if (selectedHabitId === 'all') {
           if (!sum || sum.overallScore === undefined || sum.overallScore === null) return null;
+          const loggedHabitKeys = Object.keys(sum.habitScores || {});
+          if (loggedHabitKeys.length > 0) {
+            daysWithLogs++;
+            totalLoggedEntries += loggedHabitKeys.length;
+            totalExpectedEntries += activeHabitsCount;
+          }
           return sum.overallScore;
         }
         if (!sum || !sum.habitScores || sum.habitScores[selectedHabitId] === undefined || sum.habitScores[selectedHabitId] === null) return null;
@@ -859,6 +870,11 @@ export default function ExperimentalAnalytics() {
 
       const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
       
+      const isPartial = selectedHabitId === 'all' && daysWithLogs > 0 && totalLoggedEntries < totalExpectedEntries;
+      const loggedRatio = isPartial 
+        ? `${Math.max(1, Math.round(totalLoggedEntries / daysWithLogs))}/${activeHabitsCount}`
+        : null;
+
       // Calculate formatted date range, e.g. "7 Jun - 14 Jun"
       const startDate = sliceDates[0] ? new Date(sliceDates[0] + 'T00:00:00') : null;
       const endDate = sliceDates[sliceDates.length - 1] ? new Date(sliceDates[sliceDates.length - 1] + 'T00:00:00') : null;
@@ -873,7 +889,9 @@ export default function ExperimentalAnalytics() {
         label: `Week ${w + 1}`,
         dateRangeStr,
         sliceDates,
-        avg
+        avg,
+        isPartial,
+        loggedRatio
       });
     }
 
@@ -886,7 +904,7 @@ export default function ExperimentalAnalytics() {
         diff: item.avg - prevAvg
       };
     });
-  }, [dateSeries, summaryMap, selectedHabitId]);
+  }, [dateSeries, summaryMap, selectedHabitId, realHabits]);
 
   // "Kamzor Kadi" / Weakest Habit identifier (Prioritizes Top 3 Priorities if they are struggling)
   const weakestHabit = useMemo(() => {
@@ -2621,16 +2639,30 @@ export default function ExperimentalAnalytics() {
                 >
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      item.isUp ? 'bg-emerald-500' : 'bg-rose-500'
+                      item.isPartial
+                        ? 'border-2 border-dashed border-amber-500 bg-amber-400/80 dark:bg-amber-500/70 [background-image:linear-gradient(45deg,rgba(0,0,0,0.12)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.12)_50%,rgba(0,0,0,0.12)_75%,transparent_75%,transparent)] [background-size:10px_10px]'
+                        : item.isUp 
+                          ? 'bg-emerald-500' 
+                          : 'bg-rose-500'
                     }`}
                     style={{ width: `${Math.max(5, item.avg)}%` }}
                   />
                 </div>
 
-                {/* Average Score % */}
-                <span className="text-xs font-black text-slate-900 dark:text-white w-10 text-right shrink-0">
-                  {item.avg}%
-                </span>
+                {/* Average Score % and Partial Badge */}
+                <div className="flex items-center gap-1.5 justify-end shrink-0">
+                  {item.isPartial && (
+                    <span 
+                      className="text-[9.5px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded-md"
+                      title={isHinglish ? `केवल कुछ आदतें लॉग की गईं (${item.loggedRatio})` : `Partial logging: ${item.loggedRatio} habits logged`}
+                    >
+                      {isHinglish ? `आंशिक (${item.loggedRatio})` : `Partial (${item.loggedRatio})`}
+                    </span>
+                  )}
+                  <span className="text-xs font-black text-slate-900 dark:text-white w-10 text-right">
+                    {item.avg}%
+                  </span>
+                </div>
               </div>
             ))}
           </div>

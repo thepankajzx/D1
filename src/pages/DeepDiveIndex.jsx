@@ -1,20 +1,53 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { CaretRight, Eye, Lock, ChartLineUp, Star, SlidersHorizontal } from '@phosphor-icons/react';
+import { CaretRight, Eye, Lock, ChartLineUp, Star, SlidersHorizontal, TreeStructure, Sparkle } from '@phosphor-icons/react';
 import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import HabitIcon from '../components/HabitIcon';
 import Icon from '../components/Icon';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import CoreXUnifiedBuilder from '../corex/ui/CoreXUnifiedBuilder';
+import CoreYAnalyticsSection from '../corey/ui/CoreYAnalyticsSection';
 
 export default function DeepDiveIndex() {
   const { currentUser: user } = useAuth();
-  const { habits = [], allSummaries = [], refreshData, earlyUnlockAll } = useData();
+  const { habits = [], allSummaries = [], refreshData, earlyUnlockAll, coreXEnabled } = useData();
   const { isHinglish, t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showLockModal, setShowLockModal] = useState(false);
+
+  // Dedicated Full-Page Mode for Core X Builder & Analytics
+  const activeTool = searchParams.get('tool');
+  const isBuilderFullscreen = activeTool === 'core-x' || activeTool === 'core-y' || activeTool === 'builder';
+  const isAnalyticsFullscreen = activeTool === 'analytics';
+
+  const handleCloseTool = () => {
+    setSearchParams({});
+  };
+
+  // Dedicated Full-Page View for Core X Builder (Canvas / Tree structure)
+  if (coreXEnabled && isBuilderFullscreen) {
+    return (
+      <ErrorBoundary>
+        <CoreXUnifiedBuilder onExitFullscreen={handleCloseTool} />
+      </ErrorBoundary>
+    );
+  }
+
+  // Dedicated Full-Page View for Core X Analytics (Factor correlations)
+  if (coreXEnabled && isAnalyticsFullscreen) {
+    return (
+      <div className="fixed inset-0 z-[999999] bg-[#fafafc] dark:bg-[#0c0e15] w-screen h-screen overflow-hidden flex flex-col">
+        <ErrorBoundary>
+          <CoreYAnalyticsSection onExitFullscreen={handleCloseTool} />
+        </ErrorBoundary>
+      </div>
+    );
+  }
 
   // Priority Modal State
   const [showPriorityModal, setShowPriorityModal] = useState(false);
@@ -223,6 +256,86 @@ export default function DeepDiveIndex() {
           </div>
         )}
       </div>
+
+      {/* ── ADVANCED CORE X & EXPERIMENTAL TOOLS ── */}
+      {coreXEnabled && (
+        <section className="mt-5 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                <SlidersHorizontal size={16} weight="bold" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                  {isHinglish ? 'Core X इंटेलिजेंस और एनालिटिक्स' : 'Core X Intelligence & Analytics'}
+                </h3>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                  {isHinglish ? 'विजुअल फ्लो कैनवास और फैक्टर कोरिलेशन टूल्स' : 'Visual flow canvas and factor correlation tools'}
+                </p>
+              </div>
+            </div>
+            <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900">
+              BETA LAB
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* 1. Core X Builder & Flow Canvas */}
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                setSearchParams({ tool: 'builder' });
+              }}
+              className="w-full bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-xs transition-all text-left group shadow-2xs gap-2"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                  <TreeStructure size={20} weight="bold" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
+                    {isHinglish ? 'Core X बिल्डर और कैनवास' : 'Core X Flow Canvas'}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mt-0.5 leading-none">
+                    {isHinglish ? 'विजुअल नोड-ट्री और फैक्टर मैपिंग' : 'Visual node-tree & factor builder'}
+                  </span>
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0">
+                <CaretRight size={14} weight="bold" />
+              </div>
+            </button>
+
+            {/* 2. Core X Factor Analytics */}
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                setSearchParams({ tool: 'analytics' });
+              }}
+              className="w-full bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-xs transition-all text-left group shadow-2xs gap-2"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                  <ChartLineUp size={20} weight="bold" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight">
+                    {isHinglish ? 'Core X कोरिलेशन एनालिटिक्स' : 'Core X Analytics'}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 mt-0.5 leading-none">
+                    {isHinglish ? 'फैक्टर-आउटकम प्रभाव और डीप इनसाइट्स' : 'Factor correlations & impact matrix'}
+                  </span>
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors shrink-0">
+                <CaretRight size={14} weight="bold" />
+              </div>
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* ── UNIFIED CONSISTENT LOCK MODAL (MATCHES RESILIENCE & BETTER REPORT) ── */}
       {showLockModal && (

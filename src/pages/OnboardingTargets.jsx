@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { calculateScore, isNightHabit } from '../lib/scoring';
 import Icon from '../components/Icon';
+import { formatTimeVal } from '../lib/timeFormat';
 
 export default function OnboardingTargets() {
   const [habits, setHabits] = useState([]);
@@ -185,13 +186,18 @@ export default function OnboardingTargets() {
                           100% Score <Icon name="edit" className=" text-[14px]" />
                         </label>
                         {isTime ? (
-                          <input 
-                            type="time" 
-                            aria-label={`Optimal time for ${habit.name}`}
-                            value={formatTimeString(habit.target100)}
-                            onChange={(e) => handleTargetChange(habit.id, 'target100', parseTimeString(e.target.value))}
-                            className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
-                          />
+                          <>
+                            <input 
+                              type="time" 
+                              aria-label={`Optimal time for ${habit.name}`}
+                              value={formatTimeString(habit.target100)}
+                              onChange={(e) => handleTargetChange(habit.id, 'target100', parseTimeString(e.target.value))}
+                              className="px-3 py-2 bg-surface border-2 border-outline-variant rounded-lg text-on-surface font-mono-data font-bold focus:border-primary outline-none transition-colors w-full"
+                            />
+                            <span className="text-[10px] font-bold text-primary">
+                              {formatTimeVal(habit.target100)}
+                            </span>
+                          </>
                         ) : (
                           <input 
                             type="number" 
@@ -209,13 +215,18 @@ export default function OnboardingTargets() {
                           0% Score <Icon name="edit" className=" text-[14px]" />
                         </label>
                         {isTime ? (
-                          <input 
-                            type="time" 
-                            aria-label={`Baseline time for ${habit.name}`}
-                            value={formatTimeString(habit.target0)}
-                            onChange={(e) => handleTargetChange(habit.id, 'target0', parseTimeString(e.target.value))}
-                            className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
-                          />
+                          <>
+                            <input 
+                              type="time" 
+                              aria-label={`Baseline time for ${habit.name}`}
+                              value={formatTimeString(habit.target0)}
+                              onChange={(e) => handleTargetChange(habit.id, 'target0', parseTimeString(e.target.value))}
+                              className="px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface font-mono-data focus:border-primary outline-none transition-colors w-full"
+                            />
+                            <span className="text-[10px] font-bold text-primary">
+                              {formatTimeVal(habit.target0)}
+                            </span>
+                          </>
                         ) : (
                           <input 
                             type="number" 
