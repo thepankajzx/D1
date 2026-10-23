@@ -16,29 +16,7 @@ const INITIAL_CELLS = [
 
 const SAMPLE_PERCENTS = [76, 88, 94, 100];
 
-// Official D1 Emblem SVG matching the user mockup exactly
-function D1Logo() {
-  return (
-    <div className="flex items-center justify-center gap-1.5 select-none">
-      {/* The D Mark with inner red accent */}
-      <svg className="h-[38px] w-auto" viewBox="344 280 480 472" fill="none">
-        <path
-          d="M576.58 748.5C575.72 740.59 576.37 732.45 576.33 724.5C576.22 705.83 576.36 687.17 576.32 668.5C576.3 660.48 574.77 640.04 577.5 633.66C585.64 632.22 593.91 632.36 602.04 630.51C617.59 626.97 632.6 619.5 645.03 609.52C663.34 594.82 678.69 574.92 685.67 552.26C699.91 506.05 684.47 458.29 648.42 427.07C610.99 394.66 569.45 399.95 523.5 399.93C510.5 399.93 497.5 399.93 484.5 399.92C477.09 399.92 469.36 399.3 462.06 400.5C462.06 438.78 462.06 477.05 462.06 515.33C453.93 516.84 444.79 515.8 436.5 515.83C419.5 515.89 402.5 515.92 385.5 515.92C377.08 515.91 357.51 517.51 350.5 515.1C349.71 508.67 350.17 501.99 350.16 495.5C350.15 483.17 350.15 470.83 350.15 458.5C350.18 422.83 350.17 387.17 350.17 351.5C350.17 336.5 350.15 321.5 350.18 306.5C350.19 300.43 348.68 291.93 351.31 286.5C356.61 285.66 362.14 286.06 367.5 286.08C376.5 286.12 385.5 286.15 394.5 286.17C423.5 286.24 452.5 286.23 481.5 286.29C506.5 286.34 531.5 286.35 556.5 286.31C576.43 286.28 596.72 285.8 616.42 289.24C689.81 302.04 748.56 347.81 780.86 414.62C819.52 494.55 808 595.02 752.97 664.44C734.41 687.86 711.18 707.01 685.2 721.67C660.82 735.42 633.32 744.62 605.5 747.7C596.3 748.71 585.63 750.67 576.58 748.5Z"
-          fill="#071A12"
-        />
-        <path
-          d="M575.71 517.19C575.71 555.77 575.71 594.35 575.71 632.93C537.87 632.93 500.03 632.93 462.19 632.93C462.19 671.69 462.19 710.45 462.19 749.21C424.96 749.21 387.73 749.21 350.5 749.21C348.82 740.14 350 729.77 350.02 720.5C350.07 701.83 350.06 683.17 350.07 664.5C350.08 657.17 350.08 649.83 350.1 642.5C350.11 639.41 349.27 634.98 350.66 632.15C351.94 629.53 355.4 627.01 357.43 624.93C362.84 619.35 368.21 613.69 373.82 608.32C389.06 593.71 403.44 577.81 418.06 562.56C428.01 552.19 438.41 542.22 448.13 531.64C450.61 528.94 459.95 518.15 462.7 517.18C465.73 516.11 470.28 516.86 473.5 516.79C481.5 516.63 489.5 516.75 497.5 516.75C514.83 516.76 532.17 516.62 549.5 516.73C558.1 516.78 567.23 515.9 575.71 517.19Z"
-          fill="#E11D48"
-        />
-      </svg>
-      {/* The 1 Mark with matching red top flag and black trunk */}
-      <svg className="h-[38px] w-auto" viewBox="0 0 160 472" fill="none">
-        <polygon points="12,130 68,26 68,130" fill="#E11D48" />
-        <rect x="58" y="26" width="85" height="436" rx="5" fill="#071A12" />
-      </svg>
-    </div>
-  );
-}
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -372,29 +350,8 @@ export default function Login() {
         {/* ========================================================
              1. TOP HERO SECTION (FAITHFUL TO USER MOCKUP)
              ======================================================== */}
-        <section className="relative flex-none h-[47%] min-h-[300px] max-h-[370px] bg-gradient-to-b from-[#EDF6F1] via-[#E4F2EA] to-[#D5EADF] p-3.5 sm:p-4 pb-5 flex flex-col justify-between overflow-hidden">
+        <section className="relative flex-none h-[49%] min-h-[320px] max-h-[385px] bg-gradient-to-b from-[#EDF6F1] via-[#E4F2EA] to-[#D5EADF] p-4 sm:p-5 pb-5 sm:pb-6 flex flex-col justify-between overflow-hidden">
           <div className="hero-grid"></div>
-
-          {/* Organic Background Flowing Wave Spline with Green Dots */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-2" viewBox="0 0 392 340" fill="none" preserveAspectRatio="none">
-            {/* Wave Curve */}
-            <path
-              d="M-10 280 C 70 290, 130 260, 210 275 C 265 285, 290 270, 335 240 C 370 215, 385 160, 405 130"
-              stroke="#A3D9BE"
-              strokeWidth="2"
-              strokeDasharray="4 4"
-            />
-            {/* Soft Green Spline Behind Meter */}
-            <path
-              d="M 180 320 Q 280 270 330 230 T 400 135"
-              stroke="rgba(16, 185, 129, 0.4)"
-              strokeWidth="2.5"
-            />
-            {/* Spline Anchor Dots */}
-            <circle cx="265" cy="272" r="4.5" fill="#10B981" />
-            <circle cx="333" cy="232" r="4.5" fill="#10B981" />
-            <circle cx="368" cy="178" r="4" fill="#FFFFFF" stroke="#10B981" strokeWidth="2.5" />
-          </svg>
 
           {/* Top Row: Pill (Left) + Consistency Card (Right) */}
           <div className="relative z-10 flex items-start justify-between gap-2">
@@ -402,19 +359,19 @@ export default function Login() {
             <div className="flex flex-col justify-between flex-1 min-w-0 pr-1">
               <div>
                 {/* Pill: UNDERSTAND THE PATTERN → */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 border border-emerald-600/20 shadow-xs mb-2.5 whitespace-nowrap">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 border border-emerald-600/20 shadow-xs mb-2.5 whitespace-nowrap">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_#10B981]"></span>
                   </span>
-                  <span className="text-[8.5px] font-extrabold tracking-[0.14em] uppercase text-[#0B3522]">
+                  <span className="text-[9px] font-extrabold tracking-[0.14em] uppercase text-[#0B3522]">
                     Understand the pattern
                   </span>
-                  <span className="text-emerald-700 font-bold text-[9.5px] leading-none">→</span>
+                  <span className="text-emerald-700 font-bold text-[10px] leading-none">→</span>
                 </div>
 
                 {/* Editorial Headline: NO rough stroke under checkbox (per user instruction) */}
-                <h1 className="text-[25px] sm:text-[27px] font-black tracking-tight leading-[1.0] text-[#0A1E14]">
+                <h1 className="text-[26px] sm:text-[29px] font-black tracking-tight leading-[1.05] text-[#0A1E14]">
                   A habit<br />
                   isn’t just a<br />
                   <span className="text-[#056B48]">
@@ -423,7 +380,7 @@ export default function Login() {
                 </h1>
 
                 {/* Subcopy */}
-                <p className="mt-2 text-[12px] sm:text-[12.5px] leading-tight text-[#455D51] font-medium">
+                <p className="mt-2.5 text-[12.5px] sm:text-[13px] leading-snug text-[#455D51] font-semibold">
                   It’s a pattern<br />
                   of your future.
                 </p>
@@ -432,19 +389,19 @@ export default function Login() {
 
             {/* Right Column: Consistency Card */}
             <div className="shrink-0">
-              <div className="w-[154px] sm:w-[158px] p-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/90 shadow-[0_6px_20px_rgba(7,26,18,0.06)]">
+              <div className="w-[164px] sm:w-[172px] p-2.5 sm:p-3 rounded-2xl bg-white/95 backdrop-blur-md border border-white/90 shadow-[0_6px_20px_rgba(7,26,18,0.06)]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[8px] font-black tracking-[0.12em] uppercase text-[#0B2519]">
+                  <span className="text-[8.5px] font-black tracking-[0.12em] uppercase text-[#0B2519]">
                     Consistency
                   </span>
                   <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
-                    <span className="text-[9px] leading-none">🔥</span>
-                    <span className="text-[8px] font-black text-[#78350F] tracking-tight">27 days</span>
+                    <span className="text-[9.5px] leading-none">🔥</span>
+                    <span className="text-[8.5px] font-black text-[#78350F] tracking-tight">27 days</span>
                   </div>
                 </div>
 
                 {/* Weekday Header */}
-                <div className="grid grid-cols-7 gap-1 mb-1 text-center text-[7.5px] font-bold text-[#677F73]">
+                <div className="grid grid-cols-7 gap-1 mb-1.5 text-center text-[8px] font-extrabold text-[#5B7568]">
                   <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span className="text-emerald-700">S</span><span>S</span>
                 </div>
 
@@ -464,80 +421,80 @@ export default function Login() {
           </div>
 
           {/* Bottom Row of Hero: 4 Chain Nodes (Left) + Circular Progress Meter (Right) */}
-          <div className="relative z-10 flex items-center justify-between mt-auto pt-1">
+          <div className="relative z-10 flex items-center justify-between mt-auto pt-2">
             {/* 4 Connected Sequence Nodes */}
             <div className="relative flex items-center">
               {/* Horizontal Connecting Track */}
-              <div className="absolute top-[13px] left-[13px] right-[13px] h-[1.5px] bg-gradient-to-r from-slate-300 via-emerald-400 to-amber-400 -z-0"></div>
+              <div className="absolute top-[18px] sm:top-[19px] left-[18px] right-[18px] h-[2px] bg-gradient-to-r from-slate-300 via-emerald-400 to-amber-400 -z-0"></div>
 
               {/* 1. Thought */}
               <div 
-                className="flex flex-col items-center gap-1 cursor-pointer group z-10"
+                className="flex flex-col items-center cursor-pointer group z-10"
                 onClick={() => triggerToast('Step 1: Every habit begins as a single thought')}
               >
-                <div className="w-[26px] h-[26px] rounded-full bg-white border border-slate-300 text-slate-600 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div className="w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] rounded-full bg-white border border-slate-300 text-slate-600 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 18h6"/>
                     <path d="M10 22h4"/>
                     <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
                   </svg>
                 </div>
-                <span className="text-[6.8px] font-black uppercase tracking-wider text-[#566B60]">Thought</span>
+                <span className="text-[7.5px] sm:text-[8px] font-black uppercase tracking-wider text-[#566B60] mt-1">Thought</span>
               </div>
 
-              <div className="w-2.5 sm:w-3"></div>
+              <div className="w-2 sm:w-2.5"></div>
 
               {/* 2. Action */}
               <div 
-                className="flex flex-col items-center gap-1 cursor-pointer group z-10"
+                className="flex flex-col items-center cursor-pointer group z-10"
                 onClick={() => triggerToast('Step 2: Spark daily micro-actions')}
               >
-                <div className="w-[26px] h-[26px] rounded-full bg-[#D1F2E0] border border-[#34D399] text-[#059669] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <div className="w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] rounded-full bg-[#D1F2E0] border border-[#34D399] text-[#059669] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M13 2L4.09 12.63a1 1 0 0 0 .77 1.64H11v7.73l8.91-10.63a1 1 0 0 0-.77-1.64H13V2z"/>
                   </svg>
                 </div>
-                <span className="text-[6.8px] font-black uppercase tracking-wider text-emerald-700">Action</span>
+                <span className="text-[7.5px] sm:text-[8px] font-black uppercase tracking-wider text-emerald-700 mt-1">Action</span>
               </div>
 
-              <div className="w-2.5 sm:w-3"></div>
+              <div className="w-2 sm:w-2.5"></div>
 
               {/* 3. Habit */}
               <div 
-                className="flex flex-col items-center gap-1 cursor-pointer group z-10"
+                className="flex flex-col items-center cursor-pointer group z-10"
                 onClick={() => triggerToast('Step 3: Compound into automatic habits')}
               >
-                <div className="w-[26px] h-[26px] rounded-full bg-[#056B48] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <div className="w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] rounded-full bg-[#056B48] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="6" y1="20" x2="6" y2="14"/>
                     <line x1="12" y1="20" x2="12" y2="10"/>
                     <line x1="18" y1="20" x2="18" y2="4"/>
                   </svg>
                 </div>
-                <span className="text-[6.8px] font-black uppercase tracking-wider text-emerald-800">Habit</span>
+                <span className="text-[7.5px] sm:text-[8px] font-black uppercase tracking-wider text-emerald-800 mt-1">Habit</span>
               </div>
 
-              <div className="w-2.5 sm:w-3"></div>
+              <div className="w-2 sm:w-2.5"></div>
 
               {/* 4. Future */}
               <div 
-                className="flex flex-col items-center gap-1 cursor-pointer group z-10"
+                className="flex flex-col items-center cursor-pointer group z-10"
                 onClick={() => triggerToast('Step 4: Design your inevitable future')}
               >
-                <div className="w-[26px] h-[26px] rounded-full bg-[#FEF3C7] border border-[#FBBF24] text-[#D97706] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <div className="w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] rounded-full bg-[#FEF3C7] border border-[#FBBF24] text-[#D97706] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <circle cx="12" cy="12" r="9"/>
                     <circle cx="12" cy="12" r="5"/>
                     <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
                   </svg>
                 </div>
-                <span className="text-[6.8px] font-black uppercase tracking-wider text-amber-700">Future</span>
+                <span className="text-[7.5px] sm:text-[8px] font-black uppercase tracking-wider text-amber-700 mt-1">Future</span>
               </div>
             </div>
 
             {/* Circular Progress Gauge */}
             <div 
-              className="relative w-[78px] h-[78px] sm:w-[82px] sm:h-[82px] rounded-full bg-white/95 backdrop-blur-md border border-white/95 shadow-[0_8px_22px_rgba(7,26,18,0.1)] flex items-center justify-center cursor-pointer shrink-0" 
+              className="relative w-[86px] h-[86px] sm:w-[92px] sm:h-[92px] rounded-full bg-white/95 backdrop-blur-md border border-white/95 shadow-[0_8px_24px_rgba(7,26,18,0.1)] flex items-center justify-center cursor-pointer shrink-0" 
               onClick={cycleProgress} 
               title="Tap to preview daily momentum"
             >
@@ -549,14 +506,14 @@ export default function Login() {
                     <stop offset="100%" stopColor="#047857" />
                   </linearGradient>
                 </defs>
-                <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(7, 26, 18, 0.08)" strokeWidth="8" />
+                <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(7, 26, 18, 0.08)" strokeWidth="8.5" />
                 <circle
                   cx="50"
                   cy="50"
                   r="41"
                   fill="none"
                   stroke="url(#dialEmeraldArc)"
-                  strokeWidth="8"
+                  strokeWidth="8.5"
                   strokeLinecap="round"
                   strokeDasharray="257.6"
                   strokeDashoffset={strokeOffset}
@@ -564,8 +521,8 @@ export default function Login() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[17px] font-black text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
-                <span className="text-[7px] font-extrabold tracking-[0.18em] text-[#64748B] uppercase mt-0.5">Today</span>
+                <span className="text-[19px] sm:text-[21px] font-black text-[#071A12] tracking-tight leading-none">{currentPercent}%</span>
+                <span className="text-[7.5px] font-extrabold tracking-[0.18em] text-[#64748B] uppercase mt-1">Today</span>
               </div>
             </div>
           </div>
@@ -575,10 +532,6 @@ export default function Login() {
              2. BOTTOM LOGIN FORM SECTION (EXACT FIT TO SCREENSHOT)
              ======================================================== */}
         <section className="flex-1 bg-white rounded-t-[34px] -mt-3.5 relative z-20 px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col justify-between shadow-[0_-8px_25px_rgba(7,26,18,0.06)]">
-          {/* Centered Official D1 Logo (Clean D1 without extra text) */}
-          <div className="flex items-center justify-center pt-0.5">
-            <D1Logo />
-          </div>
 
           {/* Error Alert */}
           {error && (
