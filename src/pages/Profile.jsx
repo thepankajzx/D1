@@ -18,7 +18,7 @@ import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { formatDuration, normalizeDurationToMinutes } from '../lib/formatDuration';
 import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
 import { calculateTowerProgress, getStreakTrackingPreference } from '../lib/progressTowerEngine';
-import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot } from '@phosphor-icons/react';
+import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun } from '@phosphor-icons/react';
 import ProPill from '../components/ProPill';
 import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
 import { useTheme } from '../contexts/ThemeContext';
@@ -60,7 +60,7 @@ export default function Profile() {
   } = useData();
   const { exitGuestMode } = useGuest();
   const { language, setLanguage, t, isHinglish } = useLanguage();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, isDark, toggleTheme } = useTheme();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -560,7 +560,63 @@ export default function Profile() {
 
 
         {openSections.myProfile && (
-          <div className="p-4 sm:p-5 pt-0 border-t border-outline-variant/30 space-y-5">
+          <div className="p-4 sm:p-5 pt-5 sm:pt-6 border-t border-outline-variant/30 space-y-4">
+
+            {/* Appearance / Theme Mode */}
+            <div className="rounded-2xl bg-surface-container border border-outline-variant/50 overflow-hidden transition-all shadow-2xs">
+              <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-colors ${
+                    isDark ? "bg-amber-950/50 text-amber-400" : "bg-slate-200/70 text-slate-700"
+                  }`}>
+                    {isDark ? <Sun size={18} weight="bold" /> : <Moon size={18} weight="bold" />}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                      {isHinglish ? 'थीम मोड (Appearance)' : 'Appearance & Theme'}
+                    </h4>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                      {isDark ? (isHinglish ? 'डार्क मोड सक्रिय (Dark Mode)' : 'Dark Mode Active') : (isHinglish ? 'लाइट मोड सक्रिय (Light Mode)' : 'Light Mode Active')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Theme Selector Segmented Control */}
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(15);
+                      setTheme('light');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                      !isDark 
+                        ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-900/5' 
+                        : 'text-slate-500 hover:text-slate-200'
+                    }`}
+                  >
+                    <Sun size={14} weight="bold" className={!isDark ? 'text-amber-500' : ''} />
+                    <span>Light</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(15);
+                      setTheme('dark');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                      isDark 
+                        ? 'bg-slate-900 text-white shadow-xs ring-1 ring-white/10' 
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Moon size={14} weight="bold" className={isDark ? 'text-amber-400' : ''} />
+                    <span>Dark</span>
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Language & Preferences Dropdown */}
             <div className="rounded-2xl bg-surface-container border border-outline-variant/50 overflow-hidden transition-all shadow-2xs">
@@ -961,7 +1017,7 @@ export default function Profile() {
         </button>
 
         {openSections.myHabits && (
-          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="p-3.5 sm:p-4 pt-4 sm:pt-5 border-t border-slate-100 dark:border-slate-800 space-y-3.5">
             
             {/* Priority Actions Banner */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-violet-50/60 dark:bg-violet-950/20 border border-violet-200/80 dark:border-violet-900/50">
@@ -1526,7 +1582,7 @@ export default function Profile() {
         </button>
 
         {openSections.unlockInsights && (
-          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="p-3 sm:p-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
                 <h3 className="font-black text-xs text-slate-800 dark:text-slate-200">Dynamic 7-Day &amp; 30-Day Intelligence</h3>
@@ -1588,7 +1644,7 @@ export default function Profile() {
         </button>
 
         {openSections.betterReport && (
-          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="p-3 sm:p-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
                 <h3 className="font-black text-xs text-slate-800 dark:text-slate-200">Behavioral Documentary &amp; Superpowers</h3>
@@ -1642,7 +1698,7 @@ export default function Profile() {
         </button>
 
         {openSections.membership && (
-          <div className="p-3 sm:p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="p-3 sm:p-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5 mb-0.5">

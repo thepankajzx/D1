@@ -1139,7 +1139,7 @@ export default function D1OnboardingCarousel({ onComplete, onChooseBundle, onAdd
       <header 
         className="w-full max-w-lg mx-auto shrink-0 flex items-center justify-between px-4 sm:px-6 pb-1"
         style={{
-          paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)'
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 28px)'
         }}
       >
         {/* Official Definite Brand Logo */}

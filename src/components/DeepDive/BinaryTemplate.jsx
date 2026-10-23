@@ -349,14 +349,14 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
         {/* Header */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm md:text-base font-bold text-slate-900">Performance & Trend Analytics</h3>
+            <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">Performance & Trend Analytics</h3>
             <span className="text-xs font-semibold text-slate-400 hidden sm:inline">• Score Trend & Distribution</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6">
           {/* Trend Chart - Expandable */}
-          <div className={isChartsExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "md:col-span-3 bg-white p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex flex-col relative w-full overflow-hidden"}>
+          <div className={isChartsExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "md:col-span-3 bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col relative w-full overflow-hidden"}>
             <div className={`flex flex-col h-full ${isChartsExpanded ? 'max-w-[1400px] mx-auto w-full flex-1' : 'flex-1'}`}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
@@ -403,11 +403,11 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
           />
 
         {/* Completion Pattern Card */}
-        <div className="md:col-span-2 bg-white p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex flex-col w-full">
+        <div className="md:col-span-2 bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col w-full">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Completion Pattern</h3>
           </div>
-          <p className="text-[10px] md:text-[11px] text-slate-500 mb-4 md:mb-5">Your success rate by day of week</p>
+          <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-4 md:mb-5">Your success rate by day of week</p>
 
           <div className="flex flex-col gap-3 flex-1 justify-center pb-2">
             {[
@@ -420,11 +420,11 @@ export default function BinaryTemplate({ habit, allSummaries, habits, dateRange 
               { label: 'Sunday', val: data.patterns.sunday }
             ].map((p, i) => (
               <div key={i} className="flex items-center justify-between text-[10px] md:text-[11px]">
-                <span className="w-16 md:w-20 text-slate-600 font-medium">{p.label.substring(0,3)}<span className="hidden md:inline">{p.label.substring(3)}</span></span>
-                <div className="flex-1 mx-2 md:mx-3 h-1.5 md:h-2 bg-slate-100 rounded-full overflow-hidden">
+                <span className="w-16 md:w-20 text-slate-600 dark:text-slate-300 font-medium">{p.label.substring(0,3)}<span className="hidden md:inline">{p.label.substring(3)}</span></span>
+                <div className="flex-1 mx-2 md:mx-3 h-1.5 md:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full bg-[#22c55e]" style={{width: `${p.val || 0}%`}}></div>
                 </div>
-                <span className="w-8 md:w-10 text-right text-slate-700 font-bold">{p.val !== null ? p.val + '%' : '-'}</span>
+                <span className="w-8 md:w-10 text-right text-slate-700 dark:text-slate-200 font-bold">{p.val !== null ? p.val + '%' : '-'}</span>
               </div>
             ))}
           </div>

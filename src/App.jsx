@@ -223,6 +223,24 @@ function Layout({ children }) {
               </Link>
             )}
 
+            {/* Dark Mode Toggle Button (Left of Profile) */}
+            <button
+              type="button"
+              onClick={() => {
+                try { if (navigator.vibrate) navigator.vibrate(15); } catch(e) {}
+                toggleTheme();
+              }}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-surface-container/80 hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary active:scale-90 cursor-pointer shadow-2xs select-none"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              aria-label="Toggle Theme"
+            >
+              {isDark ? (
+                <Sun size={17} weight="bold" className="text-amber-400" />
+              ) : (
+                <Moon size={17} weight="bold" className="text-slate-700 dark:text-slate-200" />
+              )}
+            </button>
+
             {/* Profile Icon (Available to everyone authenticated or in guest mode) */}
             {(currentUser || isGuest) && (
               <Link
@@ -333,13 +351,54 @@ function ScrollToTop() {
   return null;
 }
 
+function RouteTrackerAndRestorer() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, loading } = useAuth();
+  const { isGuest } = useGuest();
+  const [hasRestored, setHasRestored] = useState(false);
+
+  // Restore on mount / auth readiness
+  useEffect(() => {
+    if (loading) return;
+    if (!hasRestored) {
+      setHasRestored(true);
+      if (currentUser || isGuest) {
+        if (location.pathname === '/' || location.pathname === '') {
+          try {
+            const savedRoute = localStorage.getItem('d1_last_route');
+            if (savedRoute && savedRoute !== '/' && savedRoute !== '/login') {
+              navigate(savedRoute, { replace: true });
+            }
+          } catch (e) {}
+        }
+      }
+    }
+  }, [loading, currentUser, isGuest, hasRestored, location.pathname, navigate]);
+
+  // Track route changes
+  useEffect(() => {
+    if (location.pathname && location.pathname !== '/login' && !location.pathname.startsWith('/onboarding')) {
+      try {
+        localStorage.setItem('d1_last_route', location.pathname + location.search);
+      } catch (e) {}
+    }
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 function BotLayer() {
   const location = useLocation();
+  const guestCtx = useGuest() || {};
+  const dataCtx = useData() || {};
+  const authCtx = useAuth() || {};
+
   if (location.pathname === '/login') return null;
 
-  const { isGuest } = useGuest();
-  const { aiCoachEnabled } = useData() || {};
-  const { userRole } = useAuth() || {};
+  const isGuest = guestCtx.isGuest;
+  const aiCoachEnabled = dataCtx.aiCoachEnabled;
+  const userRole = authCtx.userRole;
 
   const isEnabled = isGuest ? (aiCoachEnabled !== false) : (aiCoachEnabled === true && localStorage.getItem('preference_ai_coach_enabled') !== 'false');
   if (!isEnabled) return null;
@@ -375,6 +434,7 @@ function App() {
                 <HashRouter>
                 <RoutePreloader />
                 <ScrollToTop />
+                <RouteTrackerAndRestorer />
                 <BotLayer />
                 <Suspense fallback={
                   <div className="min-h-screen bg-background"></div>

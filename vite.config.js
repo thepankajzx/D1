@@ -10,13 +10,16 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true, // Listen on all local network addresses (0.0.0.0)
       port: 5173,
+      watch: {
+        ignored: ['**/android/**', '**/dist/**']
+      }
     },
     plugins: [
       react(),
       tailwindcss(),
     ],
     resolve: {
-      alias: mode === 'development' ? [
+      alias: process.env.VITE_MOCK_FIRESTORE === 'true' ? [
         { find: 'firebase/firestore', replacement: path.resolve(import.meta.dirname, 'src/lib/mockFirestore.js') }
       ] : []
     },

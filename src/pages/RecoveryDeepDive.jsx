@@ -150,16 +150,16 @@ export default function RecoveryDeepDive() {
     <div className="w-full space-y-4 md:space-y-6 px-1 sm:px-3 md:px-0 pb-16">
       
       {/* ── 1. TOP NAV BAR ── */}
-      <nav className="flex items-center justify-between gap-3 w-full pb-2 border-b border-slate-200/80">
-        <button onClick={handleBackToDeepDive} className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-slate-900 py-2 px-3 sm:px-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs cursor-pointer">
+      <nav className="flex items-center justify-between gap-3 w-full pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
+        <button onClick={handleBackToDeepDive} className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white py-2 px-3 sm:px-4 rounded-xl bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 shadow-2xs cursor-pointer transition-colors">
           <ArrowLeft size={16} weight="bold" /><span>Back</span>
         </button>
         <div className="relative flex-shrink-0">
           <Icon name="calendar_today" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px] pointer-events-none" />
-          <select value={periodDays} onChange={(e) => setPeriodDays(Number(e.target.value))} className="pl-8 pr-7 py-2 text-xs sm:text-sm font-bold border border-slate-200 bg-white rounded-xl shadow-2xs appearance-none cursor-pointer outline-none text-slate-800">
-            <option value={7}>Last 7 Days</option>
-            <option value={30}>Last 30 Days</option>
-            <option value={90}>Last 90 Days</option>
+          <select value={periodDays} onChange={(e) => setPeriodDays(Number(e.target.value))} className="pl-8 pr-7 py-2 text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131722] rounded-xl shadow-2xs appearance-none cursor-pointer outline-none text-slate-800 dark:text-slate-100">
+            <option value={7} className="dark:bg-[#131722] dark:text-slate-100">Last 7 Days</option>
+            <option value={30} className="dark:bg-[#131722] dark:text-slate-100">Last 30 Days</option>
+            <option value={90} className="dark:bg-[#131722] dark:text-slate-100">Last 90 Days</option>
           </select>
           <Icon name="arrow_drop_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[16px] pointer-events-none" />
         </div>
@@ -231,16 +231,16 @@ export default function RecoveryDeepDive() {
       {showInfo && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="fixed inset-0" onClick={handleCloseInfo} />
-          <div className="relative w-full max-w-[440px] max-h-[85vh] bg-white rounded-3xl p-4 sm:p-5 shadow-2xl border border-orange-200/80 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3">
+          <div className="relative w-full max-w-[440px] max-h-[85vh] bg-white dark:bg-[#131722] rounded-3xl p-4 sm:p-5 shadow-2xl border border-orange-200/80 dark:border-orange-900/40 z-10 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 space-y-3">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 shrink-0">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 flex items-center justify-center shrink-0">
                   <ShieldCheck size={18} weight="fill" />
                 </div>
                 <div>
-                  <h4 className="font-black text-sm text-slate-900 leading-tight">
+                  <h4 className="font-black text-sm text-slate-900 dark:text-white leading-tight">
                     {isHinglish ? 'रेज़िलिएंस & बाउंस-बैक गाइड' : 'Resilience & Bounce-Back Guide'}
                   </h4>
                   <span className="text-[10px] text-slate-400 font-medium">
@@ -251,7 +251,7 @@ export default function RecoveryDeepDive() {
               <button 
                 type="button" 
                 onClick={handleCloseInfo} 
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-all shrink-0"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-all shrink-0"
               >
                 <X size={14} weight="bold" />
               </button>
@@ -350,14 +350,14 @@ export default function RecoveryDeepDive() {
       {/* ── 5. 4 CORE METRIC CARDS ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
         {[
-          {label:'Recovery Streak', val:recoveryStreak, unit:'bounces', sub:'Consecutive comebacks', IC:<ShieldCheck size={18} weight="fill"/>, ibg:'bg-orange-50 text-orange-600', vc:'text-orange-600'},
-          {label:'Best Recovery', val:bestRecoveryStreak, unit:'bounces', sub:'All-time best streak', IC:<Star size={18} weight="fill"/>, ibg:'bg-indigo-50 text-indigo-600', vc:'text-slate-900'},
-          {label:'Off-Target Days', val:totalMisses, unit:'days', sub:'Score < 50% in window', IC:<XCircle size={18} weight="fill"/>, ibg:'bg-rose-50 text-rose-500', vc:'text-slate-900'},
-          {label:'Win Rate', val:formatNum1(winRate)+'%', unit:'', sub:recoveredMisses.length+' of '+totalMisses+' resolved', IC:<CheckCircle size={18} weight="fill"/>, ibg:'bg-emerald-50 text-emerald-600', vc:'text-emerald-600'}
+          {label:'Recovery Streak', val:recoveryStreak, unit:'bounces', sub:'Consecutive comebacks', IC:<ShieldCheck size={18} weight="fill"/>, ibg:'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400', vc:'text-orange-600 dark:text-orange-400'},
+          {label:'Best Recovery', val:bestRecoveryStreak, unit:'bounces', sub:'All-time best streak', IC:<Star size={18} weight="fill"/>, ibg:'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400', vc:'text-slate-900 dark:text-white'},
+          {label:'Off-Target Days', val:totalMisses, unit:'days', sub:'Score < 50% in window', IC:<XCircle size={18} weight="fill"/>, ibg:'bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400', vc:'text-slate-900 dark:text-white'},
+          {label:'Win Rate', val:formatNum1(winRate)+'%', unit:'', sub:recoveredMisses.length+' of '+totalMisses+' resolved', IC:<CheckCircle size={18} weight="fill"/>, ibg:'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400', vc:'text-emerald-600 dark:text-emerald-400'}
         ].map(({label,val,unit,sub,IC,ibg,vc}) => (
-          <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between hover:border-orange-200 transition-all">
+          <div key={label} className="bg-white dark:bg-[#131722] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-slate-800/90 shadow-2xs flex flex-col justify-between hover:border-orange-200 dark:hover:border-orange-500/40 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
               <div className={'w-8 h-8 rounded-xl flex items-center justify-center ' + ibg}>{IC}</div>
             </div>
             <div>
@@ -380,21 +380,21 @@ export default function RecoveryDeepDive() {
 
       {/* ── 6. BOUNCE-BACK & RECOVERY TIMELINE (DASHED SEPARATORS) ── */}
       <div className="space-y-4 w-full pt-1">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900">Bounce-Back and Recovery Timeline</h3>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Bounce-Back and Recovery Timeline</h3>
               <button 
                 type="button" 
                 onClick={() => setShowInfo(true)}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 text-[11px] font-bold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50 text-[11px] font-bold transition-colors cursor-pointer"
                 title="How Timeline Works"
               >
                 <Info size={13} weight="bold" />
                 <span>How it works</span>
               </button>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">Chronological log of every off-target day and 7-day comeback journey</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Chronological log of every off-target day and 7-day comeback journey</p>
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
             {[
@@ -403,16 +403,16 @@ export default function RecoveryDeepDive() {
               {k:'inprogress',l:'In Progress ('+inProgressMisses.length+')',a:'bg-amber-500 text-white'},
               {k:'unrecovered',l:'Unrecovered ('+unrecoveredMisses.length+')',a:'bg-slate-700 text-white'}
             ].map(({k,l,a}) => (
-              <button key={k} type="button" onClick={() => setActiveFilter(k)} className={'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ' + (activeFilter===k ? a : 'bg-white border border-slate-200/90 hover:bg-slate-50 text-slate-600 shadow-2xs')}>{l}</button>
+              <button key={k} type="button" onClick={() => setActiveFilter(k)} className={'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ' + (activeFilter===k ? a : 'bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 shadow-2xs')}>{l}</button>
             ))}
           </div>
         </div>
 
         {filteredMisses.length === 0 ? (
-          <div className="py-12 px-4 bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center shadow-2xs">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3"><Sparkle size={28} weight="fill" /></div>
-            <h4 className="text-lg font-bold text-slate-900">{activeFilter==='all'?(trackedDaysCount<2?'Tracking Just Started!':'Flawless Consistency!'):'No misses in this filter'}</h4>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-md mt-1">{activeFilter==='all'?"You haven't missed any habit days during this lookback window!":'No items match your selected filter criteria.'}</p>
+          <div className="py-12 px-4 bg-white dark:bg-[#131722] rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center shadow-2xs">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3"><Sparkle size={28} weight="fill" /></div>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white">{activeFilter==='all'?(trackedDaysCount<2?'Tracking Just Started!':'Flawless Consistency!'):'No misses in this filter'}</h4>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mt-1">{activeFilter==='all'?"You haven't missed any habit days during this lookback window!":'No items match your selected filter criteria.'}</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -422,27 +422,33 @@ export default function RecoveryDeepDive() {
               const completionPercent = item.recoveryRate !== undefined ? Math.round(item.recoveryRate) : 0;
               const daysCompleted = item.recoveredDays || Math.round((completionPercent / 100) * 7);
               return (
-                <div key={missKey} onClick={() => toggleMissExpand(missKey)} className={'p-3.5 sm:p-4 rounded-2xl border border-dashed transition-all flex flex-col gap-3 cursor-pointer select-none ' + (item.recovered?'bg-white border-slate-300 hover:border-orange-300 shadow-2xs':item.isInProgress?'bg-amber-50/40 border-amber-300 hover:border-amber-400 shadow-2xs':'bg-slate-50/90 border-slate-300 hover:border-slate-400')}>
+                <div key={missKey} onClick={() => toggleMissExpand(missKey)} className={'p-3.5 sm:p-4 rounded-2xl border border-dashed transition-all flex flex-col gap-3 cursor-pointer select-none ' + (item.recovered?'bg-white dark:bg-[#131722] border-slate-300 dark:border-slate-800 hover:border-orange-300 dark:hover:border-orange-500/40 shadow-2xs':item.isInProgress?'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/50 hover:border-amber-400 dark:hover:border-amber-500/50 shadow-2xs':'bg-slate-50/90 dark:bg-[#10141d] border-slate-300 dark:border-slate-800/80 hover:border-slate-400 dark:hover:border-slate-700')}>
                   <div className="flex items-center justify-between gap-3 w-full">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center flex-shrink-0"><XCircle size={18} weight="fill" /></div>
+                      <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 flex items-center justify-center flex-shrink-0"><XCircle size={18} weight="fill" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 leading-none">Off-Target</span>
-                        <span className="text-sm font-bold text-slate-900 mt-1 leading-none truncate">{formatDateShort(item.missDate||item.date)}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 leading-none">Off-Target</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white mt-1 leading-none truncate">{formatDateShort(item.missDate||item.date)}</span>
                         <span className="text-[10px] text-slate-400 font-medium mt-0.5">{getDayOfWeek(item.missDate||item.date)}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {item.recovered?(<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs"><CheckCircle size={16} weight="fill" className="text-emerald-600"/><span>Recovered</span></div>):item.isInProgress?(<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold text-xs"><HourglassSimple size={15} weight="bold" className="text-amber-600 animate-spin"/><span>In Progress</span></div>):(<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs"><XCircle size={15} weight="bold" className="text-slate-400"/><span>Unrecovered</span></div>)}
-                      <div className={'w-7 h-7 rounded-lg bg-slate-100/80 flex items-center justify-center text-slate-500 transition-transform duration-200 ' + (isExpanded?'rotate-180':'')}><CaretDown size={14} weight="bold"/></div>
+                      {item.recovered ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs"><CheckCircle size={16} weight="fill" className="text-emerald-600 dark:text-emerald-400"/><span>Recovered</span></div>
+                      ) : item.isInProgress ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-700/50 text-amber-700 dark:text-amber-300 font-bold text-xs"><HourglassSimple size={15} weight="bold" className="text-amber-600 dark:text-amber-400 animate-spin"/><span>In Progress</span></div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs"><XCircle size={15} weight="bold" className="text-slate-400"/><span>Unrecovered</span></div>
+                      )}
+                      <div className={'w-7 h-7 rounded-lg bg-slate-100/80 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-300 transition-transform duration-200 ' + (isExpanded?'rotate-180':'')}><CaretDown size={14} weight="bold"/></div>
                     </div>
                   </div>
 
                   {/* Prominent Action Line: Tells exact progress and days needed */}
                   {item.isInProgress && (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] font-bold text-amber-900 dark:text-amber-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-3 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/25 dark:border-amber-500/40 text-[11px] font-bold text-amber-900 dark:text-amber-200">
                       <div className="flex items-center gap-1.5">
-                        <Sparkle size={13} weight="fill" className="text-amber-500 shrink-0" />
+                        <Sparkle size={13} weight="fill" className="text-amber-500 dark:text-amber-400 shrink-0" />
                         <span>
                           {isHinglish 
                             ? `प्रोग्रेस: 5 में से ${daysCompleted} दिन पूरे (70%+ स्कोर)` 
@@ -458,13 +464,13 @@ export default function RecoveryDeepDive() {
                   )}
 
                   {isExpanded && (
-                    <div onClick={e=>e.stopPropagation()} className="w-full flex flex-col gap-2 pt-3 border-t border-slate-200/60 animate-in fade-in duration-150 cursor-default">
+                    <div onClick={e=>e.stopPropagation()} className="w-full flex flex-col gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-800 animate-in fade-in duration-150 cursor-default">
                       <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-600 flex items-center gap-1.5"><CalendarCheck size={14} className="text-orange-600"/>7-Day Comeback Window: <strong className="text-slate-900">{daysCompleted}/7 days</strong></span>
-                        <span className={'font-bold ' + (item.recovered?'text-emerald-600':item.isInProgress?'text-amber-600':'text-slate-500')}>{completionPercent}% completed</span>
+                        <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5"><CalendarCheck size={14} className="text-orange-600 dark:text-orange-400"/>7-Day Comeback Window: <strong className="text-slate-900 dark:text-white">{daysCompleted}/7 days</strong></span>
+                        <span className={'font-bold ' + (item.recovered?'text-emerald-600 dark:text-emerald-400':item.isInProgress?'text-amber-600 dark:text-amber-400':'text-slate-500 dark:text-slate-400')}>{completionPercent}% completed</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                        <div className={'h-full rounded-full transition-all duration-500 ' + (item.recovered?'bg-gradient-to-r from-emerald-400 to-emerald-600':item.isInProgress?'bg-gradient-to-r from-amber-400 to-amber-500':'bg-slate-300')} style={{width:Math.min(completionPercent,100)+'%'}}/>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <div className={'h-full rounded-full transition-all duration-500 ' + (item.recovered?'bg-gradient-to-r from-emerald-400 to-emerald-600':item.isInProgress?'bg-gradient-to-r from-amber-400 to-amber-500':'bg-slate-300 dark:bg-slate-600')} style={{width:Math.min(completionPercent,100)+'%'}}/>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
                         <span>Success Threshold: 70%+ (5 of 7 days)</span>
@@ -474,17 +480,17 @@ export default function RecoveryDeepDive() {
                       {/* Contextual Explainer Note with Premium Phosphor Icons */}
                       <div className={`p-3 rounded-2xl flex items-start gap-2.5 mt-0.5 border shadow-2xs ${
                         item.recovered
-                          ? 'bg-emerald-50/80 text-emerald-900 border-emerald-200/80'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 border-emerald-200/80 dark:border-emerald-800/40'
                           : item.isInProgress
-                          ? 'bg-amber-50/80 text-amber-950 border-amber-200/80'
-                          : 'bg-slate-100/90 text-slate-700 border-slate-200'
+                          ? 'bg-amber-50/80 dark:bg-amber-950/30 text-amber-950 dark:text-amber-200 border-amber-200/80 dark:border-amber-800/40'
+                          : 'bg-slate-100/90 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                       }`}>
                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                           item.recovered
-                            ? 'bg-emerald-100 text-emerald-700'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
                             : item.isInProgress
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-slate-200 text-slate-600'
+                            ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                         }`}>
                           {item.recovered ? (
                             <Sparkle size={14} weight="fill" />
@@ -497,7 +503,7 @@ export default function RecoveryDeepDive() {
                         <div className="min-w-0 text-[11.5px] leading-relaxed">
                           {item.recovered ? (
                             <>
-                              <strong className="font-black text-emerald-950 block mb-0.5">
+                              <strong className="font-black text-emerald-950 dark:text-emerald-200 block mb-0.5">
                                 {isHinglish ? 'शानदार कमबैक' : 'Strong Comeback'}
                               </strong>
                               <span>
@@ -508,7 +514,7 @@ export default function RecoveryDeepDive() {
                             </>
                           ) : item.isInProgress ? (
                             <>
-                              <strong className="font-black text-amber-950 block mb-0.5">
+                              <strong className="font-black text-amber-950 dark:text-amber-200 block mb-0.5">
                                 {isHinglish ? 'कमबैक चैलेंज एक्टिव है (In Progress)' : 'Active Comeback Challenge (In Progress)'}
                               </strong>
                               <span>
@@ -519,7 +525,7 @@ export default function RecoveryDeepDive() {
                             </>
                           ) : (
                             <>
-                              <strong className="font-black text-slate-900 block mb-0.5">
+                              <strong className="font-black text-slate-900 dark:text-slate-100 block mb-0.5">
                                 {isHinglish ? 'विंडो समाप्त' : 'Window Closed'}
                               </strong>
                               <span>
@@ -545,15 +551,15 @@ export default function RecoveryDeepDive() {
         {RESILIENCE_RULES.map(rule => {
           const isOpen = expandedRule === rule.id;
           return (
-            <div key={rule.id} onClick={() => toggleRule(rule.id)} className={'bg-white rounded-2xl border transition-all cursor-pointer select-none overflow-hidden shadow-2xs ' + (isOpen?'border-orange-300 ring-2 ring-orange-500/10':'border-slate-200/90 hover:border-slate-300')}>
+            <div key={rule.id} onClick={() => toggleRule(rule.id)} className={'bg-white dark:bg-[#131722] rounded-2xl border transition-all cursor-pointer select-none overflow-hidden shadow-2xs ' + (isOpen?'border-orange-300 dark:border-orange-500/50 ring-2 ring-orange-500/10':'border-slate-200/90 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700')}>
               <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={'w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ' + (rule.id==='01'?'bg-indigo-50 text-indigo-600':rule.id==='02'?'bg-orange-50 text-orange-600':'bg-emerald-50 text-emerald-600')}>{rule.num}</div>
-                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate">{rule.title}</h4>
+                  <div className={'w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ' + (rule.id==='01'?'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400':rule.id==='02'?'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400':'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400')}>{rule.num}</div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{rule.title}</h4>
                 </div>
-                <div className={'text-slate-400 transition-transform duration-200 shrink-0 ' + (isOpen?'rotate-180 text-orange-600':'')}><CaretDown size={18} weight="bold"/></div>
+                <div className={'text-slate-400 transition-transform duration-200 shrink-0 ' + (isOpen?'rotate-180 text-orange-600 dark:text-orange-400':'')}><CaretDown size={18} weight="bold"/></div>
               </div>
-              {isOpen && (<div className="px-3.5 pb-4 pt-1 sm:px-4 border-t border-slate-100 text-xs text-slate-600 leading-relaxed animate-in fade-in duration-200"><p>{rule.desc}</p></div>)}
+              {isOpen && (<div className="px-3.5 pb-4 pt-1 sm:px-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed animate-in fade-in duration-200"><p>{rule.desc}</p></div>)}
             </div>
           );
         })}

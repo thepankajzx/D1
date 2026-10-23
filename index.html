@@ -42,7 +42,37 @@
     <link href="https://d1.thedefinite.one" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #f7faf8;
+        color: #06251b;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html.dark, html.dark body {
+        background-color: #0f141c !important;
+        color: #f8fafc !important;
+      }
+    </style>
+    
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('theme');
+          var isDark = stored === 'dark' || (!stored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#0f141c';
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#f7faf8';
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
     
     <title>Definite - Habit Intelligence</title>
   </head>

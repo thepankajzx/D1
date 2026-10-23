@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Target, X, ChartBar, Lightbulb, Lightning, Sparkle, Palette, TrendUp, TrendDown, Info } from '@phosphor-icons/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { HABITS_SEED_DATA } from '../lib/premadeHabits';
@@ -479,61 +479,63 @@ export default function AdvancedHabitSelector() {
   const executeSave = async () => {
     try {
       const allToSave = [...selectedHabits, ...customHabits];
-      for (const habit of allToSave) {
-        const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-        const iconConfig = getCanonicalHabitIconConfig({
-          id: habit.id,
-          icon: customizedHabits[habit.id]?.icon || habit.icon,
-          color: customizedHabits[habit.id]?.color || habit.color,
-          iconBackgroundColor: customizedHabits[habit.id]?.iconBackgroundColor || habit.iconBackgroundColor,
-          iconStyle: customizedHabits[habit.id]?.iconStyle || habit.iconStyle
-        });
-
-        const habitData = {
-          habitLibraryId: habit.isCustom ? 'custom' : habit.id,
-          name: habit.name || 'Unnamed',
-          category: habit.category || 'Other',
-          icon: iconConfig.icon,
-          iconId: iconConfig.iconId,
-          color: iconConfig.color,
-          iconColor: iconConfig.iconColor,
-          iconBackgroundColor: iconConfig.iconBackgroundColor,
-          iconStyle: iconConfig.iconStyle,
-          scoringType: habit.scoringType || 'number',
-          direction: habit.direction || 'higher_is_better',
-          unit: habit.unit || '',
-          target100: habit.userTarget100 !== undefined ? habit.userTarget100 : null,
-          target0: habit.userTarget0 !== undefined ? habit.userTarget0 : null,
-          tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
-          isActive: true,
-          priority: 'medium',
-          createdAt: habit.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isCustom: !!habit.isCustom,
-          priorityRank: priorityRanks[habit.id] || null,
-          prioritySetAt: priorityRanks[habit.id] ? new Date().toISOString() : null
-        };
-        
-        Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
-        await setDoc(userHabitRef, habitData);
-      }
-
-      if (currentUser?.uid) {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await setDoc(userDocRef, { enabledFeatures }, { merge: true });
-      }
-
-      await refreshData();
-      const hasSetPriorities = Object.values(priorityRanks).some(rank => !!rank);
-      if (hasSetPriorities) {
-        alert("Your plan has been saved successfully!\n\nYour priorities are now locked for 30 days to build consistency and cannot be changed during this period.");
-      } else {
-        alert("Your plan has been saved successfully!");
-      }
+      
+      // Navigate to dashboard immediately without any lag
       navigate('/');
+
+      // Perform single atomic batch write to Firebase
+      if (currentUser?.uid) {
+        const batch = writeBatch(db);
+
+        for (const habit of allToSave) {
+          const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
+          const iconConfig = getCanonicalHabitIconConfig({
+            id: habit.id,
+            icon: customizedHabits[habit.id]?.icon || habit.icon,
+            color: customizedHabits[habit.id]?.color || habit.color,
+            iconBackgroundColor: customizedHabits[habit.id]?.iconBackgroundColor || habit.iconBackgroundColor,
+            iconStyle: customizedHabits[habit.id]?.iconStyle || habit.iconStyle
+          });
+
+          const habitData = {
+            habitLibraryId: habit.isCustom ? 'custom' : habit.id,
+            name: habit.name || 'Unnamed',
+            category: habit.category || 'Other',
+            icon: iconConfig.icon,
+            iconId: iconConfig.iconId,
+            color: iconConfig.color,
+            iconColor: iconConfig.iconColor,
+            iconBackgroundColor: iconConfig.iconBackgroundColor,
+            iconStyle: iconConfig.iconStyle,
+            scoringType: habit.scoringType || 'number',
+            direction: habit.direction || 'higher_is_better',
+            unit: habit.unit || '',
+            target100: habit.userTarget100 !== undefined ? habit.userTarget100 : null,
+            target0: habit.userTarget0 !== undefined ? habit.userTarget0 : null,
+            tolerance: habit.userTolerance !== undefined ? habit.userTolerance : 0,
+            isActive: true,
+            priority: 'medium',
+            createdAt: habit.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isCustom: !!habit.isCustom,
+            priorityRank: priorityRanks[habit.id] || null,
+            prioritySetAt: priorityRanks[habit.id] ? new Date().toISOString() : null
+          };
+          
+          Object.keys(habitData).forEach(key => habitData[key] === undefined && delete habitData[key]);
+          batch.set(userHabitRef, habitData);
+        }
+
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        batch.set(userDocRef, { enabledFeatures }, { merge: true });
+
+        await batch.commit();
+        if (refreshData) {
+          refreshData();
+        }
+      }
     } catch (error) {
       console.error("Error saving habits:", error);
-      alert("Failed to save habits.");
     }
   };
 

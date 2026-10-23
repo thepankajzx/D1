@@ -3,8 +3,6 @@ window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
   window.location.reload();
 });
-document.documentElement.classList.remove('dark');
-try { localStorage.removeItem('theme'); } catch(e) {}
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'

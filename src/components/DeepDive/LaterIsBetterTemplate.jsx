@@ -183,14 +183,14 @@ export default function LaterIsBetterTemplate({ habit, allSummaries, habits, dat
         {/* Header */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm md:text-base font-bold text-slate-900">Performance & Trend Analytics</h3>
+            <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">Performance & Trend Analytics</h3>
             <span className="text-xs font-semibold text-slate-400 hidden sm:inline">• Score Trend & Distribution</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 w-full">
           {/* Trend Chart - Expandable */}
-          <div className={isChartsExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "md:col-span-3 bg-white p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex flex-col relative w-full overflow-hidden"}>
+          <div className={isChartsExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "md:col-span-3 bg-white dark:bg-[#151a26] p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col relative w-full overflow-hidden"}>
             <div className={`flex flex-col h-full ${isChartsExpanded ? 'max-w-[1400px] mx-auto w-full flex-1' : 'flex-1'}`}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">

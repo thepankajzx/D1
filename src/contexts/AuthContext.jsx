@@ -5,9 +5,13 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithCredential,
+  GoogleAuthProvider,
   signOut
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 const AuthContext = createContext();
 
@@ -46,11 +50,35 @@ export function AuthProvider({ children }) {
     return createUserWithEmailAndPassword(auth, email, password);
   }
 
-  function loginWithGoogle() {
+  async function loginWithGoogle() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          skipNativeAuth: true
+        });
+        const idToken = result?.credential?.idToken || result?.idToken;
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          return await signInWithCredential(auth, credential);
+        }
+        if (result?.user) {
+          return result;
+        }
+        return result;
+      } catch (nativeErr) {
+        console.error("Native Google Auth failed:", nativeErr);
+        throw nativeErr;
+      }
+    }
     return signInWithPopup(auth, googleProvider);
   }
 
-  function logout() {
+  async function logout() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FirebaseAuthentication.signOut();
+      } catch (_) {}
+    }
     return signOut(auth);
   }
 
@@ -87,7 +115,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={value}>
       {loading ? (
-        <div className="min-h-screen bg-background"></div>
+        <div className="min-h-screen bg-background" />
       ) : (
         children
       )}

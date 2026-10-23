@@ -5,10 +5,12 @@ import * as echarts from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { useTheme } from '../../contexts/ThemeContext';
 
 echarts.use([PieChart, TooltipComponent, CanvasRenderer]);
 
 export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dateRange, data }) {
+  const { isDark } = useTheme();
   const stats = useMemo(() => {
     if (!habit || !dateRange) return null;
 
@@ -110,9 +112,14 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
         value: stats.noDataCount, 
         name: 'Missed / No Data', 
         desc: 'Unrecorded days', 
-        itemStyle: { color: '#cbd5e1' } 
+        itemStyle: { color: isDark ? '#334155' : '#cbd5e1' } 
       }
     ].filter(s => s.value > 0);
+
+    const tooltipBg = isDark ? '#1e293b' : '#ffffff';
+    const tooltipBorder = isDark ? '#334155' : '#e2e8f0';
+    const tooltipTitle = isDark ? '#f8fafc' : '#1e293b';
+    const tooltipText = isDark ? '#94a3b8' : '#64748b';
 
     return {
       tooltip: {
@@ -126,14 +133,14 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
           const color = params.color || '#10b981';
           const percent = Math.round(params.percent || 0);
           return `
-            <div style="background: var(--surface-container-lowest, #ffffff); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px 14px; font-family: 'Inter', sans-serif; min-width: 140px; border: 1px solid var(--outline-variant, #e2e8f0);">
+            <div style="background: ${tooltipBg}; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); padding: 10px 14px; font-family: 'Inter', sans-serif; min-width: 140px; border: 1px solid ${tooltipBorder};">
               <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
                 <div style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></div>
-                <span style="font-size: 12px; font-weight: 700; color: var(--on-surface, #1e293b);">${params.name}</span>
+                <span style="font-size: 12px; font-weight: 700; color: ${tooltipTitle};">${params.name}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 13px;">
-                <span style="color: var(--on-surface-variant, #64748b); font-weight: 500;">${params.value} Days</span>
-                <strong style="color: var(--on-surface, #0f172a); font-weight: 800;">${percent}%</strong>
+                <span style="color: ${tooltipText}; font-weight: 500;">${params.value} Days</span>
+                <strong style="color: ${tooltipTitle}; font-weight: 800;">${percent}%</strong>
               </div>
             </div>
           `;
@@ -148,7 +155,7 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 4,
-            borderColor: '#ffffff',
+            borderColor: isDark ? '#151a26' : '#ffffff',
             borderWidth: 2
           },
           label: { show: false },
@@ -160,7 +167,7 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
         }
       ]
     };
-  }, [stats]);
+  }, [stats, isDark]);
 
   if (!stats) return null;
 
@@ -174,10 +181,10 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
           style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }} 
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-          <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-emerald-600 leading-none tracking-tight">
+          <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-emerald-600 dark:text-emerald-400 leading-none tracking-tight">
             {stats.overallScore}%
           </span>
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+          <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">
             Score
           </span>
         </div>
@@ -188,48 +195,48 @@ export default function DeepDivePerformanceDonut({ habit, allSummaries = [], dat
         {stats.bestCount > 0 && (
           <div>
             <div className="flex items-center justify-between gap-1.5">
-              <span className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded-md text-[9px] sm:text-[10px] border border-emerald-100/80 truncate">
+              <span className="inline-block px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold rounded-md text-[9px] sm:text-[10px] border border-emerald-100/80 dark:border-emerald-800/40 truncate">
                 BEST (100 pts)
               </span>
-              <span className="font-bold text-slate-800 text-xs sm:text-sm">{stats.bestCount}d</span>
+              <span className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm">{stats.bestCount}d</span>
             </div>
-            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5">{Math.round((stats.bestCount / stats.total) * 100)}% of period</div>
+            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">{Math.round((stats.bestCount / stats.total) * 100)}% of period</div>
           </div>
         )}
 
         {stats.moderateCount > 0 && (
           <div>
             <div className="flex items-center justify-between gap-1.5">
-              <span className="inline-block px-2 py-0.5 bg-amber-50 text-amber-700 font-bold rounded-md text-[9px] sm:text-[10px] border border-amber-100/80 truncate">
+              <span className="inline-block px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold rounded-md text-[9px] sm:text-[10px] border border-amber-100/80 dark:border-amber-800/40 truncate">
                 MODERATE
               </span>
-              <span className="font-bold text-slate-800 text-xs sm:text-sm">{stats.moderateCount}d</span>
+              <span className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm">{stats.moderateCount}d</span>
             </div>
-            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5">{Math.round((stats.moderateCount / stats.total) * 100)}% of period</div>
+            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">{Math.round((stats.moderateCount / stats.total) * 100)}% of period</div>
           </div>
         )}
 
         {stats.decliningCount > 0 && (
           <div>
             <div className="flex items-center justify-between gap-1.5">
-              <span className="inline-block px-2 py-0.5 bg-red-50 text-red-600 font-bold rounded-md text-[9px] sm:text-[10px] border border-red-100/80 truncate">
+              <span className="inline-block px-2 py-0.5 bg-red-50 dark:bg-rose-950/40 text-red-600 dark:text-rose-300 font-bold rounded-md text-[9px] sm:text-[10px] border border-red-100/80 dark:border-rose-800/40 truncate">
                 DECLINING
               </span>
-              <span className="font-bold text-slate-800 text-xs sm:text-sm">{stats.decliningCount}d</span>
+              <span className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm">{stats.decliningCount}d</span>
             </div>
-            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5">{Math.round((stats.decliningCount / stats.total) * 100)}% of period</div>
+            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">{Math.round((stats.decliningCount / stats.total) * 100)}% of period</div>
           </div>
         )}
 
         {stats.noDataCount > 0 && (
           <div>
             <div className="flex items-center justify-between gap-1.5">
-              <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 font-bold rounded-md text-[9px] sm:text-[10px] border border-slate-200/80 truncate">
+              <span className="inline-block px-2 py-0.5 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold rounded-md text-[9px] sm:text-[10px] border border-slate-200/80 dark:border-slate-700 truncate">
                 NO DATA
               </span>
-              <span className="font-bold text-slate-600 text-xs sm:text-sm">{stats.noDataCount}d</span>
+              <span className="font-bold text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{stats.noDataCount}d</span>
             </div>
-            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5">{Math.round((stats.noDataCount / stats.total) * 100)}% of period</div>
+            <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">{Math.round((stats.noDataCount / stats.total) * 100)}% of period</div>
           </div>
         )}
       </div>

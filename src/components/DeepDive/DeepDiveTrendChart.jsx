@@ -207,7 +207,7 @@ function formatLocalYMD(d) {
         }
       ]
     };
-  }, [habit, allSummaries, dateRange, color]);
+  }, [habit, allSummaries, dateRange, color, isDark]);
 
   if (!chartOption) return null;
 

@@ -2674,15 +2674,15 @@ export default function ExperimentalAnalytics() {
 
         {/* Section 5: Weakest Habit Focus Area Alert */}
         {weakestHabit && (
-          <section className="bg-gradient-to-br from-rose-50/80 via-amber-50/50 to-orange-50/80 dark:from-rose-950/30 dark:to-amber-950/20 border border-rose-200/80 dark:border-rose-900/50 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-3">
+          <section className="bg-gradient-to-br from-rose-50/80 via-amber-50/50 to-orange-50/80 dark:from-[#221015] dark:via-[#19141f] dark:to-[#1e1215] border border-rose-200/80 dark:border-rose-900/60 rounded-2xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 dark:bg-rose-500/25 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                   <WarningCircle size={18} weight="fill" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                       Focus Area Required
                     </span>
                     <button
@@ -2704,7 +2704,7 @@ export default function ExperimentalAnalytics() {
                 </div>
               </div>
 
-              <span className="text-xs font-black text-rose-600 bg-rose-100/80 dark:bg-rose-900/40 px-2.5 py-1 rounded-full">
+              <span className="text-xs font-black text-rose-600 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-950/70 border border-rose-200/80 dark:border-rose-800/60 px-2.5 py-1 rounded-full">
                 Avg {weakestHabit.avgScore}%
               </span>
             </div>
@@ -2725,7 +2725,7 @@ export default function ExperimentalAnalytics() {
               )}
             </p>
 
-            <div className="pt-2.5 border-t border-rose-200/50 dark:border-rose-900/40 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="pt-2.5 border-t border-rose-200/50 dark:border-rose-900/50 flex flex-wrap items-center justify-between gap-2.5">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 {isHinglish ? 'रिकवरी इनसाइट्स चाहिए?' : 'Need recovery insights?'}
               </span>
@@ -2736,10 +2736,10 @@ export default function ExperimentalAnalytics() {
                     if (navigator.vibrate) navigator.vibrate(30);
                     setShowDiagnoseLockModal(true);
                   }}
-                  className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 hover:underline cursor-pointer select-none"
+                  className="text-xs font-black text-rose-600 dark:text-rose-300 flex items-center gap-1.5 hover:underline cursor-pointer select-none"
                 >
                   <span>Diagnose Habit</span>
-                  <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                  <span className="text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 dark:border-amber-500/50 flex items-center gap-1">
                     <Lock size={10} weight="fill" />
                     <span>Preview</span>
                   </span>
@@ -2748,7 +2748,7 @@ export default function ExperimentalAnalytics() {
               ) : (
                 <Link
                   to={`/analytics/diagnose?habitId=${weakestHabit.id}`}
-                  className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 hover:underline cursor-pointer"
+                  className="text-xs font-black text-rose-600 dark:text-rose-300 flex items-center gap-1.5 hover:underline cursor-pointer"
                 >
                   <span>Diagnose Habit</span>
                   <CaretRight size={13} weight="bold" />

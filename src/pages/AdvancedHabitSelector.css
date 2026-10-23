@@ -25,6 +25,7 @@
     background-color: var(--ahs-bg-page);
     color: var(--ahs-text-main);
     line-height: 1.5;
+    padding-top: max(env(safe-area-inset-top, 0px), 28px);
     padding-bottom: 120px;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;

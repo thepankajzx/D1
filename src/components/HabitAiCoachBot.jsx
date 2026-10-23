@@ -630,28 +630,28 @@ export default function HabitAiCoachBot() {
       {/* ── 2. CHAT MODAL WINDOW ────────────────────────────────────── */}
       {isOpen && (
         <div 
-          className="fixed z-[99999] bottom-[76px] right-[12px] sm:right-[20px] w-[calc(100vw-24px)] sm:w-[390px] h-[480px] sm:h-[520px] max-h-[calc(100vh-130px)] bg-white dark:bg-[#111116] border border-orange-500/35 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="fixed z-[99999] bottom-[76px] right-[12px] sm:right-[20px] w-[calc(100vw-24px)] sm:w-[390px] h-[480px] sm:h-[520px] max-h-[calc(100vh-130px)] bg-white dark:bg-[#111116] border border-slate-900/30 dark:border-slate-700 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           style={{
-            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.35), 0 0 25px rgba(249, 115, 22, 0.12)'
+            boxShadow: '0 20px 45px -10px rgba(0,0,0,0.35), 0 0 0 1px rgba(15, 23, 42, 0.15)'
           }}
         >
-          {/* Header */}
-          <div className="p-3 sm:p-3.5 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-transparent dark:from-orange-950/40 dark:via-zinc-900 dark:to-transparent border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between shrink-0">
+          {/* Header - Brand Rich Crimson / Dark Orange Tab with High Contrast */}
+          <div className="p-3 sm:p-3.5 bg-gradient-to-r from-[#7f1d1d] via-[#991b1b] to-[#9a3412] dark:from-[#6b1515] dark:via-[#7f1d1d] dark:to-[#7c2d12] text-white border-b border-rose-950/70 shadow-md flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/25 text-amber-200 flex items-center justify-center font-bold shadow-xs">
                 <Robot size={19} weight="duotone" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white leading-none">
+                  <h3 className="text-xs sm:text-[13px] font-black text-white leading-none tracking-tight">
                     Definite AI Coach
                   </h3>
                   <ProPill size="xs" />
-                  <span className="flex items-center gap-1 text-[8.5px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/80 px-1.5 py-0.5 rounded-full leading-none">
+                  <span className="flex items-center gap-1 text-[8.5px] font-black text-amber-200 bg-amber-400/20 border border-amber-300/40 px-1.5 py-0.5 rounded-full leading-none">
                     Upcoming
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-none mt-1">
+                <p className="text-[10px] text-rose-100/90 font-medium leading-none mt-1">
                   Personal Habit Telemetry
                 </p>
               </div>
@@ -661,7 +661,7 @@ export default function HabitAiCoachBot() {
               <button
                 type="button"
                 onClick={resetWelcome}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center cursor-pointer"
+                className="w-7 h-7 rounded-lg text-rose-100/80 hover:text-white hover:bg-white/15 transition-colors flex items-center justify-center cursor-pointer"
                 title="Reset conversation"
               >
                 <ArrowClockwise size={14} weight="bold" />
@@ -669,7 +669,7 @@ export default function HabitAiCoachBot() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center cursor-pointer"
+                className="w-7 h-7 rounded-lg text-rose-100/80 hover:text-white hover:bg-white/15 transition-colors flex items-center justify-center cursor-pointer"
                 title="Close chat"
               >
                 <X size={15} weight="bold" />

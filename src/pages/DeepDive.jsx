@@ -194,7 +194,7 @@ export default function DeepDive() {
         {/* Top Action Bar: Back on left, Compact Period Dropdown on right */}
         <button 
           onClick={() => navigate('/deep-dive')}
-          className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors py-1.5 px-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200/60 cursor-pointer"
+          className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-1.5 px-2.5 rounded-lg bg-slate-50 dark:bg-[#151a26] hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-800 cursor-pointer"
         >
           <Icon name="arrow_back" className="text-[16px]" />
           <span>Back to Deep Dive</span>

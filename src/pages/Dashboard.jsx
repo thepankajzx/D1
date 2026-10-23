@@ -1,5 +1,5 @@
 import Icon from '../components/Icon';
-import { Target, Flame, Lightning, SlidersHorizontal, Check, Sparkle, ChartLineUp, CaretRight, X } from '@phosphor-icons/react';
+import { Target, Flame, Lightning, SlidersHorizontal, Check, CheckCircle, FloppyDisk, ChartLineUp, CaretRight, X } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
@@ -599,34 +599,36 @@ export default function Dashboard() {
         </section>
       )}
       
-      {/* ── PREMIUM BOTTOM SAVE & CTA BUTTONS ── */}
+      {/* ── CLASSIC & PREMIUM BOTTOM SAVE & CTA BUTTONS ── */}
       <div className="mt-8 flex flex-col items-center justify-center w-full gap-3.5">
         <button 
           type="button"
           onClick={() => handleSaveProgress(false)} 
           disabled={isSaving || !pendingChanges} 
-          className={`w-full sm:w-auto min-w-[260px] px-8 py-3.5 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
+          className={`w-full sm:w-auto min-w-[280px] h-[50px] px-8 rounded-2xl font-bold text-sm tracking-tight transition-all duration-200 flex items-center justify-center gap-2.5 ${
             pendingChanges
-              ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white shadow-indigo-500/25 active:scale-[0.98] cursor-pointer' 
-              : 'bg-surface-container-high text-on-surface-variant/80 border border-outline-variant/30 shadow-2xs opacity-85 cursor-default'
+              ? 'bg-[#06251b] dark:bg-white text-white dark:text-slate-950 hover:bg-[#0d382c] dark:hover:bg-slate-100 shadow-[0_6px_20px_rgba(6,37,27,0.22)] dark:shadow-[0_6px_24px_rgba(255,255,255,0.12)] border border-black/10 dark:border-white/20 active:scale-[0.98] cursor-pointer' 
+              : 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 shadow-2xs cursor-default'
           }`}
         >
           {isSaving ? (
             <>
-              <Icon name="sync" className="animate-spin text-xl text-primary" />
+              <Icon name="sync" className="animate-spin text-lg text-emerald-400 dark:text-emerald-600" />
               <span>{isHinglish ? 'प्रोग्रेस सेव हो रही है...' : 'Saving Progress...'}</span>
             </>
           ) : pendingChanges ? (
             <>
-              <Sparkle size={20} weight="fill" className="text-amber-300 animate-pulse" />
+              <span className="relative flex h-2 w-2 mr-0.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <FloppyDisk size={18} weight="bold" className="text-emerald-400 dark:text-emerald-600 shrink-0" />
               <span>{isHinglish ? "आज की प्रोग्रेस सेव करें" : "Save Today's Progress"}</span>
             </>
           ) : (
             <>
-              <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <Check size={14} weight="bold" />
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-on-surface">
+              <CheckCircle size={18} weight="fill" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold tracking-normal">
                 {isHinglish ? 'सब प्रोग्रेस सुरक्षित है' : 'All Progress Saved'}
               </span>
             </>

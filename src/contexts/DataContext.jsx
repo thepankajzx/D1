@@ -324,7 +324,39 @@ function RealDataProvider({
     if (cdh) { setDeletedHabits(normalizeHabits(JSON.parse(cdh))); }
     if (cs) setAllSummaries(JSON.parse(cs));
     let unsubH = () => {}, unsubS = () => {};
-    const setup = async () => {
+
+    // ⚡ Attach real-time snapshot listeners IMMEDIATELY (never wait for getDoc!)
+    unsubH = onSnapshot(collection(db, 'users/' + user.uid + '/habits'), (snap) => {
+      const fhAll = normalizeHabits(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const active = fhAll.filter(h => h.status !== 'deleted').sort((a,b) => (a.orderIndex||0)-(b.orderIndex||0));
+      const deleted = fhAll.filter(h => h.status === 'deleted').sort((a,b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
+      setHabits(active);
+      setDeletedHabits(deleted);
+      localStorage.setItem('habits_' + user.uid, JSON.stringify(active));
+      localStorage.setItem('deleted_habits_' + user.uid, JSON.stringify(deleted));
+      setLoadingData(false);
+    }, (err) => { 
+      console.error(err); 
+      logErrorToDb(err); 
+      setLoadingData(false); 
+    });
+
+    unsubS = onSnapshot(collection(db, 'users/' + user.uid + '/dailySummaries'), (snap) => {
+      const fs2 = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 365);
+      setAllSummaries(fs2); 
+      localStorage.setItem('summaries_' + user.uid, JSON.stringify(fs2));
+    }, (err) => { 
+      console.error(err); 
+      logErrorToDb(err); 
+    });
+
+    // ⚡ Fast Safety timeout: never leave user waiting more than 400ms for skeleton loaders
+    const safetyTimer = setTimeout(() => {
+      setLoadingData(false);
+    }, 400);
+
+    // Concurrently sync user doc in the background without blocking habits UI
+    (async () => {
       try {
         const ud = await getDoc(doc(db, 'users', user.uid));
         if (ud.exists()) {
@@ -334,7 +366,6 @@ function RealDataProvider({
           setUserDocData(data); 
           setPriorityModeEnabled(data.priorityModeEnabled || false);
 
-          // Sync streak preference from user doc if no local override
           try {
             const localVal = localStorage.getItem('preference_streak_tracking');
             if (localVal === null && typeof data.streakTrackingEnabled === 'boolean') {
@@ -342,7 +373,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync coreX preference from user doc if no local override
           try {
             const localVal = localStorage.getItem('preference_corex_enabled');
             if (localVal === null && typeof data.coreXEnabled === 'boolean') {
@@ -350,7 +380,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync todayCompass preference from user doc if no local override
           try {
             const localVal = localStorage.getItem('preference_today_compass_enabled');
             if (localVal === null && typeof data.todayCompassEnabled === 'boolean') {
@@ -358,7 +387,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync aiCoach preference from user doc if no local override
           try {
             const localVal = localStorage.getItem('preference_ai_coach_enabled');
             if (localVal === null && typeof data.aiCoachEnabled === 'boolean') {
@@ -366,7 +394,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync earlyUnlockAll preference from user doc
           try {
             if (typeof data.earlyUnlockAll === 'boolean') {
               setEarlyUnlockAllState(data.earlyUnlockAll);
@@ -374,7 +401,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync time format preference from user doc
           try {
             if (data.timeFormat === '12h' || data.timeFormat === '24h') {
               setTimeFormatState(data.timeFormat);
@@ -382,7 +408,6 @@ function RealDataProvider({
             }
           } catch (e) {}
 
-          // Sync coreXEnabled preference from user doc
           try {
             if (typeof data.coreXEnabled === 'boolean') {
               setCoreXEnabledState(data.coreXEnabled);
@@ -393,24 +418,17 @@ function RealDataProvider({
           const le = user.email?.toLowerCase() ?? '';
           if (import.meta.env.DEV || DEV_PRO_EMAILS.includes(le)) setUserDocData({ isPro: true });
         }
-      } catch (err) { console.error(err); logErrorToDb(err); }
-      unsubH = onSnapshot(collection(db, 'users/' + user.uid + '/habits'), (snap) => {
-        const fhAll = normalizeHabits(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        const active = fhAll.filter(h => h.status !== 'deleted').sort((a,b) => (a.orderIndex||0)-(b.orderIndex||0));
-        const deleted = fhAll.filter(h => h.status === 'deleted').sort((a,b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
-        setHabits(active);
-        setDeletedHabits(deleted);
-        localStorage.setItem('habits_' + user.uid, JSON.stringify(active));
-        localStorage.setItem('deleted_habits_' + user.uid, JSON.stringify(deleted));
-        setLoadingData(false);
-      }, (err) => { console.error(err); logErrorToDb(err); });
-      unsubS = onSnapshot(collection(db, 'users/' + user.uid + '/dailySummaries'), (snap) => {
-        const fs2 = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 365);
-        setAllSummaries(fs2); localStorage.setItem('summaries_' + user.uid, JSON.stringify(fs2));
-      }, (err) => { console.error(err); logErrorToDb(err); });
+      } catch (err) { 
+        console.error(err); 
+        logErrorToDb(err); 
+      }
+    })();
+
+    return () => { 
+      clearTimeout(safetyTimer);
+      unsubH(); 
+      unsubS(); 
     };
-    setup();
-    return () => { unsubH(); unsubS(); };
   }, [user]);
 
   const refreshData = async () => {

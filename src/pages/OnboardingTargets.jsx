@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { calculateScore, isNightHabit } from '../lib/scoring';
@@ -60,39 +60,42 @@ export default function OnboardingTargets() {
 
   const handleFinish = async () => {
     setSaving(true);
+    // Instant navigation to dashboard
+    navigate('/');
     try {
-      for (const habit of habits) {
-        const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-        
-        let finalTarget100 = habit.target100;
-        let finalTarget0 = habit.target0;
+      if (currentUser?.uid) {
+        const batch = writeBatch(db);
+        for (const habit of habits) {
+          const userHabitRef = doc(db, 'users', currentUser.uid, 'habits', habit.id);
+          
+          let finalTarget100 = habit.target100;
+          let finalTarget0 = habit.target0;
 
-        // Ensure proper types
-        if (habit.scoringType === 'time') {
-          if (isNightHabit(habit)) {
-            if (typeof finalTarget100 === 'number' && finalTarget100 < 12 * 60) finalTarget100 += 1440;
-            if (typeof finalTarget0 === 'number' && finalTarget0 < 12 * 60) finalTarget0 += 1440;
+          // Ensure proper types
+          if (habit.scoringType === 'time') {
+            if (isNightHabit(habit)) {
+              if (typeof finalTarget100 === 'number' && finalTarget100 < 12 * 60) finalTarget100 += 1440;
+              if (typeof finalTarget0 === 'number' && finalTarget0 < 12 * 60) finalTarget0 += 1440;
+            }
+          } else if (habit.scoringType !== 'binary' && habit.scoringType !== 'subjective') {
+            finalTarget100 = Number(finalTarget100);
+            finalTarget0 = Number(finalTarget0);
           }
-        } else if (habit.scoringType !== 'binary' && habit.scoringType !== 'subjective') {
-          finalTarget100 = Number(finalTarget100);
-          finalTarget0 = Number(finalTarget0);
-        }
 
-        await updateDoc(userHabitRef, {
-          target100: finalTarget100,
-          target0: finalTarget0,
-          userTarget100: finalTarget100,
-          userTarget0: finalTarget0
-        });
+          batch.update(userHabitRef, {
+            target100: finalTarget100,
+            target0: finalTarget0,
+            userTarget100: finalTarget100,
+            userTarget0: finalTarget0
+          });
+        }
+        await batch.commit();
+        if (refreshData) {
+          refreshData();
+        }
       }
-      if (refreshData) {
-        await refreshData();
-      }
-      navigate('/'); // Go to main dashboard when done
     } catch (error) {
       console.error("Error saving targets:", error);
-      alert("Failed to save targets.");
-      setSaving(false);
     }
   };
 
@@ -103,7 +106,7 @@ export default function OnboardingTargets() {
   return (
     <div className="flex flex-col min-h-screen bg-surface">
       {/* Top Nav */}
-      <header className="w-full flex items-center pt-8 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto">
+      <header className="w-full flex items-center pt-[max(env(safe-area-inset-top,0px),28px)] px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto">
         <button 
           onClick={() => navigate(-1)}
           aria-label="Go back" 

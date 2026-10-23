@@ -17,7 +17,7 @@ export default function OnboardingWelcome() {
   };
 
   return (
-    <div className="h-screen max-h-screen bg-[#FBFBFA] text-slate-900 flex flex-col justify-between p-4 sm:p-6 font-sans antialiased overflow-hidden select-none">
+    <div className="h-screen max-h-screen bg-[#FBFBFA] text-slate-900 flex flex-col justify-between p-4 pt-[max(env(safe-area-inset-top,0px),28px)] sm:p-6 font-sans antialiased overflow-hidden select-none">
       
       {/* 01. COMPACT TOP BRAND HEADER */}
       <header className="flex items-center justify-between shrink-0">
