@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "ship": "powershell -ExecutionPolicy Bypass -File scripts/ship_all.ps1"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.5.2",
