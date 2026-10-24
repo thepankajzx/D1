@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* Safe Area Insets for iOS Notch, Dynamic Island, and Modern Androids */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
 :root {
   --color-surface-container-high: #e9e7ed;
   --color-on-surface-variant: #444748;
