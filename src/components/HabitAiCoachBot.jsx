@@ -45,7 +45,7 @@ export const COACH_TABS = [
   { id: 'today', label: 'Today', IconComponent: Target },
   { id: 'patterns', label: 'Patterns', IconComponent: ChartLineUp },
   { id: 'milestones', label: 'Milestones', IconComponent: Trophy },
-  { id: 'coaching', label: 'Coaching', IconComponent: Lightbulb }
+  { id: 'advice', label: 'Advice', IconComponent: Lightbulb }
 ];
 
 // Comprehensive Data-Driven Prompt Definitions with Strict Proper Phosphor Icons (NO EMOJIS)
@@ -128,10 +128,10 @@ export const COACH_PROMPTS = [
     related: ['target_tune', 'crisis_defense', 'daily_win']
   },
 
-  // ── 4. COACHING & HEALTH
+  // ── 4. ADVICE & ACTIONABLE STRATEGY
   {
     id: 'target_tune',
-    tab: 'coaching',
+    tab: 'advice',
     label: 'Habit Target Tuning Advice',
     sublabel: 'Overambitious target ko scale-down karein',
     IconComponent: SlidersHorizontal,
@@ -140,7 +140,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'full_report',
-    tab: 'coaching',
+    tab: 'advice',
     label: 'Complete Health Scorecard',
     sublabel: 'Sabhi active habits ka performance matrix',
     IconComponent: ChartBar,
@@ -149,7 +149,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'coaching_tips',
-    tab: 'coaching',
+    tab: 'advice',
     label: 'Atomic Consistency Rules',
     sublabel: 'Habit psychology ke 4 golden rules',
     IconComponent: Lightbulb,
@@ -219,7 +219,8 @@ export default function HabitAiCoachBot() {
   // ─────────────────────────────────────────────────────────────────────────────
   const getHabitTelemetry = () => {
     const activeHabits = (habits || []).filter(h => h.status !== 'deleted');
-    const todayStr = new Date().toISOString().split('T')[0];
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const todaySummary = (allSummaries || []).find(s => s.id === todayStr || s.date === todayStr);
     const recent7Summaries = (allSummaries || []).slice(0, 7);
 
@@ -230,13 +231,21 @@ export default function HabitAiCoachBot() {
       let hitCount7d = 0;
       let totalLogged7d = 0;
       let scoreSum7d = 0;
+      let valSum7d = 0;
+      let valCount7d = 0;
 
       recent7Summaries.forEach(s => {
-        const sc = s.habitScores ? s.habitScores[h.id] : undefined;
-        if (sc !== undefined && sc !== null) {
+        const sc = s.habitScores?.[h.id] ?? s.scores?.[h.id];
+        if (sc !== undefined && sc !== null && !isNaN(Number(sc))) {
           totalLogged7d++;
           scoreSum7d += Number(sc);
           if (Number(sc) >= 60) hitCount7d++;
+        }
+
+        const v = s.habitValues?.[h.id] ?? s.values?.[h.id] ?? s.actuals?.[h.id];
+        if (v !== undefined && v !== null && !isNaN(Number(v))) {
+          valSum7d += Number(v);
+          valCount7d++;
         }
       });
 
@@ -244,23 +253,31 @@ export default function HabitAiCoachBot() {
         ? Math.round((hitCount7d / recent7Summaries.length) * 100) 
         : 0;
       const avgScore7d = totalLogged7d > 0 ? Math.round(scoreSum7d / totalLogged7d) : 0;
+      const avgActualVal7d = valCount7d > 0 ? Math.round((valSum7d / valCount7d) * 10) / 10 : null;
       const missCount7d = Math.max(0, recent7Summaries.length - hitCount7d);
 
-      const todayScore = todaySummary?.habitScores ? todaySummary.habitScores[h.id] : undefined;
-      const isDoneToday = todayScore !== undefined && todayScore !== null && Number(todayScore) >= 60;
-      const isLoggedToday = todayScore !== undefined && todayScore !== null;
+      const rawTodayScore = todaySummary?.habitScores?.[h.id] ?? todaySummary?.scores?.[h.id];
+      const todayScore = rawTodayScore !== undefined && rawTodayScore !== null ? Number(rawTodayScore) : null;
+      const isDoneToday = todayScore !== null && todayScore >= 60;
+      const isLoggedToday = todayScore !== null;
+
+      const targetVal = h.userTarget100 ?? h.target100 ?? h.target ?? h.dailyTarget ?? null;
+      const unit = h.unit || h.defaultUnit || '';
 
       return {
         ...h,
+        targetVal,
+        unit,
         currentStreak: streakInfo.currentStreak || 0,
         longestStreak: streakInfo.longestStreak || 0,
         consistencyPct: streakInfo.totalDays > 0 ? Math.round((streakInfo.activeDays / streakInfo.totalDays) * 100) : 0,
         completionRate7d,
         avgScore7d,
+        avgActualVal7d,
         missCount7d,
         isDoneToday,
         isLoggedToday,
-        todayScore: todayScore !== undefined ? Number(todayScore) : null
+        todayScore
       };
     });
 
@@ -339,12 +356,12 @@ export default function HabitAiCoachBot() {
         let otherTotalChecks = 0;
 
         allSummaries.forEach(s => {
-          const scA = s.habitScores ? s.habitScores[hA.id] : undefined;
+          const scA = s.habitScores?.[hA.id] ?? s.scores?.[hA.id];
           if (scA !== undefined && Number(scA) >= 60) {
             daysDoneA++;
             activeHabits.forEach(hB => {
               if (hA.id === hB.id) return;
-              const scB = s.habitScores ? s.habitScores[hB.id] : undefined;
+              const scB = s.habitScores?.[hB.id] ?? s.scores?.[hB.id];
               otherTotalChecks++;
               if (scB !== undefined && Number(scB) >= 60) {
                 otherHitsWhenADone++;
@@ -354,7 +371,7 @@ export default function HabitAiCoachBot() {
         });
 
         const boostRate = otherTotalChecks > 0 ? Math.round((otherHitsWhenADone / otherTotalChecks) * 100) : 0;
-        if (daysDoneA >= 2 && boostRate > maxBoost) {
+        if (daysDoneA >= 1 && boostRate > maxBoost) {
           maxBoost = boostRate;
           leadCatalyst = { habit: hA, boostRate, daysDone: daysDoneA };
         }
@@ -368,9 +385,11 @@ export default function HabitAiCoachBot() {
           let bothDoneCount = 0;
 
           allSummaries.forEach(s => {
-            const sc1 = s.habitScores ? s.habitScores[h1.id] : undefined;
-            const sc2 = s.habitScores ? s.habitScores[h2.id] : undefined;
-            if (sc1 >= 60 && sc2 >= 60) bothDoneCount++;
+            const sc1 = s.habitScores?.[h1.id] ?? s.scores?.[h1.id];
+            const sc2 = s.habitScores?.[h2.id] ?? s.scores?.[h2.id];
+            if (sc1 !== undefined && sc2 !== undefined && Number(sc1) >= 60 && Number(sc2) >= 60) {
+              bothDoneCount++;
+            }
           });
 
           if (bothDoneCount > highestCoHits) {
@@ -526,20 +545,28 @@ export default function HabitAiCoachBot() {
         };
       }
 
+      // Prioritize pending habits: catalyst first, then highest 7d rate
+      const sortedPending = [...pendingToday].sort((a, b) => {
+        if (leadCatalyst && a.id === leadCatalyst.habit.id) return -1;
+        if (leadCatalyst && b.id === leadCatalyst.habit.id) return 1;
+        return (b.completionRate7d || 0) - (a.completionRate7d || 0);
+      });
+      const priorityPicks = sortedPending.slice(0, Math.max(1, neededToWin));
+
       return {
         title: 'Today Minimum Viable Win Formula',
         badge: 'Priority Action',
         badgeColor: 'amber',
-        text: `Aaj ka overall score 70%+ karne aur streak protect karne ke liye aapko sirf ${neededToWin} aur habit(s) complete karni hain.`,
+        text: `Aaj ka overall score 70%+ karne aur streak protect karne ke liye aapko sirf <strong>${neededToWin} aur habit(s)</strong> complete karni hain.`,
         stats: [
           { label: 'Done Today', val: `${doneToday.length} / ${activeHabits.length}` },
           { label: 'Needed For Win', val: `${neededToWin} Habit(s)` },
-          { label: 'Target Threshold', val: '70% Avg' }
+          { label: 'Target Threshold', val: '70% Win Tier' }
         ],
         bullets: [
-          `Recommended Focus: Inhe pehle niptayein -> ${recommendedWinHabits.map(h => `<strong>${h.name}</strong>`).join(', ')}.`,
-          `High-leverage action: Ek baar yeh ${neededToWin} habit complete hote hi aapka day green zone me aa jayega.`,
-          `Din khatam hone se pehle sirf inko tick karein taaki kal subah momentum intact mile.`
+          `Recommended Priority: Inhe pehle niptayein -> ${priorityPicks.map(h => `<strong>${h.name}</strong> (${h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Daily goal'})`).join(', ')}.`,
+          `High-leverage action: ${doneToday.length} complete + ${neededToWin} aur = ${requiredFor70} / ${activeHabits.length} habits (70%+ winning score tier).`,
+          `Din khatam hone se pehle sirf inko complete karein taaki streak freeze ya reset na ho.`
         ],
         followUps: ['today_status', 'catalyst_duos', 'danger_day']
       };
@@ -666,37 +693,68 @@ export default function HabitAiCoachBot() {
     }
 
     // ── 6. HABIT TARGET TUNING ADVICE ───────────────────────────────────
-    if (promptKey === 'target_tune' || /tune|tuning|adjust|heavy|mushkil|target kam|scale down/i.test(userQuery)) {
-      const frictionHabits = activeHabits.filter(h => h.completionRate7d < 35);
-      const masteredHabits = activeHabits.filter(h => h.completionRate7d >= 85 && h.currentStreak >= 10);
+    if (promptKey === 'target_tune' || /tune|tuning|adjust|heavy|mushkil|target kam|scale down|target/i.test(userQuery)) {
+      const frictionHabits = activeHabits.filter(h => h.completionRate7d < 50 || h.avgScore7d < 50);
+      const masteredHabits = activeHabits.filter(h => h.completionRate7d >= 80 && h.currentStreak >= 5);
+      const balancedHabits = activeHabits.filter(h => !frictionHabits.some(f => f.id === h.id) && !masteredHabits.some(m => m.id === h.id));
+
+      const tuningBullets = [];
+
+      if (frictionHabits.length > 0) {
+        frictionHabits.slice(0, 3).forEach(h => {
+          const tVal = h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Goal';
+          const actVal = h.avgActualVal7d !== null ? `${h.avgActualVal7d} ${h.unit}`.trim() : null;
+          let recSuggestion = '';
+          if (actVal && h.targetVal && typeof h.targetVal === 'number') {
+            const suggested = Math.round(h.avgActualVal7d * 1.1) || Math.round(h.targetVal * 0.6);
+            recSuggestion = `Actual avg logged: <strong>${actVal}</strong>. Recommendation: Target ko temporary <strong>${suggested} ${h.unit}</strong> par tune karein.`;
+          } else if (h.targetVal && typeof h.targetVal === 'number') {
+            const suggested = Math.round(h.targetVal * 0.5) || 1;
+            recSuggestion = `Recommendation: Target ko 50% scale-down karke <strong>${suggested} ${h.unit}</strong> karein.`;
+          } else {
+            recSuggestion = `Recommendation: Target ko 2-Minute micro action me divide karein taaki zero-day avoid ho.`;
+          }
+          tuningBullets.push(`<strong>${h.name}</strong> (${h.completionRate7d}% 7d hit rate • Target: ${tVal}): ${recSuggestion}`);
+        });
+      }
+
+      if (masteredHabits.length > 0) {
+        masteredHabits.slice(0, 2).forEach(h => {
+          const tVal = h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Goal';
+          tuningBullets.push(`<strong>${h.name}</strong> (Mastered • ${h.currentStreak}d streak): Target ${tVal} automatic ban chuka hai (${h.completionRate7d}% rate). Aap chahein toh iska challenge 10-15% scale-up kar sakte hain.`);
+        });
+      }
+
+      if (tuningBullets.length === 0) {
+        activeHabits.forEach(h => {
+          const tVal = h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Goal';
+          tuningBullets.push(`<strong>${h.name}</strong>: Target <strong>${tVal}</strong> sweet spot par hai (${h.completionRate7d}% 7d hit rate). Is routine ko steady maintain karein.`);
+        });
+      }
+
+      tuningBullets.push(`Golden Rule: Habit ka target hamesha aisa rakhein jise sabse busy ya thake hue din me bhi bina friction ke execute kiya ja sake.`);
 
       return {
-        title: 'Habit Target Tuning & Friction Audit',
-        badge: frictionHabits.length > 0 ? 'Adjustment Recommended' : 'Optimal Balance',
-        badgeColor: frictionHabits.length > 0 ? 'rose' : 'indigo',
+        title: 'Habit Target Tuning & Calibration',
+        badge: frictionHabits.length > 0 ? `${frictionHabits.length} Need Tuning` : 'Targets Balanced',
+        badgeColor: frictionHabits.length > 0 ? 'amber' : 'emerald',
         text: frictionHabits.length > 0
-          ? `Aapki routine me friction detect hui hai: <strong>${frictionHabits.map(h => h.name).join(', ')}</strong> pichle 7 dino me 35% se kam achieve hui hai.`
-          : `Aapki sabhi habits ka target sweet spot par hai. Koi severe mental resistance detect nahi hui.`,
+          ? `Telemetry analysis ke mutabiq <strong>${frictionHabits.map(h => h.name).join(', ')}</strong> me mental friction ya drop detect hua hai. Yahan hai aapka data-backed target tuning roadmap:`
+          : `Shaandar! Aapki sabhi active habits ka daily target optimal balance me hai. Koi extreme mental resistance detect nahi hui.`,
         stats: [
           { label: 'High Friction', val: `${frictionHabits.length} Habits` },
-          { label: 'Mastered Routines', val: `${masteredHabits.length} Habits` },
-          { label: 'Sweet Spot', val: `${activeHabits.length - frictionHabits.length} Habits` }
+          { label: 'Balanced', val: `${balancedHabits.length} Habits` },
+          { label: 'Mastered', val: `${masteredHabits.length} Routines` }
         ],
-        bullets: [
-          frictionHabits.length > 0
-            ? `Scale-Down Strategy: <strong>${frictionHabits[0].name}</strong> ka daily target temporary 50% reduce karein. 7 din momentum banne ke baad wapas standard badhayein.`
-            : `Sustainable Pacing: Current targets manageable hain, inhe maintain rakhein.`,
-          masteredHabits.length > 0
-            ? `Mastered Routine: <strong>${masteredHabits[0].name}</strong> ab unconscious habit ban chuki hai. Aap chahein toh iska bar raise kar sakte hain.`
-            : `Momentum Building: Daily consistent check-ins se 21 din me synaptic pathways form hoti hain.`
-        ],
-        followUps: ['weakest', 'catalyst_duos', 'daily_win']
+        bullets: tuningBullets,
+        followUps: ['weakest', 'catalyst_duos', 'full_report']
       };
     }
 
     // ── 7. STRONGEST HABIT (CHAMPION) ───────────────────────────────────
     if (promptKey === 'strongest' || /strong|best|top|achhi|sabse|champion/i.test(userQuery)) {
       if (!strongest) return null;
+      const tVal = strongest.targetVal ? `${strongest.targetVal} ${strongest.unit}`.trim() : 'Daily goal';
       return {
         title: `Champion Habit: ${strongest.name}`,
         badge: 'Consistency Pillar',
@@ -708,8 +766,8 @@ export default function HabitAiCoachBot() {
           { label: 'Personal Best', val: `${strongest.longestStreak} Days` }
         ],
         bullets: [
-          `Streak Strength: Aapne consecutive ${strongest.currentStreak} din yeh habit complete kari hai.`,
-          `Habit Stacking Tip: Is mazboot aadat ke theek baad apni kisi kamzor aadat ko attach karein.`,
+          `Target & Execution: Target <strong>${tVal}</strong> ko aapne consecutive ${strongest.currentStreak} din successfully maintain kiya hai.`,
+          `Habit Stacking Tip: Is mazboot aadat ke theek baad apni struggle habit (${weakest?.name || 'naya routine'}) ko attach karein.`,
           `Identity Anchor: Yeh aadat aapki core discipline ka prateek ban chuki hai.`
         ],
         followUps: ['catalyst_duos', 'milestone_runway', 'daily_win']
@@ -719,6 +777,7 @@ export default function HabitAiCoachBot() {
     // ── 8. WEAKEST HABIT / DROP RISK ────────────────────────────────────
     if (promptKey === 'weakest' || /weak|drop|risk|struggle|kamzor|kharab|miss|problem/i.test(userQuery)) {
       if (!weakest) return null;
+      const tVal = weakest.targetVal ? `${weakest.targetVal} ${weakest.unit}`.trim() : 'Daily goal';
       
       const isAllSolid = weakest.completionRate7d >= 80;
       if (isAllSolid) {
@@ -728,7 +787,7 @@ export default function HabitAiCoachBot() {
           badgeColor: 'emerald',
           text: `Shaandar! Aapki koi bhi habit severe drop risk par nahi hai. Sabhi active habits 80%+ consistency maintain kar rahi hain.`,
           bullets: [
-            `Lowest hit rate bhi ${weakest.completionRate7d}% (${weakest.name}) par solid hai.`,
+            `Lowest hit rate bhi ${weakest.completionRate7d}% (${weakest.name} • ${tVal}) par solid hai.`,
             `Consistency banaye rakhein aur over-ambitious hokar ek sath zyada nayi habits add na karein.`
           ],
           followUps: ['daily_win', 'danger_day', 'milestone_runway']
@@ -746,8 +805,8 @@ export default function HabitAiCoachBot() {
           { label: 'Current Streak', val: `${weakest.currentStreak} Days` }
         ],
         bullets: [
+          `Target & Resistance: Target <strong>${tVal}</strong> me resistance detect hui hai (${weakest.completionRate7d}% 7d hit rate).`,
           `The 2-Minute Rule: Target ko temporarily kam karein taaki mental resistance khatam ho.`,
-          `Friction Reduction: Is aadat ke liye environment pehle se ready rakhein.`,
           `Never Miss Twice: Aaj is habit ko priority dekar zero-day break karein.`
         ],
         followUps: ['target_tune', 'crisis_defense', 'daily_win']
@@ -759,6 +818,20 @@ export default function HabitAiCoachBot() {
       const total = activeHabits.length;
       const doneCount = doneToday.length;
       const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+      const bullets = [];
+      if (doneToday.length > 0) {
+        bullets.push(`Completed Today: ${doneToday.map(h => `<strong>${h.name}</strong> (${h.todayScore}%)`).join(', ')}.`);
+      }
+      if (pendingToday.length > 0) {
+        pendingToday.slice(0, 4).forEach(h => {
+          const tVal = h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Daily goal';
+          bullets.push(`Pending: <strong>${h.name}</strong> (Target: ${tVal})`);
+        });
+        bullets.push(`Din khatam hone se pehle pending habits log karein taaki streak continue rahe.`);
+      } else {
+        bullets.push(`Sabhi habits 100% complete! Rest karein aur kal ka momentum ready rakhein.`);
+      }
 
       return {
         title: `Today Live Status: ${todayStr}`,
@@ -772,42 +845,53 @@ export default function HabitAiCoachBot() {
           { label: 'Pending', val: `${pendingToday.length} Habits` },
           { label: 'Day Score', val: `${pct}%` }
         ],
-        bullets: pendingToday.length > 0 ? [
-          ...pendingToday.slice(0, 4).map(h => `Pending: <strong>${h.name}</strong> (Target: ${h.target100 ?? 'Daily goal'})`),
-          `Din khatam hone se pehle inko log karein taaki streak continue rahe.`
-        ] : [
-          `Sabhi habits complete! Rest karein aur kal ka momentum ready rakhein.`
-        ],
+        bullets,
         followUps: ['daily_win', 'milestone_runway', 'danger_day']
       };
     }
 
     // ── 10. COMPLETE HEALTH SCORECARD ───────────────────────────────────
     if (promptKey === 'full_report' || /report|all|summary|pura|poora|scorecard/i.test(userQuery)) {
+      const overallAvgRate = activeHabits.length > 0 
+        ? Math.round(activeHabits.reduce((acc, h) => acc + h.completionRate7d, 0) / activeHabits.length) 
+        : 0;
+
       return {
         title: 'Complete Habit Health Scorecard',
         badge: `${activeHabits.length} Habits Tracked`,
         badgeColor: 'indigo',
-        text: `Aapki sabhi active habits ka performance matrix:`,
+        text: `Aapki sabhi active habits ka real-time performance matrix:`,
+        stats: [
+          { label: 'Active Habits', val: `${activeHabits.length} Total` },
+          { label: '7-Day Avg Rate', val: `${overallAvgRate}%` },
+          { label: 'Today Progress', val: `${doneToday.length} / ${activeHabits.length}` }
+        ],
         bullets: activeHabits.map(h => {
-          return `<strong>${h.name}:</strong> Streak ${h.currentStreak}d • 7d Rate ${h.completionRate7d}% • ${h.isDoneToday ? 'Today Done' : 'Today Pending'}`;
+          const tVal = h.targetVal ? `${h.targetVal} ${h.unit}`.trim() : 'Goal';
+          const streakStr = `${h.currentStreak}d (PB: ${h.longestStreak}d)`;
+          const todayStatusStr = h.isDoneToday ? `Today Done (${h.todayScore}%)` : 'Today Pending';
+          return `<strong>${h.name}:</strong> Streak ${streakStr} • Target: ${tVal} • 7d Rate: ${h.completionRate7d}% • ${todayStatusStr}`;
         }),
-        followUps: ['daily_win', 'danger_day', 'milestone_runway']
+        followUps: ['daily_win', 'target_tune', 'danger_day']
       };
     }
 
     // ── 11. ATOMIC COACHING TIPS ────────────────────────────────────────
     if (promptKey === 'coaching_tips' || /tip|tips|help|advice|kaise|motivation|rules/i.test(userQuery)) {
+      const strongName = strongest?.name || 'core routine';
+      const weakName = weakest?.name || 'struggle habit';
+      const weakTarget = weakest?.targetVal ? `${weakest.targetVal} ${weakest.unit}`.trim() : 'target';
+
       return {
         title: 'Habit Consistency Ke 4 Golden Rules',
         badge: 'Atomic Framework',
         badgeColor: 'indigo',
-        text: `Behavioral psychology ke mutabiq habits banane ka sabse solid framework:`,
+        text: `Behavioral psychology ke mutabiq habits banane aur maintain karne ka sabse solid framework:`,
         bullets: [
-          `1. Habit Stacking: Apni strongest habit (${strongest?.name || 'Brush karna'}) ke theek baad new habit ko attach karein.`,
-          `2. The 2-Minute Rule: Jab man na kare ya thakaan ho, toh sirf 2 minute ke liye karein. Zero-day avoid karna sabse zaroori hai.`,
-          `3. Visual Cues: Jo cheez karni hai use aakhon ke samne rakhein (Water bottle table par, clothes ready).`,
-          `4. Never Miss Twice: Agar kisi wajah se 1 din miss ho jaye, toh agle din kisi bhi haal me prioritize karein.`
+          `1. Habit Stacking: Apni sabse consistent habit (<strong>${strongName}</strong>) ke theek baad apni struggle habit (<strong>${weakName}</strong>) ko attach karein.`,
+          `2. The 2-Minute Rule: Jab man na kare ya thakaan ho, toh <strong>${weakName}</strong> ke target (${weakTarget}) ko sirf 2 minute ke micro-action me execute karein. Zero-day avoid karna sabse zaroori hai.`,
+          `3. Visual Cues & Environment: Jo habit karni hai uska trigger aakhon ke samne rakhein (Water bottle table par, shoes ready).`,
+          `4. Never Miss Twice: 1 din miss hona accident hai, 2 din miss hona nayi buri aadat banna hai. Agle din bounce-back prioritize karein.`
         ],
         followUps: ['daily_win', 'crisis_defense', 'target_tune']
       };
