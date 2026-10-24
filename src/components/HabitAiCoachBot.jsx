@@ -59,6 +59,17 @@ export default function HabitAiCoachBot() {
                        location.pathname.startsWith('/coach') ||
                        location.pathname.startsWith('/join');
 
+  // Hardware Back: close bot dialog if open
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleHardwareBack = (e) => {
+      setIsOpen(false);
+      e.preventDefault();
+    };
+    window.addEventListener('d1_hardware_back', handleHardwareBack);
+    return () => window.removeEventListener('d1_hardware_back', handleHardwareBack);
+  }, [isOpen]);
+
   // Initial Welcome Message
   useEffect(() => {
     resetWelcome();

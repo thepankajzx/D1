@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -72,6 +72,17 @@ export default function RecoveryDeepDive() {
   const [expandedMisses, setExpandedMisses] = useState([]);
   const [expandedRule, setExpandedRule] = useState(null);
   const [showLockModal, setShowLockModal] = useState((allSummaries?.length || 0) < 14 && !earlyUnlockAll);
+
+  // Hardware Back: close info/lock modal first if open
+  useEffect(() => {
+    const handleHardwareBack = (e) => {
+      if (showInfo) { handleCloseInfo(); e.preventDefault(); return; }
+      if (showLockModal) { setShowLockModal(false); e.preventDefault(); return; }
+      if (expandedRule) { setExpandedRule(null); e.preventDefault(); return; }
+    };
+    window.addEventListener('d1_hardware_back', handleHardwareBack);
+    return () => window.removeEventListener('d1_hardware_back', handleHardwareBack);
+  }, [showInfo, showLockModal, expandedRule]);
 
   const handleCloseInfo = () => { try { localStorage.setItem('has_seen_resilience_guide', 'true'); } catch (e) {} setShowInfo(false); };
   const toggleRule = (id) => setExpandedRule(prev => prev === id ? null : id);

@@ -1,5 +1,5 @@
 import DataMigrationModal from '../components/DataMigrationModal';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
 import HabitTargetEditModal from '../components/HabitTargetEditModal';
@@ -18,11 +18,14 @@ import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { formatDuration, normalizeDurationToMinutes } from '../lib/formatDuration';
 import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
 import { calculateTowerProgress, getStreakTrackingPreference } from '../lib/progressTowerEngine';
-import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun } from '@phosphor-icons/react';
+import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun, Check, ArrowLeft, Crown, Prohibit } from '@phosphor-icons/react';
 import ProPill from '../components/ProPill';
 import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatTimeVal as formatTimeValUtil } from '../lib/timeFormat';
+import HeaderPillWidgets, { getHeaderPillsConfig, saveHeaderPillsConfig } from '../components/HeaderPillWidgets';
+import BadgePersonaIcon from '../components/BadgePersonaIcon';
+import { evaluateUserBadges } from '../lib/badgeEngine';
 
 const MILESTONE_DEFINITIONS = [
   { target: 3, title: 'Ignition', desc: 'Pehele 3 din ki solid shuruat', icon: 'local_fire_department', color: 'from-amber-500 to-orange-500' },
@@ -188,19 +191,27 @@ export default function Profile() {
     return calculateStreakData('all', allSummaries);
   }, [allSummaries]);
 
+  // Comprehensive Multi-dimensional Badge & Persona Engine
+  const badgeState = useMemo(() => {
+    return evaluateUserBadges(allSummaries, habits, streakTrackingEnabled);
+  }, [allSummaries, habits, streakTrackingEnabled]);
+
   const bestStreak = Math.max(overallStreakData.currentStreak, overallStreakData.longestStreak);
-  const unlockedTrophiesCount = MILESTONE_DEFINITIONS.filter(m => bestStreak >= m.target).length;
+  const unlockedTrophiesCount = badgeState.unlockedBadges.length;
+  const totalTrophiesCount = badgeState.allBadges.length;
   const nextMilestoneInfo = getNextMilestone(overallStreakData.currentStreak);
 
   // Accordion Dropdown Open States (All closed by default until tapped)
   const [openSections, setOpenSections] = useState({
+    myProfile: false,
     myHabits: false,
+    headerWidgets: false,
     upcomingFeatures: false,
     trophyWall: false,
+    timeGatedInsights: false,
     unlockInsights: false,
     betterReport: false,
-    membership: false,
-    myProfile: false
+    membership: false
   });
 
   const toggleSection = (sectionKey) => {
@@ -225,6 +236,98 @@ export default function Profile() {
   const [selectedLang, setSelectedLang] = useState(language);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [langSavedFeedback, setLangSavedFeedback] = useState(false);
+
+  // Top Header Pills Widgets State
+  const [headerPillsConfig, setHeaderPillsConfig] = useState(getHeaderPillsConfig);
+  const [activeSlotModal, setActiveSlotModal] = useState(null); // 'pill1' | 'pill2' | 'pill3' | null
+  const [selectedSlotSubView, setSelectedSlotSubView] = useState(null); // 'focus_habit' | 'persona_badge' | null
+  const [headerPillsSavedFeedback, setHeaderPillsSavedFeedback] = useState(false);
+
+  const handleUpdateHeaderPill = (key, value) => {
+    if (navigator.vibrate) navigator.vibrate(15);
+    const updated = { ...headerPillsConfig, [key]: value };
+    setHeaderPillsConfig(updated);
+    saveHeaderPillsConfig(updated);
+    setHeaderPillsSavedFeedback(true);
+    setTimeout(() => setHeaderPillsSavedFeedback(false), 2000);
+  };
+
+  // Available Pill Slot Options for Header Widgets
+  const availablePillOptions = useMemo(() => {
+    const opts = [
+      {
+        id: 'persona_badge',
+        label: isHinglish ? 'सम्मान व बैज' : 'Honors & Badges',
+        desc: isHinglish ? 'अपना अर्जित किया हुआ शीर्ष सम्मान या बैज दिखाएं' : 'Display your highest earned milestone honor or badge',
+        iconName: 'Crown',
+        bgGradient: 'from-amber-400 to-yellow-500',
+        colorClass: 'text-amber-500',
+        hasSubConfig: true
+      },
+      {
+        id: 'weekly_avg',
+        label: isHinglish ? 'साप्ताहिक औसत' : 'Weekly Average Score',
+        desc: isHinglish ? 'पिछले 7 दिनों की औसत पूर्णता दर' : '7-day habit completion percentage',
+        iconName: 'Lightning',
+        bgGradient: 'from-amber-500 to-orange-500',
+        colorClass: 'text-amber-500'
+      }
+    ];
+
+    if (streakTrackingEnabled) {
+      opts.push({
+        id: 'streak',
+        label: isHinglish ? 'सक्रिय स्ट्रीक' : 'Active Streak',
+        desc: isHinglish ? 'लगातार पूरे किए गए सक्रिय दिन' : 'Current consecutive streak days',
+        iconName: 'Flame',
+        bgGradient: 'from-orange-500 to-amber-600',
+        colorClass: 'text-orange-500'
+      });
+    }
+
+    opts.push(
+      {
+        id: 'resilience',
+        label: isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience Score',
+        desc: isHinglish ? 'बाउंस-बैक और सुधार क्षमता का सूचकांक' : 'Slump bounce-back resilience index',
+        iconName: 'ShieldCheck',
+        bgGradient: 'from-emerald-500 to-teal-600',
+        colorClass: 'text-emerald-500'
+      },
+      {
+        id: 'today_done',
+        label: isHinglish ? 'आज की प्रगति' : "Today's Completion",
+        desc: isHinglish ? 'आज के पूरे किए गए हैबिट्स की संख्या' : 'Habits completed today vs total',
+        iconName: 'CheckCircle',
+        bgGradient: 'from-blue-500 to-indigo-600',
+        colorClass: 'text-blue-500'
+      },
+      {
+        id: 'focus_habit',
+        label: isHinglish ? 'फोकस हैबिट' : 'Focus Habit',
+        desc: isHinglish ? 'शीर्ष हेडर में अपनी पसंदीदा हैबिट पिन करें' : 'Pin a specific habit to the top header',
+        iconName: 'Target',
+        bgGradient: 'from-rose-500 to-pink-600',
+        colorClass: 'text-rose-500',
+        hasSubConfig: true
+      },
+      {
+        id: 'none',
+        label: isHinglish ? 'खाली छोड़ें' : 'Empty (Leave slot blank)',
+        desc: isHinglish ? 'हेडर में यह स्थान खाली रखें' : 'Hide this slot from header',
+        iconName: 'Prohibit',
+        bgGradient: 'from-slate-400 to-slate-500',
+        colorClass: 'text-slate-400'
+      }
+    );
+
+    return opts;
+  }, [isHinglish, streakTrackingEnabled]);
+
+
+
+
+
   const [canInstallApp, setCanInstallApp] = useState(false);
   const [isAppStandalone, setIsAppStandalone] = useState(false);
 
@@ -239,6 +342,54 @@ export default function Profile() {
   useEffect(() => {
     setSelectedLang(language);
   }, [language]);
+
+  // Hardware Back Button: Close active modals/subviews/accordions cleanly
+  useEffect(() => {
+    const handleHardwareBack = (e) => {
+      // 1. Slot Config Modal & Subviews
+      if (activeSlotModal) {
+        if (selectedSlotSubView) {
+          setSelectedSlotSubView(null);
+        } else {
+          setActiveSlotModal(null);
+        }
+        e.preventDefault();
+        return;
+      }
+      // 2. Modals
+      if (showPriorityModal) {
+        setShowPriorityModal(false);
+        e.preventDefault();
+        return;
+      }
+      if (editingTargetHabit) {
+        setEditingTargetHabit(null);
+        e.preventDefault();
+        return;
+      }
+      if (selectedHabitDetails) {
+        setSelectedHabitDetails(null);
+        e.preventDefault();
+        return;
+      }
+      // 3. Dropdowns
+      if (isLangDropdownOpen) {
+        setIsLangDropdownOpen(false);
+        e.preventDefault();
+        return;
+      }
+      // 4. Accordions
+      const openKey = Object.keys(openSections).find(k => openSections[k]);
+      if (openKey) {
+        setOpenSections(prev => ({ ...prev, [openKey]: false }));
+        e.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener('d1_hardware_back', handleHardwareBack);
+    return () => window.removeEventListener('d1_hardware_back', handleHardwareBack);
+  }, [activeSlotModal, selectedSlotSubView, showPriorityModal, editingTargetHabit, selectedHabitDetails, isLangDropdownOpen, openSections]);
 
   const handleSaveLanguage = () => {
     if (navigator.vibrate) navigator.vibrate(40);
@@ -546,6 +697,7 @@ export default function Profile() {
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-black shrink-0 shadow-2xs">
               <Icon name="person" className="text-[18px]" />
             </div>
+
             <div className="min-w-0">
               <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">My Profile</h2>
               <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">Personal account info, theme &amp; preferences</p>
@@ -1182,6 +1334,157 @@ export default function Profile() {
         )}
       </section>
 
+      {/* ── 3. TOP HEADER WIDGETS (STANDALONE SECTION DIRECTLY UNDER MY HABITS) ── */}
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
+        <div 
+          onClick={() => toggleSection('headerWidgets')}
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <SlidersHorizontal size={18} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">
+                  {isHinglish ? 'शीर्ष हेडर विजेट्स' : 'Top Header Widgets'}
+                </h2>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+                  headerPillsConfig.enabled 
+                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                }`}>
+                  {headerPillsConfig.enabled ? (isHinglish ? 'चालू' : 'ACTIVE') : (isHinglish ? 'बंद' : 'OFF')}
+                </span>
+              </div>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                {headerPillsConfig.enabled 
+                  ? (isHinglish ? '3 त्वरित हेडर पिल्स चालू हैं' : '3 quick header pill widgets enabled')
+                  : (isHinglish ? 'क्लीन मिनिमल मोड (हेडर पिल्स बंद)' : 'Minimal mode (header pills disabled)')}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => handleUpdateHeaderPill('enabled', !headerPillsConfig.enabled)}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                headerPillsConfig.enabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              title="Toggle Header Pills"
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform absolute top-0.5 ${
+                headerPillsConfig.enabled ? 'left-5.5' : 'left-0.5'
+              }`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleSection('headerWidgets')}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+            >
+              <Icon name={openSections.headerWidgets ? "expand_less" : "expand_more"} className="text-xl" />
+            </button>
+          </div>
+        </div>
+
+        {openSections.headerWidgets && (
+          <div className="p-3.5 sm:p-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-150">
+            {/* Live Header Preview Box */}
+            <div className="p-3.5 rounded-2xl bg-slate-100/90 dark:bg-[#10141d] border border-dashed border-slate-300 dark:border-slate-800 flex flex-col items-center justify-center gap-2.5 shadow-2xs">
+              <span className="text-[10px] uppercase tracking-widest font-black text-slate-400 dark:text-slate-500">
+                {isHinglish ? 'लाइव हेडर प्रीव्यू' : 'LIVE HEADER PREVIEW'}
+              </span>
+              <div className="relative h-11 w-full flex items-center justify-center overflow-visible">
+                <HeaderPillWidgets forceShow={true} />
+              </div>
+            </div>
+
+            {/* 3 Clickable Slots */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between pb-1">
+                <span className="text-xs font-black text-slate-900 dark:text-white">
+                  {isHinglish ? 'हेडर स्लॉट कॉन्फ़िगरेशन' : 'Header Slot Layout'}
+                </span>
+                <span className="text-[10.5px] font-semibold text-slate-400">
+                  {isHinglish ? 'बदलने के लिए स्लॉट पर टैप करें' : 'Tap slot to change metric'}
+                </span>
+              </div>
+
+              {[
+                { slotId: 'pill1', slotNum: 1, label: isHinglish ? 'स्लॉट 1 (बायां)' : 'Slot 1 (Left)' },
+                { slotId: 'pill2', slotNum: 2, label: isHinglish ? 'स्लॉट 2 (मध्य)' : 'Slot 2 (Center)' },
+                { slotId: 'pill3', slotNum: 3, label: isHinglish ? 'स्लॉट 3 (दायां)' : 'Slot 3 (Right)' }
+              ].map(({ slotId, label }) => {
+                const currentVal = headerPillsConfig[slotId];
+                const selectedOpt = availablePillOptions.find(o => o.id === currentVal) || availablePillOptions[0];
+
+                let displayLabel = selectedOpt?.label || 'None';
+                let displayIcon = selectedOpt?.iconName || 'Prohibit';
+                let displayColor = selectedOpt?.colorClass || 'text-slate-400';
+                let displayBg = selectedOpt?.bgGradient || 'from-slate-400 to-slate-500';
+
+                if (currentVal === 'focus_habit') {
+                  const focusH = habits.find(h => h.id === headerPillsConfig.focusHabitId) || habits[0];
+                  if (focusH) {
+                    displayLabel = `${selectedOpt.label} (${focusH.name})`;
+                  }
+                } else if (currentVal === 'persona_badge') {
+                  const activeB = (headerPillsConfig.selectedBadgeId && badgeState.allBadges.find(b => b.id === headerPillsConfig.selectedBadgeId))
+                    || badgeState.topBadge;
+                  if (activeB) {
+                    displayLabel = `${selectedOpt.label} (${isHinglish ? activeB.hindiTitle : activeB.title})`;
+                    displayIcon = activeB.iconName;
+                    displayColor = activeB.colorText;
+                    displayBg = activeB.gradient;
+                  }
+                }
+
+                return (
+                  <button
+                    key={slotId}
+                    type="button"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(15);
+                      setActiveSlotModal(slotId);
+                      setSelectedSlotSubView(null);
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-slate-200/90 dark:border-slate-800 transition-all cursor-pointer group shadow-2xs text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${displayBg} flex items-center justify-center shrink-0 shadow-2xs`}>
+                        <BadgePersonaIcon iconName={displayIcon} size={18} weight="fill" className="text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          {label}
+                        </span>
+                        <span className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate block">
+                          {displayLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-500 transition-colors shrink-0">
+                      <CaretRight size={14} weight="bold" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Saved Notification */}
+            {headerPillsSavedFeedback && (
+              <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-xl animate-in fade-in zoom-in-95 duration-150 flex items-center justify-center gap-1.5">
+                <CheckCircle size={15} weight="fill" />
+                <span>{isHinglish ? 'प्राथमिकता तुरंत सेव हुई!' : 'Preference Saved Instantly!'}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
       {/* ── UPCOMING FEATURES (EXPERIMENTAL / BETA LAB) ────────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <button 
@@ -1488,10 +1791,13 @@ export default function Profile() {
         </section>
       )}
 
-            {/* ── TIME-GATED INSIGHTS MASTERY (USER PREFERENCE) ── */}
-      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:p-3.5 shadow-2xs space-y-2.5 text-left">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+      {/* ── TIME-GATED INSIGHTS (ACCORDION SECTION, CLOSED BY DEFAULT) ── */}
+      <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
+        <div 
+          onClick={() => toggleSection('timeGatedInsights')}
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3 min-w-0">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black shrink-0 shadow-2xs ${
               earlyUnlockAll 
                 ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400' 
@@ -1501,63 +1807,82 @@ export default function Profile() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">
                   {isHinglish ? 'समय-आधारित इनसाइट्स मोड' : 'Time-Gated Insights Mode'}
-                </h3>
-                <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full ${
+                </h2>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
                   earlyUnlockAll 
-                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-300' 
-                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300'
+                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700' 
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
                 }`}>
-                  {earlyUnlockAll ? (isHinglish ? 'समय पूर्व अनलॉक' : 'UNLOCKED EARLY') : (isHinglish ? 'अनुशंसित (Recommended)' : 'RECOMMENDED')}
+                  {earlyUnlockAll ? (isHinglish ? 'समय पूर्व अनलॉक' : 'UNLOCKED EARLY') : (isHinglish ? 'अनुशंसित' : 'RECOMMENDED')}
                 </span>
               </div>
-              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
-                {earlyUnlockAll
-                  ? (isHinglish ? 'सारे 7D, 14D व 30D लॉक्स खुले हैं। कम सैंपल डेटा में शुरुआती शोर दिख सकता है।' : 'All 7D, 14D, and 30D insight locks are bypassed. Early data may show noise.')
-                  : (isHinglish ? '7D, 14D और 30D के बाद ही इनसाइट्स अनलॉक होते हैं ताकि आपको सिर्फ सच्चा और वैज्ञानिक डेटा दिखे।' : '7D, 14D, and 30D time gates prevent premature cognitive bias and coincidence.')}
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                {earlyUnlockAll 
+                  ? (isHinglish ? '7D, 14D व 30D इनसाइट्स अनलॉक हैं' : 'All 7D, 14D & 30D locks bypassed')
+                  : (isHinglish ? 'डेटा शोर से सुरक्षा व वैज्ञानिक गेट्स सक्रिय' : 'Scientific noise prevention gates active')}
               </p>
             </div>
           </div>
 
-          {/* Direct Switch Toggle */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={earlyUnlockAll}
-            onClick={async () => {
-              if (navigator.vibrate) navigator.vibrate(30);
-              if (!earlyUnlockAll) {
-                setShowEarlyUnlockModal(true);
-              } else {
-                await setEarlyUnlockAll(false);
-              }
-            }}
-            className={`w-11 h-6 rounded-full transition-colors p-0.5 flex items-center shrink-0 cursor-pointer ${
-              earlyUnlockAll ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
-            }`}
-            title={earlyUnlockAll ? "Click to relock to recommended mode" : "Click to unlock early"}
-          >
-            <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-              earlyUnlockAll ? 'translate-x-5' : 'translate-x-0'
-            }`} />
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={earlyUnlockAll}
+              onClick={async () => {
+                if (navigator.vibrate) navigator.vibrate(30);
+                if (!earlyUnlockAll) {
+                  setShowEarlyUnlockModal(true);
+                } else {
+                  await setEarlyUnlockAll(false);
+                }
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                earlyUnlockAll ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              title={earlyUnlockAll ? "Click to relock to recommended mode" : "Click to unlock early"}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform absolute top-0.5 ${
+                earlyUnlockAll ? 'left-5.5' : 'left-0.5'
+              }`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleSection('timeGatedInsights')}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+            >
+              <Icon name={openSections.timeGatedInsights ? "expand_less" : "expand_more"} className="text-xl" />
+            </button>
+          </div>
         </div>
 
-        <div className="pt-1 flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setShowEarlyUnlockModal(true)}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
-              earlyUnlockAll
-                ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200'
-                : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300'
-            }`}
-          >
-            <Sparkle size={14} weight="bold" />
-            <span>{earlyUnlockAll ? (isHinglish ? 'लॉक मोड बदलें / जानकारी' : 'Change Mode / Info') : (isHinglish ? 'समय से पहले अनलॉक करें (चेतावनी)' : 'Unlock Early (Warning)')}</span>
-          </button>
-        </div>
+        {openSections.timeGatedInsights && (
+          <div className="p-3.5 sm:p-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 animate-in fade-in duration-150">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+              {earlyUnlockAll
+                ? (isHinglish ? 'सारे 7D, 14D व 30D लॉक्स खुले हैं। कम सैंपल डेटा में शुरुआती शोर दिख सकता है।' : 'All 7D, 14D, and 30D insight locks are bypassed. Early data may show noise.')
+                : (isHinglish ? '7D, 14D और 30D के बाद ही इनसाइट्स अनलॉक होते हैं ताकि आपको सिर्फ सच्चा और वैज्ञानिक डेटा दिखे।' : '7D, 14D, and 30D time gates prevent premature cognitive bias and coincidence.')}
+            </p>
+
+            <div className="flex items-center justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => setShowEarlyUnlockModal(true)}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                  earlyUnlockAll
+                    ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200'
+                    : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300'
+                }`}
+              >
+                <Sparkle size={14} weight="bold" />
+                <span>{earlyUnlockAll ? (isHinglish ? 'लॉक मोड बदलें / जानकारी' : 'Change Mode / Info') : (isHinglish ? 'समय से पहले अनलॉक करें (चेतावनी)' : 'Unlock Early (Warning)')}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── 3. UNLOCK ADVANCED INSIGHTS (THIRD ACCORDION COLUMN) ────────────────── */}
@@ -2460,7 +2785,287 @@ export default function Profile() {
         </div>
       )}
 
-            {/* ── EARLY UNLOCK WARNING MODAL ────────────────────────────────────── */}
+            {/* ── MODAL: CUSTOM CENTERED SLOT METRIC SELECTOR ── */}
+      {activeSlotModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => {
+            setActiveSlotModal(null);
+            setSelectedSlotSubView(null);
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 shadow-2xl p-4 sm:p-5 max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-150 my-auto"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {selectedSlotSubView && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSlotSubView(null)}
+                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  >
+                    <ArrowLeft size={14} weight="bold" />
+                  </button>
+                )}
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white truncate">
+                    {selectedSlotSubView === 'persona_badge'
+                      ? (isHinglish ? 'सम्मान व बैज चुनें' : 'Select Honor / Badge')
+                      : selectedSlotSubView === 'focus_habit'
+                      ? (isHinglish ? 'फोकस हैबिट चुनें' : 'Select Focus Habit')
+                      : (isHinglish 
+                          ? `स्लॉट ${activeSlotModal === 'pill1' ? '1' : activeSlotModal === 'pill2' ? '2' : '3'} के लिए मेट्रिक` 
+                          : `Choose Metric for ${activeSlotModal === 'pill1' ? 'Slot 1 (Left)' : activeSlotModal === 'pill2' ? 'Slot 2 (Center)' : 'Slot 3 (Right)'}`
+                        )
+                    }
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                    {selectedSlotSubView === 'persona_badge'
+                      ? (isHinglish ? 'हेडर में दिखाने के लिए बैज चुनें' : 'Choose badge to feature in header')
+                      : selectedSlotSubView === 'focus_habit'
+                      ? (isHinglish ? 'हेडर में पिन करने के लिए हैबिट चुनें' : 'Pick a habit to pin')
+                      : (isHinglish ? 'त्वरित एक्सेस के लिए कोई एक विकल्प चुनें' : 'Select one metric to display in this slot')
+                    }
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSlotModal(null);
+                  setSelectedSlotSubView(null);
+                }}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors shrink-0"
+              >
+                <X size={15} weight="bold" />
+              </button>
+            </div>
+
+            {/* Modal Body: Option List or SubView */}
+            <div className="overflow-y-auto py-2.5 space-y-2 flex-1 scrollbar-none">
+              {/* SUBVIEW 1: PERSONA BADGE PICKER */}
+              {selectedSlotSubView === 'persona_badge' ? (
+                <div className="space-y-2">
+                  {/* Option 1: Auto / Latest Earned */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateHeaderPill('selectedBadgeId', '');
+                      handleUpdateHeaderPill(activeSlotModal, 'persona_badge');
+                      setActiveSlotModal(null);
+                      setSelectedSlotSubView(null);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${
+                      !headerPillsConfig.selectedBadgeId
+                        ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/50 ring-1 ring-amber-500/30'
+                        : 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200/80 dark:border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-white shrink-0 shadow-2xs">
+                        <Crown size={18} weight="fill" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black text-slate-900 dark:text-white">
+                            {isHinglish ? 'नवीनतम अर्जित सम्मान (ऑटो)' : 'Latest Earned Honor (Auto)'}
+                          </span>
+                          <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                            {isHinglish ? 'अनुशंसित' : 'Auto'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {isHinglish 
+                            ? `वर्तमान: ${badgeState.topBadge?.hindiTitle || 'जेनेसिस'}` 
+                            : `Current: ${badgeState.topBadge?.title || 'Genesis'}`
+                          }
+                        </span>
+                      </div>
+                    </div>
+                    {!headerPillsConfig.selectedBadgeId && (
+                      <Check size={16} weight="bold" className="text-amber-500 shrink-0" />
+                    )}
+                  </button>
+
+                  {/* List of All Badges (Unlocked ones highlighted) */}
+                  <div className="pt-2">
+                    <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 block px-1 pb-1.5">
+                      {isHinglish ? 'विशिष्ट बैज चुनें' : 'Or Pick a Specific Honor'}
+                    </span>
+                    <div className="space-y-1.5">
+                      {badgeState.allBadges.map(badge => {
+                        const isUnlocked = badgeState.unlockedBadges.some(b => b.id === badge.id);
+                        const isSelected = headerPillsConfig.selectedBadgeId === badge.id;
+
+                        return (
+                          <button
+                            key={badge.id}
+                            type="button"
+                            onClick={() => {
+                              handleUpdateHeaderPill('selectedBadgeId', badge.id);
+                              handleUpdateHeaderPill(activeSlotModal, 'persona_badge');
+                              setActiveSlotModal(null);
+                              setSelectedSlotSubView(null);
+                            }}
+                            className={`w-full flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left ${
+                              isSelected
+                                ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/50 ring-1 ring-amber-500/30'
+                                : 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200/80 dark:border-slate-800'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${badge.gradient} flex items-center justify-center text-white shrink-0 shadow-2xs ${
+                                !isUnlocked ? 'opacity-40 grayscale' : ''
+                              }`}>
+                                <BadgePersonaIcon iconName={badge.iconName} size={16} weight="fill" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-black text-slate-900 dark:text-white truncate">
+                                    {isHinglish ? badge.hindiTitle : badge.title}
+                                  </span>
+                                  {isUnlocked ? (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                      {isHinglish ? 'अनलॉक' : 'Unlocked'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400">
+                                      {isHinglish ? 'लॉक' : 'Locked'}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-slate-400 truncate block mt-0.5">
+                                  {isHinglish ? badge.hindiCriteria : badge.criteria}
+                                </span>
+                              </div>
+                            </div>
+
+                            {isSelected && (
+                              <Check size={16} weight="bold" className="text-amber-500 shrink-0" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : selectedSlotSubView === 'focus_habit' ? (
+                /* SUBVIEW 2: FOCUS HABIT PICKER */
+                <div className="space-y-1.5">
+                  {habits.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-slate-400">
+                      {isHinglish ? 'कोई सक्रिय हैबिट उपलब्ध नहीं है' : 'No active habits found'}
+                    </div>
+                  ) : (
+                    habits.map(habit => {
+                      const isSelected = headerPillsConfig.focusHabitId === habit.id;
+
+                      return (
+                        <button
+                          key={habit.id}
+                          type="button"
+                          onClick={() => {
+                            handleUpdateHeaderPill('focusHabitId', habit.id);
+                            handleUpdateHeaderPill(activeSlotModal, 'focus_habit');
+                            setActiveSlotModal(null);
+                            setSelectedSlotSubView(null);
+                          }}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left ${
+                            isSelected
+                              ? 'bg-rose-500/10 dark:bg-rose-500/15 border-rose-500/50 ring-1 ring-rose-500/30'
+                              : 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200/80 dark:border-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                              <HabitIcon habit={habit} size={18} boxed={false} weight="fill" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-xs font-black text-slate-900 dark:text-white truncate block">
+                                {habit.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                                {habit.category || 'General'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {isSelected && (
+                            <Check size={16} weight="bold" className="text-rose-500 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              ) : (
+                /* MAIN VIEW: CHOOSE METRIC FOR SLOT */
+                <div className="space-y-2">
+                  {availablePillOptions.map(option => {
+                    const isSelected = headerPillsConfig[activeSlotModal] === option.id;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          if (option.id === 'persona_badge') {
+                            setSelectedSlotSubView('persona_badge');
+                          } else if (option.id === 'focus_habit') {
+                            setSelectedSlotSubView('focus_habit');
+                          } else {
+                            handleUpdateHeaderPill(activeSlotModal, option.id);
+                            setActiveSlotModal(null);
+                            setSelectedSlotSubView(null);
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${
+                          isSelected
+                            ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/50 ring-1 ring-amber-500/30'
+                            : 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200/80 dark:border-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${option.bgGradient} flex items-center justify-center text-white shrink-0 shadow-2xs`}>
+                            <BadgePersonaIcon iconName={option.iconName} size={18} weight="fill" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white block">
+                              {option.label}
+                            </span>
+                            <span className="text-[10px] text-slate-400 line-clamp-1 block mt-0.5">
+                              {option.desc}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {option.hasSubConfig && (
+                            <span className="text-[10px] font-bold text-amber-500">
+                              {option.id === 'focus_habit' ? (habits.find(h => h.id === headerPillsConfig.focusHabitId)?.name || 'Pick') : ''}
+                            </span>
+                          )}
+                          {isSelected ? (
+                            <Check size={16} weight="bold" className="text-amber-500" />
+                          ) : option.hasSubConfig ? (
+                            <CaretRight size={14} weight="bold" className="text-slate-400" />
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EARLY UNLOCK WARNING MODAL ────────────────────────────────────── */}
       <EarlyUnlockWarningModal
         isOpen={showEarlyUnlockModal}
         onClose={() => setShowEarlyUnlockModal(false)}

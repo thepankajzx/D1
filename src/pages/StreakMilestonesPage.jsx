@@ -1,9 +1,12 @@
 import confetti from 'canvas-confetti';
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import Icon from '../components/Icon';
+import BadgePersonaIcon from '../components/BadgePersonaIcon';
+import { getHeaderPillsConfig, saveHeaderPillsConfig } from '../components/HeaderPillWidgets';
+import { evaluateUserBadges } from '../lib/badgeEngine';
 import { 
   Flame, 
   Trophy, 
@@ -21,7 +24,7 @@ import {
   CheckCircle,
   CaretRight
 } from '@phosphor-icons/react';
-import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
+import { calculateStreakData, getNextMilestone } from '../lib/streakEngine';
 
 export const DEDICATED_MILESTONES = [
   { 
@@ -145,85 +148,79 @@ export const DEDICATED_MILESTONES = [
 
 export default function StreakMilestonesPage() {
   const navigate = useNavigate();
-  const { allSummaries = [], streakTrackingEnabled } = useData();
+  const { allSummaries = [], habits = [], streakTrackingEnabled } = useData();
   const { isHinglish } = useLanguage();
 
-  if (!streakTrackingEnabled) {
-    return (
-      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4 animate-in fade-in">
-        <div className="w-16 h-16 mx-auto rounded-3xl bg-amber-500/15 text-amber-500 flex items-center justify-center shadow-xs">
-          <Trophy size={32} weight="fill" />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-          {isHinglish ? 'स्ट्रीक और माइलस्टोन्स बंद हैं' : 'Streak Milestones Disabled'}
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-          {isHinglish
-            ? 'आपने प्रोफ़ाइल सेटिंग्स में स्ट्रीक ट्रैकिंग बंद की हुई है। ट्रॉफी वॉल और स्ट्रीक लेवल्स देखने के लिए प्रोफ़ाइल सेटिंग्स में इसे चालू करें।'
-            : 'You turned off streak tracking in your Profile settings. Turn it on anytime to track your trophy wall and milestone tiers.'}
-        </p>
-        <div className="pt-3 flex items-center justify-center gap-3">
-          <button
-            onClick={() => navigate('/profile')}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-sm active:scale-95"
-          >
-            {isHinglish ? 'प्रोफ़ाइल सेटिंग्स खोलें' : 'Open Profile Settings'}
-          </button>
-          <button
-            onClick={() => navigate('/analytics')}
-            className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-95"
-          >
-            {isHinglish ? 'एनालिटिक्स देखें' : 'Go to Analytics'}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const [activeTab, setActiveTab] = useState('persona'); // 'persona' | 'streak'
+  const [headerConfig, setHeaderConfig] = useState(getHeaderPillsConfig);
+  const [celebratedItem, setCelebratedItem] = useState(null);
 
+  // Badge Engine
+  const badgeState = useMemo(() => {
+    return evaluateUserBadges(allSummaries, habits, streakTrackingEnabled);
+  }, [allSummaries, habits, streakTrackingEnabled]);
+
+  // Streak Data
   const streakData = useMemo(() => {
     return calculateStreakData('all', allSummaries);
   }, [allSummaries]);
 
   const bestStreak = Math.max(streakData.currentStreak, streakData.longestStreak);
-  const unlockedCount = DEDICATED_MILESTONES.filter(m => bestStreak >= m.target).length;
+  const unlockedStreakCount = DEDICATED_MILESTONES.filter(m => bestStreak >= m.target).length;
   const milestoneInfo = getNextMilestone(streakData.currentStreak);
 
-  const [celebratedMilestone, setCelebratedMilestone] = useState(null);
-  const [celebratedTargets, setCelebratedTargets] = useState(() => {
-    try {
-      const saved = localStorage.getItem('definite_celebrated_milestones');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  // Sort badges: Unlocked/Achieved badges appear at the TOP, then locked ones by order
+  const sortedBadges = useMemo(() => {
+    return [...badgeState.allBadges].sort((a, b) => {
+      if (a.isUnlocked && !b.isUnlocked) return -1;
+      if (!a.isUnlocked && b.isUnlocked) return 1;
+      return (a.order || 0) - (b.order || 0);
+    });
+  }, [badgeState.allBadges]);
 
-  const handleMilestoneClick = (m, isUnlocked) => {
-    if (navigator.vibrate) navigator.vibrate(30);
+  const topActiveBadge = badgeState.topBadge || badgeState.allBadges[0];
+
+  const handleItemClick = (badge, isUnlocked) => {
+    if (navigator.vibrate) navigator.vibrate(25);
+    setCelebratedItem(badge);
+
     if (isUnlocked) {
-      setCelebratedMilestone(m);
-
-      // Only burst confetti on the very first time the user taps and views this unlocked milestone
-      const alreadyCelebrated = celebratedTargets.includes(m.target);
-      if (!alreadyCelebrated) {
-        const updated = [...celebratedTargets, m.target];
-        setCelebratedTargets(updated);
-        try {
-          localStorage.setItem('definite_celebrated_milestones', JSON.stringify(updated));
-          confetti({
-            particleCount: 90,
-            spread: 80,
-            origin: { y: 0.5 },
-            zIndex: 9999
-          });
-        } catch (e) {}
-      }
+      try {
+        confetti({
+          particleCount: 75,
+          spread: 70,
+          origin: { y: 0.5 },
+          zIndex: 9999
+        });
+      } catch (e) {}
     }
+  };
+
+  const handleEquipBadge = (badgeId) => {
+    if (navigator.vibrate) navigator.vibrate(25);
+    const current = getHeaderPillsConfig();
+    const updated = {
+      ...current,
+      enabled: true,
+      selectedBadgeId: badgeId
+    };
+    if (updated.pill1 !== 'persona_badge' && updated.pill2 !== 'persona_badge' && updated.pill3 !== 'persona_badge') {
+      updated.pill1 = 'persona_badge';
+    }
+    saveHeaderPillsConfig(updated);
+    setHeaderConfig(updated);
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    } catch (e) {}
   };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 pb-24 pt-2">
-      <div className="w-full mx-auto px-3 sm:px-6 space-y-5">
+      <div className="w-full max-w-4xl mx-auto px-3 sm:px-6 space-y-3.5">
         
         {/* ── TOP NAV BAR ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-3 pt-2">
@@ -237,219 +234,345 @@ export default function StreakMilestonesPage() {
 
           <div className="text-right">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500 block">
-              {isHinglish ? 'ट्रॉफ़ी और माइलस्टोन्स' : 'Milestones & Trophies'}
+              {isHinglish ? 'ट्रॉफ़ी एवं पदवी वॉल' : 'Honors & Badges'}
             </span>
             <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-none mt-0.5">
-              Streak Milestones
+              {isHinglish ? 'माइलस्टोन्स एवं बैज वॉल' : 'Milestones & Badge Wall'}
             </h1>
           </div>
         </div>
 
-        {/* ── MASTER HERO CARD (PREMIUM & 100% UNBREAKABLE) ────────────────────────── */}
-        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-2xs relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-2xl pointer-events-none -translate-y-8 translate-x-8"></div>
+        {/* ── MASTER HERO CARD (TOP ACTIVE HONOR) ───────────────────── */}
+        <div className="bg-white dark:bg-[#131722] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-2xl pointer-events-none -translate-y-8 translate-x-8"></div>
 
-          <div className="space-y-3 relative z-10">
-            {/* Top Row: Flame Icon + Streak Count + Trophy Badge */}
+          <div className="space-y-2.5 relative z-10">
+            {/* Top Row: Active Persona Title Callout */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/25">
-                  <Flame size={26} weight="fill" className="animate-pulse" />
+                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${topActiveBadge?.gradient || 'from-amber-500 to-orange-500'} text-white flex items-center justify-center shrink-0 shadow-md ${topActiveBadge?.glow || 'shadow-amber-500/25'}`}>
+                  <BadgePersonaIcon iconName={topActiveBadge?.iconName || 'Crown'} size={22} weight="fill" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                      {streakData.currentStreak}
+                    <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none truncate">
+                      {isHinglish ? topActiveBadge?.hindiTitle : topActiveBadge?.title}
                     </span>
-                    <span className="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">
-                      {isHinglish ? 'दिन की स्ट्रीक' : 'Day Streak'}
+                    <span className="text-[9.5px] font-black text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full shrink-0">
+                      {isHinglish ? 'सर्वोच्च पदवी' : 'TOP HONOR'}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1 whitespace-nowrap">
-                    {isHinglish ? `Personal Best: ${bestStreak} दिन` : `Personal Best: ${bestStreak} days`}
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-1 truncate">
+                    {isHinglish ? topActiveBadge?.hindiDefinition : topActiveBadge?.definition}
                   </p>
                 </div>
               </div>
 
-              {/* Trophy Pill Badge (Right Side) */}
-              <div className="shrink-0">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black whitespace-nowrap">
-                  <Trophy size={14} weight="fill" className="text-amber-500" />
-                  <span>{unlockedCount} / {DEDICATED_MILESTONES.length}</span>
+              {/* Total Unlocked Pill Badge */}
+              <div className="shrink-0 text-right">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black whitespace-nowrap">
+                  <Trophy size={13} weight="fill" className="text-amber-500" />
+                  <span>{badgeState.unlockedBadges.length} / {badgeState.allBadges.length}</span>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Row: Next Milestone Target Banner */}
-            <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0">
-                {isHinglish ? 'अगला पड़ाव' : 'Next Milestone'}:
+            {/* Bottom Row: Auto Feature Info */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[11px]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                {isHinglish ? 'हेडर पिल' : 'Header Pill'}:
               </span>
               <span className="font-bold text-amber-600 dark:text-amber-400 truncate pl-2">
-                {milestoneInfo.label}
+                {isHinglish 
+                  ? 'आपका सर्वोच्च अर्जित बैज स्वतः टॉप हेडर पिल में दिखेगा' 
+                  : 'Highest unlocked honor automatically appears in top header pill'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* ── 9 COMPACT MILESTONE TROPHIES (2-COL MOBILE, 3-COL DESKTOP) ── */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 pt-0.5">
-          {DEDICATED_MILESTONES.map((m) => {
-            const IconComponent = m.icon;
-            const isUnlocked = bestStreak >= m.target;
-            const isNext = !isUnlocked && m.target === milestoneInfo.target;
-            const remaining = Math.max(0, m.target - streakData.currentStreak);
+        {/* ── COMPACT SINGLE-LINE TAB SWITCHER ───────────────────────── */}
+        <div className="flex items-center p-1 rounded-2xl bg-slate-200/60 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setActiveTab('persona')}
+            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs sm:text-[13px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'persona'
+                ? 'bg-white dark:bg-[#131722] text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Crown size={15} weight="fill" className={activeTab === 'persona' ? 'text-amber-500' : ''} />
+            <span>{isHinglish ? 'बैजेस' : 'Honors'}</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              {badgeState.unlockedBadges.length}
+            </span>
+          </button>
 
-            return (
-              <div
-                key={m.target}
-                onClick={() => handleMilestoneClick(m, isUnlocked)}
-                className={`p-2.5 sm:p-3 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between gap-2 cursor-pointer ${
-                  isUnlocked
-                    ? 'bg-white dark:bg-[#131722] border-slate-200/90 dark:border-slate-800 shadow-2xs hover:shadow-xs'
-                    : isNext
-                    ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700/60 shadow-2xs ring-1 ring-blue-400/30'
-                    : 'bg-slate-50 dark:bg-slate-800/20 border-slate-200/60 dark:border-slate-800/40 opacity-70'
-                }`}
-              >
-                {/* Card Top: Icon & Target Tag */}
-                <div className="flex items-center justify-between gap-1">
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    isUnlocked
-                      ? 'bg-gradient-to-tr ' + m.color + ' text-white shadow-xs'
-                      : isNext
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
-                  }`}>
-                    {isUnlocked ? (
-                      <IconComponent size={16} weight="fill" />
-                    ) : isNext ? (
-                      <IconComponent size={16} weight="bold" />
-                    ) : (
-                      <Lock size={14} weight="bold" />
-                    )}
-                  </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('streak')}
+            className={`flex-1 py-1.5 sm:py-2 rounded-xl text-xs sm:text-[13px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'streak'
+                ? 'bg-white dark:bg-[#131722] text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Flame size={15} weight="fill" className={activeTab === 'streak' ? 'text-orange-500' : ''} />
+            <span>{isHinglish ? 'स्ट्रीक्स' : 'Streaks'}</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              {unlockedStreakCount}
+            </span>
+          </button>
+        </div>
 
-                  <span className={`text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
-                    isUnlocked
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                      : isNext
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-                      : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-500'
-                  }`}>
-                    {m.target} {isHinglish ? 'दिन' : 'Days'}
+        {/* ── TAB 1: HONORS & BADGES (SQUARE CARDS GRID WITH ACHIEVED FIRST) ── */}
+        {activeTab === 'persona' && (
+          <div className="space-y-3 pt-0.5 animate-in fade-in duration-200">
+            {/* Achieved Badges Ribbon if user has unlocked any */}
+            {badgeState.unlockedBadges.length > 0 && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-2 shadow-2xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Trophy size={15} weight="fill" className="text-amber-500 shrink-0" />
+                  <span className="text-xs font-black text-amber-700 dark:text-amber-300 truncate">
+                    {badgeState.unlockedBadges.length} {isHinglish ? 'बैज अर्जित किए' : 'Honors Achieved'}
                   </span>
                 </div>
+                <div className="flex items-center -space-x-1 shrink-0">
+                  {badgeState.unlockedBadges.map((b) => (
+                    <div 
+                      key={b.id} 
+                      className={`w-6 h-6 rounded-full bg-gradient-to-br ${b.gradient} text-white flex items-center justify-center ring-2 ring-white dark:ring-[#131722] shadow-xs`}
+                      title={b.title}
+                    >
+                      <BadgePersonaIcon iconName={b.iconName} size={11} weight="fill" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                {/* Card Middle: Title & 1-Line Description */}
-                <div>
-                  <h3 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white leading-tight truncate">
-                    {isHinglish ? m.hindiTitle : m.title}
-                  </h3>
-                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug line-clamp-2">
-                    {isHinglish ? m.hindiDesc : m.desc}
+            {/* Square Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+              {sortedBadges.map((badge) => {
+                const isUnlocked = badge.isUnlocked;
+                const isTopHonor = topActiveBadge?.id === badge.id;
+
+                return (
+                  <div
+                    key={badge.id}
+                    onClick={() => handleItemClick(badge, isUnlocked)}
+                    className={`p-3 rounded-2xl border transition-all flex flex-col justify-between aspect-square relative overflow-hidden select-none cursor-pointer active:scale-97 text-left ${
+                      isUnlocked
+                        ? isTopHonor
+                          ? 'bg-white dark:bg-[#131722] border-amber-500/70 shadow-xs ring-1 ring-amber-500/40'
+                          : 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/60 border-slate-200/90 dark:border-slate-800 shadow-2xs'
+                        : 'bg-slate-100/60 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800/40 opacity-70'
+                    }`}
+                  >
+                    {/* Top Row: Small Icon + Status Pill */}
+                    <div className="flex items-start justify-between gap-1 shrink-0">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${badge.gradient} text-white flex items-center justify-center shrink-0 shadow-xs ${badge.glow}`}>
+                        <BadgePersonaIcon iconName={badge.iconName} size={17} weight="fill" />
+                      </div>
+
+                      {isUnlocked ? (
+                        <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-full shrink-0 flex items-center gap-0.5 ${
+                          isTopHonor
+                            ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300/60'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                        }`}>
+                          <CheckCircle size={10} weight="fill" />
+                          <span>{isTopHonor ? (isHinglish ? 'शीर्ष' : 'TOP') : (isHinglish ? 'अर्जित' : 'EARNED')}</span>
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 shrink-0 text-[9px] font-bold">
+                          <Lock size={10} weight="bold" />
+                          <span className="truncate max-w-[50px]">{badge.progress}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Middle: Badge Name & Definition ("Kyun mila hai") */}
+                    <div className="my-auto py-1 min-w-0">
+                      <h3 className={`text-xs sm:text-[13px] font-black truncate leading-tight ${isUnlocked ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {isHinglish ? badge.hindiTitle : badge.title}
+                      </h3>
+                      <p className="text-[10px] leading-snug line-clamp-3 text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                        {isHinglish ? badge.hindiDefinition : badge.definition}
+                      </p>
+                    </div>
+
+                    {/* Bottom: Criteria pill */}
+                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 shrink-0 flex items-center justify-between text-[9px] text-slate-400 dark:text-slate-500">
+                      <span className="truncate font-semibold">{isHinglish ? badge.hindiCriteria : badge.criteria}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 2: STREAK MILESTONES (9 DEDICATED TIERS) ─────────── */}
+        {activeTab === 'streak' && (
+          <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+            {!streakTrackingEnabled && (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 text-amber-800 dark:text-amber-300">
+                  <Flame size={18} weight="fill" className="text-amber-500 shrink-0" />
+                  <span>
+                    {isHinglish
+                      ? 'स्ट्रीक ट्रैकिंग बंद है। स्ट्रीक माइलस्टोन्स अनलॉक करने के लिए प्रोफ़ाइल में चालू करें।'
+                      : 'Streak tracking is OFF. Turn it on in Profile settings to activate consecutive streak milestones.'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs"
+                >
+                  {isHinglish ? 'चालू करें' : 'Settings'}
+                </button>
+              </div>
+            )}
+
+            {/* Streak Hero Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md relative overflow-hidden">
+              <div className="flex items-center justify-between gap-3 relative z-10">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-200">
+                    {isHinglish ? 'सक्रिय स्ट्रीक रिकॉर्ड' : 'Active Streak Engine'}
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-black tracking-tight leading-none">
+                      {streakData.currentStreak}
+                    </span>
+                    <span className="text-sm font-bold text-amber-100">
+                      {isHinglish ? 'दिन की स्ट्रीक' : 'Days Current'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-100 font-medium">
+                    {isHinglish ? 'सर्वश्रेष्ठ रिकॉर्ड' : 'All-time Best'}: <span className="font-bold text-white">{bestStreak} {isHinglish ? 'दिन' : 'days'}</span>
                   </p>
                 </div>
 
-                {/* Card Bottom: Progress / Status */}
-                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80">
-                  {isUnlocked ? (
-                    <div className="flex items-center justify-between text-[10.5px] font-black text-emerald-600 dark:text-emerald-400">
-                      <span className="flex items-center gap-1">
-                        <CheckCircle size={12} weight="fill" />
-                        <span>{isHinglish ? 'हासिल' : 'Achieved'}</span>
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-bold">✓</span>
-                    </div>
-                  ) : isNext ? (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9.5px] font-black text-blue-600 dark:text-blue-400 leading-none">
-                        <span>{remaining} {isHinglish ? 'दिन बाकी' : 'left'}</span>
-                        <span>{streakData.currentStreak}/{m.target}</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                          style={{ width: `${milestoneInfo.progressPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-[9px] font-bold text-slate-400 block truncate">
-                      {isHinglish ? `${m.target} दिन पर अनलॉक` : `Unlocks at ${m.target}d`}
-                    </span>
-                  )}
+                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
+                  <Flame size={32} weight="fill" className="text-white" />
                 </div>
-
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* ── MOTIVATION PHILOSOPHY CARD ──────────────────────────────── */}
-        <div className="p-4 sm:p-5 rounded-[24px] bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 border border-amber-500/20 text-slate-800 dark:text-slate-200 space-y-2">
-          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-            <Trophy size={20} weight="fill" />
-            <h4 className="text-xs sm:text-sm font-black">
-              {isHinglish ? 'माइलस्टोन्स की शक्ति - अनुशासन का प्रमाण' : 'The Power of Streak Milestones'}
-            </h4>
+            {/* 9 Streak Milestones List */}
+            <div className="space-y-2.5">
+              {DEDICATED_MILESTONES.map((m) => {
+                const isUnlocked = bestStreak >= m.target;
+                const IconComponent = m.icon;
+
+                return (
+                  <div
+                    key={m.target}
+                    onClick={() => handleItemClick({ ...m, id: `streak_${m.target}` }, isUnlocked)}
+                    className={`p-3 sm:p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                      isUnlocked
+                        ? 'bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/60 border-slate-200/90 dark:border-slate-800 shadow-2xs cursor-pointer'
+                        : 'bg-slate-100/60 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800/40 opacity-70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.color} text-white flex items-center justify-center shrink-0 shadow-xs`}>
+                        <IconComponent size={20} weight="fill" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className={`text-xs sm:text-sm font-black truncate ${isUnlocked ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
+                            {isHinglish ? m.hindiTitle : m.title}
+                          </h4>
+                          {isUnlocked && (
+                            <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-full shrink-0">
+                              {isHinglish ? 'अनलॉक' : 'UNLOCKED'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                          {isHinglish ? m.hindiDesc : m.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 text-right">
+                      {isUnlocked ? (
+                        <div className="w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                          <CheckCircle size={16} weight="fill" />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-slate-400 text-xs font-bold">
+                          <Lock size={12} weight="bold" />
+                          <span>{bestStreak}/{m.target}d</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-            {isHinglish
-              ? 'हर एक माइलस्टोन केवल एक संख्या नहीं है, बल्कि आपके आत्म-अनुशासन का प्रमाण है। 3 दिन से शुरू होकर 365 दिन का ग्रैंडमास्टर बनना एक दिन-प्रतिदिन की प्रक्रिया है। जब आप एक बैज जीतते हैं, तो वह हमेशा आपकी प्रोफ़ाइल की शोभा बढ़ाता है।'
-              : 'Each milestone is a monument to your daily discipline. Moving from 3-day Ignition to 365-day Grandmaster cements true mastery that reshapes your trajectory for life.'}
-          </p>
-        </div>
+        )}
 
       </div>
 
-      {/* ── CELEBRATION MODAL ON MILESTONE TAP ── */}
-      {celebratedMilestone && (() => {
-        const ModalIcon = celebratedMilestone.icon || Trophy;
-        return (
+      {/* ── CELEBRATION / DETAILS MODAL ─────────────────────────────── */}
+      {celebratedItem && (
+        <div 
+          onClick={() => setCelebratedItem(null)}
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200"
+        >
           <div 
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150"
-            onClick={() => setCelebratedMilestone(null)}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-[#131722] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 max-w-sm w-full space-y-4 shadow-2xl text-center relative overflow-hidden animate-in zoom-in-95 duration-200 my-auto"
           >
-            <div 
-              className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150 text-center"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr ${celebratedMilestone.color || 'from-amber-400 to-orange-500'} text-white flex items-center justify-center shadow-lg animate-bounce`}>
-                <ModalIcon size={28} weight="fill" />
-              </div>
+            <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${celebratedItem.gradient || 'from-amber-400 to-orange-500'} text-white flex items-center justify-center shadow-md`}>
+              <BadgePersonaIcon iconName={celebratedItem.iconName || 'Crown'} size={26} weight="fill" />
+            </div>
 
-              <div>
-                <span className="inline-flex items-center gap-1 text-[10.5px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                  <Trophy size={13} weight="fill" />
-                  <span>{isHinglish ? 'माइलस्टोन हासिल!' : 'Milestone Unlocked!'}</span>
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1.5">
-                  {isHinglish ? celebratedMilestone.hindiTitle : celebratedMilestone.title}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {isHinglish ? celebratedMilestone.hindiDesc : celebratedMilestone.desc}
-                </p>
-              </div>
-
-              <p className="text-[11px] italic font-semibold text-amber-700/90 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-800/60">
-                "{celebratedMilestone.motto}"
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 block">
+                {celebratedItem.isUnlocked ? (isHinglish ? 'माइलस्टोन हासिल!' : 'HONOR ACHIEVED!') : (isHinglish ? 'माइलस्टोन विवरण' : 'HONOR CRITERIA')}
+              </span>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1">
+                {isHinglish ? (celebratedItem.hindiTitle || celebratedItem.title) : celebratedItem.title}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 font-medium leading-relaxed">
+                {isHinglish ? (celebratedItem.hindiDefinition || celebratedItem.desc) : (celebratedItem.definition || celebratedItem.desc)}
               </p>
+              <div className="mt-3 py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 inline-block text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                {isHinglish ? celebratedItem.hindiCriteria : celebratedItem.criteria}
+              </div>
+            </div>
 
+            {celebratedItem.isUnlocked && celebratedItem.id && (
               <button
                 type="button"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(20);
-                  setCelebratedMilestone(null);
+                  handleEquipBadge(celebratedItem.id);
+                  setCelebratedItem(null);
                 }}
-                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs cursor-pointer hover:opacity-90 transition-all shadow-xs"
+                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
               >
-                {isHinglish ? 'शानदार! (Continue)' : 'Awesome!'}
+                <Crown size={15} weight="fill" />
+                <span>{isHinglish ? 'हेडर पिल में प्राथमिकता दें' : 'Feature in Header Pill'}</span>
               </button>
-            </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setCelebratedItem(null)}
+              className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-all cursor-pointer"
+            >
+              {isHinglish ? 'बंद करें' : 'Close'}
+            </button>
           </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 }

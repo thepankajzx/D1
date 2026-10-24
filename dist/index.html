@@ -60,7 +60,7 @@
       (function() {
         try {
           var stored = localStorage.getItem('theme');
-          var isDark = stored === 'dark' || (!stored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var isDark = stored ? stored === 'dark' : true; // D1 defaults to dark theme
           if (isDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.backgroundColor = '#0f141c';
@@ -75,42 +75,42 @@
     </script>
     
     <title>Definite - Habit Intelligence</title>
-    <script type="module" crossorigin src="./assets/index-C46y7Vst-1792771039499.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/Sparkle.es-CO7-rffO-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/chunk-62JRHF6Z-CjE4P7Rq-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/PottedPlant.es-ZGk5EsrC-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ArrowLeft.es-CnpgORLd-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ArrowRight.es-BHUwk3NP-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lightning.es-DTIN6Isx-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Clock.es-BsdZtGrw-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ShieldCheck.es-C-2N2Nzt-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Icon-BYteqLa7-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/BatteryWarning.es-DzL7erU8-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/BookOpen.es-5gLK0END-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ShieldChevron.es-CbOsFqav-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ChartBar.es-14u3LdQe-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/CaretDown.es-Y1fp_EoB-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/X.es-BK8fz0TH-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Warning.es-BwJcG3__-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/CheckCircle.es-DQJdnTXm-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Star.es-BN1WniSY-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Flame.es-BM7I3rga-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Scroll.es-Dp0xJliA-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lightbulb.es-CoC5IQw2-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lock.es-IkGO6zAw-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/LockKey.es-CBcdbJi2-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/Target.es-CTV9Dqy7-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/TrendDown.es-jLQ9C9_4-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/TrendUp.es-DEzOPN6S-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/index.esm-B7BOsUSJ-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/firebase-UvSz9yyd-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/definitions-CORc9I-y-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/AuthContext-CpfPzbqv-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/DataContext-C9Ui5Pi2-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/HabitIcon-223X2Zoc-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/ProPill-DYvN1wo2-1792771039499.js">
-    <link rel="modulepreload" crossorigin href="./assets/LanguageContext-CUWRZwFz-1792771039499.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-CftfQgjI-1792771039499.css">
+    <script type="module" crossorigin src="./assets/index-DxjREme4-1792826205643.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/Sparkle.es-CO7-rffO-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/chunk-62JRHF6Z-KxnO0443-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/PottedPlant.es-DqSOWzBI-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Lightbulb.es-PI8N-Srh-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/ArrowRight.es-Cfo7xw0z-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Lightning.es-CjelSMzG-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Clock.es-DWymHgrp-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/ShieldCheck.es-BE1q6GA6-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Icon-BMgsXGxM-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/BatteryWarning.es-CGqJWx0s-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/BookOpen.es-DyYQXxAn-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/ChartBar.es-D3na0MRw-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/CaretDown.es-o6bKMg-x-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/X.es-6pEmaKcr-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Warning.es-B3n7odKE-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/CheckCircle.es-C6999Lok-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Star.es-CtSNG2z--1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Scroll.es-BwEtN5Z8-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Lock.es-Dj0awNDT-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/LockKey.es-BQQzBDZE-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/Target.es-0wlfjmz6-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/TrendDown.es-8H0InrHZ-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/TrendUp.es-VZxGPrQ8-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/index.esm-B7BOsUSJ-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/firebase-3Xw9LL31-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CD5Q11Pt-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/definitions-BMtIys5d-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/AuthContext-MaY_JvhV-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/DataContext-Dn4CqW0e-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/HabitIcon-Dp30ZBBO-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/streakEngine-CS4QmyiT-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/ProPill-BvhxOUaq-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/LanguageContext-DFCUphGi-1792826205643.js">
+    <link rel="modulepreload" crossorigin href="./assets/recoveryAnalytics-BFi0Ujwa-1792826205643.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-kf4awp0A-1792826205643.css">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run Definite.</noscript>

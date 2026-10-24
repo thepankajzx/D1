@@ -38,14 +38,14 @@ export default function Footer({ hideCta = false }) {
           <div className="md:col-span-4 space-y-3">
             <Link to="/" className="inline-flex items-center group">
               <img 
-                src="/logo-black.svg?v=15" 
+                src="/logo-white.svg?v=20" 
                 alt="Definite" 
-                className="h-[22px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 dark:hidden" 
+                className={`h-[22px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 ${isDark ? 'block' : 'hidden dark:block'}`} 
               />
               <img 
-                src="/logo-white.svg?v=15" 
+                src="/logo-black.svg?v=20" 
                 alt="Definite" 
-                className="h-[22px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 hidden dark:block" 
+                className={`h-[22px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 ${isDark ? 'hidden' : 'block dark:hidden'}`} 
               />
             </Link>
 

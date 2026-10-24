@@ -77,6 +77,19 @@ export default function Dashboard() {
   const [showKpiLockModal, setShowKpiLockModal] = useState(false);
   const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
 
+  // Hardware Back: close open modals before anything else
+  useEffect(() => {
+    const handleHardwareBack = (e) => {
+      if (showPaywall) { setShowPaywall(false); e.preventDefault(); return; }
+      if (showCoreYCheckIn) { setShowCoreYCheckIn(false); e.preventDefault(); return; }
+      if (showKpiHelp) { setShowKpiHelp(false); e.preventDefault(); return; }
+      if (showPartialSaveModal) { setShowPartialSaveModal(false); e.preventDefault(); return; }
+      if (showKpiLockModal) { setShowKpiLockModal(false); e.preventDefault(); return; }
+    };
+    window.addEventListener('d1_hardware_back', handleHardwareBack);
+    return () => window.removeEventListener('d1_hardware_back', handleHardwareBack);
+  }, [showPaywall, showCoreYCheckIn, showKpiHelp, showPartialSaveModal, showKpiLockModal]);
+
 
   // Fetch entries when selectedDate changes
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider, useData } from './contexts/DataContext';
 import HabitAiCoachBot from './components/HabitAiCoachBot';
@@ -12,7 +12,9 @@ import { GuestProvider, useGuest } from './contexts/GuestContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Icon from './components/Icon';
 import Footer from './components/Footer';
+import HeaderPillWidgets from './components/HeaderPillWidgets';
 import { Compass, SunHorizon, ChartLineUp, Binoculars, Moon, Sun } from '@phosphor-icons/react';
+import { App as CapApp } from '@capacitor/app';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -106,7 +108,7 @@ function Layout({ children }) {
     } else {
       isActive = location.pathname.startsWith(path);
     }
-    return `h-13 flex items-center pt-0.5 font-label-sm text-label-sm tracking-[0.02em] font-medium uppercase transition-colors ${
+    return `h-[50px] flex items-center pt-0.5 font-label-sm text-label-sm tracking-[0.02em] font-medium uppercase transition-colors ${
       isActive 
         ? 'text-primary border-b-2 border-primary pb-0.5' 
         : 'text-on-surface-variant hover:text-primary hover:opacity-80'
@@ -130,17 +132,40 @@ function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background w-full max-w-full overflow-x-hidden">
       {/* Top Navbar */}
-      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] box-border">
+      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 h-[50px] box-border">
         {/* Left: Brand Logo Only */}
         <Link to="/" className="flex items-center flex-shrink-0">
           {/* Mobile (< sm): Standalone D mark */}
-          <img src="/icon-d-black.svg?v=8" alt="Definite" className="w-auto object-contain dark:hidden sm:hidden" style={{height: '24px'}} />
-          <img src="/icon-d-white.svg?v=8" alt="Definite" className="w-auto object-contain hidden dark:block sm:hidden" style={{height: '24px'}} />
+          <img 
+            src="/icon-d-white.svg?v=12" 
+            alt="Definite" 
+            className={`w-auto object-contain sm:hidden ${isDark ? 'block' : 'hidden dark:block'}`} 
+            style={{height: '24px'}} 
+          />
+          <img 
+            src="/icon-d-black.svg?v=12" 
+            alt="Definite" 
+            className={`w-auto object-contain sm:hidden ${isDark ? 'hidden' : 'block dark:hidden'}`} 
+            style={{height: '24px'}} 
+          />
           
           {/* Desktop (sm+): Full Wordmark Logo */}
-          <img src="/logo-black.svg?v=8" alt="Definite" className="w-auto object-contain hidden sm:block dark:hidden" style={{height: '21px'}} />
-          <img src="/logo-white.svg?v=8" alt="Definite" className="w-auto object-contain hidden sm:dark:block" style={{height: '21px'}} />
+          <img 
+            src="/logo-white.svg?v=12" 
+            alt="Definite" 
+            className={`w-auto object-contain hidden ${isDark ? 'sm:block' : 'sm:hidden dark:sm:block'}`} 
+            style={{height: '21px'}} 
+          />
+          <img 
+            src="/logo-black.svg?v=12" 
+            alt="Definite" 
+            className={`w-auto object-contain hidden ${isDark ? 'sm:hidden' : 'sm:block dark:sm:hidden'}`} 
+            style={{height: '21px'}} 
+          />
         </Link>
+
+        {/* Center: Customizable Header Pill Widgets */}
+        <HeaderPillWidgets />
 
         {/* Right: Nav Tabs + Profile */}
         <div className="flex items-center gap-5 sm:gap-6 md:gap-7 flex-shrink-0 h-full">
@@ -223,24 +248,6 @@ function Layout({ children }) {
               </Link>
             )}
 
-            {/* Dark Mode Toggle Button (Left of Profile) */}
-            <button
-              type="button"
-              onClick={() => {
-                try { if (navigator.vibrate) navigator.vibrate(15); } catch(e) {}
-                toggleTheme();
-              }}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-surface-container/80 hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary active:scale-90 cursor-pointer shadow-2xs select-none"
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              aria-label="Toggle Theme"
-            >
-              {isDark ? (
-                <Sun size={17} weight="bold" className="text-amber-400" />
-              ) : (
-                <Moon size={17} weight="bold" className="text-slate-700 dark:text-slate-200" />
-              )}
-            </button>
-
             {/* Profile Icon (Available to everyone authenticated or in guest mode) */}
             {(currentUser || isGuest) && (
               <Link
@@ -258,7 +265,7 @@ function Layout({ children }) {
       </nav>
 
       {/* Main Content Spacer for Fixed Navbar */}
-      <div className="h-[calc(3.25rem+env(safe-area-inset-top,0px))] shrink-0"></div>
+      <div className="h-[50px] shrink-0"></div>
 
       {/* Guest mode banner */}
       {isGuest && guestBannerVisible && (
@@ -354,9 +361,16 @@ function ScrollToTop() {
 function RouteTrackerAndRestorer() {
   const location = useLocation();
   const navigate = useNavigate();
+  const locationRef = useRef(location);
+  const navigateRef = useRef(navigate);
   const { currentUser, loading } = useAuth();
   const { isGuest } = useGuest();
   const [hasRestored, setHasRestored] = useState(false);
+
+  useEffect(() => {
+    locationRef.current = location;
+    navigateRef.current = navigate;
+  });
 
   // Restore on mount / auth readiness
   useEffect(() => {
@@ -384,6 +398,57 @@ function RouteTrackerAndRestorer() {
       } catch (e) {}
     }
   }, [location.pathname, location.search]);
+
+  // Hardware Back Button Navigation Handler (Android Back Button / Predictive Back)
+  useEffect(() => {
+    let backListener = null;
+
+    const setupBack = async () => {
+      try {
+        backListener = await CapApp.addListener('backButton', () => {
+          // 1. Dispatch custom event so open dropdowns / modals can consume it first
+          const customBackEvent = new CustomEvent('d1_hardware_back', { cancelable: true });
+          const wasConsumed = !window.dispatchEvent(customBackEvent);
+
+          if (wasConsumed) {
+            // An open dropdown or modal closed itself and prevented navigation
+            return;
+          }
+
+          // 2. If user is NOT on Today ('/'), navigate back in history towards Today
+          const currentPath = locationRef.current.pathname;
+          if (currentPath !== '/') {
+            if (window.history.length > 1 && window.history.state && window.history.state.idx > 0) {
+              navigateRef.current(-1);
+            } else {
+              navigateRef.current('/', { replace: true });
+            }
+          } else {
+            // 3. User is already on Today ('/') - move to background cleanly so reopening is instant without white screen
+            try {
+              if (CapApp.minimizeApp) {
+                CapApp.minimizeApp();
+              } else {
+                CapApp.exitApp();
+              }
+            } catch (e) {
+              CapApp.exitApp();
+            }
+          }
+        });
+      } catch (e) {
+        console.warn('Capacitor backButton listener unavailable', e);
+      }
+    };
+
+    setupBack();
+
+    return () => {
+      if (backListener?.remove) {
+        backListener.remove();
+      }
+    };
+  }, []);
 
   return null;
 }
