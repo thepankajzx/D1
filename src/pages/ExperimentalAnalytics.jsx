@@ -1665,7 +1665,7 @@ export default function ExperimentalAnalytics() {
       )}
 
       {/* ── SECTION 1: TOP CONTROLS: HABIT DROPDOWN (LEFT) + TIMEFRAME PICKER (RIGHT) ── */}
-      <section className="sticky top-[calc(52px+env(safe-area-inset-top,0px))] z-40 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md py-1.5 transition-all">
+      <section className="sticky top-[50px] z-40 bg-slate-50/95 dark:bg-[#0b0f19]/95 backdrop-blur-md py-1.5 transition-all">
         <div className="flex items-center justify-between gap-2 px-0.5">
           
           {/* Left: Custom In-App Habit Selector Dropdown (with Score & Trend Indicator) */}

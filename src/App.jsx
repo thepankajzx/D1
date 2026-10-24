@@ -132,10 +132,9 @@ function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col font-body-lg text-body-lg bg-background text-on-background w-full max-w-full overflow-x-hidden">
-      {/* Top Navbar with Safe Area Support */}
-      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex flex-col justify-end px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 box-border pt-[env(safe-area-inset-top,0px)] h-[calc(52px+env(safe-area-inset-top,0px))]">
-        <div className="w-full h-[52px] flex justify-between items-center">
-          {/* Left: Brand Logo Only */}
+      {/* Top Navbar */}
+      <nav className="bg-surface/95 backdrop-blur-md text-primary font-body-md text-body-md border-b border-outline-variant/30 shadow-xs fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 h-[50px] box-border">
+        {/* Left: Brand Logo Only */}
         <Link to="/" className="flex items-center flex-shrink-0">
           {/* Mobile (< sm): Standalone D mark */}
           <img 
@@ -264,11 +263,10 @@ function Layout({ children }) {
             )}
           </div>
         </div>
-        </div>
       </nav>
 
-      {/* Main Content Spacer for Fixed Navbar with Safe Area Support */}
-      <div className="h-[calc(52px+env(safe-area-inset-top,0px))] shrink-0" aria-hidden="true" />
+      {/* Main Content Spacer for Fixed Navbar */}
+      <div className="h-[50px] shrink-0"></div>
 
       {/* Guest mode banner */}
       {isGuest && guestBannerVisible && (
@@ -282,7 +280,7 @@ function Layout({ children }) {
       )}
 
       {/* Main App Container */}
-      <main className={`flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 pt-2.5 sm:pt-4 min-w-0 ${showFooter ? 'pb-[calc(env(safe-area-inset-bottom,0px)+24px)] sm:py-5 md:py-6' : 'pb-[calc(env(safe-area-inset-bottom,0px)+88px)] sm:py-5 md:py-6'}`}>
+      <main className={`flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 2xl:px-12 pt-1.5 min-w-0 ${showFooter ? 'pb-4 sm:py-5 md:py-6' : 'pb-20 sm:py-5 md:py-6'}`}>
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
@@ -293,7 +291,7 @@ function Layout({ children }) {
       {showFooter && <Footer />}
 
       {/* Mobile Bottom Navigation (Ultra Thin, Premium Pill) */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-md border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex justify-around items-center px-2 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+10px)] z-50">
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-md border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex justify-around items-center px-2 py-2.5 pb-[calc(env(safe-area-inset-bottom,0px)+10px)] z-50">
         
         {/* Dashboard / Today */}
         <Link to="/" className={`flex items-center gap-1.5 px-4 py-2 rounded-[24px] transition-all duration-150 active:scale-95 cursor-pointer select-none ${location.pathname === '/' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-primary'}`}>
