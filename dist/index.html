@@ -1,14 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- PWA Primary Manifest & Meta -->
     <link rel="manifest" href="./manifest.json?v=14" />
-    <meta name="theme-color" content="#0B0F19" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFE" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0F19" />
+    <meta name="theme-color" content="#0F141C" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Definite" />
 
@@ -25,7 +23,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png?v=14" />
     <link rel="shortcut icon" href="./favicon.ico?v=14" />
 
-
     <!-- Descriptions & OpenGraph -->
     <meta name="description" content="Understand your habits, not just track them." />
     <meta property="og:title" content="Definite - Habit Intelligence" />
@@ -34,25 +31,23 @@
     <meta property="og:image" content="./pwa-512x512.png" />
     <meta name="format-detection" content="telephone=no" />
 
-    <!-- Preconnects & Fonts -->
+    <!-- Preconnects & Non-Blocking Asynchronous Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://firestore.googleapis.com" rel="preconnect"/>
-    <link href="https://identitytoolkit.googleapis.com" rel="preconnect"/>
-    <link href="https://d1.thedefinite.one" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onload="this.onload=null;this.rel='stylesheet'"/>
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap"/>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    </noscript>
+
     <style>
       html, body {
         margin: 0;
         padding: 0;
-        background-color: #f7faf8;
-        color: #06251b;
-        -webkit-tap-highlight-color: transparent;
-      }
-      html.dark, html.dark body {
         background-color: #0f141c !important;
         color: #f8fafc !important;
+        -webkit-tap-highlight-color: transparent;
       }
     </style>
     
@@ -60,60 +55,67 @@
       (function() {
         try {
           var stored = localStorage.getItem('theme');
-          var isDark = stored ? stored === 'dark' : true; // D1 defaults to dark theme
-          if (isDark) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.style.backgroundColor = '#0f141c';
-            document.documentElement.style.colorScheme = 'dark';
-          } else {
+          var isDark = stored ? stored === 'dark' : true;
+          if (!isDark) {
             document.documentElement.classList.remove('dark');
             document.documentElement.style.backgroundColor = '#f7faf8';
             document.documentElement.style.colorScheme = 'light';
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#0f141c';
+            document.documentElement.style.colorScheme = 'dark';
           }
         } catch (e) {}
       })();
     </script>
     
     <title>Definite - Habit Intelligence</title>
-    <script type="module" crossorigin src="./assets/index-Cu_sxba--1792842447137.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/Sparkle.es-CO7-rffO-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/chunk-62JRHF6Z-B43ebhw9-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/PottedPlant.es-lsIeOMr1-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lightbulb.es-C3k__DK1-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/ArrowRight.es-ccilvFx_-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lightning.es-BRYfk4_9-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Clock.es-CxPdLLDt-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/ShieldCheck.es-C35NtLux-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Icon-Bbdocjpp-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/BatteryWarning.es-C1Dg2a-p-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/BookOpen.es-CFMIDddj-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/ChartBar.es-MQhcgoy1-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/CaretDown.es-qSxlVaYx-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/X.es-sMthtvuB-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Warning.es-COzZhEPs-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/CheckCircle.es-CQy8mOZS-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Star.es-CPInM1Zw-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Scroll.es-BbDANCVm-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Lock.es-DibozmJJ-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/LockKey.es-DFbN1sX0-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/Target.es-BiaIHe6E-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/TrendDown.es-BGlOna3e-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/TrendUp.es-C9KBSbZh-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/index.esm-B7BOsUSJ-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/firebase-tEadNwsD-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/dist-CD5Q11Pt-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/definitions-BMtIys5d-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/AuthContext-DEjCDheM-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/DataContext-CvrCx_NI-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/HabitIcon-DjFjJcHD-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/LanguageContext-CKAC346P-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/streakEngine-CS4QmyiT-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/recoveryAnalytics-BFi0Ujwa-1792842447137.js">
-    <link rel="modulepreload" crossorigin href="./assets/ProPill-DEwQ6wa_-1792842447137.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-RTf11yEM-1792842447137.css">
+    <script type="module" crossorigin src="./assets/index-CYMZoeIo-1792846501962.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/react-Bb3fGAAr-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/chunk-62JRHF6Z-D80HgqLb-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Sparkle.es-yrTkHgaq-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Sword.es-CWfWm0zW-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/ArrowCounterClockwise.es-DRhZ60JK-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/ArrowRight.es-B4TxAzA9-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/PottedPlant.es-BvBFU_8w-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Lightning.es-CB2EKj3o-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Clock.es-QGcBNWt9-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/ShieldCheck.es-C2kqzgOP-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Icon-C3RywRrL-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/BookOpen.es-CxBquaKP-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Flame.es-CtFm3wVe-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/CheckCircle.es-CMwRPJYR-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Star.es-DNgnDuAb-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Target.es-0vP807Lf-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/index.esm-B7BOsUSJ-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/firebase-Bnm7FEn6-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CD5Q11Pt-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/definitions-BMtIys5d-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/AuthContext-Btz3Qs9M-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/DataContext-7RlFL9PH-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/HabitIcon-BCd4fuQw-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/XLogo.es-BzNnvhQB-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Calendar.es-co-LFPAt-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/CaretDown.es-CI7nnr6--1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/CaretRight.es-D63qNe_A-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/CaretUp.es-C9rS3S9C-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/FloppyDisk.es-CB4hqs6O-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Lock.es-BZs5pF_v-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/Planet.es-DrtOAdKv-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/SlidersHorizontal.es-BmZ3fFjS-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/TrendUp.es-D2pJxEnE-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/X.es-BXiN5xZB-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/ThemeContext-BmKHWuC--1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/streakEngine-CS4QmyiT-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/recoveryAnalytics-BFi0Ujwa-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/badgeEngine-oZ_6u32K-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/ProModal-CrRrdje7-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/formatDuration-BBZuAlH0-1792846501962.js">
+    <link rel="modulepreload" crossorigin href="./assets/timeFormat-BxZTMhac-1792846501962.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-CSbrG8yz-1792846501962.css">
   </head>
   <body>
     <noscript>You need to enable JavaScript to run Definite.</noscript>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

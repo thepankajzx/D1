@@ -1,7 +1,7 @@
 import Icon from '../components/Icon';
 import { Target, Flame, Lightning, SlidersHorizontal, Check, CheckCircle, FloppyDisk, ChartLineUp, CaretRight, X } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +14,7 @@ import StreakWidget from '../components/StreakWidget';
 import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useGuest } from '../contexts/GuestContext';
-import D1OnboardingCarousel from '../components/D1OnboardingCarousel';
+const D1OnboardingCarousel = lazy(() => import('../components/D1OnboardingCarousel'));
 import DailyCheckIn from '../corex/ui/DailyCheckIn';
 import { getCoreXConfigs, saveCoreXLog, getCoreXLogs } from '../corex/data/schema';
 
@@ -444,11 +444,13 @@ export default function Dashboard() {
   // Handle Empty State: When user has 0 habits, show D1 Value Reveal Carousel directly!
   if (habits.length === 0) {
     return (
-      <D1OnboardingCarousel
-        onComplete={() => navigate('/onboarding/select')}
-        onChooseBundle={() => navigate('/onboarding/select')}
-        onAddHabit={() => navigate('/onboarding/select')}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-[#0F141C]" />}>
+        <D1OnboardingCarousel
+          onComplete={() => navigate('/onboarding/select')}
+          onChooseBundle={() => navigate('/onboarding/select')}
+          onAddHabit={() => navigate('/onboarding/select')}
+        />
+      </Suspense>
     );
   }
 

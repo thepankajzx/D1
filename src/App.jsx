@@ -2,8 +2,9 @@ import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider, useData } from './contexts/DataContext';
-import HabitAiCoachBot from './components/HabitAiCoachBot';
-import ClinicalAiCopilot from './components/ClinicalAiCopilot';
+// Defer bot components to avoid blocking the initial Dashboard critical path
+const HabitAiCoachBot = lazyRetry(() => import('./components/HabitAiCoachBot'));
+const ClinicalAiCopilot = lazyRetry(() => import('./components/ClinicalAiCopilot'));
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -483,11 +484,11 @@ function BotLayer() {
 
   const isClinician = userRole === 'doctor' || userRole === 'org_admin' || userRole === 'super_admin';
 
-  if (isClinicalPortal && isClinician) {
-    return <ClinicalAiCopilot />;
-  }
-
-  return <HabitAiCoachBot />;
+  return (
+    <Suspense fallback={null}>
+      {isClinicalPortal && isClinician ? <ClinicalAiCopilot /> : <HabitAiCoachBot />}
+    </Suspense>
+  );
 }
 
 function App() {
@@ -504,7 +505,7 @@ function App() {
                 <RouteTrackerAndRestorer />
                 <BotLayer />
                 <Suspense fallback={
-                  <div className="min-h-screen bg-background"></div>
+                  <div className="min-h-screen bg-[#0F141C]"></div>
                 }>
                 <Routes>
                   <Route path="/login" element={<Login />} />

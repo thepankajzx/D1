@@ -1,5 +1,15 @@
 import React from 'react';
-import * as PhosphorIcons from '@phosphor-icons/react';
+import {
+  Barbell, Alarm, Moon, HourglassSimple, Footprints, Drop, ForkKnife,
+  CookingPot, Brain, Timer, BookOpen, GraduationCap, DeviceMobile,
+  PersonSimpleWalk, NotePencil, Snowflake, Smiley, Lightning, Wine,
+  CigaretteSlash, Star, Shield, ShieldCheck, Target, Heart, Coffee,
+  Bicycle, MusicNote, Sun, Cat, Dog, PawPrint, RocketLaunch, Trophy,
+  Crown, CurrencyDollar, Check, Flame, Sparkle, Confetti, CheckCircle,
+  Clock, Compass, Eye, Gear, Leaf, Pencil, PottedPlant, Question,
+  Tree, User, Wallet, Wrench, Bed, Pill, Waves, Feather, Bookmarks,
+  PenNib, Briefcase, Laptop, Desktop, ChartLineUp, Bell, Heartbeat, FirstAid
+} from '@phosphor-icons/react';
 import { 
   resolveHabitColor, 
   resolveHabitIcon, 
@@ -22,60 +32,72 @@ export {
   hashString 
 };
 
+const ICON_COMPONENTS = {
+  Barbell, Alarm, Moon, HourglassSimple, Footprints, Drop, ForkKnife,
+  CookingPot, Brain, Timer, BookOpen, GraduationCap, DeviceMobile,
+  PersonSimpleWalk, NotePencil, Snowflake, Smiley, Lightning, Wine,
+  CigaretteSlash, Star, Shield, ShieldCheck, Target, Heart, Coffee,
+  Bicycle, MusicNote, Sun, Cat, Dog, PawPrint, RocketLaunch, Trophy,
+  Crown, CurrencyDollar, Check, Flame, Sparkle, Confetti, CheckCircle,
+  Clock, Compass, Eye, Gear, Leaf, Pencil, PottedPlant, Question,
+  Tree, User, Wallet, Wrench, Bed, Pill, Waves, Feather, Bookmarks,
+  PenNib, Briefcase, Laptop, Desktop, ChartLineUp, Bell, Heartbeat, FirstAid
+};
+
 // Map Google Material icon names to Phosphor Icon Components
 const ICON_MAP = {
   // Existing common habit icons
-  'fitness_center': PhosphorIcons.Barbell,
-  'alarm': PhosphorIcons.Alarm,
-  'bedtime': PhosphorIcons.Moon,
-  'hourglass_empty': PhosphorIcons.HourglassSimple,
-  'directions_walk': PhosphorIcons.Footprints,
-  'water_drop': PhosphorIcons.Drop,
-  'restaurant': PhosphorIcons.ForkKnife,
-  'local_dining': PhosphorIcons.CookingPot,
-  'psychology': PhosphorIcons.Brain,
-  'timer': PhosphorIcons.Timer,
-  'menu_book': PhosphorIcons.BookOpen,
-  'school': PhosphorIcons.GraduationCap,
-  'smartphone': PhosphorIcons.DeviceMobile,
-  'self_improvement': PhosphorIcons.PersonSimpleWalk,
-  'edit_note': PhosphorIcons.NotePencil,
-  'ac_unit': PhosphorIcons.Snowflake,
-  'mood': PhosphorIcons.Smiley,
-  'bolt': PhosphorIcons.Lightning,
-  'no_drinks': PhosphorIcons.Wine,
-  'smoke_free': PhosphorIcons.CigaretteSlash,
+  'fitness_center': Barbell,
+  'alarm': Alarm,
+  'bedtime': Moon,
+  'hourglass_empty': HourglassSimple,
+  'directions_walk': Footprints,
+  'water_drop': Drop,
+  'restaurant': ForkKnife,
+  'local_dining': CookingPot,
+  'psychology': Brain,
+  'timer': Timer,
+  'menu_book': BookOpen,
+  'school': GraduationCap,
+  'smartphone': DeviceMobile,
+  'self_improvement': PersonSimpleWalk,
+  'edit_note': NotePencil,
+  'ac_unit': Snowflake,
+  'mood': Smiley,
+  'bolt': Lightning,
+  'no_drinks': Wine,
+  'smoke_free': CigaretteSlash,
   
   // Extra mapping
-  'star': PhosphorIcons.Star,
-  'shield': PhosphorIcons.Shield,
-  'shield_check': PhosphorIcons.ShieldCheck,
-  'target': PhosphorIcons.Target,
-  'heart': PhosphorIcons.Heart,
-  'coffee': PhosphorIcons.Coffee,
-  'bicycle': PhosphorIcons.Bicycle,
-  'music': PhosphorIcons.MusicNote,
-  'sun': PhosphorIcons.Sun,
-  'cat': PhosphorIcons.Cat,
-  'dog': PhosphorIcons.Dog,
-  'paw': PhosphorIcons.PawPrint,
-  'rocket_launch': PhosphorIcons.RocketLaunch,
-  'trophy': PhosphorIcons.Trophy,
-  'crown': PhosphorIcons.Crown,
-  'money': PhosphorIcons.CurrencyDollar,
-  'check': PhosphorIcons.Check,
-  'flame': PhosphorIcons.Flame,
-  'sparkle': PhosphorIcons.Sparkle,
-  'confetti': PhosphorIcons.Confetti
+  'star': Star,
+  'shield': Shield,
+  'shield_check': ShieldCheck,
+  'target': Target,
+  'heart': Heart,
+  'coffee': Coffee,
+  'bicycle': Bicycle,
+  'music': MusicNote,
+  'sun': Sun,
+  'cat': Cat,
+  'dog': Dog,
+  'paw': PawPrint,
+  'rocket_launch': RocketLaunch,
+  'trophy': Trophy,
+  'crown': Crown,
+  'money': CurrencyDollar,
+  'check': Check,
+  'flame': Flame,
+  'sparkle': Sparkle,
+  'confetti': Confetti
 };
 
 export const getPhosphorIcon = (iconName) => {
-  if (!iconName) return PhosphorIcons.Star;
+  if (!iconName) return Star;
   if (ICON_MAP[iconName]) return ICON_MAP[iconName];
-  if (PhosphorIcons[iconName]) return PhosphorIcons[iconName];
+  if (ICON_COMPONENTS[iconName]) return ICON_COMPONENTS[iconName];
   const pascal = iconName.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
-  if (PhosphorIcons[pascal]) return PhosphorIcons[pascal];
-  return PhosphorIcons.Star;
+  if (ICON_COMPONENTS[pascal]) return ICON_COMPONENTS[pascal];
+  return Star;
 };
 
 /**

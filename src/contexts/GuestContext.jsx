@@ -5,15 +5,27 @@ const GuestContext = createContext({ isGuest: false, enterGuestMode: () => {}, e
 export function useGuest() { return useContext(GuestContext); }
 
 export function GuestProvider({ children }) {
-  const [isGuest, setIsGuest] = useState(() => sessionStorage.getItem('definite_guest_mode') === '1');
+  const [isGuest, setIsGuest] = useState(() => {
+    try {
+      return localStorage.getItem('definite_guest_mode') === '1' || sessionStorage.getItem('definite_guest_mode') === '1';
+    } catch (e) {
+      return false;
+    }
+  });
 
   const enterGuestMode = useCallback(() => {
-    sessionStorage.setItem('definite_guest_mode', '1');
+    try {
+      localStorage.setItem('definite_guest_mode', '1');
+      sessionStorage.setItem('definite_guest_mode', '1');
+    } catch (e) {}
     setIsGuest(true);
   }, []);
 
   const exitGuestMode = useCallback(() => {
-    sessionStorage.removeItem('definite_guest_mode');
+    try {
+      localStorage.removeItem('definite_guest_mode');
+      sessionStorage.removeItem('definite_guest_mode');
+    } catch (e) {}
     setIsGuest(false);
   }, []);
 
