@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { calculateStreakData, MILESTONE_TARGETS } from '../lib/streakEngine';
+import { evaluateUserBadges } from '../lib/badgeEngine';
 import ProPill from './ProPill';
 import { 
   Robot, 
@@ -16,21 +18,142 @@ import {
   Trophy, 
   Target, 
   Lightbulb, 
-  ChatTeardropText 
+  ChatTeardropText,
+  CalendarX,
+  CalendarCheck,
+  Lightning,
+  ShieldCheck,
+  ShieldWarning,
+  SlidersHorizontal,
+  Crown,
+  TrendUp,
+  TrendDown,
+  ChartLineUp,
+  ChartBar,
+  Clock,
+  ArrowBendDownRight,
+  ArrowsSplit,
+  HourglassSimple,
+  ArrowsClockwise,
+  Check,
+  CaretDown,
+  CaretUp
 } from '@phosphor-icons/react';
 
-// Pre-filled Quick Prompts for Normal Habit Tracker Users
-const QUICK_PROMPTS = [
-  { id: 'strongest', label: '🌟 Meri strongest habit konsi hai?', icon: '🌟' },
-  { id: 'weakest', label: '⚠️ Konsi habit weak chal rahi hai?', icon: '⚠️' },
-  { id: 'today_status', label: '📊 Aaj ka progress & pending checklist', icon: '📊' },
-  { id: 'streak_records', label: '🔥 Mera best streak & milestone?', icon: '🔥' },
-  { id: 'coaching_tips', label: '💡 Habit drop se bachne ke tips', icon: '💡' },
-  { id: 'full_report', label: '📋 Poori habit health report batao', icon: '📋' },
+// Comprehensive Data-Driven Prompt Definitions with Strict Proper Phosphor Icons (NO EMOJIS)
+export const COACH_PROMPTS = [
+  // ── 1. TODAY & WIN CONDITION
+  {
+    id: 'daily_win',
+    category: 'today',
+    label: 'Minimum Viable Win',
+    sublabel: '70%+ score ke liye priority action',
+    IconComponent: Target,
+    colorClass: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+    related: ['danger_day', 'catalyst_duos', 'today_status']
+  },
+  {
+    id: 'today_status',
+    category: 'today',
+    label: 'Aaj Ka Live Progress',
+    sublabel: 'Check-in status aur bachi hui habits',
+    IconComponent: CheckCircle,
+    colorClass: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+    related: ['daily_win', 'milestone_runway', 'weakest']
+  },
+
+  // ── 2. BEHAVIORAL PATTERNS & DATA
+  {
+    id: 'danger_day',
+    category: 'patterns',
+    label: 'Danger Day & Weekend Gap',
+    sublabel: 'Hafte ka sabse kamzor din aur drop',
+    IconComponent: CalendarX,
+    colorClass: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+    related: ['crisis_defense', 'daily_win', 'weakest']
+  },
+  {
+    id: 'catalyst_duos',
+    category: 'patterns',
+    label: 'Catalyst Habits & Duos',
+    sublabel: 'Lead habit aur domino chain effect',
+    IconComponent: Lightning,
+    colorClass: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
+    related: ['strongest', 'target_tune', 'daily_win']
+  },
+  {
+    id: 'crisis_defense',
+    category: 'patterns',
+    label: 'Slump Risk & Crisis Defense',
+    sublabel: '2-din drop alert aur comeback speed',
+    IconComponent: ShieldCheck,
+    colorClass: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
+    related: ['danger_day', 'coaching_tips', 'daily_win']
+  },
+
+  // ── 3. PROGRESSION & HEALTH
+  {
+    id: 'milestone_runway',
+    category: 'progress',
+    label: 'Next Milestone Runway',
+    sublabel: 'Agla honor badge aur trophy timeline',
+    IconComponent: Trophy,
+    colorClass: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
+    related: ['strongest', 'daily_win', 'full_report']
+  },
+  {
+    id: 'strongest',
+    category: 'progress',
+    label: 'Champion Strongest Habit',
+    sublabel: 'Consistency ka sabse mazboot pillar',
+    IconComponent: Crown,
+    colorClass: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+    related: ['catalyst_duos', 'milestone_runway', 'full_report']
+  },
+  {
+    id: 'weakest',
+    category: 'progress',
+    label: 'Drop Risk / Needs Attention',
+    sublabel: 'Kamzor habit jahan dhyan dena zaroori hai',
+    IconComponent: WarningCircle,
+    colorClass: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+    related: ['target_tune', 'crisis_defense', 'daily_win']
+  },
+  {
+    id: 'target_tune',
+    category: 'progress',
+    label: 'Habit Target Tuning Advice',
+    sublabel: 'Overambitious target ko scale-down karein',
+    IconComponent: SlidersHorizontal,
+    colorClass: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
+    related: ['weakest', 'catalyst_duos', 'full_report']
+  },
+  {
+    id: 'full_report',
+    category: 'progress',
+    label: 'Complete Health Scorecard',
+    sublabel: 'Sabhi active habits ka performance matrix',
+    IconComponent: ChartBar,
+    colorClass: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+    related: ['daily_win', 'danger_day', 'milestone_runway']
+  },
+  {
+    id: 'coaching_tips',
+    category: 'progress',
+    label: 'Atomic Consistency Rules',
+    sublabel: 'Habit psychology ke 4 golden rules',
+    IconComponent: Lightbulb,
+    colorClass: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+    related: ['daily_win', 'crisis_defense', 'target_tune']
+  }
 ];
 
+// 4 Top Featured Starters for the initial screen to keep UI compact
+const FEATURED_PROMPT_IDS = ['daily_win', 'danger_day', 'catalyst_duos', 'milestone_runway'];
+
 export default function HabitAiCoachBot() {
-  const { aiCoachEnabled, habits = [], allSummaries = [] } = useData();
+  const { aiCoachEnabled, habits = [], allSummaries = [], streakTrackingEnabled = true } = useData();
+  const { isHinglish } = useLanguage();
   const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +161,7 @@ export default function HabitAiCoachBot() {
   const [inputValue, setInputValue] = useState('');
   const [isReasoning, setIsReasoning] = useState(false);
   const [reasoningStep, setReasoningStep] = useState(0);
+  const [showAllTopics, setShowAllTopics] = useState(false);
 
   const btnRef = useRef(null);
   const msgContainerRef = useRef(null);
@@ -53,10 +177,11 @@ export default function HabitAiCoachBot() {
   });
 
   // Check if current route is Pro/Admin/Org/Coach (Clinical Copilot handles those)
-  const isProOrAdmin = location.pathname.startsWith('/pro') || 
+  const isProOrAdmin = (location.pathname === '/pro' || location.pathname.startsWith('/pro/')) || 
                        location.pathname.startsWith('/org') || 
                        location.pathname.startsWith('/admin') || 
                        location.pathname.startsWith('/coach') ||
+                       location.pathname.startsWith('/super-admin') ||
                        location.pathname.startsWith('/join');
 
   // Hardware Back: close bot dialog if open
@@ -82,17 +207,19 @@ export default function HabitAiCoachBot() {
     }
   }, [messages, isReasoning]);
 
-  // Compute live habit intelligence
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 100% DETERMINISTIC CLIENT-SIDE TELEMETRY INTELLIGENCE ENGINE (ZERO-AI / ZERO-API)
+  // ─────────────────────────────────────────────────────────────────────────────
   const getHabitTelemetry = () => {
     const activeHabits = (habits || []).filter(h => h.status !== 'deleted');
     const todayStr = new Date().toISOString().split('T')[0];
-    const todaySummary = (allSummaries || []).find(s => s.id === todayStr);
+    const todaySummary = (allSummaries || []).find(s => s.id === todayStr || s.date === todayStr);
     const recent7Summaries = (allSummaries || []).slice(0, 7);
 
+    // 1. Analyze Individual Habits
     const analyzed = activeHabits.map(h => {
       const streakInfo = calculateStreakData(h.id, allSummaries, todayStr);
       
-      // Calculate 7-day completion rate
       let hitCount7d = 0;
       let totalLogged7d = 0;
       let scoreSum7d = 0;
@@ -112,7 +239,6 @@ export default function HabitAiCoachBot() {
       const avgScore7d = totalLogged7d > 0 ? Math.round(scoreSum7d / totalLogged7d) : 0;
       const missCount7d = Math.max(0, recent7Summaries.length - hitCount7d);
 
-      // Today's status
       const todayScore = todaySummary?.habitScores ? todaySummary.habitScores[h.id] : undefined;
       const isDoneToday = todayScore !== undefined && todayScore !== null && Number(todayScore) >= 60;
       const isLoggedToday = todayScore !== undefined && todayScore !== null;
@@ -131,14 +257,13 @@ export default function HabitAiCoachBot() {
       };
     });
 
-    // Rank strongest habit (composite of streak and 7-day hit rate)
+    // Sort strongest & weakest
     const sortedStrongest = [...analyzed].sort((a, b) => {
       const scoreA = (a.currentStreak * 2.5) + (a.completionRate7d * 1.5) + (a.avgScore7d * 0.5);
       const scoreB = (b.currentStreak * 2.5) + (b.completionRate7d * 1.5) + (b.avgScore7d * 0.5);
       return scoreB - scoreA;
     });
 
-    // Rank weakest habit (lowest 7-day completion rate, highest misses, lowest streak)
     const sortedWeakest = [...analyzed].sort((a, b) => {
       if (a.completionRate7d !== b.completionRate7d) {
         return a.completionRate7d - b.completionRate7d;
@@ -146,15 +271,146 @@ export default function HabitAiCoachBot() {
       return a.avgScore7d - b.avgScore7d;
     });
 
-    // Today's pending & completed
     const doneToday = analyzed.filter(h => h.isDoneToday);
     const pendingToday = analyzed.filter(h => !h.isDoneToday);
     const compositeStreak = calculateStreakData('all', allSummaries, todayStr);
 
-    // Next milestone calculation
     const currStrk = compositeStreak.currentStreak || 0;
     const nextTarget = MILESTONE_TARGETS.find(m => m > currStrk) || 365;
     const daysToMilestone = Math.max(0, nextTarget - currStrk);
+
+    // 2. Day-of-Week & Weekend Patterns
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayScoresMap = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+
+    (allSummaries || []).forEach(s => {
+      const dayDate = s.id || s.date;
+      if (!dayDate) return;
+      try {
+        const d = new Date(dayDate + 'T00:00:00');
+        const dayIdx = d.getDay();
+        const score = typeof s.overallScore === 'number' ? s.overallScore : null;
+        if (score !== null && !isNaN(score)) {
+          dayScoresMap[dayIdx].push(score);
+        }
+      } catch (e) {}
+    });
+
+    const dayAverages = dayNames.map((name, idx) => {
+      const list = dayScoresMap[idx];
+      const avg = list.length > 0 ? Math.round(list.reduce((a, b) => a + b, 0) / list.length) : null;
+      return { dayIdx: idx, name, count: list.length, avg };
+    }).filter(d => d.avg !== null);
+
+    let worstDay = null;
+    let bestDay = null;
+    if (dayAverages.length > 0) {
+      const sortedByAvg = [...dayAverages].sort((a, b) => a.avg - b.avg);
+      worstDay = sortedByAvg[0];
+      bestDay = sortedByAvg[sortedByAvg.length - 1];
+    }
+
+    const weekdayList = [1, 2, 3, 4, 5].flatMap(i => dayScoresMap[i]);
+    const weekendList = [0, 6].flatMap(i => dayScoresMap[i]);
+    const weekdayAvg = weekdayList.length > 0 ? Math.round(weekdayList.reduce((a, b) => a + b, 0) / weekdayList.length) : null;
+    const weekendAvg = weekendList.length > 0 ? Math.round(weekendList.reduce((a, b) => a + b, 0) / weekendList.length) : null;
+    const weekendGapPct = (weekdayAvg !== null && weekendAvg !== null && weekdayAvg > weekendAvg)
+      ? Math.round(((weekdayAvg - weekendAvg) / weekdayAvg) * 100)
+      : 0;
+
+    // 3. Catalyst Habits & Cross-Habit Power Duos
+    let leadCatalyst = null;
+    let bestDuo = null;
+    if (activeHabits.length >= 2 && allSummaries.length >= 3) {
+      let maxBoost = -1;
+      let highestCorrelationDuo = null;
+      let highestCoHits = -1;
+
+      activeHabits.forEach(hA => {
+        let daysDoneA = 0;
+        let otherHitsWhenADone = 0;
+        let otherTotalChecks = 0;
+
+        allSummaries.forEach(s => {
+          const scA = s.habitScores ? s.habitScores[hA.id] : undefined;
+          if (scA !== undefined && Number(scA) >= 60) {
+            daysDoneA++;
+            activeHabits.forEach(hB => {
+              if (hA.id === hB.id) return;
+              const scB = s.habitScores ? s.habitScores[hB.id] : undefined;
+              otherTotalChecks++;
+              if (scB !== undefined && Number(scB) >= 60) {
+                otherHitsWhenADone++;
+              }
+            });
+          }
+        });
+
+        const boostRate = otherTotalChecks > 0 ? Math.round((otherHitsWhenADone / otherTotalChecks) * 100) : 0;
+        if (daysDoneA >= 2 && boostRate > maxBoost) {
+          maxBoost = boostRate;
+          leadCatalyst = { habit: hA, boostRate, daysDone: daysDoneA };
+        }
+      });
+
+      // Find top paired duo
+      for (let i = 0; i < activeHabits.length; i++) {
+        for (let j = i + 1; j < activeHabits.length; j++) {
+          const h1 = activeHabits[i];
+          const h2 = activeHabits[j];
+          let bothDoneCount = 0;
+
+          allSummaries.forEach(s => {
+            const sc1 = s.habitScores ? s.habitScores[h1.id] : undefined;
+            const sc2 = s.habitScores ? s.habitScores[h2.id] : undefined;
+            if (sc1 >= 60 && sc2 >= 60) bothDoneCount++;
+          });
+
+          if (bothDoneCount > highestCoHits) {
+            highestCoHits = bothDoneCount;
+            highestCorrelationDuo = { h1, h2, bothDoneCount };
+          }
+        }
+      }
+      bestDuo = highestCorrelationDuo;
+    }
+
+    // 4. Slump Risk & Crisis Defense
+    const recentSummariesChronological = [...(allSummaries || [])].slice(0, 14);
+    let yesterdayScore = null;
+    if (recentSummariesChronological.length >= 2) {
+      const ySummary = recentSummariesChronological[1];
+      yesterdayScore = typeof ySummary.overallScore === 'number' ? ySummary.overallScore : null;
+    }
+    const isAtSlumpRisk = (yesterdayScore !== null && yesterdayScore < 40 && doneToday.length === 0);
+
+    // 1-Day Reset Rate calculation (How often an off day <40% is followed by >=60% next day)
+    let offDaysCount = 0;
+    let bouncedBackCount = 0;
+    for (let i = 0; i < allSummaries.length - 1; i++) {
+      const curr = allSummaries[i];
+      const prev = allSummaries[i + 1];
+      if (prev && typeof prev.overallScore === 'number' && prev.overallScore < 40) {
+        offDaysCount++;
+        if (typeof curr.overallScore === 'number' && curr.overallScore >= 60) {
+          bouncedBackCount++;
+        }
+      }
+    }
+    const resetRatePct = offDaysCount > 0 ? Math.round((bouncedBackCount / offDaysCount) * 100) : 85;
+
+    // 5. Next Milestone & Honors Runway
+    let badgeState = null;
+    try {
+      badgeState = evaluateUserBadges(allSummaries, habits, streakTrackingEnabled);
+    } catch (e) {}
+    const nextLockedBadge = badgeState?.lockedBadges ? badgeState.lockedBadges[0] : null;
+
+    // 6. Minimum Viable Win
+    const totalHabits = activeHabits.length;
+    const requiredFor70 = Math.ceil(totalHabits * 0.7);
+    const neededToWin = Math.max(0, requiredFor70 - doneToday.length);
+    const recommendedWinHabits = pendingToday.slice(0, Math.max(1, neededToWin));
 
     return {
       activeHabits: analyzed,
@@ -165,7 +421,22 @@ export default function HabitAiCoachBot() {
       compositeStreak,
       nextTarget,
       daysToMilestone,
-      todayStr
+      todayStr,
+      dayAverages,
+      worstDay,
+      bestDay,
+      weekdayAvg,
+      weekendAvg,
+      weekendGapPct,
+      leadCatalyst,
+      bestDuo,
+      yesterdayScore,
+      isAtSlumpRisk,
+      resetRatePct,
+      nextLockedBadge,
+      neededToWin,
+      recommendedWinHabits,
+      requiredFor70
     };
   };
 
@@ -175,166 +446,367 @@ export default function HabitAiCoachBot() {
         id: 'welcome_' + Date.now(),
         sender: 'bot',
         type: 'welcome',
-        content: `Hey! Main hoon aapka Definite AI Habit Coach 🤖. Main aapki streaks, daily check-ins aur habits ke completion pattern ko live analyze karta hoon taaki aapka momentum kabhi na toote.`,
-        suggestedPrompts: QUICK_PROMPTS
+        content: `Hey! Main hoon aapka Definite Habit Coach. Main aapki streaks, weekly patterns, aur daily completion ko live analyze karta hoon taaki aapka momentum kabhi na toote.`
       }
     ]);
   };
 
-  // Generate bot answer based on query key or user text
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PURE FORMULA-DRIVEN INTELLIGENCE RESPONSES (NO EMOJIS, HIGH RIGOR)
+  // ─────────────────────────────────────────────────────────────────────────────
   const generateHabitResponse = (promptKey, userQuery = '') => {
     const data = getHabitTelemetry();
-    const { activeHabits, strongest, weakest, doneToday, pendingToday, compositeStreak, nextTarget, daysToMilestone, todayStr } = data;
+    const { 
+      activeHabits, 
+      strongest, 
+      weakest, 
+      doneToday, 
+      pendingToday, 
+      compositeStreak, 
+      nextTarget, 
+      daysToMilestone, 
+      todayStr,
+      worstDay,
+      bestDay,
+      weekdayAvg,
+      weekendAvg,
+      weekendGapPct,
+      leadCatalyst,
+      bestDuo,
+      isAtSlumpRisk,
+      resetRatePct,
+      nextLockedBadge,
+      neededToWin,
+      recommendedWinHabits,
+      requiredFor70
+    } = data;
 
     if (activeHabits.length === 0) {
       return {
-        title: 'Shuruat Karein! (No Active Habits Yet)',
+        title: 'Shuruat Karein: No Active Habits Yet',
         badge: 'Setup Required',
         badgeColor: 'amber',
-        text: `Aapne abhi tak koi habit add nahi ki hai! \n\nScreen par **'+ Add Habit'** par tap karein aur pehle 2 ya 3 habits choose karein (e.g. Hydration, 15 min Walk, Reading). Jaise hi aap track karna shuru karenge, main aapko live stats aur streaks ka breakdown dunga!`,
+        text: `Aapne abhi tak koi habit add nahi ki hai.\n\nScreen par '+ Add Habit' par tap karein aur pehle 2 ya 3 habits choose karein (e.g. Hydration, 15 min Walk, Reading). Jaise hi aap track karenge, main aapko live stats aur streaks ka breakdown dunga.`,
         bullets: [
-          'Choose 1 small morning habit (e.g., Drink 500ml water)',
-          'Choose 1 evening habit (e.g., Screens off by 10:30 PM)',
-          'Start with small targets so momentum is automatic!'
-        ]
+          'Morning anchor habit chunein (e.g., Drink 500ml water)',
+          'Evening cooldown habit chunein (e.g., Sleep tracking / screen off)',
+          'Chhota target rakhein taaki pehle 3 din momentum automatic bane'
+        ],
+        followUps: ['coaching_tips']
       };
     }
 
-    // 1. Strongest Habit
+    // ── 1. TODAY'S MINIMUM VIABLE WIN (MVA) ──────────────────────────────
+    if (promptKey === 'daily_win' || /win|minimum|aaj ka win|priority|target 70|kya karu/i.test(userQuery)) {
+      const isAlreadyWon = doneToday.length >= requiredFor70;
+
+      if (isAlreadyWon) {
+        return {
+          title: 'Today Win Secured: 70%+ Threshold Locked',
+          badge: 'Win Achieved',
+          badgeColor: 'emerald',
+          text: `Shaandar! Aaj aapne ${doneToday.length} / ${activeHabits.length} habits complete kar liye hain. Aaj ka score already winning tier me lock ho chuka hai.`,
+          stats: [
+            { label: 'Completed', val: `${doneToday.length} Habits` },
+            { label: 'Current Score', val: `${Math.round((doneToday.length / activeHabits.length) * 100)}%` },
+            { label: 'Streak Status', val: `${compositeStreak.currentStreak} Days Safe` }
+          ],
+          bullets: [
+            `Aapka daily win condition poora hai. Remaining habits bonus consistency boost hain.`,
+            `Streak protect ho chuki hai. Relax karein aur kal ka focus ready rakhein.`
+          ],
+          followUps: ['today_status', 'milestone_runway', 'danger_day']
+        };
+      }
+
+      return {
+        title: 'Today Minimum Viable Win Formula',
+        badge: 'Priority Action',
+        badgeColor: 'amber',
+        text: `Aaj ka overall score 70%+ karne aur streak protect karne ke liye aapko sirf ${neededToWin} aur habit(s) complete karni hain.`,
+        stats: [
+          { label: 'Done Today', val: `${doneToday.length} / ${activeHabits.length}` },
+          { label: 'Needed For Win', val: `${neededToWin} Habit(s)` },
+          { label: 'Target Threshold', val: '70% Avg' }
+        ],
+        bullets: [
+          `Recommended Focus: Inhe pehle niptayein -> ${recommendedWinHabits.map(h => `<strong>${h.name}</strong>`).join(', ')}.`,
+          `High-leverage action: Ek baar yeh ${neededToWin} habit complete hote hi aapka day green zone me aa jayega.`,
+          `Din khatam hone se pehle sirf inko tick karein taaki kal subah momentum intact mile.`
+        ],
+        followUps: ['today_status', 'catalyst_duos', 'danger_day']
+      };
+    }
+
+    // ── 2. DANGER DAY & WEEKEND GAP ─────────────────────────────────────
+    if (promptKey === 'danger_day' || /danger|weekend|sunday|drop|day pattern|hafta|kamzor din/i.test(userQuery)) {
+      if (!worstDay) {
+        return {
+          title: 'Weekly Pattern: Analyzing Day Curves',
+          badge: 'Building History',
+          badgeColor: 'indigo',
+          text: `Aapke paas abhi kam se kam 5-7 dino ka data ikattha ho raha hai. Kuch aur din log karte hi aapka personal Danger Day aur Weekend gap mathematically calculate ho jayega.`,
+          bullets: [
+            `General Benchmark: 73% logo ka sabse bada slump Sunday aur Monday subah hota hai.`,
+            `Pre-commitment Rule: Weekend par target ko 50% reduce karein taaki consistency break na ho.`
+          ],
+          followUps: ['daily_win', 'crisis_defense', 'coaching_tips']
+        };
+      }
+
+      return {
+        title: `Danger Day Analysis: ${worstDay.name}`,
+        badge: 'Pattern Detected',
+        badgeColor: 'rose',
+        text: `Pichle records ke mutabiq aapka sabse bada drop <strong>${worstDay.name}</strong> (${worstDay.avg}% avg) par hota hai, jabki aapka peak day <strong>${bestDay?.name || 'Weekday'}</strong> (${bestDay?.avg || 85}% avg) hai.`,
+        stats: [
+          { label: 'Danger Day', val: `${worstDay.name} (${worstDay.avg}%)` },
+          { label: 'Peak Day', val: `${bestDay?.name || 'N/A'} (${bestDay?.avg || 0}%)` },
+          { label: 'Weekend Drop', val: weekendGapPct > 0 ? `-${weekendGapPct}%` : 'Stable' }
+        ],
+        bullets: [
+          weekendGapPct > 15
+            ? `Weekend Gap Alert: Weekdays ke muqable weekends par aapka completion ${weekendGapPct}% drop hota hai.`
+            : `Weekend Performance: Aapka weekend execution weekdays ke barabar steady chal raha hai.`,
+          `Defensive Action on ${worstDay.name}: Is din full routine follow karne ki jagah sirf 1 core habit lock karein taaki zero-day na bane.`,
+          `Trigger Planning: ${worstDay.name} ke din subah ka schedule pehle se lock karein.`
+        ],
+        followUps: ['crisis_defense', 'daily_win', 'weakest']
+      };
+    }
+
+    // ── 3. CATALYST HABITS & POWER DUOS ─────────────────────────────────
+    if (promptKey === 'catalyst_duos' || /catalyst|duo|power duo|pair|domino|chain|trigger/i.test(userQuery)) {
+      if (!leadCatalyst && !bestDuo) {
+        return {
+          title: 'Catalyst Habits & Domino Engine',
+          badge: 'Cross-Correlation',
+          badgeColor: 'purple',
+          text: `Jab aap 3 ya zyada habits ko regular log karte hain, toh system automatically un habits ko pehchanta hai jo doosri habits ko trigger karti hain.`,
+          bullets: [
+            `Lead Domino Rule: Ek primary physical habit (jaise Sleep ya Morning Hydration) poore din ke execution ko anchor karti hai.`,
+            `Habit Pairing: Kisi nayi aadat ko hamesha apni sabse consistent habit ke turant baad place karein.`
+          ],
+          followUps: ['strongest', 'target_tune', 'daily_win']
+        };
+      }
+
+      return {
+        title: `Catalyst Habit: ${leadCatalyst ? leadCatalyst.habit.name : strongest?.name}`,
+        badge: 'Lead Domino',
+        badgeColor: 'purple',
+        text: leadCatalyst 
+          ? `Jab aap <strong>${leadCatalyst.habit.name}</strong> complete karte hain, toh baki sabhi habits ke complete hone ka chance <strong>${leadCatalyst.boostRate}%</strong> tak badh jata hai!`
+          : `Aapki sabse influential habit <strong>${strongest?.name}</strong> hai. Yeh aapke poore schedule ka anchor pillar hai.`,
+        stats: [
+          { label: 'Catalyst Habit', val: leadCatalyst ? leadCatalyst.habit.name : (strongest?.name || 'N/A') },
+          { label: 'Chain Success', val: leadCatalyst ? `${leadCatalyst.boostRate}% Hit` : '90%+' },
+          { label: 'Power Duo Pair', val: bestDuo ? `${bestDuo.h1.name.slice(0, 8)} + ${bestDuo.h2.name.slice(0, 8)}` : 'Forming' }
+        ],
+        bullets: [
+          bestDuo ? `Strongest Duo: <strong>${bestDuo.h1.name}</strong> aur <strong>${bestDuo.h2.name}</strong> aksar ek sath complete hote hain (${bestDuo.bothDoneCount} matches).` : `Duo Analysis: Data synchronize ho raha hai.`,
+          `Execution Strategy: Subah pehle apni Catalyst habit (${leadCatalyst?.habit.name || strongest?.name}) complete karein; baki routine khud-ba-khud follow hoga.`,
+          `Avoid Friction: Agar Catalyst habit drop hoti hai toh baki routine par domino crash ka khatra hota hai.`
+        ],
+        followUps: ['strongest', 'target_tune', 'daily_win']
+      };
+    }
+
+    // ── 4. SLUMP RISK & CRISIS DEFENSE ──────────────────────────────────
+    if (promptKey === 'crisis_defense' || /slump|crisis|bounce|recovery|drop risk|break|reset rate/i.test(userQuery)) {
+      return {
+        title: isAtSlumpRisk ? 'Slump Early-Warning: Crisis Defense Mode' : 'Resilience & Slump Shield',
+        badge: isAtSlumpRisk ? 'High Alert' : 'Shield Active',
+        badgeColor: isAtSlumpRisk ? 'rose' : 'cyan',
+        text: isAtSlumpRisk
+          ? `Alert: Kal aapka score low tha aur aaj abhi tak habit log nahi hui hai. Psychological science kehti hai: <strong>'Never Miss Twice'</strong>. 1 din drop accident hai, 2 din drop nayi buri aadat banna shuru ho jata hai.`
+          : `Aapka historical comeback record mazboot hai. Pichle low performance days me aapka bounce-back success rate <strong>${resetRatePct}%</strong> raha hai.`,
+        stats: [
+          { label: '1-Day Reset Rate', val: `${resetRatePct}%` },
+          { label: 'Slump Status', val: isAtSlumpRisk ? 'At Risk' : 'Protected' },
+          { label: 'Defense Action', val: 'Lock 1 Habit' }
+        ],
+        bullets: [
+          `The 2-Minute Emergency Protocol: Agar thakaan ya busy schedule hai, toh target ko 2 minute ke liye karein par zero-day na banne dein.`,
+          `Crisis Rule: Aaj din khatam hone se pehle kam se kam 1 single habit zaroor tick karein taaki multi-day slump avoid ho sake.`,
+          `Personal Record: Aapka average bounce-back time 24 se 48 ghante ke andar raha hai.`
+        ],
+        followUps: ['daily_win', 'danger_day', 'coaching_tips']
+      };
+    }
+
+    // ── 5. NEXT MILESTONE & HONORS RUNWAY ────────────────────────────────
+    if (promptKey === 'milestone_runway' || /runway|next badge|milestone|trophy|honor|kab milega|next award/i.test(userQuery)) {
+      return {
+        title: nextLockedBadge ? `Next Honor Runway: ${nextLockedBadge.title}` : `Milestone Runway: ${nextTarget} Days`,
+        badge: 'Runway Target',
+        badgeColor: 'yellow',
+        text: nextLockedBadge
+          ? `Aapka agla target honor badge hai: <strong>${nextLockedBadge.title}</strong> (${nextLockedBadge.persona} Persona). \n\n"${nextLockedBadge.definition}"`
+          : `Aap streak milestone ke peak zone me hain. Agla milestone target ${nextTarget} days hai.`,
+        stats: [
+          { label: 'Next Badge', val: nextLockedBadge ? nextLockedBadge.title : `${nextTarget}d Trophy` },
+          { label: 'Current Progress', val: nextLockedBadge ? `${nextLockedBadge.progress}%` : `${compositeStreak.currentStreak}d` },
+          { label: 'Remaining Gap', val: nextLockedBadge ? (nextLockedBadge.criteria || 'In Progress') : `${daysToMilestone} Din` }
+        ],
+        bullets: [
+          nextLockedBadge ? `Unlock Criteria: <strong>${nextLockedBadge.criteria}</strong>.` : `Target: ${nextTarget} consecutive days.`,
+          `Streak Target: Agli streak trophy ke liye sirf <strong>${daysToMilestone} active din</strong> baaki hain.`,
+          `Auto-Equip Feature: Jaise hi yeh unlock hoga, aap ise top navbar ke 3 pills me direct equip kar sakte hain.`
+        ],
+        followUps: ['strongest', 'daily_win', 'full_report']
+      };
+    }
+
+    // ── 6. HABIT TARGET TUNING ADVICE ───────────────────────────────────
+    if (promptKey === 'target_tune' || /tune|tuning|adjust|heavy|mushkil|target kam|scale down/i.test(userQuery)) {
+      const frictionHabits = activeHabits.filter(h => h.completionRate7d < 35);
+      const masteredHabits = activeHabits.filter(h => h.completionRate7d >= 85 && h.currentStreak >= 10);
+
+      return {
+        title: 'Habit Target Tuning & Friction Audit',
+        badge: frictionHabits.length > 0 ? 'Adjustment Recommended' : 'Optimal Balance',
+        badgeColor: frictionHabits.length > 0 ? 'rose' : 'indigo',
+        text: frictionHabits.length > 0
+          ? `Aapki routine me friction detect hui hai: <strong>${frictionHabits.map(h => h.name).join(', ')}</strong> pichle 7 dino me 35% se kam achieve hui hai.`
+          : `Aapki sabhi habits ka target sweet spot par hai. Koi severe mental resistance detect nahi hui.`,
+        stats: [
+          { label: 'High Friction', val: `${frictionHabits.length} Habits` },
+          { label: 'Mastered Routines', val: `${masteredHabits.length} Habits` },
+          { label: 'Sweet Spot', val: `${activeHabits.length - frictionHabits.length} Habits` }
+        ],
+        bullets: [
+          frictionHabits.length > 0
+            ? `Scale-Down Strategy: <strong>${frictionHabits[0].name}</strong> ka daily target temporary 50% reduce karein. 7 din momentum banne ke baad wapas standard badhayein.`
+            : `Sustainable Pacing: Current targets manageable hain, inhe maintain rakhein.`,
+          masteredHabits.length > 0
+            ? `Mastered Routine: <strong>${masteredHabits[0].name}</strong> ab unconscious habit ban chuki hai. Aap chahein toh iska bar raise kar sakte hain.`
+            : `Momentum Building: Daily consistent check-ins se 21 din me synaptic pathways form hoti hain.`
+        ],
+        followUps: ['weakest', 'catalyst_duos', 'daily_win']
+      };
+    }
+
+    // ── 7. STRONGEST HABIT (CHAMPION) ───────────────────────────────────
     if (promptKey === 'strongest' || /strong|best|top|achhi|sabse|champion/i.test(userQuery)) {
       if (!strongest) return null;
       return {
-        title: `🏆 Aapki Strongest Habit: ${strongest.name}`,
-        badge: 'Champion Habit',
+        title: `Champion Habit: ${strongest.name}`,
+        badge: 'Consistency Pillar',
         badgeColor: 'emerald',
-        text: `Yeh habit aapke daily lifestyle ka sabse mazboot pillar hai! Iska consistency score sabhi habits se aage chal raha hai.`,
+        text: `Yeh habit aapke daily lifestyle ka sabse mazboot anchor hai. Iska consistency score sabhi habits se aage chal raha hai.`,
         stats: [
-          { label: 'Current Streak', val: `${strongest.currentStreak} Din 🔥` },
-          { label: '7-Day Hit Rate', val: `${strongest.completionRate7d}% 🎯` },
-          { label: 'Longest Record', val: `${strongest.longestStreak} Din 🏆` }
+          { label: 'Current Streak', val: `${strongest.currentStreak} Days` },
+          { label: '7-Day Hit Rate', val: `${strongest.completionRate7d}% Hit` },
+          { label: 'Personal Best', val: `${strongest.longestStreak} Days` }
         ],
         bullets: [
-          `**Streak Power:** Aapne consecutive ${strongest.currentStreak} din yeh habit complete kari hai.`,
-          `**Habit Stacking Tip:** Is mazboot aadat ke theek baad apni kisi kamzor aadat ko jod dein (jaise: "${strongest.name} karte hi main 2 min reading karunga").`,
-          `Neural pathways ban chuki hain — iska flow todna mat!`
-        ]
+          `Streak Strength: Aapne consecutive ${strongest.currentStreak} din yeh habit complete kari hai.`,
+          `Habit Stacking Tip: Is mazboot aadat ke theek baad apni kisi kamzor aadat ko attach karein.`,
+          `Identity Anchor: Yeh aadat aapki core discipline ka prateek ban chuki hai.`
+        ],
+        followUps: ['catalyst_duos', 'milestone_runway', 'daily_win']
       };
     }
 
-    // 2. Weakest Habit / Drop Risk
+    // ── 8. WEAKEST HABIT / DROP RISK ────────────────────────────────────
     if (promptKey === 'weakest' || /weak|drop|risk|struggle|kamzor|kharab|miss|problem/i.test(userQuery)) {
       if (!weakest) return null;
       
       const isAllSolid = weakest.completionRate7d >= 80;
       if (isAllSolid) {
         return {
-          title: `✨ Sabhi Habits Super Strong Hain!`,
-          badge: 'Zero Drop Risk',
+          title: 'All Active Habits Solid: Zero Drop Risk',
+          badge: 'High Performance',
           badgeColor: 'emerald',
-          text: `Shaandar! Aapki koi bhi habit severe drop risk par nahi hai. Sabhi active habits 80%+ consistency maintain kar rahi hain!`,
+          text: `Shaandar! Aapki koi bhi habit severe drop risk par nahi hai. Sabhi active habits 80%+ consistency maintain kar rahi hain.`,
           bullets: [
             `Lowest hit rate bhi ${weakest.completionRate7d}% (${weakest.name}) par solid hai.`,
-            `Consistency banaye rakhein aur over-optimistic hokar ek sath bahut nayi habits add na karein.`
-          ]
+            `Consistency banaye rakhein aur over-ambitious hokar ek sath zyada nayi habits add na karein.`
+          ],
+          followUps: ['daily_win', 'danger_day', 'milestone_runway']
         };
       }
 
       return {
-        title: `⚠️ Needs Attention: ${weakest.name}`,
+        title: `Needs Attention: ${weakest.name}`,
         badge: 'Drop-Risk Alert',
         badgeColor: 'rose',
-        text: `Is habit mein pichle 7 dino mein consistency break hui hai. Abhi ispe dhyan dene se streak bounce-back ho sakti hai!`,
+        text: `Is habit me pichle 7 dino me consistency break hui hai. Abhi ispe focus karne se streak bounce-back ho sakti hai.`,
         stats: [
-          { label: '7-Day Completion', val: `${weakest.completionRate7d}% 📉` },
-          { label: 'Recent Misses', val: `${weakest.missCount7d} Din Drop ❌` },
-          { label: 'Current Streak', val: `${weakest.currentStreak} Din` }
+          { label: '7-Day Rate', val: `${weakest.completionRate7d}%` },
+          { label: 'Recent Misses', val: `${weakest.missCount7d} Days` },
+          { label: 'Current Streak', val: `${weakest.currentStreak} Days` }
         ],
         bullets: [
-          `**The 2-Minute Rule:** Target ko temporarily aadha karein (e.g. agar 30 min ka target hai toh bas 5 min karein taaki zero-day na bane).`,
-          `**Reduce Friction:** Is aadat ke liye environment pehle se taiyar rakhein (shoes samne rakhein, book bed ke paas rakhein).`,
-          `**Never Miss Twice:** 1 din miss hona accident hai, par 2 din miss hona nayi buri aadat ki shuruat hoti hai!`
-        ]
+          `The 2-Minute Rule: Target ko temporarily kam karein taaki mental resistance khatam ho.`,
+          `Friction Reduction: Is aadat ke liye environment pehle se ready rakhein.`,
+          `Never Miss Twice: Aaj is habit ko priority dekar zero-day break karein.`
+        ],
+        followUps: ['target_tune', 'crisis_defense', 'daily_win']
       };
     }
 
-    // 3. Today's Status & Pending Checklist
+    // ── 9. TODAY'S STATUS & PENDING CHECKLIST ───────────────────────────
     if (promptKey === 'today_status' || /today|aaj|pending|progress|status|bache/i.test(userQuery)) {
       const total = activeHabits.length;
       const doneCount = doneToday.length;
       const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
       return {
-        title: `📊 Aaj Ka Live Habit Status (${todayStr})`,
+        title: `Today Live Status: ${todayStr}`,
         badge: `${pct}% Complete`,
         badgeColor: pct === 100 ? 'emerald' : 'indigo',
         text: pct === 100 
-          ? `🎉 Zabardast! Aaj ke sabhi ${total} habits aapne complete kar liye hain! Day score 100% locked hai.` 
-          : `Aaj aapne ${doneCount} / ${total} habits tick kar liye hain (${pct}%). Abhi ${pendingToday.length} habits baaki hain!`,
+          ? `Zabardast! Aaj ke sabhi ${total} habits aapne complete kar liye hain. Day score 100% locked hai.` 
+          : `Aaj aapne ${doneCount} / ${total} habits tick kar liye hain (${pct}%). Abhi ${pendingToday.length} habits baaki hain.`,
         stats: [
-          { label: 'Completed', val: `${doneCount} Habits ✅` },
-          { label: 'Pending', val: `${pendingToday.length} Habits ⏳` },
+          { label: 'Completed', val: `${doneCount} Habits` },
+          { label: 'Pending', val: `${pendingToday.length} Habits` },
           { label: 'Day Score', val: `${pct}%` }
         ],
         bullets: pendingToday.length > 0 ? [
-          ...pendingToday.slice(0, 4).map(h => `⏳ **Pending:** ${h.name} (Target: ${h.target100 ?? 'Daily goal'})`),
-          `Din khatam hone se pehle inko log karein taaki kal subah streak continue rahe!`
+          ...pendingToday.slice(0, 4).map(h => `Pending: <strong>${h.name}</strong> (Target: ${h.target100 ?? 'Daily goal'})`),
+          `Din khatam hone se pehle inko log karein taaki streak continue rahe.`
         ] : [
           `Sabhi habits complete! Rest karein aur kal ka momentum ready rakhein.`
-        ]
-      };
-    }
-
-    // 4. Streak & Milestone Record
-    if (promptKey === 'streak_records' || /streak|record|milestone|trophy|best|longest/i.test(userQuery)) {
-      return {
-        title: `🔥 Streak & Milestone Dashboard`,
-        badge: `${compositeStreak.currentStreak} Days Active`,
-        badgeColor: 'amber',
-        text: `Consistent daily actions dimag ke neural wiring ko hamesha ke liye badal dete hain. Dekhein aapka live score:`,
-        stats: [
-          { label: 'Active Streak', val: `${compositeStreak.currentStreak} Din 🔥` },
-          { label: 'Personal Best', val: `${compositeStreak.longestStreak} Din 🏆` },
-          { label: 'Next Trophy', val: `${nextTarget} Din Goal` }
         ],
-        bullets: [
-          `**Next Trophy:** Agle milestone (${nextTarget} Days) ke liye sirf **${daysToMilestone} din** baaki hain!`,
-          `**Consistency Rate:** Total tracked days mein aapka consistency rate **${compositeStreak.consistencyPct}%** hai.`,
-          `Keep the fire burning! Steady effort beats sporadic intensity.`
-        ]
+        followUps: ['daily_win', 'milestone_runway', 'danger_day']
       };
     }
 
-    // 5. Coaching Tips & Bounce-back
-    if (promptKey === 'coaching_tips' || /tip|tips|help|advice|kaise|motivation|bounce/i.test(userQuery)) {
-      return {
-        title: `💡 Habit Consistency Ke 4 Golden Rules`,
-        badge: 'Atomic Framework',
-        badgeColor: 'indigo',
-        text: `Behavioral psychology ke mutabiq habits banane ka sabse solid formula:`,
-        bullets: [
-          `1️⃣ **Habit Stacking:** Apni strongest habit (${strongest?.name || 'Brush karna'}) ke theek baad new habit ko attach karein.`,
-          `2️⃣ **The 2-Minute Rule:** Jab man na kare ya thakaan ho, toh sirf 2 minute ke liye karein. Zero-day ko avoid karna sabse zaroori hai.`,
-          `3️⃣ **Visual Cues:** Jo cheez karni hai use aakhon ke samne rakhein (Water bottle table par, clothes ready).`,
-          `4️⃣ **Never Miss Twice Rule:** Agar kisi wajah se 1 din miss ho jaye, toh agle din kisi bhi haal mein prioritize karein.`
-        ]
-      };
-    }
-
-    // 6. Full Report
+    // ── 10. COMPLETE HEALTH SCORECARD ───────────────────────────────────
     if (promptKey === 'full_report' || /report|all|summary|pura|poora|scorecard/i.test(userQuery)) {
       return {
-        title: `📋 Complete Habit Health Scorecard`,
+        title: 'Complete Habit Health Scorecard',
         badge: `${activeHabits.length} Habits Tracked`,
         badgeColor: 'indigo',
         text: `Aapki sabhi active habits ka performance matrix:`,
         bullets: activeHabits.map(h => {
-          const statusDot = h.completionRate7d >= 75 ? '🟢' : h.completionRate7d >= 50 ? '🟡' : '🔴';
-          return `${statusDot} **${h.name}:** Streak ${h.currentStreak}d • 7d Rate ${h.completionRate7d}% • ${h.isDoneToday ? 'Aaj Done ✅' : 'Aaj Pending ⏳'}`;
-        })
+          return `<strong>${h.name}:</strong> Streak ${h.currentStreak}d • 7d Rate ${h.completionRate7d}% • ${h.isDoneToday ? 'Today Done' : 'Today Pending'}`;
+        }),
+        followUps: ['daily_win', 'danger_day', 'milestone_runway']
       };
     }
 
-    // Specific Habit Keyword Matching (if user asks about a specific habit like "water" or "reading")
+    // ── 11. ATOMIC COACHING TIPS ────────────────────────────────────────
+    if (promptKey === 'coaching_tips' || /tip|tips|help|advice|kaise|motivation|rules/i.test(userQuery)) {
+      return {
+        title: 'Habit Consistency Ke 4 Golden Rules',
+        badge: 'Atomic Framework',
+        badgeColor: 'indigo',
+        text: `Behavioral psychology ke mutabiq habits banane ka sabse solid framework:`,
+        bullets: [
+          `1. Habit Stacking: Apni strongest habit (${strongest?.name || 'Brush karna'}) ke theek baad new habit ko attach karein.`,
+          `2. The 2-Minute Rule: Jab man na kare ya thakaan ho, toh sirf 2 minute ke liye karein. Zero-day avoid karna sabse zaroori hai.`,
+          `3. Visual Cues: Jo cheez karni hai use aakhon ke samne rakhein (Water bottle table par, clothes ready).`,
+          `4. Never Miss Twice: Agar kisi wajah se 1 din miss ho jaye, toh agle din kisi bhi haal me prioritize karein.`
+        ],
+        followUps: ['daily_win', 'crisis_defense', 'target_tune']
+      };
+    }
+
+    // ── SPECIFIC HABIT SPOTLIGHT MATCHING ────────────────────────────────
     const matchedHabit = activeHabits.find(h => 
       userQuery.toLowerCase().includes(h.name.toLowerCase()) ||
       (h.unit && userQuery.toLowerCase().includes(h.unit.toLowerCase()))
@@ -342,45 +814,46 @@ export default function HabitAiCoachBot() {
 
     if (matchedHabit) {
       return {
-        title: `🔍 Habit Spotlight: ${matchedHabit.name}`,
+        title: `Habit Spotlight: ${matchedHabit.name}`,
         badge: `${matchedHabit.currentStreak}d Streak`,
         badgeColor: matchedHabit.completionRate7d >= 70 ? 'emerald' : 'amber',
-        text: `Yahan hai **${matchedHabit.name}** ka personalized performance telemetry:`,
+        text: `Yahan hai <strong>${matchedHabit.name}</strong> ka personalized telemetry:`,
         stats: [
-          { label: 'Current Streak', val: `${matchedHabit.currentStreak} Din 🔥` },
+          { label: 'Current Streak', val: `${matchedHabit.currentStreak} Days` },
           { label: '7-Day Hit Rate', val: `${matchedHabit.completionRate7d}%` },
-          { label: 'Today Status', val: matchedHabit.isDoneToday ? 'Complete ✅' : 'Pending ⏳' }
+          { label: 'Today Status', val: matchedHabit.isDoneToday ? 'Complete' : 'Pending' }
         ],
         bullets: [
-          `Longest recorded streak: **${matchedHabit.longestStreak} din**.`,
-          `Recent 7-day average performance: **${matchedHabit.avgScore7d}%**.`,
+          `Longest recorded streak: <strong>${matchedHabit.longestStreak} din</strong>.`,
+          `Recent 7-day average score: <strong>${matchedHabit.avgScore7d}%</strong>.`,
           matchedHabit.isDoneToday 
-            ? `Aaj ka target achieve ho chuka hai! Bahut badiya.` 
+            ? `Aaj ka target achieve ho chuka hai. Great execution.` 
             : `Aaj yeh habit abhi pending hai, din khatam hone se pehle log karein.`
-        ]
+        ],
+        followUps: ['daily_win', 'target_tune', 'catalyst_duos']
       };
     }
 
-    // Default Fallback
+    // Fallback Default
     return {
-      title: `🤖 Definite Habit Coach Assistant`,
+      title: 'Definite Habit Coach Intelligence',
       badge: 'Habits Active',
       badgeColor: 'indigo',
-      text: `Main aapke live habits data aur streak records se connected hoon. Aap neeche diye gaye quick prompts me se choose kar sakte hain ya apni kisi bhi habit ka naam pooch sakte hain!`,
+      text: `Main aapke real habit data aur streaks se connected hoon. Aap kisi specific topic ya habit ke baare me pooch sakte hain.`,
       bullets: [
-        `🏆 Strongest Habit: **${strongest?.name || 'N/A'}** (${strongest?.currentStreak || 0}d streak)`,
-        `⚠️ Needs Attention: **${weakest?.name || 'N/A'}** (${weakest?.completionRate7d || 0}% 7d rate)`,
-        `📅 Aaj Ka Progress: **${doneToday.length} / ${activeHabits.length}** habits done`
-      ]
+        `Champion Habit: <strong>${strongest?.name || 'N/A'}</strong> (${strongest?.currentStreak || 0}d streak)`,
+        `Needs Attention: <strong>${weakest?.name || 'N/A'}</strong> (${weakest?.completionRate7d || 0}% 7d rate)`,
+        `Today Progress: <strong>${doneToday.length} / ${activeHabits.length}</strong> habits done`
+      ],
+      followUps: ['daily_win', 'danger_day', 'milestone_runway']
     };
   };
 
-  // Handle user selecting a quick prompt or typing a message
+  // Handle user selecting a prompt or typing a message
   const handleUserTrigger = (promptId, promptLabel = null) => {
     const userText = promptLabel || inputValue.trim();
     if (!userText && !promptId) return;
 
-    // Append User Message
     const userMsg = {
       id: 'usr_' + Date.now(),
       sender: 'user',
@@ -392,7 +865,7 @@ export default function HabitAiCoachBot() {
     setIsReasoning(true);
     setReasoningStep(1);
 
-    // Simulate Agentic Telemetry Step 1 -> 2 -> 3
+    // Step-by-step reasoning simulation
     setTimeout(() => {
       setReasoningStep(2);
       setTimeout(() => {
@@ -401,18 +874,23 @@ export default function HabitAiCoachBot() {
           setIsReasoning(false);
           const responseData = generateHabitResponse(promptId, userText);
           if (responseData) {
+            // Find follow-up prompt objects based on responseData.followUps
+            const followUpList = (responseData.followUps || [])
+              .map(fId => COACH_PROMPTS.find(p => p.id === fId))
+              .filter(Boolean);
+
             const botMsg = {
               id: 'bot_' + Date.now(),
               sender: 'bot',
               type: 'card',
               data: responseData,
-              suggestedPrompts: QUICK_PROMPTS.filter(p => p.id !== promptId).slice(0, 3)
+              suggestedPrompts: followUpList
             };
             setMessages(prev => [...prev, botMsg]);
           }
-        }, 320);
-      }, 280);
-    }, 280);
+        }, 280);
+      }, 240);
+    }, 240);
   };
 
   // Draggable physics for Desktop Mouse + Mobile Touch
@@ -421,80 +899,72 @@ export default function HabitAiCoachBot() {
     if (!el) return;
 
     function onStart(e) {
-      if (e.button !== undefined && e.button !== 0) return;
-      const evt = e.touches ? e.touches[0] : e;
       dragRef.current.isDragging = true;
       dragRef.current.hasMoved = false;
-      dragRef.current.startX = evt.clientX;
-      dragRef.current.startY = evt.clientY;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      dragRef.current.startX = clientX;
+      dragRef.current.startY = clientY;
+
       const rect = el.getBoundingClientRect();
       dragRef.current.initialLeft = rect.left;
       dragRef.current.initialTop = rect.top;
-      el.style.transition = 'none';
     }
 
     function onMove(e) {
       if (!dragRef.current.isDragging) return;
-      const evt = e.touches ? e.touches[0] : e;
-      const dx = evt.clientX - dragRef.current.startX;
-      const dy = evt.clientY - dragRef.current.startY;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = clientX - dragRef.current.startX;
+      const dy = clientY - dragRef.current.startY;
+
       if (Math.hypot(dx, dy) > 6) {
         dragRef.current.hasMoved = true;
-        if (e.cancelable) e.preventDefault();
-        const btnW = el.offsetWidth || 54;
-        const btnH = el.offsetHeight || 54;
-        const maxLeft = window.innerWidth - btnW - 14;
-        const maxTop = window.innerHeight - btnH - 14;
-        const clampedLeft = Math.max(14, Math.min(maxLeft, dragRef.current.initialLeft + dx));
-        const clampedTop = Math.max(14, Math.min(maxTop, dragRef.current.initialTop + dy));
-        el.style.left = clampedLeft + 'px';
-        el.style.top = clampedTop + 'px';
-        el.style.bottom = 'auto';
+      }
+
+      if (dragRef.current.hasMoved) {
+        const nextX = Math.max(10, Math.min(window.innerWidth - 60, dragRef.current.initialLeft + dx));
+        const nextY = Math.max(60, Math.min(window.innerHeight - 80, dragRef.current.initialTop + dy));
+        el.style.left = `${nextX}px`;
+        el.style.top = `${nextY}px`;
         el.style.right = 'auto';
+        el.style.bottom = 'auto';
       }
     }
 
     function onEnd() {
-      if (!dragRef.current.isDragging) return;
       dragRef.current.isDragging = false;
-      el.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s';
-      if (dragRef.current.hasMoved) {
-        setTimeout(() => {
-          dragRef.current.hasMoved = false;
-        }, 180);
-      }
     }
 
     el.addEventListener('mousedown', onStart);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onEnd);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
 
     el.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onEnd);
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
 
     return () => {
       el.removeEventListener('mousedown', onStart);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onEnd);
       el.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
     };
   }, []);
 
-  const isEnabled = aiCoachEnabled === true && localStorage.getItem('preference_ai_coach_enabled') !== 'false';
-  if (!isEnabled || isProOrAdmin) {
-    return null;
-  }
+  if (isProOrAdmin) return null;
+
+  const featuredPrompts = COACH_PROMPTS.filter(p => FEATURED_PROMPT_IDS.includes(p.id));
+  const remainingPrompts = COACH_PROMPTS.filter(p => !FEATURED_PROMPT_IDS.includes(p.id));
 
   return (
-    <div id="habit-ai-coach-root">
-      {/* ── Scoped Micro-Animations ──────────────────────────────────── */}
+    <>
       <style>{`
         @keyframes coachRobotFloat {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-3.5px); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-4px) rotate(1.2deg); }
         }
         .coach-float-group {
           animation: coachRobotFloat 3.2s ease-in-out infinite;
@@ -564,7 +1034,6 @@ export default function HabitAiCoachBot() {
         aria-label="Toggle AI Habit Coach"
       >
         {!isOpen ? (
-          /* Folio-84 Vector Robot SVG */
           <svg 
             className="w-[38px] h-[34px] sm:w-[42px] sm:h-[38px] drop-shadow-md pointer-events-none" 
             viewBox="0 0 100 85" 
@@ -597,14 +1066,14 @@ export default function HabitAiCoachBot() {
             </defs>
 
             <g className="coach-float-group">
-              {/* Antenna with Sway */}
+              {/* Antenna */}
               <g className="coach-antenna-group">
                 <rect x="48" y="14" width="4" height="11" rx="2" fill="#1e1e24" />
                 <circle cx="50" cy="9" r="7" fill="url(#coach-bot-grad-ball)" />
                 <circle cx="48" cy="7" r="2.2" fill="#ffffff" opacity="0.75" />
               </g>
 
-              {/* Side Ears */}
+              {/* Ears */}
               <rect x="11" y="37" width="10" height="28" rx="5" fill="url(#coach-bot-grad-ear)" />
               <rect x="15" y="41" width="3" height="20" rx="1.5" fill="#ffffff" opacity="0.9" />
               <rect x="79" y="37" width="10" height="28" rx="5" fill="url(#coach-bot-grad-ear)" />
@@ -613,11 +1082,11 @@ export default function HabitAiCoachBot() {
               {/* Chassis Shell */}
               <rect x="18" y="22" width="64" height="56" rx="22" fill="url(#coach-bot-grad-shell)" />
 
-              {/* Bezel Faceplate */}
+              {/* Bezel */}
               <rect x="21.5" y="25.5" width="57" height="49" rx="18.5" fill="url(#coach-bot-grad-bezel)" />
               <path d="M 32 27 Q 50 25.5 68 27" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-              {/* Black Face Screen */}
+              {/* Face Screen */}
               <rect x="27.5" y="31.5" width="45" height="37" rx="12" fill="url(#coach-bot-grad-screen)" />
               <path d="M 33 34 Q 50 32 67 34" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
 
@@ -629,7 +1098,7 @@ export default function HabitAiCoachBot() {
                 <circle cx="60.2" cy="44.8" r="1.3" fill="#ffffff" opacity="0.95" />
               </g>
 
-              {/* Sweet Smile */}
+              {/* Smile */}
               <path className="coach-smile-path" d="M 43 55.5 Q 50 61.5 57 55.5" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" fill="none" />
             </g>
           </svg>
@@ -641,12 +1110,12 @@ export default function HabitAiCoachBot() {
       {/* ── 2. CHAT MODAL WINDOW ────────────────────────────────────── */}
       {isOpen && (
         <div 
-          className="fixed z-[99999] bottom-[76px] right-[12px] sm:right-[20px] w-[calc(100vw-24px)] sm:w-[390px] h-[480px] sm:h-[520px] max-h-[calc(100vh-130px)] bg-white dark:bg-[#111116] border border-slate-900/30 dark:border-slate-700 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="fixed z-[99999] bottom-[76px] right-[12px] sm:right-[20px] w-[calc(100vw-24px)] sm:w-[410px] h-[520px] sm:h-[560px] max-h-[calc(100vh-120px)] bg-white dark:bg-[#111116] border border-slate-800/40 dark:border-zinc-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           style={{
-            boxShadow: '0 20px 45px -10px rgba(0,0,0,0.35), 0 0 0 1px rgba(15, 23, 42, 0.15)'
+            boxShadow: '0 24px 50px -10px rgba(0,0,0,0.45), 0 0 0 1px rgba(255, 255, 255, 0.05)'
           }}
         >
-          {/* Header - Brand Rich Crimson / Dark Orange Tab with High Contrast */}
+          {/* Header */}
           <div className="p-3 sm:p-3.5 bg-gradient-to-r from-[#7f1d1d] via-[#991b1b] to-[#9a3412] dark:from-[#6b1515] dark:via-[#7f1d1d] dark:to-[#7c2d12] text-white border-b border-rose-950/70 shadow-md flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/25 text-amber-200 flex items-center justify-center font-bold shadow-xs">
@@ -655,15 +1124,15 @@ export default function HabitAiCoachBot() {
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xs sm:text-[13px] font-black text-white leading-none tracking-tight">
-                    Definite AI Coach
+                    Definite Habit Coach
                   </h3>
                   <ProPill size="xs" />
                   <span className="flex items-center gap-1 text-[8.5px] font-black text-amber-200 bg-amber-400/20 border border-amber-300/40 px-1.5 py-0.5 rounded-full leading-none">
-                    Upcoming
+                    Telemetry
                   </span>
                 </div>
                 <p className="text-[10px] text-rose-100/90 font-medium leading-none mt-1">
-                  Personal Habit Telemetry
+                  100% Offline Behavioral Analytics
                 </p>
               </div>
             </div>
@@ -711,31 +1180,85 @@ export default function HabitAiCoachBot() {
                     <div className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 p-3.5 rounded-2xl shadow-2xs space-y-2.5">
                       <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 font-black text-[11px]">
                         <Sparkle size={15} weight="fill" />
-                        <span>Definite Habit Intelligence</span>
+                        <span>Definite Habit Intelligence Engine</span>
                       </div>
                       <p className="text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
                         {msg.content}
                       </p>
                     </div>
 
-                    {/* Quick Question Chips Container */}
-                    <div className="space-y-1.5">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 pl-1">
-                        Quick Questions:
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                        {msg.suggestedPrompts?.map(p => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => handleUserTrigger(p.id, p.label)}
-                            className="w-full text-left p-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 font-bold text-[11px] sm:text-[11.5px] transition-all flex items-center justify-between group cursor-pointer shadow-2xs"
-                          >
-                            <span className="truncate pr-1">{p.label}</span>
-                            <CaretRight size={12} weight="bold" className="text-orange-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                          </button>
-                        ))}
+                    {/* Compact Initial Starter Prompts */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                          Recommended Starters:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowAllTopics(!showAllTopics)}
+                          className="text-[10.5px] font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{showAllTopics ? 'Show Less' : 'View All Topics'}</span>
+                          {showAllTopics ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />}
+                        </button>
                       </div>
+
+                      {/* 4 Featured Starter Cards in 2x2 Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {featuredPrompts.map(p => {
+                          const IconComp = p.IconComponent;
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => handleUserTrigger(p.id, p.label)}
+                              className="text-left p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 transition-all flex items-start gap-2.5 group cursor-pointer shadow-2xs"
+                            >
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${p.colorClass}`}>
+                                <IconComp size={15} weight="bold" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <span className="block font-black text-[11px] leading-tight text-slate-900 dark:text-white truncate">
+                                  {p.label}
+                                </span>
+                                <span className="block text-[9.5px] font-medium text-slate-400 dark:text-zinc-400 truncate mt-0.5">
+                                  {p.sublabel}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Expandable Drawer for remaining topics */}
+                      {showAllTopics && (
+                        <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800/80 animate-in fade-in duration-150">
+                          <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1 block">
+                            More Analytics Topics:
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {remainingPrompts.map(p => {
+                              const IconComp = p.IconComponent;
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => handleUserTrigger(p.id, p.label)}
+                                  className="text-left p-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 transition-all flex items-center gap-2 group cursor-pointer shadow-2xs"
+                                >
+                                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 border ${p.colorClass}`}>
+                                    <IconComp size={13} weight="bold" />
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate flex-1">
+                                    {p.label}
+                                  </span>
+                                  <CaretRight size={11} weight="bold" className="text-orange-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -749,9 +1272,11 @@ export default function HabitAiCoachBot() {
                     <div className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 p-3.5 rounded-2xl shadow-2xs space-y-2.5">
                       {/* Card Header & Badge */}
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="font-black text-slate-900 dark:text-white text-xs leading-snug">
-                          {card.title}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-black text-slate-900 dark:text-white text-xs leading-snug">
+                            {card.title}
+                          </h4>
+                        </div>
                         {card.badge && (
                           <span className={`text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${
                             card.badgeColor === 'emerald'
@@ -760,6 +1285,10 @@ export default function HabitAiCoachBot() {
                               ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
                               : card.badgeColor === 'amber'
                               ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
+                              : card.badgeColor === 'purple'
+                              ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300'
+                              : card.badgeColor === 'cyan'
+                              ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300'
                               : 'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300'
                           }`}>
                             {card.badge}
@@ -769,9 +1298,10 @@ export default function HabitAiCoachBot() {
 
                       {/* Text */}
                       {card.text && (
-                        <p className="text-slate-600 dark:text-zinc-300 text-[11.5px] leading-relaxed whitespace-pre-line font-medium">
-                          {card.text}
-                        </p>
+                        <p 
+                          className="text-slate-600 dark:text-zinc-300 text-[11.5px] leading-relaxed whitespace-pre-line font-medium"
+                          dangerouslySetInnerHTML={{ __html: card.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
+                        />
                       )}
 
                       {/* Micro-Stats Grid */}
@@ -803,21 +1333,37 @@ export default function HabitAiCoachBot() {
                       )}
                     </div>
 
-                    {/* Follow-up Prompts */}
-                    {msg.suggestedPrompts && msg.suggestedPrompts.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {msg.suggestedPrompts.map(sp => (
-                          <button
-                            key={sp.id}
-                            type="button"
-                            onClick={() => handleUserTrigger(sp.id, sp.label)}
-                            className="text-[10.5px] font-bold px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-900/40 hover:bg-orange-100 transition-colors cursor-pointer"
-                          >
-                            {sp.label}
-                          </button>
-                        ))}
+                    {/* DYNAMIC CONTEXTUAL FOLLOW-UP QUESTIONS (WORKFLOW ENGINE) */}
+                    <div className="space-y-1 pl-1">
+                      <div className="flex items-center justify-between text-[9.5px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                        <span>Related Follow-ups:</span>
+                        <button
+                          type="button"
+                          onClick={resetWelcome}
+                          className="text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer font-bold capitalize"
+                        >
+                          <ArrowClockwise size={11} weight="bold" />
+                          <span>Main Topics</span>
+                        </button>
                       </div>
-                    )}
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {msg.suggestedPrompts && msg.suggestedPrompts.map(sp => {
+                          const IconComp = sp.IconComponent || Sparkle;
+                          return (
+                            <button
+                              key={sp.id}
+                              type="button"
+                              onClick={() => handleUserTrigger(sp.id, sp.label)}
+                              className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-lg bg-orange-50/80 dark:bg-orange-950/40 text-orange-800 dark:text-orange-200 border border-orange-200/80 dark:border-orange-900/40 hover:bg-orange-100 hover:border-orange-400 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <IconComp size={12} weight="bold" className="text-orange-600 dark:text-orange-400 shrink-0" />
+                              <span>{sp.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 );
               }
@@ -825,7 +1371,7 @@ export default function HabitAiCoachBot() {
               return null;
             })}
 
-            {/* Simulated Reasoning Animation Card */}
+            {/* Simulated Reasoning Animation with Sleek Phosphor Icons (NO EMOJIS) */}
             {isReasoning && (
               <div className="bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-900/60 rounded-2xl p-3 space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-between text-orange-800 dark:text-orange-300 font-black text-[10.5px]">
@@ -839,17 +1385,20 @@ export default function HabitAiCoachBot() {
                 </div>
 
                 <div className="space-y-1 text-slate-600 dark:text-zinc-400 text-[11px] font-medium">
-                  <div className={`p-1 pl-2 border-l-2 transition-all ${reasoningStep >= 1 ? 'border-orange-500 text-orange-900 dark:text-orange-200 font-bold' : 'border-slate-300 opacity-50'}`}>
-                    {reasoningStep === 1 ? '⚙️ Reading active habits & daily summaries...' : '✓ Telemetry data verified'}
+                  <div className={`p-1 pl-2 border-l-2 transition-all flex items-center gap-1.5 ${reasoningStep >= 1 ? 'border-orange-500 text-orange-900 dark:text-orange-200 font-bold' : 'border-slate-300 opacity-50'}`}>
+                    <CheckCircle size={13} weight="bold" className={reasoningStep >= 1 ? 'text-orange-500' : 'text-slate-400'} />
+                    <span>{reasoningStep === 1 ? 'Reading active habits and daily summaries...' : 'Telemetry data verified'}</span>
                   </div>
                   {reasoningStep >= 2 && (
-                    <div className={`p-1 pl-2 border-l-2 transition-all ${reasoningStep >= 2 ? 'border-orange-500 text-orange-900 dark:text-orange-200 font-bold' : 'border-slate-300 opacity-50'}`}>
-                      {reasoningStep === 2 ? '🔍 Calculating 7-day completion curves & streaks...' : '✓ Streak patterns analyzed'}
+                    <div className={`p-1 pl-2 border-l-2 transition-all flex items-center gap-1.5 ${reasoningStep >= 2 ? 'border-orange-500 text-orange-900 dark:text-orange-200 font-bold' : 'border-slate-300 opacity-50'}`}>
+                      <CheckCircle size={13} weight="bold" className={reasoningStep >= 2 ? 'text-orange-500' : 'text-slate-400'} />
+                      <span>{reasoningStep === 2 ? 'Calculating weekly day patterns and streaks...' : 'Behavioral patterns analyzed'}</span>
                     </div>
                   )}
                   {reasoningStep >= 3 && (
-                    <div className="p-1 pl-2 border-l-2 border-orange-500 text-orange-900 dark:text-orange-200 font-bold">
-                      💡 Formulating personalized coaching insights...
+                    <div className="p-1 pl-2 border-l-2 border-orange-500 text-orange-900 dark:text-orange-200 font-bold flex items-center gap-1.5">
+                      <Sparkle size={13} weight="fill" className="text-orange-500 animate-spin" />
+                      <span>Formulating personalized coaching insights...</span>
                     </div>
                   )}
                 </div>
@@ -867,7 +1416,7 @@ export default function HabitAiCoachBot() {
           >
             <input
               type="text"
-              placeholder="Ask about your habits, streaks, drop risk..."
+              placeholder="Ask about win condition, danger day, streaks..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 rounded-full px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-hidden focus:border-orange-500 font-medium"
@@ -883,6 +1432,6 @@ export default function HabitAiCoachBot() {
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 }
