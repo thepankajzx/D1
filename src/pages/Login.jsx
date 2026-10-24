@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGuest } from '../contexts/GuestContext';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
+import { sendPasswordResetEmail, updateProfile, getAdditionalUserInfo } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
+import { sendNewCustomerAlert } from '../services/customerAlertService';
 
 /* ==========================================================================
    1. HEATMAP CONSTANTS & HELPERS
@@ -343,6 +344,18 @@ export default function Login() {
       const user = cred?.user;
 
       if (user) {
+        // Check if signing in for the very first time via getAdditionalUserInfo or creationTime
+        let isNewGoogleUser = false;
+        try {
+          const addInfo = getAdditionalUserInfo(cred);
+          if (addInfo?.isNewUser) isNewGoogleUser = true;
+        } catch (_) {}
+        if (!isNewGoogleUser && user.metadata?.creationTime && user.metadata?.lastSignInTime) {
+          if (user.metadata.creationTime === user.metadata.lastSignInTime) {
+            isNewGoogleUser = true;
+          }
+        }
+
         exitGuestMode();
         // ⚡ INSTANT DASHBOARD ACCESS: Navigate immediately without blocking on Firestore
         navigate('/');
@@ -354,7 +367,9 @@ export default function Login() {
             const userSnap = await getDoc(userRef);
 
             let founderNum = claimedUsers + 1;
-            if (!userSnap.exists()) {
+            const isBrandNewInDb = !userSnap.exists();
+
+            if (isBrandNewInDb) {
               await setDoc(userRef, {
                 createdAt: new Date().toISOString(),
                 displayName: user.displayName || user.email?.split('@')[0] || '',
@@ -371,6 +386,16 @@ export default function Login() {
               if (!udata.isPro) {
                 await updateDoc(userRef, { isPro: true, isFounder: true, proForever: true });
               }
+            }
+
+            // Webhook alert trigger ONLY for new customers
+            if (isNewGoogleUser || isBrandNewInDb) {
+              sendNewCustomerAlert({
+                name: user.displayName || (user.email ? user.email.split('@')[0] : 'New Customer'),
+                email: user.email || 'Not Provided',
+                uid: user.uid,
+                extra: 'Google OAuth Signup'
+              }).catch(() => {});
             }
           } catch (syncErr) {
             console.warn('[Background User Sync Warn]:', syncErr);
@@ -451,9 +476,21 @@ export default function Login() {
       }
 
       let userCred;
+      let isNewAccountCreated = false;
+
       if (authMode === 'signup') {
         try {
           userCred = await signup(cleanEmail, password);
+          isNewAccountCreated = true;
+
+          // Immediate non-blocking notification for new Email/Password sign-up
+          const formName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+          sendNewCustomerAlert({
+            name: formName || cleanEmail.split('@')[0],
+            email: cleanEmail,
+            uid: userCred.user?.uid,
+            extra: 'Email/Password Signup'
+          }).catch(() => {});
         } catch (signupErr) {
           if (signupErr.code === 'auth/email-already-in-use') {
             userCred = await login(cleanEmail, password);
@@ -468,6 +505,14 @@ export default function Login() {
           if (loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential') {
             try {
               userCred = await signup(cleanEmail, password);
+              isNewAccountCreated = true;
+
+              sendNewCustomerAlert({
+                name: cleanEmail.split('@')[0],
+                email: cleanEmail,
+                uid: userCred.user?.uid,
+                extra: 'Email/Password Signup'
+              }).catch(() => {});
             } catch (err2) {
               if (err2.code === 'auth/email-already-in-use') {
                 throw new Error('Invalid email or password.');
@@ -510,6 +555,16 @@ export default function Login() {
                 currentStreak: 0,
                 longestStreak: 0
               });
+
+              // Safety check: if somehow not triggered earlier
+              if (!isNewAccountCreated) {
+                sendNewCustomerAlert({
+                  name: fullName || user.displayName || cleanEmail.split('@')[0],
+                  email: user.email || cleanEmail,
+                  uid: user.uid,
+                  extra: 'Email/Password Signup'
+                }).catch(() => {});
+              }
             } else {
               const udata = userSnap.data();
               if (!udata.isPro) {

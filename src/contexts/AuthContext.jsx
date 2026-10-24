@@ -12,6 +12,9 @@ import {
 import { auth, googleProvider } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { sendNewCustomerAlert } from '../services/customerAlertService';
+
+export { sendNewCustomerAlert };
 
 const AuthContext = createContext();
 
