@@ -258,6 +258,7 @@ export default function Profile() {
       {
         id: 'persona_badge',
         label: isHinglish ? 'सम्मान व बैज' : 'Honors & Badges',
+        shortName: isHinglish ? 'बैज' : 'Badge',
         desc: isHinglish ? 'अपना अर्जित किया हुआ शीर्ष सम्मान या बैज दिखाएं' : 'Display your highest earned milestone honor or badge',
         iconName: 'Crown',
         bgGradient: 'from-amber-400 to-yellow-500',
@@ -267,6 +268,7 @@ export default function Profile() {
       {
         id: 'weekly_avg',
         label: isHinglish ? 'साप्ताहिक औसत' : 'Weekly Average Score',
+        shortName: isHinglish ? 'साप्ताहिक' : 'Weekly',
         desc: isHinglish ? 'पिछले 7 दिनों की औसत पूर्णता दर' : '7-day habit completion percentage',
         iconName: 'Lightning',
         bgGradient: 'from-amber-500 to-orange-500',
@@ -278,6 +280,7 @@ export default function Profile() {
       opts.push({
         id: 'streak',
         label: isHinglish ? 'सक्रिय स्ट्रीक' : 'Active Streak',
+        shortName: isHinglish ? 'स्ट्रीक' : 'Streak',
         desc: isHinglish ? 'लगातार पूरे किए गए सक्रिय दिन' : 'Current consecutive streak days',
         iconName: 'Flame',
         bgGradient: 'from-orange-500 to-amber-600',
@@ -289,6 +292,7 @@ export default function Profile() {
       {
         id: 'resilience',
         label: isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience Score',
+        shortName: isHinglish ? 'रेज़िलिएंस' : 'Resilience',
         desc: isHinglish ? 'बाउंस-बैक और सुधार क्षमता का सूचकांक' : 'Slump bounce-back resilience index',
         iconName: 'ShieldCheck',
         bgGradient: 'from-emerald-500 to-teal-600',
@@ -297,6 +301,7 @@ export default function Profile() {
       {
         id: 'today_done',
         label: isHinglish ? 'आज की प्रगति' : "Today's Completion",
+        shortName: isHinglish ? 'आज' : 'Today',
         desc: isHinglish ? 'आज के पूरे किए गए हैबिट्स की संख्या' : 'Habits completed today vs total',
         iconName: 'CheckCircle',
         bgGradient: 'from-blue-500 to-indigo-600',
@@ -305,6 +310,7 @@ export default function Profile() {
       {
         id: 'focus_habit',
         label: isHinglish ? 'फोकस हैबिट' : 'Focus Habit',
+        shortName: isHinglish ? 'फोकस' : 'Focus',
         desc: isHinglish ? 'शीर्ष हेडर में अपनी पसंदीदा हैबिट पिन करें' : 'Pin a specific habit to the top header',
         iconName: 'Target',
         bgGradient: 'from-rose-500 to-pink-600',
@@ -314,6 +320,7 @@ export default function Profile() {
       {
         id: 'none',
         label: isHinglish ? 'खाली छोड़ें' : 'Empty (Leave slot blank)',
+        shortName: '',
         desc: isHinglish ? 'हेडर में यह स्थान खाली रखें' : 'Hide this slot from header',
         iconName: 'Prohibit',
         bgGradient: 'from-slate-400 to-slate-500',
@@ -2988,9 +2995,16 @@ export default function Profile() {
                             <BadgePersonaIcon iconName={option.iconName} size={18} weight="fill" />
                           </div>
                           <div className="min-w-0">
-                            <span className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white block">
-                              {option.label}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white block">
+                                {option.label}
+                              </span>
+                              {option.shortName && (
+                                <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                  {option.shortName}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] text-slate-400 line-clamp-1 block mt-0.5">
                               {option.desc}
                             </span>

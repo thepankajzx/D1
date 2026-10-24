@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { calculateStreakData } from '../lib/streakEngine';
 import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
 import { evaluateUserBadges } from '../lib/badgeEngine';
@@ -34,6 +35,7 @@ export function saveHeaderPillsConfig(newConfig) {
 
 export default function HeaderPillWidgets({ forceShow = false }) {
   const navigate = useNavigate();
+  const { isHinglish } = useLanguage();
   const { allSummaries = [], habits = [], streakTrackingEnabled = false } = useData();
   const [config, setConfig] = useState(getHeaderPillsConfig);
   const [expandedSlot, setExpandedSlot] = useState(null);
@@ -117,23 +119,32 @@ export default function HeaderPillWidgets({ forceShow = false }) {
     const todaySummary = (allSummaries || [])[0];
     const todayCompleted = todaySummary?.habitsCompleted || 0;
     const todayTotal = todaySummary?.habitsTotal || habits.length || 0;
+    const todayPct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
 
     // 5. Focus / Specific Habit
     const focusHabit = (config.focusHabitId && habits.find(h => h.id === config.focusHabitId)) || habits[0];
     const focusStreak = (focusHabit && streakTrackingEnabled) 
       ? calculateStreakData(focusHabit.id, allSummaries || []).currentStreak 
       : 0;
+    const focusScore = todaySummary?.habitScores?.[focusHabit?.id];
+    const focusVal = focusScore !== undefined 
+      ? `${focusScore}%` 
+      : (focusHabit ? (focusHabit.name.length > 8 ? focusHabit.name.slice(0, 8) + '…' : focusHabit.name) : '');
 
     // 6. Active Persona Badge / Title
     const activeBadge = (config.selectedBadgeId && badgeState.allBadges.find(b => b.id === config.selectedBadgeId))
       || badgeState.topBadge
       || badgeState.allBadges[0];
-    const personaTitle = activeBadge ? activeBadge.persona : 'Genesis';
+    const personaTitle = activeBadge 
+      ? (isHinglish ? (activeBadge.hindiTitle || activeBadge.persona) : activeBadge.persona) 
+      : 'Genesis';
 
     return {
       persona_badge: {
         id: 'persona_badge',
-        label: personaTitle,
+        shortName: isHinglish ? 'बैज' : 'Badge',
+        value: personaTitle,
+        fullLabel: `${isHinglish ? 'बैज' : 'Badge'}: ${personaTitle}`,
         renderIcon: (isExpanded) => (
           <BadgePersonaIcon
             iconName={activeBadge?.iconName || 'Crown'}
@@ -147,7 +158,9 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       },
       weekly_avg: {
         id: 'weekly_avg',
-        label: `${weeklyAvg}%`,
+        shortName: isHinglish ? 'साप्ताहिक' : 'Weekly',
+        value: `${weeklyAvg}%`,
+        fullLabel: `${isHinglish ? 'साप्ताहिक औसत' : 'Weekly Avg'}: ${weeklyAvg}%`,
         renderIcon: (isExpanded) => (
           <Lightning size={15} weight="fill" className="text-amber-500 shrink-0" />
         ),
@@ -156,7 +169,9 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       },
       streak: {
         id: 'streak',
-        label: `${currentStreak}d`,
+        shortName: isHinglish ? 'स्ट्रीक' : 'Streak',
+        value: `${currentStreak}d`,
+        fullLabel: `${isHinglish ? 'सक्रिय स्ट्रीक' : 'Active Streak'}: ${currentStreak}d`,
         renderIcon: (isExpanded) => (
           <Flame size={15} weight="fill" className="text-orange-500 shrink-0" />
         ),
@@ -165,7 +180,9 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       },
       resilience: {
         id: 'resilience',
-        label: `${resilienceScore}%`,
+        shortName: isHinglish ? 'रेज़िलिएंस' : 'Resilience',
+        value: `${resilienceScore}%`,
+        fullLabel: `${isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience Score'}: ${resilienceScore}%`,
         renderIcon: (isExpanded) => (
           <ShieldCheck size={15} weight="fill" className="text-emerald-500 shrink-0" />
         ),
@@ -174,7 +191,9 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       },
       today_done: {
         id: 'today_done',
-        label: `${todayCompleted}/${todayTotal}`,
+        shortName: isHinglish ? 'आज' : 'Today',
+        value: `${todayPct}%`,
+        fullLabel: `${isHinglish ? 'आज की प्रगति' : "Today's Completion"}: ${todayCompleted}/${todayTotal} (${todayPct}%)`,
         renderIcon: (isExpanded) => (
           <CheckCircle size={15} weight="fill" className="text-blue-500 shrink-0" />
         ),
@@ -183,7 +202,9 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       },
       focus_habit: {
         id: 'focus_habit',
-        label: focusHabit ? focusHabit.name : 'Habit',
+        shortName: isHinglish ? 'फोकस' : 'Focus',
+        value: focusVal,
+        fullLabel: `${isHinglish ? 'फोकस हैबिट' : 'Focus Habit'}: ${focusHabit ? focusHabit.name : 'Habit'}`,
         renderIcon: (isExpanded) => (
           focusHabit ? (
             <HabitIcon habit={focusHabit} size={15} boxed={false} weight="fill" />
@@ -195,7 +216,7 @@ export default function HeaderPillWidgets({ forceShow = false }) {
         colorBorder: 'border-rose-400/50 dark:border-rose-500/40 ring-rose-400/30'
       }
     };
-  }, [allSummaries, habits, config.focusHabitId, config.selectedBadgeId, badgeState, streakTrackingEnabled]);
+  }, [allSummaries, habits, config.focusHabitId, config.selectedBadgeId, badgeState, streakTrackingEnabled, isHinglish]);
 
   if (!config.enabled && !forceShow) return null;
 
@@ -252,16 +273,23 @@ export default function HeaderPillWidgets({ forceShow = false }) {
                 ? `px-2.5 gap-1.5 bg-white dark:bg-[#1a2130] text-slate-900 dark:text-white border ${item.colorBorder} ring-1`
                 : `w-[28px] justify-center p-0 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-[#131722] dark:hover:bg-[#181e2b] text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-800`
             }`}
-            title={item.label}
+            title={item.fullLabel || item.shortName}
           >
             {iconElement}
-            <span
-              className={`text-[11px] font-black tracking-tight leading-none whitespace-nowrap overflow-hidden transition-all duration-300 ease-out ${
-                isExpanded ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
+            <div
+              className={`flex items-center gap-1 leading-none whitespace-nowrap overflow-hidden transition-all duration-300 ease-out ${
+                isExpanded ? 'max-w-[160px] opacity-100 ml-0.5' : 'max-w-0 opacity-0 ml-0'
               }`}
             >
-              {item.label}
-            </span>
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                {item.shortName}
+              </span>
+              {item.value && (
+                <span className="text-[11px] font-black text-slate-900 dark:text-white">
+                  {item.value}
+                </span>
+              )}
+            </div>
           </button>
         );
       })}
