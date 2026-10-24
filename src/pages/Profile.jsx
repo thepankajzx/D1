@@ -1074,52 +1074,6 @@ export default function Profile() {
                 <Icon name="logout" className="text-[16px]" />
                 <span>Log Out</span>
               </button>
-
-              
-
-              {import.meta.env.DEV && (
-                <button
-                  onClick={async () => {
-                    const habitsToCreate = [
-                      { id: 'mock_binary', name: 'Daily Reading', icon: 'menu_book', importance: 'very_important', scoringType: 'binary', direction: 'higher_is_better' },
-                      { id: 'mock_higher', name: 'Pushups', icon: 'fitness_center', importance: 'important', scoringType: 'numeric', direction: 'higher_is_better', userTarget100: 50, userTarget0: 10, unit: 'reps' },
-                      { id: 'mock_lower', name: 'Screen Time', icon: 'smartphone', importance: 'very_important', scoringType: 'numeric', direction: 'lower_is_better', userTarget100: 2, userTarget0: 5, unit: 'hours' },
-                      { id: 'mock_time', name: 'Wake Up Early', icon: 'alarm', importance: 'important', scoringType: 'time', direction: 'lower_is_better', userTarget100: '07:00', userTarget0: '09:00', unit: 'Time' },
-                      { id: 'mock_optimal', name: 'Water Intake', icon: 'water_drop', importance: 'important', scoringType: 'optimal_range', direction: 'optimal_range', userTarget100: 3, userTarget0: 1, targetMax: 4, unit: 'liters' }
-                    ];
-                    const batch = writeBatch(db);
-                    habitsToCreate.forEach(h => { batch.set(doc(db, 'users', currentUser.uid, 'habits', h.id), { ...h, createdAt: new Date().toISOString() }); });
-                    const summariesRef = collection(db, 'users', currentUser.uid, 'dailySummaries');
-                    const entriesRef = collection(db, 'users', currentUser.uid, 'entries');
-                    const end = new Date();
-                    const start = new Date();
-                    start.setDate(end.getDate() - 180);
-                    for (let i = 0; i <= 180; i++) {
-                      const cur = new Date(start); cur.setDate(cur.getDate() + i);
-                      const dStr = cur.toISOString().split('T')[0];
-                      const habitScores = {}; const habitValues = {};
-                      const day = cur.getDay(); const rand = Math.random(); const isWeekend = day === 0 || day === 6;
-                      habitsToCreate.forEach(h => {
-                        let score = 0; let rawValue = 0;
-                        if (h.scoringType === 'binary') { const isYes = day === 1 || day === 2 || (day === 3 && rand < 0.75) || (day === 4 && rand < 0.92) || (day === 5 && rand < 0.80) || (day === 6 && rand < 0.67) || (day === 0 && rand < 0.80); score = isYes ? 100 : 0; rawValue = isYes; }
-                        else if (h.scoringType === 'numeric' && h.direction === 'higher_is_better') { rawValue = isWeekend ? Math.floor(Math.random() * 25) : Math.floor(Math.random() * 30 + 30); score = Math.min(100, Math.max(0, Math.round(((rawValue - h.userTarget0) / (h.userTarget100 - h.userTarget0)) * 100))); }
-                        else if (h.scoringType === 'numeric' && h.direction === 'lower_is_better') { rawValue = Math.random() * 6; score = Math.min(100, Math.max(0, 100 - Math.round(((rawValue - h.userTarget100) / (h.userTarget0 - h.userTarget100)) * 100))); rawValue = Math.round(rawValue * 10) / 10; }
-                        else if (h.scoringType === 'time') { const minutes = isWeekend ? Math.floor(Math.random() * 120 + 480) : Math.floor(Math.random() * 60 + 390); rawValue = minutes; score = Math.min(100, Math.max(0, 100 - Math.round(((rawValue - 7 * 60) / (9 * 60 - 7 * 60)) * 100))); }
-                        else if (h.scoringType === 'optimal_range') { rawValue = Math.round(Math.random() * 5 * 10) / 10; score = Math.floor(Math.random() * 101); }
-                        if (Math.random() > 0.05) { habitScores[h.id] = score; habitValues[h.id] = rawValue; batch.set(doc(entriesRef, `${h.id}_${dStr}`), { habitId: h.id, rawValue, computedScore: score, entryDate: dStr, updatedAt: new Date().toISOString() }); }
-                      });
-                      if (Object.keys(habitScores).length > 0) { const keys = Object.keys(habitScores); const overallScore = Math.round(keys.reduce((s, k) => s + habitScores[k], 0) / keys.length); batch.set(doc(summariesRef, dStr), { habitScores, habitValues, overallScore }, { merge: true }); }
-                    }
-                    await batch.commit();
-                    alert('Mock Data for 5 Habits (6 Months) Generated!');
-                    window.location.reload();
-                  }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Icon name="science" className="text-[16px]" />
-                  <span>Generate 5 Habits (6M Mock Data)</span>
-                </button>
-              )}
             </div>
 
             {/* Danger Zone */}
