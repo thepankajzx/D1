@@ -13,6 +13,7 @@ import HabitIcon from '../components/HabitIcon';
 import HabitPerformanceOverview from '../components/HabitPerformanceOverview';
 import HabitShareCardModal from '../components/HabitShareCardModal';
 import ProModal from '../components/ProModal';
+import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -133,6 +134,7 @@ function getMilestoneTierIcon(title = '') {
 
 export default function ExperimentalAnalytics() {
   const navigate = useNavigate();
+  const { currentUser: user } = useAuth();
   const { habits: realHabits = [], allSummaries: realSummaries = [], userDoc, streakTrackingEnabled, timeFormat, earlyUnlockAll } = useData();
   const { isHinglish, t } = useLanguage();
   const { isDark } = useTheme();
@@ -317,12 +319,72 @@ export default function ExperimentalAnalytics() {
       });
     } else {
       realSummaries.forEach(s => {
-        map.set(s.id, s);
+        let summaryObj = { ...s };
+        // Offline resilience fallback: If habitScores is missing or empty, reconstruct from cached localStorage entries
+        if (!summaryObj.habitScores || Object.keys(summaryObj.habitScores).length === 0) {
+          try {
+            const uid = user?.uid || (localStorage.getItem('d1_cached_user') ? JSON.parse(localStorage.getItem('d1_cached_user')).uid : null);
+            if (uid) {
+              const cached = localStorage.getItem(`entries_${uid}_${s.id}`);
+              if (cached) {
+                const entries = JSON.parse(cached);
+                summaryObj.habitScores = {};
+                summaryObj.habitValues = {};
+                entries.forEach(e => {
+                  summaryObj.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
+                  if (e.rawValue !== undefined && e.rawValue !== null) {
+                    summaryObj.habitValues[e.habitId] = e.rawValue;
+                  }
+                });
+              }
+            }
+          } catch (_) {}
+        }
+        map.set(s.id, summaryObj);
       });
+
+      // Also check any dates in dateSeries that might have been saved locally in localStorage but not yet in realSummaries
+      try {
+        const uid = user?.uid || (localStorage.getItem('d1_cached_user') ? JSON.parse(localStorage.getItem('d1_cached_user')).uid : null);
+        if (uid) {
+          dateSeries.forEach(dStr => {
+            if (!map.has(dStr)) {
+              const cached = localStorage.getItem(`entries_${uid}_${dStr}`);
+              if (cached) {
+                const entries = JSON.parse(cached);
+                if (entries && entries.length > 0) {
+                  const habitScores = {};
+                  const habitValues = {};
+                  let totalScore = 0;
+                  let completed = 0;
+                  entries.forEach(e => {
+                    const score = e.computedScore !== null ? e.computedScore : 0;
+                    habitScores[e.habitId] = score;
+                    if (score >= 60) completed++;
+                    totalScore += score;
+                    if (e.rawValue !== undefined && e.rawValue !== null) {
+                      habitValues[e.habitId] = e.rawValue;
+                    }
+                  });
+                  const overallScore = Math.round(totalScore / entries.length);
+                  map.set(dStr, {
+                    id: dStr,
+                    overallScore,
+                    habitsCompleted: completed,
+                    habitsTotal: entries.length,
+                    habitScores,
+                    habitValues
+                  });
+                }
+              }
+            }
+          });
+        }
+      } catch (_) {}
     }
 
     return map;
-  }, [realSummaries, realHabits, dateSeries]);
+  }, [realSummaries, realHabits, dateSeries, user?.uid]);
 
   // Per-habit statistics (Score, dynamic timeframe sparkline, trend)
   const habitStats = useMemo(() => {
@@ -3307,6 +3369,8 @@ export default function ExperimentalAnalytics() {
                           : (selectedPeriod.id || new Date().toISOString().split('T')[0]);
 
                         const habitsOnPeriod = activeHabits.filter(h => {
+                          const hasRecordedScore = singleSummary?.habitScores?.[h.id] !== undefined;
+                          if (hasRecordedScore) return true;
                           const firstDate = habitFirstDateMap[h.id];
                           return !firstDate || firstDate <= targetDate;
                         });

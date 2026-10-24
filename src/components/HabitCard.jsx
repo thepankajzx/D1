@@ -172,8 +172,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
   useEffect(() => {
     if (entry && entry.rawValue !== undefined) {
       setVal(entry.rawValue);
+    } else {
+      const defaultVal = habit.scoringType === 'binary' ? null : (habit.target0 ?? 0);
+      setVal(defaultVal);
     }
-  }, [entry]);
+  }, [entry, habit.id, habit.scoringType, habit.target0]);
 
   const startStepping = (direction, min, max, multiplier = 1) => {
     // Initial step
@@ -199,9 +202,7 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
     if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current);
     if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
     // Persist final value
-    if (valRef.current !== val) {
-      handleChange(valRef.current);
-    }
+    handleChange(valRef.current);
   };
 
   const handleChange = (newRawVal) => {
@@ -482,8 +483,11 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     style={{ background: generateGradient() }}
                     onChange={(e) => {
                         const newValue = Math.round(Number(e.target.value));
+                        const finalVal = newValue / mult;
                         const prevValue = Math.round(val * mult);
-                        setVal(newValue / mult);
+                        setVal(finalVal);
+                        valRef.current = finalVal;
+                        handleChange(finalVal);
   
                         if (navigator.vibrate) {
                             const prevPct = (prevValue / maxSlider) * 100;

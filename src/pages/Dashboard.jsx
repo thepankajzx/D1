@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import HabitCard from '../components/HabitCard';
 import { calculateDailySummary, recalculateStreaks } from '../lib/scoring';
+import { calculateStreakData } from '../lib/streakEngine';
 import { Link, useNavigate } from 'react-router-dom';
 import StreakWidget from '../components/StreakWidget';
 import TodayTopKpis from '../components/TodayTopKpis';
@@ -122,76 +123,97 @@ export default function Dashboard() {
       const cacheKey = `entries_${user.uid}_${selectedDate}`;
       const cachedEntries = localStorage.getItem(cacheKey);
       
+      // 1. Immediately hydrate entries from cache if present, or reset to empty
       if (cachedEntries) {
-        setEntries(JSON.parse(cachedEntries));
-        setLoadingEntries(false);
+        try {
+          const parsed = JSON.parse(cachedEntries);
+          setEntries(parsed);
+          setSavedHabitIds(new Set(parsed.map(e => e.habitId)));
+        } catch (_) {
+          setEntries([]);
+          setSavedHabitIds(new Set());
+        }
       } else {
-        setLoadingEntries(true);
+        setEntries([]);
+        setSavedHabitIds(new Set());
+      }
+      
+      // 2. Immediately populate dailySummary from allSummaries (cached in memory & localStorage)
+      const existingSummary = allSummaries.find(s => s.id === selectedDate);
+      if (existingSummary) {
+        setDailySummary(existingSummary);
+      } else if (cachedEntries) {
+        try {
+          const parsed = JSON.parse(cachedEntries);
+          const computed = calculateDailySummary(habits, parsed, priorityModeEnabled);
+          setDailySummary({ id: selectedDate, ...computed });
+        } catch (_) {
+          setDailySummary({
+            overallScore: 0,
+            habitsCompleted: 0,
+            habitsTotal: habits.length
+          });
+        }
+      } else {
+        setDailySummary({
+          overallScore: 0,
+          habitsCompleted: 0,
+          habitsTotal: habits.length
+        });
       }
 
-      try {
-        const entriesRef = collection(db, `users/${user.uid}/entries`);
-        const q = query(entriesRef, where('entryDate', '==', selectedDate));
-        const entriesSnap = await getDocs(q);
-        
-        const fetchedEntries = entriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        setEntries(fetchedEntries);
-        localStorage.setItem(cacheKey, JSON.stringify(fetchedEntries));
-        
-        // Track already saved habits in Firestore for locking
-        setSavedHabitIds(new Set(fetchedEntries.map(e => e.habitId)));
-        
-        // Get today's summary from the allSummaries array if we have it
-        const existingSummary = allSummaries.find(s => s.id === selectedDate);
-        if (existingSummary) {
-            setDailySummary(existingSummary);
-        } else {
-            setDailySummary({
-                overallScore: 0,
-                habitsCompleted: 0,
-                habitsTotal: habits.length
-            });
-        }
+      setLoadingEntries(false);
+      setPendingChanges(false);
 
-        // Load Core X configs & daily logs if enabled
-        if (coreXEnabled && user?.uid) {
-          try {
-            const cfgs = await getCoreXConfigs(user.uid);
-            setCoreXConfigs(cfgs || []);
-            if (cfgs && cfgs.length > 0) {
-              if (!activeCoreXId) setActiveCoreXId(cfgs[0].id);
-              const todayLogs = {};
-              const yesterdayLogs = {};
-              const yesterday = new Date(selectedDate);
-              yesterday.setDate(yesterday.getDate() - 1);
-              const yDateStr = yesterday.toISOString().split('T')[0];
-
-              for (const cfg of cfgs) {
-                try {
-                  const allLogs = await getCoreXLogs(user.uid, cfg.id);
-                  todayLogs[cfg.id] = allLogs?.find(l => l.date === selectedDate) || null;
-                  yesterdayLogs[cfg.id] = allLogs?.find(l => l.date === yDateStr) || null;
-                } catch (err) {
-                  console.error(`Error loading logs for corex ${cfg.id}:`, err);
-                }
-              }
-              setCoreXLogsTodayMap(todayLogs);
-              setCoreXLogsYesterdayMap(yesterdayLogs);
-            } else {
-              setCoreXLogsTodayMap({});
-              setCoreXLogsYesterdayMap({});
-            }
-          } catch (cxErr) {
-            console.error("Error loading Core X data in dashboard:", cxErr);
+      // 3. Concurrently fetch fresh entries from Firestore only if online (non-fatal)
+      if (typeof navigator === 'undefined' || navigator.onLine) {
+        try {
+          const entriesRef = collection(db, `users/${user.uid}/entries`);
+          const q = query(entriesRef, where('entryDate', '==', selectedDate));
+          const entriesSnap = await getDocs(q);
+          
+          if (entriesSnap && !entriesSnap.empty) {
+            const fetchedEntries = entriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            setEntries(fetchedEntries);
+            localStorage.setItem(cacheKey, JSON.stringify(fetchedEntries));
+            setSavedHabitIds(new Set(fetchedEntries.map(e => e.habitId)));
           }
+        } catch (err) {
+          console.warn("Offline: Using local cached entries for", selectedDate);
         }
+      }
 
-        setPendingChanges(false);
-      } catch (error) {
-        console.error("Error loading date data:", error);
-      } finally {
-        setLoadingEntries(false);
+      // 4. Load Core X configs & daily logs if enabled (skip network roundtrips when offline)
+      if (coreXEnabled && user?.uid && (typeof navigator === 'undefined' || navigator.onLine)) {
+        try {
+          const cfgs = await getCoreXConfigs(user.uid);
+          setCoreXConfigs(cfgs || []);
+          if (cfgs && cfgs.length > 0) {
+            if (!activeCoreXId) setActiveCoreXId(cfgs[0].id);
+            const todayLogs = {};
+            const yesterdayLogs = {};
+            const yesterday = new Date(selectedDate);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yDateStr = yesterday.toISOString().split('T')[0];
+
+            for (const cfg of cfgs) {
+              try {
+                const allLogs = await getCoreXLogs(user.uid, cfg.id);
+                todayLogs[cfg.id] = allLogs?.find(l => l.date === selectedDate) || null;
+                yesterdayLogs[cfg.id] = allLogs?.find(l => l.date === yDateStr) || null;
+              } catch (err) {
+                console.warn(`Offline / error loading logs for corex ${cfg.id}:`, err);
+              }
+            }
+            setCoreXLogsTodayMap(todayLogs);
+            setCoreXLogsYesterdayMap(yesterdayLogs);
+          } else {
+            setCoreXLogsTodayMap({});
+            setCoreXLogsYesterdayMap({});
+          }
+        } catch (cxErr) {
+          console.warn("Offline / error loading Core X data in dashboard:", cxErr);
+        }
       }
     }
     
@@ -254,9 +276,8 @@ export default function Dashboard() {
       return;
     }
     
+    // Authenticated User handling (Offline-First Guaranteed)
     try {
-        const batch = writeBatch(db);
-        
         let finalEntries = [...entries];
         
         if (!bypassValidation) {
@@ -270,67 +291,10 @@ export default function Dashboard() {
             }
         }
         
-        // Write all final entries
-        finalEntries.forEach(entry => {
-            const entryRef = doc(db, `users/${user.uid}/entries`, entry.id);
-            batch.set(entryRef, entry, { merge: true });
-        });
-        
-        // Write Summary
+        // Build updated daily summary with full habitScores & habitValues
+        let updatedSummary = null;
         if (dailySummary) {
-            const summaryData = { ...dailySummary };
-            
-            // Add individual habit scores and raw values to the daily summary to power analytics without extra reads
-            summaryData.habitScores = {};
-            summaryData.habitValues = {};
-            finalEntries.forEach(e => {
-                summaryData.habitScores[e.habitId] = e.computedScore !== null ? e.computedScore : 0;
-                if (e.rawValue !== undefined && e.rawValue !== null) {
-                    summaryData.habitValues[e.habitId] = e.rawValue;
-                }
-            });
-            
-            delete summaryData.id;
-            const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, selectedDate);
-            batch.set(summaryRef, summaryData, { merge: true });
-        }
-        
-        // Write Streaks - Incremental O(1) approach
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        let { currentStreak = 0, longestStreak = 0 } = userSnap.data() || {};
-        
-        const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, selectedDate);
-        const summarySnap = await getDoc(summaryRef);
-        
-        // Only modify streak if we are creating a new day (not editing)
-        if (!summarySnap.exists()) {
-            const yesterdayObj = new Date(selectedDate);
-            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
-            const yesterdayStr = yesterdayObj.toISOString().split('T')[0];
-            const yesterdaySnap = await getDoc(doc(db, `users/${user.uid}/dailySummaries`, yesterdayStr));
-            
-            if (yesterdaySnap.exists()) {
-                currentStreak += 1;
-            } else {
-                currentStreak = 1;
-            }
-            longestStreak = Math.max(longestStreak, currentStreak);
-        }
-        
-        batch.set(userRef, { currentStreak, longestStreak }, { merge: true });
-        
-        await batch.commit();
-        
-        // Update local cache
-        localStorage.setItem(`entries_${user.uid}_${selectedDate}`, JSON.stringify(finalEntries));
-        
-        setPendingChanges(false);
-        setEntries(finalEntries);
-        setSavedHabitIds(new Set(finalEntries.map(e => e.habitId)));
-        
-        if (dailySummary) {
-            const updatedSummary = { id: selectedDate, ...dailySummary };
+            updatedSummary = { id: selectedDate, ...dailySummary };
             updatedSummary.habitScores = {};
             updatedSummary.habitValues = {};
             finalEntries.forEach(e => {
@@ -339,19 +303,64 @@ export default function Dashboard() {
                     updatedSummary.habitValues[e.habitId] = e.rawValue;
                 }
             });
-            
-            setAllSummaries(prev => {
-                const newSummaries = prev.filter(s => s.id !== selectedDate);
-                newSummaries.push(updatedSummary);
-                // Update global summaries cache
-                localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(newSummaries));
-                return newSummaries;
-            });
         }
         
-        // Refresh global data to ensure cross-page consistency (e.g. Analytics)
-        if (refreshData) {
-            await refreshData();
+        // 1. Optimistically and synchronously persist to localStorage and React state FIRST
+        localStorage.setItem(`entries_${user.uid}_${selectedDate}`, JSON.stringify(finalEntries));
+        
+        let newSummaries = [...allSummaries];
+        if (updatedSummary) {
+            newSummaries = newSummaries.filter(s => s.id !== selectedDate);
+            newSummaries.unshift(updatedSummary);
+            localStorage.setItem(`summaries_${user.uid}`, JSON.stringify(newSummaries));
+            setAllSummaries(newSummaries);
+            setDailySummary(updatedSummary);
+        }
+        
+        setPendingChanges(false);
+        setEntries(finalEntries);
+        setSavedHabitIds(new Set(finalEntries.map(e => e.habitId)));
+        
+        // 2. Compute streak offline from updated summaries
+        let currentStreak = 0;
+        let longestStreak = 0;
+        try {
+            const streakData = calculateStreakData('all', newSummaries, selectedDate);
+            currentStreak = streakData.currentStreak || 0;
+            longestStreak = Math.max(streakData.longestStreak || 0, userDoc?.longestStreak || 0);
+        } catch (_) {}
+        
+        // 3. Queue writes to Firestore (persists to IndexedDB offline cache, background syncs when online)
+        try {
+            const batch = writeBatch(db);
+            
+            finalEntries.forEach(entry => {
+                const entryRef = doc(db, `users/${user.uid}/entries`, entry.id);
+                batch.set(entryRef, entry, { merge: true });
+            });
+            
+            if (updatedSummary) {
+                const summaryData = { ...updatedSummary };
+                delete summaryData.id;
+                const summaryRef = doc(db, `users/${user.uid}/dailySummaries`, selectedDate);
+                batch.set(summaryRef, summaryData, { merge: true });
+            }
+            
+            const userRef = doc(db, 'users', user.uid);
+            batch.set(userRef, { currentStreak, longestStreak }, { merge: true });
+            
+            // Fire-and-forget batch commit: Firestore buffers locally in IndexedDB instantly
+            // and background syncs when network is available without stalling UI offline
+            batch.commit().catch(dbErr => {
+                console.warn("Firestore batch background queued:", dbErr);
+            });
+        } catch (dbErr) {
+            console.warn("Firestore batch queued in offline cache:", dbErr);
+        }
+        
+        // Refresh global data if available and online (non-blocking)
+        if (refreshData && typeof navigator !== 'undefined' && navigator.onLine) {
+            refreshData().catch(() => {});
         }
     } catch (e) {
         console.error("Error saving progress:", e);

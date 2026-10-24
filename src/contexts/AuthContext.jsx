@@ -20,18 +20,55 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Offline-first instant session restoration from local cache
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('d1_cached_user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = localStorage.getItem('d1_cached_user');
+      return !cached;
+    } catch (e) {
+      return true;
+    }
+  });
+
   const [authTimeout, setAuthTimeout] = useState(false);
 
   useEffect(() => {
     // If Firebase takes unusually long to initialize, show the error boundary
     const timer = setTimeout(() => {
-      setAuthTimeout(true);
+      if (!localStorage.getItem('d1_cached_user')) {
+        setAuthTimeout(true);
+      }
     }, 15000);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      if (user) {
+        setCurrentUser(user);
+        try {
+          localStorage.setItem('d1_cached_user', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL
+          }));
+        } catch (e) {}
+      } else {
+        // Only clear cached user if explicitly signed out or online
+        if (navigator.onLine) {
+          setCurrentUser(null);
+          try {
+            localStorage.removeItem('d1_cached_user');
+          } catch (e) {}
+        }
+      }
       setLoading(false);
       clearTimeout(timer);
     });
@@ -74,6 +111,9 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    try {
+      localStorage.removeItem('d1_cached_user');
+    } catch (_) {}
     if (Capacitor.isNativePlatform()) {
       try {
         await FirebaseAuthentication.signOut();

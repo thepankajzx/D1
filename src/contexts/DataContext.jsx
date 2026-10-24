@@ -293,32 +293,60 @@ function RealDataProvider({
   setTimeFormat,
   setTimeFormatState
 }) {
+  const getCachedUid = () => {
+    if (user?.uid) return user.uid;
+    try {
+      const cached = localStorage.getItem('d1_cached_user');
+      return cached ? JSON.parse(cached).uid : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
   const [habits, setHabits] = useState(() => {
-    const c = localStorage.getItem('habits_' + user?.uid);
+    const uid = getCachedUid();
+    const c = uid ? localStorage.getItem('habits_' + uid) : null;
     return c ? normalizeHabits(JSON.parse(c)) : [];
   });
   const [deletedHabits, setDeletedHabits] = useState(() => {
-    const c = localStorage.getItem('deleted_habits_' + user?.uid);
+    const uid = getCachedUid();
+    const c = uid ? localStorage.getItem('deleted_habits_' + uid) : null;
     return c ? normalizeHabits(JSON.parse(c)) : [];
   });
   const [allSummaries, setAllSummaries] = useState(() => {
-    const c = localStorage.getItem('summaries_' + user?.uid);
+    const uid = getCachedUid();
+    const c = uid ? localStorage.getItem('summaries_' + uid) : null;
     return c ? JSON.parse(c) : [];
   });
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
   const DEV_PRO_EMAILS = ['dummytest2025@example.com','test2025@gmail.com','zxofficial84@gmail.com'];
   const isDevPro = import.meta.env.DEV || DEV_PRO_EMAILS.includes(user?.email?.toLowerCase() ?? '');
-  const [userDocData, setUserDocData] = useState(isDevPro ? { isPro: true } : null);
-  const [loadingData, setLoadingData] = useState(() => !localStorage.getItem('habits_' + user?.uid));
+  const [userDocData, setUserDocData] = useState(() => {
+    const uid = getCachedUid();
+    if (uid) {
+      try {
+        const c = localStorage.getItem('user_doc_' + uid);
+        if (c) return JSON.parse(c);
+      } catch (_) {}
+    }
+    return isDevPro ? { isPro: true } : null;
+  });
+  const [loadingData, setLoadingData] = useState(() => {
+    const uid = getCachedUid();
+    return !(uid && localStorage.getItem('habits_' + uid));
+  });
 
   useEffect(() => {
-    if (!user) {
-      setHabits([]); setDeletedHabits([]); setAllSummaries([]); setPriorityModeEnabled(false);
-      setUserDocData(null); setLoadingData(false); return;
+    const activeUid = user?.uid || getCachedUid();
+    if (!activeUid) {
+      if (!user) {
+        setHabits([]); setDeletedHabits([]); setAllSummaries([]); setPriorityModeEnabled(false);
+        setUserDocData(null); setLoadingData(false); return;
+      }
     }
-    const ch = localStorage.getItem('habits_' + user.uid);
-    const cdh = localStorage.getItem('deleted_habits_' + user.uid);
-    const cs = localStorage.getItem('summaries_' + user.uid);
+    const ch = localStorage.getItem('habits_' + activeUid);
+    const cdh = localStorage.getItem('deleted_habits_' + activeUid);
+    const cs = localStorage.getItem('summaries_' + activeUid);
     if (ch) { setHabits(normalizeHabits(JSON.parse(ch))); setLoadingData(false); }
     else { setLoadingData(true); }
     if (cdh) { setDeletedHabits(normalizeHabits(JSON.parse(cdh))); }
@@ -326,28 +354,26 @@ function RealDataProvider({
     let unsubH = () => {}, unsubS = () => {};
 
     // ⚡ Attach real-time snapshot listeners IMMEDIATELY (never wait for getDoc!)
-    unsubH = onSnapshot(collection(db, 'users/' + user.uid + '/habits'), (snap) => {
+    unsubH = onSnapshot(collection(db, 'users/' + activeUid + '/habits'), (snap) => {
       const fhAll = normalizeHabits(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       const active = fhAll.filter(h => h.status !== 'deleted').sort((a,b) => (a.orderIndex||0)-(b.orderIndex||0));
       const deleted = fhAll.filter(h => h.status === 'deleted').sort((a,b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
       setHabits(active);
       setDeletedHabits(deleted);
-      localStorage.setItem('habits_' + user.uid, JSON.stringify(active));
-      localStorage.setItem('deleted_habits_' + user.uid, JSON.stringify(deleted));
+      localStorage.setItem('habits_' + activeUid, JSON.stringify(active));
+      localStorage.setItem('deleted_habits_' + activeUid, JSON.stringify(deleted));
       setLoadingData(false);
     }, (err) => { 
-      console.error(err); 
-      logErrorToDb(err); 
+      console.warn("Habits snapshot listener offline/fallback:", err); 
       setLoadingData(false); 
     });
 
-    unsubS = onSnapshot(collection(db, 'users/' + user.uid + '/dailySummaries'), (snap) => {
+    unsubS = onSnapshot(collection(db, 'users/' + activeUid + '/dailySummaries'), (snap) => {
       const fs2 = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 365);
       setAllSummaries(fs2); 
-      localStorage.setItem('summaries_' + user.uid, JSON.stringify(fs2));
+      localStorage.setItem('summaries_' + activeUid, JSON.stringify(fs2));
     }, (err) => { 
-      console.error(err); 
-      logErrorToDb(err); 
+      console.warn("DailySummaries snapshot listener offline/fallback:", err); 
     });
 
     // ⚡ Fast Safety timeout: never leave user waiting more than 400ms for skeleton loaders
@@ -358,12 +384,15 @@ function RealDataProvider({
     // Concurrently sync user doc in the background without blocking habits UI
     (async () => {
       try {
-        const ud = await getDoc(doc(db, 'users', user.uid));
+        const ud = await getDoc(doc(db, 'users', activeUid));
         if (ud.exists()) {
           const data = ud.data();
-          const le = user.email?.toLowerCase() ?? '';
+          const le = user?.email?.toLowerCase() ?? '';
           if (import.meta.env.DEV || DEV_PRO_EMAILS.includes(le)) data.isPro = true;
           setUserDocData(data); 
+          try {
+            localStorage.setItem('user_doc_' + activeUid, JSON.stringify(data));
+          } catch (_) {}
           setPriorityModeEnabled(data.priorityModeEnabled || false);
 
           try {
@@ -415,12 +444,11 @@ function RealDataProvider({
             }
           } catch (e) {}
         } else {
-          const le = user.email?.toLowerCase() ?? '';
+          const le = user?.email?.toLowerCase() ?? '';
           if (import.meta.env.DEV || DEV_PRO_EMAILS.includes(le)) setUserDocData({ isPro: true });
         }
       } catch (err) { 
-        console.error(err); 
-        logErrorToDb(err); 
+        console.warn("User doc fetch offline/fallback:", err); 
       }
     })();
 
@@ -429,26 +457,27 @@ function RealDataProvider({
       unsubH(); 
       unsubS(); 
     };
-  }, [user]);
+  }, [user?.uid]);
 
   const refreshData = async () => {
-    if (!user) return;
+    const activeUid = user?.uid || getCachedUid();
+    if (!activeUid) return;
     try {
-      const hSnap = await getDocs(collection(db, 'users/' + user.uid + '/habits'));
+      const hSnap = await getDocs(collection(db, 'users/' + activeUid + '/habits'));
       const fhAll = normalizeHabits(hSnap.docs.map(d => ({ id: d.id, ...d.data() })));
       const active = fhAll.filter(h => h.status !== 'deleted').sort((a,b) => (a.orderIndex||0)-(b.orderIndex||0));
       const deleted = fhAll.filter(h => h.status === 'deleted').sort((a,b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
       setHabits(active);
       setDeletedHabits(deleted);
-      localStorage.setItem('habits_' + user.uid, JSON.stringify(active));
-      localStorage.setItem('deleted_habits_' + user.uid, JSON.stringify(deleted));
+      localStorage.setItem('habits_' + activeUid, JSON.stringify(active));
+      localStorage.setItem('deleted_habits_' + activeUid, JSON.stringify(deleted));
 
-      const sSnap = await getDocs(collection(db, 'users/' + user.uid + '/dailySummaries'));
+      const sSnap = await getDocs(collection(db, 'users/' + activeUid + '/dailySummaries'));
       const fs2 = sSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 365);
       setAllSummaries(fs2);
-      localStorage.setItem('summaries_' + user.uid, JSON.stringify(fs2));
+      localStorage.setItem('summaries_' + activeUid, JSON.stringify(fs2));
     } catch (err) {
-      console.error('Error refreshing data:', err);
+      console.warn('Error refreshing data (offline fallback):', err);
     }
   };
 
