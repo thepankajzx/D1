@@ -40,12 +40,20 @@ import {
   CaretUp
 } from '@phosphor-icons/react';
 
+// 4 Category Tabs for Segmented Navigation
+export const COACH_TABS = [
+  { id: 'today', label: 'Today', IconComponent: Target },
+  { id: 'patterns', label: 'Patterns', IconComponent: ChartLineUp },
+  { id: 'milestones', label: 'Milestones', IconComponent: Trophy },
+  { id: 'coaching', label: 'Coaching', IconComponent: Lightbulb }
+];
+
 // Comprehensive Data-Driven Prompt Definitions with Strict Proper Phosphor Icons (NO EMOJIS)
 export const COACH_PROMPTS = [
   // ── 1. TODAY & WIN CONDITION
   {
     id: 'daily_win',
-    category: 'today',
+    tab: 'today',
     label: 'Minimum Viable Win',
     sublabel: '70%+ score ke liye priority action',
     IconComponent: Target,
@@ -54,7 +62,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'today_status',
-    category: 'today',
+    tab: 'today',
     label: 'Aaj Ka Live Progress',
     sublabel: 'Check-in status aur bachi hui habits',
     IconComponent: CheckCircle,
@@ -65,7 +73,7 @@ export const COACH_PROMPTS = [
   // ── 2. BEHAVIORAL PATTERNS & DATA
   {
     id: 'danger_day',
-    category: 'patterns',
+    tab: 'patterns',
     label: 'Danger Day & Weekend Gap',
     sublabel: 'Hafte ka sabse kamzor din aur drop',
     IconComponent: CalendarX,
@@ -74,7 +82,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'catalyst_duos',
-    category: 'patterns',
+    tab: 'patterns',
     label: 'Catalyst Habits & Duos',
     sublabel: 'Lead habit aur domino chain effect',
     IconComponent: Lightning,
@@ -83,7 +91,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'crisis_defense',
-    category: 'patterns',
+    tab: 'patterns',
     label: 'Slump Risk & Crisis Defense',
     sublabel: '2-din drop alert aur comeback speed',
     IconComponent: ShieldCheck,
@@ -94,7 +102,7 @@ export const COACH_PROMPTS = [
   // ── 3. PROGRESSION & HEALTH
   {
     id: 'milestone_runway',
-    category: 'progress',
+    tab: 'milestones',
     label: 'Next Milestone Runway',
     sublabel: 'Agla honor badge aur trophy timeline',
     IconComponent: Trophy,
@@ -103,7 +111,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'strongest',
-    category: 'progress',
+    tab: 'milestones',
     label: 'Champion Strongest Habit',
     sublabel: 'Consistency ka sabse mazboot pillar',
     IconComponent: Crown,
@@ -112,16 +120,18 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'weakest',
-    category: 'progress',
+    tab: 'milestones',
     label: 'Drop Risk / Needs Attention',
     sublabel: 'Kamzor habit jahan dhyan dena zaroori hai',
     IconComponent: WarningCircle,
     colorClass: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
     related: ['target_tune', 'crisis_defense', 'daily_win']
   },
+
+  // ── 4. COACHING & HEALTH
   {
     id: 'target_tune',
-    category: 'progress',
+    tab: 'coaching',
     label: 'Habit Target Tuning Advice',
     sublabel: 'Overambitious target ko scale-down karein',
     IconComponent: SlidersHorizontal,
@@ -130,7 +140,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'full_report',
-    category: 'progress',
+    tab: 'coaching',
     label: 'Complete Health Scorecard',
     sublabel: 'Sabhi active habits ka performance matrix',
     IconComponent: ChartBar,
@@ -139,7 +149,7 @@ export const COACH_PROMPTS = [
   },
   {
     id: 'coaching_tips',
-    category: 'progress',
+    tab: 'coaching',
     label: 'Atomic Consistency Rules',
     sublabel: 'Habit psychology ke 4 golden rules',
     IconComponent: Lightbulb,
@@ -147,9 +157,6 @@ export const COACH_PROMPTS = [
     related: ['daily_win', 'crisis_defense', 'target_tune']
   }
 ];
-
-// 4 Top Featured Starters for the initial screen to keep UI compact
-const FEATURED_PROMPT_IDS = ['daily_win', 'danger_day', 'catalyst_duos', 'milestone_runway'];
 
 export default function HabitAiCoachBot() {
   const { aiCoachEnabled, habits = [], allSummaries = [], streakTrackingEnabled = true } = useData();
@@ -161,7 +168,7 @@ export default function HabitAiCoachBot() {
   const [inputValue, setInputValue] = useState('');
   const [isReasoning, setIsReasoning] = useState(false);
   const [reasoningStep, setReasoningStep] = useState(0);
-  const [showAllTopics, setShowAllTopics] = useState(false);
+  const [activeStarterTab, setActiveStarterTab] = useState('today');
 
   const btnRef = useRef(null);
   const msgContainerRef = useRef(null);
@@ -956,8 +963,7 @@ export default function HabitAiCoachBot() {
 
   if (isProOrAdmin) return null;
 
-  const featuredPrompts = COACH_PROMPTS.filter(p => FEATURED_PROMPT_IDS.includes(p.id));
-  const remainingPrompts = COACH_PROMPTS.filter(p => !FEATURED_PROMPT_IDS.includes(p.id));
+  const currentTabPrompts = COACH_PROMPTS.filter(p => p.tab === activeStarterTab);
 
   return (
     <>
@@ -1187,78 +1193,62 @@ export default function HabitAiCoachBot() {
                       </p>
                     </div>
 
-                    {/* Compact Initial Starter Prompts */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                          Recommended Starters:
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setShowAllTopics(!showAllTopics)}
-                          className="text-[10.5px] font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>{showAllTopics ? 'Show Less' : 'View All Topics'}</span>
-                          {showAllTopics ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />}
-                        </button>
+                    {/* Segmented Category Tabs & Direct Prompts List */}
+                    <div className="space-y-2.5 pt-0.5">
+                      {/* Top 4 Segmented Tabs */}
+                      <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100/90 dark:bg-zinc-800/80 rounded-xl border border-slate-200/70 dark:border-zinc-700/60 shadow-2xs">
+                        {COACH_TABS.map(tab => {
+                          const TabIcon = tab.IconComponent;
+                          const isActive = activeStarterTab === tab.id;
+                          return (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setActiveStarterTab(tab.id)}
+                              className={`flex flex-col sm:flex-row items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-center transition-all cursor-pointer ${
+                                isActive
+                                  ? 'bg-white dark:bg-zinc-900 text-orange-600 dark:text-orange-400 font-extrabold shadow-xs border border-slate-200/60 dark:border-zinc-700'
+                                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 font-semibold'
+                              }`}
+                            >
+                              <TabIcon size={13} weight={isActive ? "fill" : "bold"} className={isActive ? "text-orange-600 dark:text-orange-400" : ""} />
+                              <span className="text-[10px] leading-none tracking-tight">{tab.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
 
-                      {/* 4 Featured Starter Cards in 2x2 Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {featuredPrompts.map(p => {
+                      {/* Direct List of Prompts for Selected Tab (No Bulky Wrappers, Subtitle clearly visible) */}
+                      <div className="space-y-1.5 animate-in fade-in duration-150">
+                        {currentTabPrompts.map(p => {
                           const IconComp = p.IconComponent;
                           return (
                             <button
                               key={p.id}
                               type="button"
                               onClick={() => handleUserTrigger(p.id, p.label)}
-                              className="text-left p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 transition-all flex items-start gap-2.5 group cursor-pointer shadow-2xs"
+                              className="w-full text-left p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/30 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 transition-all flex items-center gap-2.5 group cursor-pointer shadow-2xs"
                             >
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${p.colorClass}`}>
-                                <IconComp size={15} weight="bold" />
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${p.colorClass}`}>
+                                <IconComp size={16} weight="bold" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <span className="block font-black text-[11px] leading-tight text-slate-900 dark:text-white truncate">
+                                <span className="block font-black text-[11.5px] leading-tight text-slate-900 dark:text-white truncate">
                                   {p.label}
                                 </span>
-                                <span className="block text-[9.5px] font-medium text-slate-400 dark:text-zinc-400 truncate mt-0.5">
+                                <span className="block text-[10px] font-medium text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                                   {p.sublabel}
                                 </span>
                               </div>
+                              <CaretRight 
+                                size={13} 
+                                weight="bold" 
+                                className="text-slate-300 dark:text-zinc-600 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0" 
+                              />
                             </button>
                           );
                         })}
                       </div>
-
-                      {/* Expandable Drawer for remaining topics */}
-                      {showAllTopics && (
-                        <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800/80 animate-in fade-in duration-150">
-                          <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1 block">
-                            More Analytics Topics:
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {remainingPrompts.map(p => {
-                              const IconComp = p.IconComponent;
-                              return (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => handleUserTrigger(p.id, p.label)}
-                                  className="text-left p-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-slate-800 dark:text-zinc-200 transition-all flex items-center gap-2 group cursor-pointer shadow-2xs"
-                                >
-                                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 border ${p.colorClass}`}>
-                                    <IconComp size={13} weight="bold" />
-                                  </div>
-                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate flex-1">
-                                    {p.label}
-                                  </span>
-                                  <CaretRight size={11} weight="bold" className="text-orange-500 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
