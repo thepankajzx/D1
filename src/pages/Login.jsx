@@ -43,7 +43,9 @@ export default function Login() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const anyLoading = googleLoading || emailLoading;
   const [fieldErrors, setFieldErrors] = useState({});
 
   // Early access & founder spots state
@@ -326,7 +328,7 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      setLoading(true);
+      setGoogleLoading(true);
       showToast('Connecting to Google...', 'success');
 
       if (typeof window.D1AuthBridge?.onGoogleAuth === 'function') {
@@ -385,7 +387,7 @@ export default function Login() {
         showToast(msg || 'Google sign-in failed.', 'error');
       }
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -407,7 +409,7 @@ export default function Login() {
 
     if (authMode === 'reset') {
       try {
-        setLoading(true);
+        setEmailLoading(true);
         await sendPasswordResetEmail(auth, cleanEmail);
         showToast(`Password reset link sent to ${cleanEmail}`, 'success');
         setAuthMode('signin');
@@ -415,7 +417,7 @@ export default function Login() {
         setFieldErrors({ email: err.message || 'Failed to send reset email.' });
         showToast(err.message || 'Error sending reset email', 'error');
       } finally {
-        setLoading(false);
+        setEmailLoading(false);
       }
       return;
     }
@@ -430,7 +432,7 @@ export default function Login() {
     }
 
     try {
-      setLoading(true);
+      setEmailLoading(true);
 
       if (typeof window.D1AuthBridge?.onAuthSubmit === 'function') {
         const bridgeRes = await window.D1AuthBridge.onAuthSubmit({
@@ -525,7 +527,7 @@ export default function Login() {
       showToast(err.message || 'Authentication error.', 'error');
       setFieldErrors({ password: err.message || 'Invalid credentials.' });
     } finally {
-      setLoading(false);
+      setEmailLoading(false);
     }
   };
 
@@ -1835,10 +1837,10 @@ export default function Login() {
           <button
             className="google-btn"
             type="button"
-            disabled={loading}
+            disabled={anyLoading}
             onClick={handleGoogleSignIn}
           >
-            {loading ? (
+            {googleLoading ? (
               <span className="spinner spinner-dark"></span>
             ) : (
               <>
@@ -2001,8 +2003,8 @@ export default function Login() {
             )}
 
             {/* SUBMIT CTA */}
-            <button className="email-btn" type="submit" disabled={loading}>
-              {loading ? (
+            <button className="email-btn" type="submit" disabled={anyLoading}>
+              {emailLoading ? (
                 <span className="spinner"></span>
               ) : (
                 <>
