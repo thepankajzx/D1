@@ -1,32 +1,172 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Global habit library
-    match /habitLibrary/{habitId} {
-      allow read: if request.auth != null;
-      allow write: if false; // Secured
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECURITY CORE HELPER FUNCTIONS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Helper: Validates request is from a verified authenticated user
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null && request.auth.uid != '';
     }
 
-    // Old historical logs (STRICTLY READ-ONLY for migration, no write/delete)
-    match /daily_logs/{date} {
-      allow read: if false; // Secured: disabled global read
-      allow write: if false;
+    // Helper: Validates request authenticated UID matches the target userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User's private data
+    // Helper: For creation - enforces that if a userId field is supplied in data,
+    // it must match the authenticated UID and route path.
+    function isValidCreate(userId) {
+      return isOwner(userId) &&
+        (!('userId' in request.resource.data) || request.resource.data.userId == userId);
+    }
+
+    // Helper: For update - ensures existing doc belongs to caller and userId cannot be reassigned
+    function isValidUpdate(userId) {
+      return isOwner(userId) &&
+        (!('userId' in request.resource.data) ||
+         !('userId' in resource.data) ||
+         request.resource.data.userId == resource.data.userId);
+    }
+
+    // Helper: For deletion - ensures caller is the authenticated owner
+    function isValidDelete(userId) {
+      return isOwner(userId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // USER DATA ISOLATION (Private Subcollections)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // User Root Document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      match /{allSubcollections=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow get, list: if isOwner(userId);
+      allow create: if isValidCreate(userId);
+      allow update: if isValidUpdate(userId);
+      allow delete: if isValidDelete(userId);
+
+      // 1. Habits Collection
+      match /habits/{habitId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId) &&
+          (!('name' in request.resource.data) ||
+           (request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120));
+        allow update: if isValidUpdate(userId) &&
+          (!('name' in request.resource.data) ||
+           (request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120));
+        allow delete: if isValidDelete(userId);
+      }
+
+      // 2. Entries Collection (Daily habit completions & logs)
+      match /entries/{entryId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId) &&
+          (!('habitId' in request.resource.data) ||
+           (request.resource.data.habitId is string &&
+            request.resource.data.habitId.size() > 0 &&
+            !request.resource.data.habitId.matches('.*[/\\\\].*')));
+        allow update: if isValidUpdate(userId);
+        allow delete: if isValidDelete(userId);
+      }
+
+      // 3. Notes Collection (Offline journal & reflections)
+      match /notes/{noteId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId) &&
+          (!('content' in request.resource.data) ||
+           (request.resource.data.content is string && request.resource.data.content.size() <= 2000)) &&
+          (!('habitId' in request.resource.data) ||
+           request.resource.data.habitId == null ||
+           (request.resource.data.habitId is string && !request.resource.data.habitId.matches('.*[/\\\\].*')));
+        allow update: if isValidUpdate(userId) &&
+          (!('content' in request.resource.data) ||
+           (request.resource.data.content is string && request.resource.data.content.size() <= 2000));
+        allow delete: if isValidDelete(userId);
+      }
+
+      // 4. Daily Summaries Collection (Aggregate performance & streak scores)
+      match /dailySummaries/{summaryId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId);
+        allow update: if isValidUpdate(userId);
+        allow delete: if isValidDelete(userId);
+      }
+
+      // 5. User Settings Collection (Device preferences, sync cursors)
+      match /userSettings/{settingsId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId);
+        allow update: if isValidUpdate(userId);
+        allow delete: if isValidDelete(userId);
+      }
+
+      // 6. Generic User Subcollections Fallback (corex, records, archives)
+      match /{allOtherSubcollections=**} {
+        allow get, list: if isOwner(userId);
+        allow create: if isValidCreate(userId);
+        allow update: if isValidUpdate(userId);
+        allow delete: if isValidDelete(userId);
       }
     }
 
-    // System error logging
+    // ─────────────────────────────────────────────────────────────────────────
+    // SHARED & SYSTEM COLLECTIONS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Global Habit Template Library (Read-only for authenticated users)
+    match /habitLibrary/{habitId} {
+      allow get, list: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Historical Logs (Archived migration data: completely locked)
+    match /daily_logs/{date} {
+      allow read, write: if false;
+    }
+
+    // System Errors (Anonymous/Client error telemetry logging: append-only)
     match /system_errors/{errorId} {
       allow create: if true;
       allow read, update, delete: if false;
+    }
+
+    // Dietitian Pro Linking System (Scoped to dietitian and client UIDs only)
+    match /links/{linkId} {
+      allow read: if isAuthenticated() && (
+        resource.data.dietitianUid == request.auth.uid ||
+        resource.data.clientUid == request.auth.uid
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.dietitianUid == request.auth.uid ||
+        request.resource.data.clientUid == request.auth.uid
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.dietitianUid == request.auth.uid ||
+        resource.data.clientUid == request.auth.uid
+      );
+      allow delete: if isAuthenticated() && resource.data.dietitianUid == request.auth.uid;
+
+      match /{allSubcollections=**} {
+        allow read, write: if isAuthenticated() && (
+          get(/databases/$(database)/documents/links/$(linkId)).data.dietitianUid == request.auth.uid ||
+          get(/databases/$(database)/documents/links/$(linkId)).data.clientUid == request.auth.uid
+        );
+      }
+    }
+
+    match /dietitians/{dietitianId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(dietitianId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEFAULT-DENY RULE
+    // Catches any top-level or unnamed collections not explicitly permitted above
+    // ─────────────────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
