@@ -22,11 +22,8 @@ import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile
 import { 
   getReminderSettings, 
   saveReminderSettings, 
-  sendTestNotification, 
   calculateReminderTime, 
-  formatTimeDisplay,
-  requestNotificationPermission,
-  getIncompleteHabits 
+  requestNotificationPermission 
 } from '../services/notificationService';
 import ProPill from '../components/ProPill';
 import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
@@ -76,7 +73,6 @@ export default function Profile() {
   const { theme, setTheme, isDark, toggleTheme } = useTheme();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showBetterReportLockModal, setShowBetterReportLockModal] = useState(false);
   const [showInsightsLockModal, setShowInsightsLockModal] = useState(false);
@@ -98,7 +94,6 @@ export default function Profile() {
   // Bedtime Habit Reminder (Local Notifications & PWA Sync)
   const [reminderSettings, setReminderSettings] = useState(() => getReminderSettings());
   const [reminderFeedback, setReminderFeedback] = useState(null);
-  const [isTestingReminder, setIsTestingReminder] = useState(false);
 
   useEffect(() => {
     if (userDoc?.reminderSettings) {
@@ -135,39 +130,57 @@ export default function Profile() {
     setTimeout(() => setReminderFeedback(null), 2500);
   };
 
-  const handleSendTestNotification = async () => {
-    if (navigator.vibrate) navigator.vibrate(25);
-    setIsTestingReminder(true);
-    try {
-      const success = await sendTestNotification(reminderSettings.bedtime, currentUser);
-      if (success) {
-        setReminderFeedback('tested');
-        setTimeout(() => setReminderFeedback(null), 3000);
-      }
-    } finally {
-      setIsTestingReminder(false);
-    }
-  };
-
   const handleDeleteAccount = async () => {
     if (!currentUser || isGuest) return;
     setIsDeletingAccount(true);
     try {
       const uid = currentUser.uid;
-      // Delete user doc
-      await deleteDoc(doc(db, 'users', uid));
-      // Delete auth account
-      await currentUser.delete();
+
+      // 1. Delete all Firestore user data subcollections
+      try {
+        const habitsSnap = await getDocs(collection(db, 'users', uid, 'habits'));
+        const batch = writeBatch(db);
+        habitsSnap.forEach(d => batch.delete(d.ref));
+
+        const summariesSnap = await getDocs(collection(db, 'users', uid, 'dailySummaries'));
+        summariesSnap.forEach(d => batch.delete(d.ref));
+
+        const entriesSnap = await getDocs(collection(db, 'users', uid, 'entries'));
+        entriesSnap.forEach(d => batch.delete(d.ref));
+
+        batch.delete(doc(db, 'users', uid));
+        await batch.commit();
+      } catch (firestoreErr) {
+        console.warn('Firestore cleanup notice:', firestoreErr);
+      }
+
+      // 2. Delete Firebase Auth account
+      try {
+        if (currentUser.delete) {
+          await currentUser.delete();
+        }
+      } catch (authErr) {
+        console.warn('Auth account delete notice:', authErr);
+        if (authErr.code === 'auth/requires-recent-login') {
+          alert(isHinglish 
+            ? 'सुरक्षा कारणों से, अकाउंट डिलीट करने से पहले कृपया दोबारा लॉगिन करें।' 
+            : 'For security reasons, please log in again before deleting your account.');
+          setIsDeletingAccount(false);
+          setShowDeleteAccountModal(false);
+          await logout();
+          navigate('/login');
+          return;
+        }
+      }
+
+      // 3. Clear local storage, session and state
       localStorage.clear();
-      window.location.hash = '#/login';
-      window.location.reload();
+      sessionStorage.clear();
+      await logout();
+      navigate('/login');
     } catch (err) {
       console.error('Delete account error:', err);
-      if (err.code === 'auth/requires-recent-login') {
-        alert(isHinglish ? 'सुरक्षा कारणों से, अकाउंट डिलीट करने से पहले कृपया दोबारा लॉगिन करें।' : 'For security reasons, please log in again before deleting your account.');
-      } else {
-        alert('Failed to delete account: ' + (err.message || 'Unknown error'));
-      }
+      alert(isHinglish ? 'अकाउंट डिलीट करने में विफल: ' + (err.message || 'त्रुटि') : 'Failed to delete account: ' + (err.message || 'Unknown error'));
     } finally {
       setIsDeletingAccount(false);
       setShowDeleteAccountModal(false);
@@ -462,6 +475,11 @@ export default function Profile() {
         return;
       }
       // 2. Modals
+      if (showDeleteAccountModal) {
+        setShowDeleteAccountModal(false);
+        e.preventDefault();
+        return;
+      }
       if (showPriorityModal) {
         setShowPriorityModal(false);
         e.preventDefault();
@@ -1141,9 +1159,9 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Time Configuration & Preview Section when ON */}
+              {/* Time Configuration Section when ON */}
               {reminderSettings.enabled && (
-                <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/80 space-y-3">
+                <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/80">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
@@ -1162,65 +1180,6 @@ export default function Profile() {
                         onChange={(e) => handleBedtimeChange(e.target.value)}
                         className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-black text-slate-900 dark:text-white cursor-pointer shadow-xs"
                       />
-
-                      <button
-                        type="button"
-                        onClick={handleSendTestNotification}
-                        disabled={isTestingReminder}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
-                        title="Send sample notification to your phone"
-                      >
-                        <Lightning size={14} weight="fill" />
-                        <span>{isTestingReminder ? 'Sending...' : 'Test Now'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Visual Preview Card matching Android Notification style */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-2xs">
-                    <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400 font-bold mb-2">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-md bg-white text-slate-950 flex items-center justify-center text-[9px] font-black shadow-2xs">D</span>
-                        <span className="text-slate-700 dark:text-slate-300 font-black">D1</span>
-                        <span>•</span>
-                        <span>{calculateReminderTime(reminderSettings.bedtime, 15).displayStr}</span>
-                      </span>
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Preview</span>
-                    </div>
-                    <div className="font-black text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>2 Habits Remaining</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Complete your day before {formatTimeDisplay(reminderSettings.bedtime)}.
-                    </p>
-
-                    {/* Habit Cards matching authentic icons (NO emojis) & Clean Duration Target Formatting */}
-                    <div className="mt-2.5 grid grid-cols-2 gap-2">
-                      {(() => {
-                        const incomplete = getIncompleteHabits(currentUser);
-                        const sample = incomplete.length > 0
-                          ? incomplete.slice(0, 2)
-                          : (habits && habits.length > 0
-                              ? habits.slice(0, 2)
-                              : [
-                                  { id: 'sleep_duration', name: 'Sleep Duration', icon: 'hourglass_empty', target100: 510, unit: 'minutes', color: '#6366f1' },
-                                  { id: 'reading', name: 'Reading', icon: 'menu_book', target100: 45, unit: 'minutes', color: '#eab308' }
-                                ]);
-                        return sample.map(h => (
-                          <div key={h.id || h.name} className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
-                            <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={15} color={h.color || '#3b82f6'} />
-                            <div className="min-w-0">
-                              <div className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate">{h.name}</div>
-                              <div className="text-[9.5px] font-bold text-slate-400 truncate">{formatHabitTarget(h, 'long')}</div>
-                            </div>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="flex-1 py-1.5 rounded-xl bg-blue-600 text-white text-[10.5px] font-bold text-center shadow-xs">Open Today</span>
-                      <span className="flex-1 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10.5px] font-bold text-center">Snooze</span>
                     </div>
                   </div>
                 </div>
@@ -1326,21 +1285,7 @@ export default function Profile() {
               </button>
             </div>
 
-            {/* Danger Zone */}
-            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-red-50/60 dark:bg-red-950/25 border border-red-200 dark:border-red-900/50">
-                <div>
-                  <h4 className="text-xs font-extrabold text-red-700 dark:text-red-400">Danger Zone</h4>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">Permanently delete your account and all associated habit tracking history.</p>
-                </div>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-xs transition-colors shrink-0 cursor-pointer"
-                >
-                  Delete Account
-                </button>
-              </div>
-            </div>
+
 
           </div>
         )}
@@ -2512,53 +2457,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* ── DELETE ACCOUNT MODAL ─────────────────────────────────────────────── */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" onClick={() => setShowDeleteModal(false)}>
-          <div className="bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center">
-              <Icon name="delete_forever" className="text-2xl" />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-slate-900 dark:text-white">Delete Account</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                Are you absolutely sure? This will delete all your habits, daily entries, streaks, and analytics permanently.
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
-                Cancel
-              </button>
-              <button 
-                disabled={isDeletingAccount}
-                onClick={async () => {
-                  setIsDeletingAccount(true);
-                  try {
-                    const habitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'habits'));
-                    const batch = writeBatch(db);
-                    habitsSnap.forEach(d => batch.delete(d.ref));
-                    const summariesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'dailySummaries'));
-                    summariesSnap.forEach(d => batch.delete(d.ref));
-                    const entriesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'entries'));
-                    entriesSnap.forEach(d => batch.delete(d.ref));
-                    batch.delete(doc(db, 'users', currentUser.uid));
-                    await batch.commit();
-                    await logout();
-                    navigate('/login');
-                  } catch (err) {
-                    console.error('Error deleting account:', err);
-                    alert('Failed to delete account.');
-                  }
-                  setIsDeletingAccount(false);
-                }} 
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs cursor-pointer"
-              >
-                {isDeletingAccount ? 'Deleting...' : 'Yes, Delete Permanently'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* ── HABIT TARGET & BASELINE DETAILS MODAL ─────────────────────────── */}
       {selectedHabitDetails && (
