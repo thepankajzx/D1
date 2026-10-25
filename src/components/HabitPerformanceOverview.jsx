@@ -167,7 +167,7 @@ export default function HabitPerformanceOverview({
                   
                   {/* ROUND HABIT SYMBOL (Canonical HabitIcon) */}
                   <div className="shrink-0 transition-transform group-hover:scale-110 mb-0.5">
-                    <HabitIcon habit={habit} size={22} />
+                    <HabitIcon habit={habit} size={count > 8 ? 10 : (count > 5 ? 11 : 12)} />
                   </div>
 
                   {/* HABIT NAME (Compact & Truncated with full tooltip) */}
