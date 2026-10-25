@@ -23,10 +23,8 @@ export default defineConfig(({ mode }) => {
         { find: 'firebase/firestore', replacement: path.resolve(import.meta.dirname, 'src/lib/mockFirestore.js') }
       ] : []
     },
-    esbuild: {
-      drop: mode === 'production' ? ['console', 'debugger'] : []
-    },
     build: {
+      sourcemap: false,
       rollupOptions: {
         output: {
           entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,

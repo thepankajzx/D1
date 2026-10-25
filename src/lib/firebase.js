@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { initializeAuth, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,4 +25,25 @@ const db = initializeFirestore(app, {
 });
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, db, googleProvider };
+// Initialize Firebase App Check for fraud, scraper & bot mitigation
+let appCheck = null;
+if (typeof window !== "undefined") {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  try {
+    if (import.meta.env.DEV) {
+      // Enable debug token in development to avoid blocking local testing
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+    if (recaptchaSiteKey) {
+      appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+        isTokenAutoRefreshEnabled: true
+      });
+    }
+  } catch (appCheckErr) {
+    // Graceful fallback to avoid interrupting user session
+    console.warn("Firebase App Check initialization skipped or failed:", appCheckErr?.message);
+  }
+}
+
+export { auth, db, googleProvider, appCheck };
