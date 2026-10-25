@@ -26,9 +26,8 @@ service cloud.firestore {
     // Helper: For update - ensures existing doc belongs to caller and userId cannot be reassigned
     function isValidUpdate(userId) {
       return isOwner(userId) &&
-        (!('userId' in request.resource.data) ||
-         !('userId' in resource.data) ||
-         request.resource.data.userId == resource.data.userId);
+        (!('userId' in request.resource.data) || request.resource.data.userId == userId) &&
+        (!('userId' in resource.data) || !('userId' in request.resource.data) || request.resource.data.userId == resource.data.userId);
     }
 
     // Helper: For deletion - ensures caller is the authenticated owner
