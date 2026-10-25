@@ -116,6 +116,9 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       localStorage.removeItem('d1_cached_user');
+      // Cancel scheduled notifications on logout to prevent cross-user leakage
+      const { cancelDailyReminder } = await import('../services/notificationService');
+      await cancelDailyReminder();
     } catch (_) {}
     if (Capacitor.isNativePlatform()) {
       try {

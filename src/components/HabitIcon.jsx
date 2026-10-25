@@ -1,4 +1,5 @@
 import React from 'react';
+import * as PhosphorIcons from '@phosphor-icons/react';
 import {
   Barbell, Alarm, Moon, HourglassSimple, Footprints, Drop, ForkKnife,
   CookingPot, Brain, Timer, BookOpen, GraduationCap, DeviceMobile,
@@ -92,12 +93,28 @@ const ICON_MAP = {
 };
 
 export const getPhosphorIcon = (iconName) => {
-  if (!iconName) return Star;
+  if (!iconName) return PhosphorIcons.Star || Star;
   if (ICON_MAP[iconName]) return ICON_MAP[iconName];
   if (ICON_COMPONENTS[iconName]) return ICON_COMPONENTS[iconName];
-  const pascal = iconName.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  if (PhosphorIcons[iconName]) return PhosphorIcons[iconName];
+
+  // Try PascalCase transformation (e.g. 'rocket_launch' -> 'RocketLaunch', 'barbell' -> 'Barbell')
+  const pascal = iconName.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
   if (ICON_COMPONENTS[pascal]) return ICON_COMPONENTS[pascal];
-  return Star;
+  if (PhosphorIcons[pascal]) return PhosphorIcons[pascal];
+
+  // Try PascalCase without lowering remaining chars (e.g. 'DeviceMobile' -> 'DeviceMobile')
+  const directPascal = iconName.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  if (PhosphorIcons[directPascal]) return PhosphorIcons[directPascal];
+
+  // Case-insensitive lookup against PhosphorIcons keys
+  const clean = iconName.toLowerCase().replace(/[-_\s]/g, '');
+  const matchedKey = Object.keys(PhosphorIcons).find(k => k.toLowerCase() === clean);
+  if (matchedKey && PhosphorIcons[matchedKey]) {
+    return PhosphorIcons[matchedKey];
+  }
+
+  return PhosphorIcons.Star || Star;
 };
 
 /**

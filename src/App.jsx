@@ -15,7 +15,7 @@ import Icon from './components/Icon';
 import Footer from './components/Footer';
 import HeaderPillWidgets from './components/HeaderPillWidgets';
 import MilestoneCelebrationModal from './components/MilestoneCelebrationModal';
-import { Compass, SunHorizon, ChartLineUp, Binoculars, Moon, Sun } from '@phosphor-icons/react';
+import { Compass, SunHorizon, ChartLineUp, Binoculars, Moon, Sun, User } from '@phosphor-icons/react';
 import { App as CapApp } from '@capacitor/app';
 
 import Login from './pages/Login';
@@ -315,7 +315,7 @@ function Layout({ children }) {
 
         {/* Profile (Me) */}
         <Link to="/profile" className={`flex items-center gap-1.5 px-4 py-2 rounded-[24px] transition-all duration-150 active:scale-95 cursor-pointer select-none ${location.pathname.startsWith('/profile') ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-primary'}`}>
-          <Icon name={location.pathname.startsWith('/profile') ? 'person' : 'person_outline'} className="text-[18px]" />
+          <User size={18} weight={location.pathname.startsWith('/profile') ? "fill" : "bold"} />
           <span className="text-[12px] font-bold tracking-wide">Me</span>
         </Link>
         
@@ -375,8 +375,19 @@ function RouteTrackerAndRestorer() {
     navigateRef.current = navigate;
   });
 
-  // Restore on mount / auth readiness
+  // Restore on mount / auth readiness & Initialize Notifications
   useEffect(() => {
+    // Initialize Local Notifications channel & action listeners
+    import('./services/notificationService').then(m => {
+      m.initNotifications();
+      if (currentUser?.uid) {
+        const settings = m.getReminderSettings();
+        if (settings?.enabled) {
+          m.scheduleDailyReminder(settings, currentUser);
+        }
+      }
+    }).catch(() => {});
+
     if (loading) return;
     if (!hasRestored) {
       setHasRestored(true);

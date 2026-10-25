@@ -10,7 +10,7 @@ import { calculateScore } from '../lib/scoring';
 import Icon from '../components/Icon';
 import PriorityIcon from '../components/PriorityIcon';
 import HabitIcon from '../components/HabitIcon';
-import { getCanonicalHabitIconConfig } from '../lib/habitColors';
+import { getCanonicalHabitIconConfig, canonicalizeHabit } from '../lib/habitColors';
 import ScoringModal from '../components/ScoringModal';
 import BinaryGoalExplainerModal from '../components/BinaryGoalExplainerModal';
 import ProModal from '../components/ProModal';
@@ -366,6 +366,19 @@ export default function AdvancedHabitSelector() {
   const formatReviewTime = (mins) => formatTimeVal(mins);
   const [showBinaryExplainer, setShowBinaryExplainer] = useState(false);
 
+  // Modern In-App Notice Modal
+  const [noticeModal, setNoticeModal] = useState(null);
+  const showNotice = (title, message, options = {}) => {
+    setNoticeModal({
+      title,
+      subtitle: options.subtitle || 'D1 Habit Tracker',
+      message,
+      actionText: options.actionText,
+      onAction: options.onAction,
+      closeText: options.closeText || 'OK'
+    });
+  };
+
   // Custom Habit Builder State
   const [editingCustomHabitId, setEditingCustomHabitId] = useState(null);
   const [cbName, setCbName] = useState('');
@@ -457,11 +470,11 @@ export default function AdvancedHabitSelector() {
   const handleSaveFlow = async () => {
     if (viewMode === 'selection') {
       if (activeCategories.includes('Custom') && cbName.trim() !== '') {
-        alert("You have an unsaved custom habit. Please click 'Add to Plan' first, or clear the Habit Name field.");
+        showNotice("Unsaved Custom Habit", "You have an unsaved custom habit in progress. Please click 'Add to Plan' first, or clear the Habit Name field.");
         return;
       }
       if (selectedHabits.length + customHabits.length === 0) {
-        alert("Please select at least 1 habit to save your plan.");
+        showNotice("Selection Required", "Please select at least 1 habit to save your 30-day routine.");
         return;
       }
       setViewMode('summary');
@@ -578,7 +591,15 @@ export default function AdvancedHabitSelector() {
     }
     const isExisting = existingHabits.some(h => h.id === habit.id);
     if (isExisting) {
-      alert("You are already tracking this habit. To manage existing habits, go to your Profile.");
+      showNotice(
+        "Already Tracking Habit",
+        "You are already tracking this habit. To manage or adjust existing habits, visit your Profile.",
+        {
+          subtitle: habit.name || "Active Habit",
+          actionText: "Go to Profile",
+          onAction: () => navigate("/profile")
+        }
+      );
       return;
     }
 
@@ -648,7 +669,7 @@ export default function AdvancedHabitSelector() {
     if (draftHabit.isCustom || draftHabit.id?.startsWith('custom_')) {
       const dup = isDuplicateIconAndColor(draftHabit.icon, draftHabit.color, draftHabit.id);
       if (dup) {
-        alert(`This icon and color combination is already in use by "${dup.name}". Please choose a different icon or distinct color.`);
+        showNotice("Icon & Color In Use", `This icon and color combination is already in use by "${dup.name}". Please choose a different icon or distinct color.`);
         return;
       }
 
@@ -724,14 +745,14 @@ export default function AdvancedHabitSelector() {
   const addCustomHabit = (e) => {
     if (e) e.stopPropagation();
 
-    if (!cbName.trim()) { alert("Please enter a Habit Name"); return; }
-    if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { alert("Please enter a custom unit label"); return; }
-    if (cbType !== 'yn' && cbType !== 'time' && !cbDirection) { alert("Please select whether Higher or Lower is better"); return; }
-    if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { alert("Please enter both 0% and 100% scores"); return; }
+    if (!cbName.trim()) { showNotice("Missing Habit Name", "Please enter a Habit Name."); return; }
+    if (cbType === 'duration' && cbUnit === 'custom' && !cbUnitCustom.trim()) { showNotice("Missing Unit Label", "Please enter a custom unit label."); return; }
+    if (cbType !== 'yn' && cbType !== 'time' && !cbDirection) { showNotice("Missing Scoring Goal", "Please select whether Higher or Lower is better."); return; }
+    if (cbType !== 'yn' && (cbFloor === '' || cbTarget === '')) { showNotice("Missing Target Values", "Please enter both 0% and 100% scores."); return; }
 
     const duplicate = isDuplicateIconAndColor(cbIcon, cbColor, editingCustomHabitId);
     if (duplicate) {
-      alert(`This icon and color combination is already in use by "${duplicate.name}". Please choose a different icon or distinct color.`);
+      showNotice("Icon & Color In Use", `This icon and color combination is already in use by "${duplicate.name}". Please choose a different icon or distinct color.`);
       return;
     }
 
@@ -766,12 +787,14 @@ export default function AdvancedHabitSelector() {
     const target0Val = cbType === 'time' ? parseTime(cbFloor) : (isDecimal ? parseFloat(cbFloor) || 0 : Math.round(parseFloat(cbFloor) || 0));
     const target100Val = cbType === 'time' ? parseTime(cbTarget) : (isDecimal ? parseFloat(cbTarget) || 0 : Math.round(parseFloat(cbTarget) || 0));
 
-    const habitPayload = {
+    const habitPayload = canonicalizeHabit({
       id: editingCustomHabitId || `custom_${Date.now()}`,
       name,
       category: 'Custom',
       icon: cbIcon || 'rocket_launch',
+      iconId: cbIcon || 'rocket_launch',
       color: cbColor || '#10b981',
+      iconColor: cbColor || '#10b981',
       scoringType,
       direction: (cbDirection === 'lower' || cbDirection === 'lower_is_better') ? 'lower_is_better' : 'higher_is_better',
       unit: cbType === 'yn' ? '' : (cbType === 'time' ? 'Time' : unit),
@@ -781,7 +804,7 @@ export default function AdvancedHabitSelector() {
       target100: target100Val,
       userTolerance: cbTolerance ? 10 : 0,
       isCustom: true
-    };
+    });
 
     if (editingCustomHabitId) {
       setCustomHabits(prev => prev.map(h => h.id === editingCustomHabitId ? habitPayload : h));
@@ -991,7 +1014,7 @@ export default function AdvancedHabitSelector() {
             <button 
               type="button"
               onClick={handleDoneConfig}
-              className="px-6 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-xs cursor-pointer"
+              className="px-6 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-colors shadow-xs cursor-pointer"
             >
               Done
             </button>
@@ -1077,7 +1100,7 @@ export default function AdvancedHabitSelector() {
           </button>
           <button 
             onClick={handleDoneConfig}
-            className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm"
+            className="px-6 py-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-colors shadow-sm cursor-pointer"
           >
             Done
           </button>
@@ -1714,12 +1737,12 @@ export default function AdvancedHabitSelector() {
             </div>
 
             {/* Sticky Bottom Bar for Selection Mode */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
               <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-300 font-bold text-xs sm:text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                  className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                 >
                   Cancel
                 </button>
@@ -1729,8 +1752,8 @@ export default function AdvancedHabitSelector() {
                   disabled={selectedHabits.length + customHabits.length === 0}
                   className={`flex-1 sm:flex-initial px-5 sm:px-8 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
                     selectedHabits.length + customHabits.length > 0
-                      ? 'bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      ? 'bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white hover:shadow-lg'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
                   }`}
                 >
                   <span>Review Your Plan ({selectedHabits.length + customHabits.length})</span>
@@ -1912,19 +1935,19 @@ export default function AdvancedHabitSelector() {
             </div>
 
             {/* Sticky Bottom Bar for Review Mode */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
               <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => setViewMode('selection')}
-                  className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-300 font-bold text-xs sm:text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                  className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                 >
                   Edit Habits
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveFlow}
-                  className="flex-1 sm:flex-initial px-6 sm:px-10 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md hover:shadow-lg"
+                  className="flex-1 sm:flex-initial px-6 sm:px-10 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
                   <span>Lock & Save Plan</span>
                   <Icon name="check" className="text-[14px]" />
@@ -2007,7 +2030,7 @@ export default function AdvancedHabitSelector() {
               <div className="flex gap-3 pt-2">
                 <button 
                   onClick={() => setShowConfirmSaveModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Review Again
                 </button>
@@ -2016,7 +2039,7 @@ export default function AdvancedHabitSelector() {
                     setShowConfirmSaveModal(false);
                     executeSave();
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
                 >
                   Confirm & Lock
                 </button>
@@ -2134,6 +2157,55 @@ export default function AdvancedHabitSelector() {
 
         {/* BINARY GOAL EXPLAINER MODAL */}
         <BinaryGoalExplainerModal isOpen={showBinaryExplainer} onClose={() => setShowBinaryExplainer(false)} />
+
+        {/* IN-APP NOTICE MODAL (DARK & LIGHT THEME OPTIMIZED) */}
+        {noticeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in" onClick={() => setNoticeModal(null)}>
+            <div 
+              className="w-full max-w-sm bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl animate-in zoom-in-95"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                  <Icon name="info" className="text-2xl" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-black text-sm text-slate-900 dark:text-white truncate">{noticeModal.title}</h3>
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">{noticeModal.subtitle}</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                {noticeModal.message}
+              </p>
+              <div className="flex gap-2.5 pt-2">
+                {noticeModal.actionText && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const act = noticeModal.onAction;
+                      setNoticeModal(null);
+                      if (act) act();
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    {noticeModal.actionText}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setNoticeModal(null)}
+                  className={`py-2.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
+                    noticeModal.actionText 
+                      ? 'px-4 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'w-full bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white'
+                  }`}
+                >
+                  {noticeModal.closeText || 'OK'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

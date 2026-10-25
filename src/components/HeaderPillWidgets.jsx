@@ -3,17 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { calculateStreakData } from '../lib/streakEngine';
-import { calculateRecoveryScore } from '../lib/recoveryAnalytics';
 import { evaluateUserBadges } from '../lib/badgeEngine';
 import HabitIcon from './HabitIcon';
 import BadgePersonaIcon from './BadgePersonaIcon';
-import { Lightning, ShieldCheck, CheckCircle, Target, Flame } from '@phosphor-icons/react';
+import { Lightning, CheckCircle, Target, Flame, ChartLineUp, Sparkle } from '@phosphor-icons/react';
 
 export const DEFAULT_HEADER_PILLS_CONFIG = {
   enabled: true,
-  pill1: 'persona_badge', // 'persona_badge' | 'weekly_avg' | 'streak' | 'resilience' | 'today_done' | 'focus_habit' | 'none'
+  pill1: 'persona_badge', // 'persona_badge' | 'weekly_avg' | 'streak' | 'monthly_avg' | 'perfect_days' | 'today_done' | 'focus_habit' | 'none'
   pill2: 'today_done',
-  pill3: 'resilience',
+  pill3: 'weekly_avg',
   focusHabitId: '',
   selectedBadgeId: ''
 };
@@ -21,7 +20,14 @@ export const DEFAULT_HEADER_PILLS_CONFIG = {
 export function getHeaderPillsConfig() {
   try {
     const raw = localStorage.getItem('d1_header_pills_config');
-    if (raw) return { ...DEFAULT_HEADER_PILLS_CONFIG, ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Migrate legacy 'resilience' pill to 'weekly_avg'
+      if (parsed.pill1 === 'resilience') parsed.pill1 = 'persona_badge';
+      if (parsed.pill2 === 'resilience') parsed.pill2 = 'today_done';
+      if (parsed.pill3 === 'resilience') parsed.pill3 = 'weekly_avg';
+      return { ...DEFAULT_HEADER_PILLS_CONFIG, ...parsed };
+    }
   } catch (e) {}
   return DEFAULT_HEADER_PILLS_CONFIG;
 }
@@ -94,13 +100,26 @@ export default function HeaderPillWidgets({ forceShow = false }) {
 
   // Compute live data for each metric
   const metrics = useMemo(() => {
-    // 1. Weekly Average (last 7 recorded days)
-    const last7 = (allSummaries || []).slice(0, 7);
-    const weeklyAvg = last7.length > 0 
-      ? Math.round(last7.reduce((acc, s) => acc + (s.overallScore || 0), 0) / last7.length)
+    // Current Local Date String (YYYY-MM-DD)
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    // 1. Weekly Average (last 7 valid recorded days)
+    const validRecent = (allSummaries || []).filter(s => typeof s.overallScore === 'number' && s.overallScore !== null).slice(0, 7);
+    const weeklyAvg = validRecent.length > 0 
+      ? Math.round(validRecent.reduce((acc, s) => acc + s.overallScore, 0) / validRecent.length)
       : 0;
 
-    // 2. Composite Streak (only if enabled)
+    // 2. Monthly Consistency (last 30 valid recorded days)
+    const validMonth = (allSummaries || []).filter(s => typeof s.overallScore === 'number' && s.overallScore !== null).slice(0, 30);
+    const monthlyAvg = validMonth.length > 0 
+      ? Math.round(validMonth.reduce((acc, s) => acc + s.overallScore, 0) / validMonth.length)
+      : 0;
+
+    // 3. Perfect 100% Days (Total flawless days recorded)
+    const perfectDaysCount = (allSummaries || []).filter(s => Number(s.overallScore) >= 100).length;
+
+    // 4. Composite Streak (only if enabled)
     let currentStreak = 0;
     if (streakTrackingEnabled) {
       try {
@@ -109,29 +128,35 @@ export default function HeaderPillWidgets({ forceShow = false }) {
       } catch (e) {}
     }
 
-    // 3. Resilience Recovery Score
-    const recoveryRes = calculateRecoveryScore(allSummaries || [], 'all', 7, 30);
-    const resilienceScore = recoveryRes?.recoveryScore !== undefined 
-      ? Math.round(recoveryRes.recoveryScore) 
-      : 100;
+    // 5. Today's Completed Habits (STRICT MATCH with todayStr — NEVER fall back to yesterday)
+    const todaySavedSummary = (allSummaries || []).find(s => s.id === todayStr || s.date === todayStr);
+    
+    // Also check live uncommitted cache for today's active entries
+    let liveTodayCount = 0;
+    try {
+      const uid = localStorage.getItem('d1_current_uid') || '';
+      const cached = localStorage.getItem(`entries_${uid}_${todayStr}`) || localStorage.getItem(`entries_${todayStr}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) liveTodayCount = parsed.length;
+      }
+    } catch (e) {}
 
-    // 4. Today's Completed Habits
-    const todaySummary = (allSummaries || [])[0];
-    const todayCompleted = todaySummary?.habitsCompleted || 0;
-    const todayTotal = todaySummary?.habitsTotal || habits.length || 0;
-    const todayPct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+    const todayCompleted = todaySavedSummary ? (todaySavedSummary.habitsCompleted ?? liveTodayCount) : liveTodayCount;
+    const todayTotal = todaySavedSummary?.habitsTotal || habits?.length || (todayCompleted > 0 ? todayCompleted : 0);
+    const todayPct = todayTotal > 0 ? Math.min(100, Math.round((todayCompleted / todayTotal) * 100)) : 0;
 
-    // 5. Focus / Specific Habit
+    // 6. Focus / Specific Habit
     const focusHabit = (config.focusHabitId && habits.find(h => h.id === config.focusHabitId)) || habits[0];
     const focusStreak = (focusHabit && streakTrackingEnabled) 
       ? calculateStreakData(focusHabit.id, allSummaries || []).currentStreak 
       : 0;
-    const focusScore = todaySummary?.habitScores?.[focusHabit?.id];
+    const focusScore = todaySavedSummary?.habitScores?.[focusHabit?.id];
     const focusVal = focusScore !== undefined 
       ? `${focusScore}%` 
-      : (focusHabit ? (focusHabit.name.length > 8 ? focusHabit.name.slice(0, 8) + '…' : focusHabit.name) : '');
+      : (focusStreak > 0 ? `${focusStreak}d` : (focusHabit ? (focusHabit.name.length > 8 ? focusHabit.name.slice(0, 8) + '…' : focusHabit.name) : ''));
 
-    // 6. Active Persona Badge / Title
+    // 7. Active Persona Badge / Title
     const activeBadge = (config.selectedBadgeId && badgeState.allBadges.find(b => b.id === config.selectedBadgeId))
       || badgeState.topBadge
       || badgeState.allBadges[0];
@@ -156,6 +181,17 @@ export default function HeaderPillWidgets({ forceShow = false }) {
         route: '/streak-milestones',
         colorBorder: activeBadge?.borderColor ? `${activeBadge.borderColor} ring-amber-400/30` : 'border-amber-400/50 dark:border-amber-500/40 ring-amber-400/30'
       },
+      today_done: {
+        id: 'today_done',
+        shortName: isHinglish ? 'आज' : 'Today',
+        value: `${todayPct}%`,
+        fullLabel: `${isHinglish ? 'आज की प्रगति' : "Today's Completion"}: ${todayCompleted}/${todayTotal} (${todayPct}%)`,
+        renderIcon: (isExpanded) => (
+          <CheckCircle size={15} weight="fill" className="text-blue-500 shrink-0" />
+        ),
+        route: '/',
+        colorBorder: 'border-blue-400/50 dark:border-blue-500/40 ring-blue-400/30'
+      },
       weekly_avg: {
         id: 'weekly_avg',
         shortName: isHinglish ? 'साप्ताहिक' : 'Weekly',
@@ -167,38 +203,38 @@ export default function HeaderPillWidgets({ forceShow = false }) {
         route: '/analytics',
         colorBorder: 'border-amber-400/50 dark:border-amber-500/40 ring-amber-400/30'
       },
+      monthly_avg: {
+        id: 'monthly_avg',
+        shortName: isHinglish ? 'मासिक' : 'Monthly',
+        value: `${monthlyAvg}%`,
+        fullLabel: `${isHinglish ? '30-दिन औसत' : '30-Day Avg'}: ${monthlyAvg}%`,
+        renderIcon: (isExpanded) => (
+          <ChartLineUp size={15} weight="fill" className="text-indigo-500 shrink-0" />
+        ),
+        route: '/analytics',
+        colorBorder: 'border-indigo-400/50 dark:border-indigo-500/40 ring-indigo-400/30'
+      },
+      perfect_days: {
+        id: 'perfect_days',
+        shortName: isHinglish ? 'परफेक्ट' : 'Perfect',
+        value: `${perfectDaysCount}d`,
+        fullLabel: `${isHinglish ? 'शत-प्रतिशत दिन' : '100% Days'}: ${perfectDaysCount}d`,
+        renderIcon: (isExpanded) => (
+          <Sparkle size={15} weight="fill" className="text-teal-500 shrink-0" />
+        ),
+        route: '/streaks',
+        colorBorder: 'border-teal-400/50 dark:border-teal-500/40 ring-teal-400/30'
+      },
       streak: {
         id: 'streak',
         shortName: isHinglish ? 'स्ट्रीक' : 'Streak',
         value: `${currentStreak}d`,
         fullLabel: `${isHinglish ? 'सक्रिय स्ट्रीक' : 'Active Streak'}: ${currentStreak}d`,
         renderIcon: (isExpanded) => (
-          <Flame size={15} weight="fill" className="text-orange-500 shrink-0" />
+          <span className="text-[14px] leading-none select-none shrink-0" role="img" aria-label="streak">🔥</span>
         ),
         route: '/streaks',
         colorBorder: 'border-orange-400/50 dark:border-orange-500/40 ring-orange-400/30'
-      },
-      resilience: {
-        id: 'resilience',
-        shortName: isHinglish ? 'रेज़िलिएंस' : 'Resilience',
-        value: `${resilienceScore}%`,
-        fullLabel: `${isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience Score'}: ${resilienceScore}%`,
-        renderIcon: (isExpanded) => (
-          <ShieldCheck size={15} weight="fill" className="text-emerald-500 shrink-0" />
-        ),
-        route: '/resilience',
-        colorBorder: 'border-emerald-400/50 dark:border-emerald-500/40 ring-emerald-400/30'
-      },
-      today_done: {
-        id: 'today_done',
-        shortName: isHinglish ? 'आज' : 'Today',
-        value: `${todayPct}%`,
-        fullLabel: `${isHinglish ? 'आज की प्रगति' : "Today's Completion"}: ${todayCompleted}/${todayTotal} (${todayPct}%)`,
-        renderIcon: (isExpanded) => (
-          <CheckCircle size={15} weight="fill" className="text-blue-500 shrink-0" />
-        ),
-        route: '/',
-        colorBorder: 'border-blue-400/50 dark:border-blue-500/40 ring-blue-400/30'
       },
       focus_habit: {
         id: 'focus_habit',

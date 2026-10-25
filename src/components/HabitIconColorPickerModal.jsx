@@ -102,13 +102,19 @@ export default function HabitIconColorPickerModal({
   const satBoxRef = useRef(null);
   const isDraggingSatBox = useRef(false);
 
-  // Sync initial color
+  // Sync initial color and icon
   useEffect(() => {
     if (selectedColor) {
       setCurrentColor(selectedColor);
       setHsv(hexToHsv(selectedColor));
     }
   }, [selectedColor]);
+
+  useEffect(() => {
+    if (selectedIcon) {
+      setCurrentIcon(selectedIcon);
+    }
+  }, [selectedIcon]);
 
   // Duplicate icon & color validation
   const duplicateHabit = useMemo(() => {

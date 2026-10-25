@@ -473,3 +473,74 @@
     min-width: 0;
   }
 }
+
+
+/* Dark Mode Selections & Cards */
+.dark .ahs-habit-card {
+  background: #151a26 !important;
+  border-color: #334155 !important;
+}
+.dark .ahs-habit-card:hover {
+  border-color: #475569 !important;
+}
+.dark .ahs-habit-card.selected {
+  border: 2px solid #818cf8 !important;
+  background: rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2) !important;
+}
+.dark .ahs-habit-card.selected .ahs-hc-title {
+  color: #ffffff !important;
+}
+.dark .ahs-habit-card.exclude-count.selected {
+  border: 2px solid #34d399 !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+}
+.dark .ahs-habit-card.configured {
+  border: 1.5px solid #34d399 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15) !important;
+}
+.dark .ahs-habit-card.configured .ahs-hc-title {
+  color: #ffffff !important;
+}
+.dark .ahs-badge {
+  background: #151a26 !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+.dark .ahs-pill {
+  background: #151a26 !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+.dark .ahs-pill:hover {
+  border-color: #818cf8 !important;
+  color: #ffffff !important;
+}
+.dark .ahs-pill.active {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  border-color: #6366f1 !important;
+}
+.dark .ahs-cat-icon {
+  background: #151a26 !important;
+  border-color: #334155 !important;
+}
+.dark .ahs-preview-widget,
+.dark .ahs-progress-widget {
+  background: #151a26 !important;
+  border-color: #334155 !important;
+}
+.dark .ahs-progress-inner {
+  background: #151a26 !important;
+  color: #ffffff !important;
+}
+.dark .ahs-form-control {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #ffffff !important;
+}
+.dark .ahs-form-control input {
+  color: #ffffff !important;
+  background: transparent !important;
+}

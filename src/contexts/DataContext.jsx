@@ -396,6 +396,15 @@ function RealDataProvider({
           setPriorityModeEnabled(data.priorityModeEnabled || false);
 
           try {
+            if (data.reminderSettings) {
+              const localSettings = localStorage.getItem('d1_reminder_settings');
+              const parsed = localSettings ? JSON.parse(localSettings) : {};
+              const merged = { ...parsed, ...data.reminderSettings };
+              localStorage.setItem('d1_reminder_settings', JSON.stringify(merged));
+            }
+          } catch (e) {}
+
+          try {
             const localVal = localStorage.getItem('preference_streak_tracking');
             if (localVal === null && typeof data.streakTrackingEnabled === 'boolean') {
               setStreakTrackingEnabledState(data.streakTrackingEnabled);

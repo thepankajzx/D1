@@ -4,6 +4,7 @@ import {
   Compass,
   Plant,
   Sparkle,
+  ChartLineUp,
   Sword,
   Target,
   Crown,
@@ -34,6 +35,7 @@ const ICON_MAP = {
   Compass,
   Plant,
   Sparkle,
+  ChartLineUp,
   Sword,
   Target,
   Crown,
@@ -66,6 +68,9 @@ export default function BadgePersonaIcon({
   weight = 'fill', 
   className = '' 
 }) {
+  if (iconName === 'Flame' || iconName === 'Fire' || iconName === 'fire') {
+    return <span style={{ fontSize: `${size}px` }} className={`leading-none select-none inline-flex items-center justify-center ${className}`}>🔥</span>;
+  }
   const Component = ICON_MAP[iconName] || Trophy;
   return <Component size={size} weight={weight} className={className} />;
 }

@@ -204,3 +204,54 @@ self.addEventListener('message', (event) => {
     }
   }
 });
+
+// Notification Click Event: Navigate directly to D1 Today section on PWA
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || '/#/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          if ('navigate' in client) {
+            client.navigate(targetUrl);
+          }
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Push Event: Handle background push messages for PWA
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (_) {
+    data = { title: 'D1 Habit Reminder', body: event.data ? event.data.text() : 'Complete your daily habits!' };
+  }
+
+  const title = data.title || 'D1 Habit Reminder';
+  const options = {
+    body: data.body || 'Complete your day before bedtime.',
+    icon: '/pwa-192x192.png',
+    badge: '/favicon-32x32.png',
+    tag: 'd1_bedtime_reminder',
+    renotify: true,
+    data: {
+      route: 'open_today',
+      url: data.url || '/#/'
+    },
+    actions: [
+      { action: 'open_today', title: 'Open Today' }
+    ]
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+

@@ -15,10 +15,19 @@ import UnlockInsightsRoadmap from '../components/UnlockInsightsRoadmap';
 import { doc, deleteDoc, updateDoc, getDocs, collection, writeBatch } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { HABITS_SEED_DATA } from '../lib/premadeHabits';
-import { formatDuration, normalizeDurationToMinutes } from '../lib/formatDuration';
+import { formatDuration, normalizeDurationToMinutes, formatHabitTarget } from '../lib/formatDuration';
 import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
 import { calculateTowerProgress, getStreakTrackingPreference } from '../lib/progressTowerEngine';
-import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun, Check, ArrowLeft, Crown, Prohibit } from '@phosphor-icons/react';
+import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun, Check, ArrowLeft, Crown, Prohibit, BellRinging, Trash, Lightning } from '@phosphor-icons/react';
+import { 
+  getReminderSettings, 
+  saveReminderSettings, 
+  sendTestNotification, 
+  calculateReminderTime, 
+  formatTimeDisplay,
+  requestNotificationPermission,
+  getIncompleteHabits 
+} from '../services/notificationService';
 import ProPill from '../components/ProPill';
 import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
 import { Capacitor } from '@capacitor/core';
@@ -85,7 +94,85 @@ export default function Profile() {
   const [selectedTimeFormat, setSelectedTimeFormat] = useState(timeFormat || '12h');
   const [isSavingTimeFormat, setIsSavingTimeFormat] = useState(false);
   const [timeFormatFeedback, setTimeFormatFeedback] = useState(false);
+
+  // Bedtime Habit Reminder (Local Notifications & PWA Sync)
+  const [reminderSettings, setReminderSettings] = useState(() => getReminderSettings());
+  const [reminderFeedback, setReminderFeedback] = useState(null);
+  const [isTestingReminder, setIsTestingReminder] = useState(false);
+
+  useEffect(() => {
+    if (userDoc?.reminderSettings) {
+      setReminderSettings(prev => ({ ...prev, ...userDoc.reminderSettings }));
+    }
+  }, [userDoc?.reminderSettings]);
+
+  // Google Play Mandated Account Deletion State
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const navigate = useNavigate();
+
+  const handleToggleReminder = async (enabled) => {
+    if (navigator.vibrate) navigator.vibrate(25);
+    if (enabled) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        alert(isHinglish ? 'रिमाइंडर के लिए कृपया अपने Android सेटिंग्स में नोटिफिकेशन की अनुमति दें।' : 'Please grant notification permission in Android Settings to enable reminders.');
+        return;
+      }
+    }
+    const updated = { ...reminderSettings, enabled };
+    setReminderSettings(updated);
+    await saveReminderSettings(updated, currentUser);
+    setReminderFeedback(enabled ? 'enabled' : 'disabled');
+    setTimeout(() => setReminderFeedback(null), 2500);
+  };
+
+  const handleBedtimeChange = async (newBedtime) => {
+    if (!newBedtime) return;
+    const updated = { ...reminderSettings, bedtime: newBedtime };
+    setReminderSettings(updated);
+    await saveReminderSettings(updated, currentUser);
+    setReminderFeedback('saved');
+    setTimeout(() => setReminderFeedback(null), 2500);
+  };
+
+  const handleSendTestNotification = async () => {
+    if (navigator.vibrate) navigator.vibrate(25);
+    setIsTestingReminder(true);
+    try {
+      const success = await sendTestNotification(reminderSettings.bedtime, currentUser);
+      if (success) {
+        setReminderFeedback('tested');
+        setTimeout(() => setReminderFeedback(null), 3000);
+      }
+    } finally {
+      setIsTestingReminder(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser || isGuest) return;
+    setIsDeletingAccount(true);
+    try {
+      const uid = currentUser.uid;
+      // Delete user doc
+      await deleteDoc(doc(db, 'users', uid));
+      // Delete auth account
+      await currentUser.delete();
+      localStorage.clear();
+      window.location.hash = '#/login';
+      window.location.reload();
+    } catch (err) {
+      console.error('Delete account error:', err);
+      if (err.code === 'auth/requires-recent-login') {
+        alert(isHinglish ? 'सुरक्षा कारणों से, अकाउंट डिलीट करने से पहले कृपया दोबारा लॉगिन करें।' : 'For security reasons, please log in again before deleting your account.');
+      } else {
+        alert('Failed to delete account: ' + (err.message || 'Unknown error'));
+      }
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteAccountModal(false);
+    }
+  };
 
   const handleToggleCoreX = async (enabled) => {
     if (navigator.vibrate) navigator.vibrate(25);
@@ -292,13 +379,22 @@ export default function Profile() {
 
     opts.push(
       {
-        id: 'resilience',
-        label: isHinglish ? 'रेज़िलिएंस स्कोर' : 'Resilience Score',
-        shortName: isHinglish ? 'रेज़िलिएंस' : 'Resilience',
-        desc: isHinglish ? 'बाउंस-बैक और सुधार क्षमता का सूचकांक' : 'Slump bounce-back resilience index',
-        iconName: 'ShieldCheck',
-        bgGradient: 'from-emerald-500 to-teal-600',
-        colorClass: 'text-emerald-500'
+        id: 'monthly_avg',
+        label: isHinglish ? 'मासिक निरंतरता' : 'Monthly Consistency Score',
+        shortName: isHinglish ? 'मासिक' : 'Monthly',
+        desc: isHinglish ? 'पिछले 30 दिनों की निरंतरता औसत स्कोर' : '30-day habit consistency percentage',
+        iconName: 'ChartLineUp',
+        bgGradient: 'from-indigo-500 to-purple-600',
+        colorClass: 'text-indigo-500'
+      },
+      {
+        id: 'perfect_days',
+        label: isHinglish ? 'शत-प्रतिशत दिन' : 'Perfect 100% Days',
+        shortName: isHinglish ? 'परफेक्ट' : 'Perfect',
+        desc: isHinglish ? '100% पूर्णता प्राप्त करने वाले कुल दिन' : 'Total days with 100% habit completion recorded',
+        iconName: 'Sparkle',
+        bgGradient: 'from-teal-500 to-emerald-600',
+        colorClass: 'text-teal-500'
       },
       {
         id: 'today_done',
@@ -499,55 +595,7 @@ export default function Profile() {
 
   const getHabitTargetDisplay = (h) => {
     if (!h) return '';
-    const lowerName = (h.name || '').toLowerCase();
-    const unit = resolveHabitUnit(h);
-    const unitStr = unit ? ` ${unit}` : '';
-
-    if (h.scoringType === 'binary') {
-      return 'Daily Check-off';
-    }
-
-    if (h.scoringType === 'time' || lowerName.includes('wake') || (lowerName.includes('sleep') && !lowerName.includes('duration'))) {
-      const rawTime = h.target100 !== undefined ? h.target100 : (h.userTarget100 !== undefined ? h.userTarget100 : (h.targetTime || h.target));
-      if (rawTime !== undefined && rawTime !== null && rawTime !== '') {
-        const formatted = formatTimeVal(rawTime);
-        if (formatted) return `by ${formatted}`;
-      }
-      if (lowerName.includes('wake')) return timeFormat === '24h' ? 'by 06:00' : 'by 6:00 AM';
-      if (lowerName.includes('sleep')) return timeFormat === '24h' ? 'by 23:00' : 'by 11:00 PM';
-      return 'Daily Goal';
-    }
-
-    if (h.scoringType === 'optimal_range' || h.direction === 'optimal_range') {
-      const min = h.target100 !== undefined ? h.target100 : (h.userTarget100 !== undefined ? h.userTarget100 : (h.targetMin || h.min || 0));
-      const max = h.targetMax || h.userTargetMax || h.max || (min ? Number(min) + 1 : 4);
-      return `${min} - ${max}${unitStr}`;
-    }
-
-    const targetVal = h.target100 !== undefined ? h.target100 : (h.userTarget100 !== undefined ? h.userTarget100 : (h.target !== undefined ? h.target : h.goal));
-    
-    if (targetVal !== undefined && targetVal !== null && targetVal !== '') {
-      if (h.scoringType === 'duration' || lowerName.includes('sleep duration') || lowerName.includes('screen') || lowerName.includes('read') || lowerName.includes('workout') || lowerName.includes('study') || lowerName.includes('deep work') || lowerName.includes('meditat') || unit === 'hours' || unit === 'mins') {
-        const durStr = formatDuration(normalizeDurationToMinutes(targetVal, unit), 'standard');
-        if (h.direction === 'lower_is_better') return `≤ ${durStr}`;
-        return durStr;
-      }
-      const formattedNum = typeof targetVal === 'number' ? targetVal.toLocaleString() : targetVal;
-      if (h.direction === 'lower_is_better') {
-        return `≤ ${formattedNum}${unitStr}`;
-      }
-      return `${formattedNum}${unitStr}`;
-    }
-
-    if (lowerName.includes('pushup')) return `30${unitStr || ' reps'}`;
-    if (lowerName.includes('screen')) return `≤ 2${unitStr || ' hours'}`;
-    if (lowerName.includes('water')) return `3 - 4${unitStr || ' Liters'}`;
-    if (lowerName.includes('step') || lowerName.includes('walk')) return `10,000${unitStr || ' steps'}`;
-    if (lowerName.includes('read')) return `30${unitStr || ' mins'}`;
-    if (lowerName.includes('protein')) return `150${unitStr || 'g'}`;
-    if (lowerName.includes('calorie')) return `2,000${unitStr || ' kcal'}`;
-
-    return unit ? `Target in ${unit}` : 'Daily Target';
+    return formatHabitTarget(h, 'long');
   };
 
   const get0BaseDisplay = (h) => {
@@ -1018,6 +1066,167 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Bedtime Habit Reminder (Local Device Notification) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-surface-container border border-outline-variant/50 flex flex-col gap-3 shadow-2xs select-none">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-colors ${
+                    reminderSettings.enabled 
+                      ? 'bg-amber-500 text-white shadow-amber-500/20' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                  }`}>
+                    <BellRinging size={18} weight="fill" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                        {isHinglish ? 'सोने से पहले आदत रिमाइंडर (Bedtime Reminder)' : 'Bedtime Habit Reminder'}
+                      </h4>
+                      <span className={`text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full transition-colors ${
+                        reminderSettings.enabled
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      }`}>
+                        {reminderSettings.enabled ? 'ON' : 'OFF (Default)'}
+                      </span>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/40">
+                        Mobile & PWA
+                      </span>
+                      {reminderFeedback === 'enabled' && (
+                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-150">
+                          {isHinglish ? 'चालू किया गया' : 'Enabled'}
+                        </span>
+                      )}
+                      {reminderFeedback === 'disabled' && (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                          {isHinglish ? 'बंद किया गया' : 'Disabled'}
+                        </span>
+                      )}
+                      {reminderFeedback === 'saved' && (
+                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
+                          {isHinglish ? 'समय सेव हुआ' : 'Time Saved'}
+                        </span>
+                      )}
+                      {reminderFeedback === 'tested' && (
+                        <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 px-2 py-0.5 rounded-md">
+                          {isHinglish ? 'टेस्ट नोटिफिकेशन भेजा गया' : 'Preview Sent to Phone'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      {isHinglish
+                        ? 'आपके दिन के अंत (सोने के समय) से 15 मिनट पहले बाकी बची आदतों का अलर्ट भेजता है।'
+                        : 'Alerts you 15 minutes before your day-end time with remaining incomplete habits.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toggle Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleReminder(!reminderSettings.enabled);
+                  }}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    reminderSettings.enabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
+                  }`}
+                  aria-label="Toggle Bedtime Reminder"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      reminderSettings.enabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Time Configuration & Preview Section when ON */}
+              {reminderSettings.enabled && (
+                <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/80 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        {isHinglish ? 'सोने का समय (Day-end / Bedtime):' : 'Day-end / Bedtime:'}
+                      </label>
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">
+                        ⏰ {isHinglish ? 'रिमाइंडर समय:' : 'Reminder fires at:'}{' '}
+                        {calculateReminderTime(reminderSettings.bedtime, 15).displayStr} (15m before)
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={reminderSettings.bedtime || '22:00'}
+                        onChange={(e) => handleBedtimeChange(e.target.value)}
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-black text-slate-900 dark:text-white cursor-pointer shadow-xs"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={handleSendTestNotification}
+                        disabled={isTestingReminder}
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+                        title="Send sample notification to your phone"
+                      >
+                        <Lightning size={14} weight="fill" />
+                        <span>{isTestingReminder ? 'Sending...' : 'Test Now'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Visual Preview Card matching Android Notification style */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-2xs">
+                    <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400 font-bold mb-2">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-md bg-white text-slate-950 flex items-center justify-center text-[9px] font-black shadow-2xs">D</span>
+                        <span className="text-slate-700 dark:text-slate-300 font-black">D1</span>
+                        <span>•</span>
+                        <span>{calculateReminderTime(reminderSettings.bedtime, 15).displayStr}</span>
+                      </span>
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Preview</span>
+                    </div>
+                    <div className="font-black text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>2 Habits Remaining</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Complete your day before {formatTimeDisplay(reminderSettings.bedtime)}.
+                    </p>
+
+                    {/* Habit Cards matching authentic icons (NO emojis) & Clean Duration Target Formatting */}
+                    <div className="mt-2.5 grid grid-cols-2 gap-2">
+                      {(() => {
+                        const incomplete = getIncompleteHabits(currentUser);
+                        const sample = incomplete.length > 0
+                          ? incomplete.slice(0, 2)
+                          : (habits && habits.length > 0
+                              ? habits.slice(0, 2)
+                              : [
+                                  { id: 'sleep_duration', name: 'Sleep Duration', icon: 'hourglass_empty', target100: 510, unit: 'minutes', color: '#6366f1' },
+                                  { id: 'reading', name: 'Reading', icon: 'menu_book', target100: 45, unit: 'minutes', color: '#eab308' }
+                                ]);
+                        return sample.map(h => (
+                          <div key={h.id || h.name} className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
+                            <HabitIcon name={h.icon || 'star'} habitId={h.id} boxed={true} size={15} color={h.color || '#3b82f6'} />
+                            <div className="min-w-0">
+                              <div className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate">{h.name}</div>
+                              <div className="text-[9.5px] font-bold text-slate-400 truncate">{formatHabitTarget(h, 'long')}</div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="flex-1 py-1.5 rounded-xl bg-blue-600 text-white text-[10.5px] font-bold text-center shadow-xs">Open Today</span>
+                      <span className="flex-1 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10.5px] font-bold text-center">Snooze</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Account Details */}
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">Email Address</label>
@@ -1027,6 +1236,33 @@ export default function Profile() {
                 className="w-full sm:max-w-md px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-not-allowed"
               />
             </div>
+
+            {/* Delete Account & Data (Google Play Mandatory Compliance) */}
+            {currentUser && !isGuest && (
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                    <Trash size={18} weight="bold" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-black text-rose-700 dark:text-rose-400">
+                      {isHinglish ? 'अकाउंट और डेटा डिलीट करें' : 'Delete Account & Data'}
+                    </h4>
+                    <p className="text-[10.5px] text-rose-600/80 dark:text-rose-400/80 mt-0.5">
+                      {isHinglish ? 'सभी आदतों, इतिहास और प्रोफ़ाइल को स्थायी रूप से हटाएँ।' : 'Permanently delete your account, habits, and progress logs.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteAccountModal(true)}
+                  className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-black transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  {isHinglish ? 'अकाउंट डिलीट करें' : 'Delete Account'}
+                </button>
+              </div>
+            )}
 
 
 
@@ -1083,7 +1319,7 @@ export default function Profile() {
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
               <button 
                 onClick={handleLogout}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <Icon name="logout" className="text-[16px]" />
                 <span>Log Out</span>
@@ -1091,15 +1327,15 @@ export default function Profile() {
             </div>
 
             {/* Danger Zone */}
-            <div className="pt-4 border-t border-slate-200/80">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-red-50/50 border border-red-200">
+            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-red-50/60 dark:bg-red-950/25 border border-red-200 dark:border-red-900/50">
                 <div>
-                  <h4 className="text-xs font-extrabold text-red-700">Danger Zone</h4>
-                  <p className="text-[11px] text-slate-600 mt-0.5">Permanently delete your account and all associated habit tracking history.</p>
+                  <h4 className="text-xs font-extrabold text-red-700 dark:text-red-400">Danger Zone</h4>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">Permanently delete your account and all associated habit tracking history.</p>
                 </div>
                 <button
                   onClick={() => setShowDeleteModal(true)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg shadow-xs transition-colors shrink-0 cursor-pointer"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-xs transition-colors shrink-0 cursor-pointer"
                 >
                   Delete Account
                 </button>
@@ -2278,19 +2514,19 @@ export default function Profile() {
 
       {/* ── DELETE ACCOUNT MODAL ─────────────────────────────────────────────── */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in" onClick={() => setShowDeleteModal(false)}>
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-white dark:bg-[#151a26] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center">
               <Icon name="delete_forever" className="text-2xl" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900">Delete Account</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">Delete Account</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                 Are you absolutely sure? This will delete all your habits, daily entries, streaks, and analytics permanently.
               </p>
             </div>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
                 Cancel
               </button>
               <button 
@@ -3190,6 +3426,48 @@ export default function Profile() {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── GOOGLE PLAY MANDATED ACCOUNT DELETION CONFIRMATION MODAL ──────── */}
+      {showDeleteAccountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" onClick={() => setShowDeleteAccountModal(false)}>
+          <div className="bg-white dark:bg-[#151a26] border border-rose-200 dark:border-rose-900/60 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
+              <Trash size={24} weight="bold" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-black text-base sm:text-lg text-slate-900 dark:text-white">
+                {isHinglish ? 'क्या आप सच में अकाउंट डिलीट करना चाहते हैं?' : 'Permanently Delete Account?'}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {isHinglish 
+                  ? 'यह क्रिया स्थायी है। आपकी सभी आदतें, स्ट्रीक रिकॉर्ड्स, डेटा और प्रोफ़ाइल हमेशा के लिए हटा दिए जाएँगे।' 
+                  : 'This action is irreversible. All your tracked habits, historical logs, resilience curves, and user data will be permanently wiped.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAccountModal(false)}
+                disabled={isDeletingAccount}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                {isHinglish ? 'रद्द करें' : 'Cancel'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingAccount ? (isHinglish ? 'हटाया जा रहा है...' : 'Deleting...') : (isHinglish ? 'हाँ, डिलीट करें' : 'Yes, Delete')}
+              </button>
             </div>
           </div>
         </div>
