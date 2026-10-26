@@ -26,7 +26,8 @@ import {
   getReminderSettings, 
   saveReminderSettings, 
   calculateReminderTime, 
-  requestNotificationPermission 
+  requestNotificationPermission,
+  sendTestNotification
 } from '../services/notificationService';
 import ProPill from '../components/ProPill';
 import { promptInstall, onInstallableChange, isStandaloneMode } from '../registerServiceWorker';
@@ -131,6 +132,16 @@ export default function Profile() {
     await saveReminderSettings(updated, currentUser);
     setReminderFeedback('saved');
     setTimeout(() => setReminderFeedback(null), 2500);
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      await sendTestNotification(reminderSettings.bedtime || '22:00', currentUser);
+      setReminderFeedback('tested');
+      setTimeout(() => setReminderFeedback(null), 3000);
+    } catch (e) {
+      console.warn('Test notification error:', e);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -1187,6 +1198,15 @@ export default function Profile() {
                         onChange={(e) => handleBedtimeChange(e.target.value)}
                         className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-black text-slate-900 dark:text-white cursor-pointer shadow-xs"
                       />
+                      <button
+                        type="button"
+                        onClick={handleTestNotification}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-black text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        title="Send preview notification immediately"
+                      >
+                        <BellRinging size={14} weight="bold" />
+                        <span>{isHinglish ? 'टेस्ट करें' : 'Test Preview'}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
