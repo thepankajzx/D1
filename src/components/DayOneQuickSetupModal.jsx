@@ -79,8 +79,8 @@ export default function DayOneQuickSetupModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-[#151C28] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4 text-slate-900 dark:text-white">
+    <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="w-full max-w-sm sm:max-w-md max-h-[85vh] my-auto overflow-y-auto bg-white dark:bg-[#151C28] border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col gap-3.5 text-slate-900 dark:text-white">
         
         {/* Header */}
         <div className="flex items-start gap-3.5">
@@ -164,47 +164,33 @@ export default function DayOneQuickSetupModal({ isOpen, onClose }) {
             <button
               type="button"
               onClick={() => handleThemeChange('light')}
-              className={`h-12 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+              className={`h-11 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer min-w-0 ${
                 selectedTheme === 'light'
-                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-black shadow-xs ring-1 ring-emerald-500/30'
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold shadow-xs ring-1 ring-emerald-500/30'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 font-medium hover:border-slate-300'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  selectedTheme === 'light' ? 'bg-amber-500/20 text-amber-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                }`}>
-                  <Sun size={16} weight={selectedTheme === 'light' ? 'fill' : 'bold'} />
-                </div>
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-xs font-bold">{isHinglish ? 'डे मोड' : 'Day Mode'}</span>
-                  <span className="text-[10px] opacity-75">{isHinglish ? 'लाइट (Light)' : 'Light theme'}</span>
-                </div>
+              <div className="flex items-center gap-2 min-w-0">
+                <Sun size={17} weight={selectedTheme === 'light' ? 'fill' : 'bold'} className={selectedTheme === 'light' ? 'text-amber-500 shrink-0' : 'text-slate-400 shrink-0'} />
+                <span className="text-xs font-bold truncate">{isHinglish ? 'डे मोड' : 'Day Mode'}</span>
               </div>
-              {selectedTheme === 'light' && <Check size={16} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
+              {selectedTheme === 'light' && <Check size={16} weight="bold" className="shrink-0 ml-1 text-emerald-600 dark:text-emerald-400" />}
             </button>
 
             <button
               type="button"
               onClick={() => handleThemeChange('dark')}
-              className={`h-12 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+              className={`h-11 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer min-w-0 ${
                 selectedTheme === 'dark'
-                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-black shadow-xs ring-1 ring-emerald-500/30'
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold shadow-xs ring-1 ring-emerald-500/30'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 font-medium hover:border-slate-300'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  selectedTheme === 'dark' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                }`}>
-                  <Moon size={16} weight={selectedTheme === 'dark' ? 'fill' : 'bold'} />
-                </div>
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-xs font-bold">{isHinglish ? 'नाइट मोड' : 'Night Mode'}</span>
-                  <span className="text-[10px] opacity-75">{isHinglish ? 'डार्क (Dark)' : 'Dark theme'}</span>
-                </div>
+              <div className="flex items-center gap-2 min-w-0">
+                <Moon size={17} weight={selectedTheme === 'dark' ? 'fill' : 'bold'} className={selectedTheme === 'dark' ? 'text-indigo-400 shrink-0' : 'text-slate-400 shrink-0'} />
+                <span className="text-xs font-bold truncate">{isHinglish ? 'नाइट मोड' : 'Night Mode'}</span>
               </div>
-              {selectedTheme === 'dark' && <Check size={16} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
+              {selectedTheme === 'dark' && <Check size={16} weight="bold" className="shrink-0 ml-1 text-emerald-600 dark:text-emerald-400" />}
             </button>
           </div>
 

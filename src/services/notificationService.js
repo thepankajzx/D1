@@ -314,10 +314,10 @@ export function getIncompleteHabits(user) {
 /**
  * Resolves the canonical Android drawable resource for habit(s) to show as the largeIcon
  */
-export function getHabitDrawable(habits = []) {
+export function getHabitDrawable(habits = [], index = 0) {
   if (!habits || habits.length === 0) return 'ic_habit_default';
 
-  // If multiple habits, return multi badge for composite visual representation
+  // If multiple habits passed as composite (e.g. for largeIcon preview)
   if (habits.length > 1) {
     return 'ic_habit_multi';
   }
@@ -326,26 +326,50 @@ export function getHabitDrawable(habits = []) {
   const raw = ((h.iconId || h.icon || h.id || h.habitId || '') + '').toLowerCase().trim();
   const name = (h.name || '').toLowerCase().trim();
 
+  // 1. Precise semantic keyword matching
   if (raw.includes('water') || raw.includes('drop') || name.includes('water') || name.includes('hydrat')) return 'ic_habit_water';
+  if (raw.includes('alcohol') || raw.includes('wine') || raw.includes('beer') || raw.includes('drink') || raw.includes('sober') || name.includes('alcohol') || name.includes('wine') || name.includes('beer') || name.includes('sober')) return 'ic_habit_wine';
+  if (raw.includes('target') || raw.includes('goal') || raw.includes('aim') || name.includes('target') || name.includes('goal') || name.includes('aim')) return 'ic_habit_target';
+  if (raw.includes('flame') || raw.includes('fire') || raw.includes('burn') || raw.includes('streak') || name.includes('flame') || name.includes('fire') || name.includes('burn') || name.includes('streak')) return 'ic_habit_flame';
+  if (raw.includes('trophy') || raw.includes('award') || raw.includes('win') || raw.includes('crown') || name.includes('trophy') || name.includes('award') || name.includes('win') || name.includes('milestone')) return 'ic_habit_trophy';
   if (raw.includes('sleep_duration') || raw.includes('hourglass') || name.includes('sleep duration')) return 'ic_habit_sleep_duration';
-  if (raw.includes('sleep') || raw.includes('bedtime') || raw.includes('moon') || name.includes('sleep')) return 'ic_habit_sleep';
-  if (raw.includes('workout') || raw.includes('fitness') || raw.includes('barbell') || name.includes('workout') || name.includes('gym')) return 'ic_habit_workout';
-  if (raw.includes('reading') || raw.includes('menu_book') || raw.includes('book') || name.includes('read') || name.includes('book')) return 'ic_habit_reading';
-  if (raw.includes('meditation') || raw.includes('self_improvement') || name.includes('meditat') || name.includes('yoga')) return 'ic_habit_meditation';
-  if (raw.includes('deepwork') || raw.includes('psychology') || raw.includes('brain') || name.includes('deep') || name.includes('focus')) return 'ic_habit_deepwork';
-  if (raw.includes('wakeup') || raw.includes('alarm') || name.includes('wake') || name.includes('alarm')) return 'ic_habit_wakeup';
-  if (raw.includes('walking') || raw.includes('directions_walk') || raw.includes('footprints') || name.includes('walk')) return 'ic_habit_walking';
-  if (raw.includes('protein') || raw.includes('restaurant') || raw.includes('forkknife') || name.includes('protein')) return 'ic_habit_protein';
-  if (raw.includes('coldshower') || raw.includes('ac_unit') || raw.includes('snowflake') || name.includes('shower') || name.includes('cold')) return 'ic_habit_coldshower';
+  if (raw.includes('sleep') || raw.includes('bedtime') || raw.includes('moon') || raw.includes('rest') || name.includes('sleep') || name.includes('rest')) return 'ic_habit_sleep';
+  if (raw.includes('workout') || raw.includes('fitness') || raw.includes('barbell') || raw.includes('gym') || name.includes('workout') || name.includes('gym') || name.includes('exercise')) return 'ic_habit_workout';
+  if (raw.includes('reading') || raw.includes('menu_book') || raw.includes('book') || name.includes('read') || name.includes('book') || name.includes('study')) return 'ic_habit_reading';
+  if (raw.includes('meditation') || raw.includes('self_improvement') || raw.includes('yoga') || name.includes('meditat') || name.includes('yoga') || name.includes('mindful')) return 'ic_habit_meditation';
+  if (raw.includes('deepwork') || raw.includes('psychology') || raw.includes('brain') || raw.includes('focus') || name.includes('deep') || name.includes('focus') || name.includes('work')) return 'ic_habit_deepwork';
+  if (raw.includes('wakeup') || raw.includes('alarm') || raw.includes('early') || name.includes('wake') || name.includes('alarm') || name.includes('morning')) return 'ic_habit_wakeup';
+  if (raw.includes('walking') || raw.includes('directions_walk') || raw.includes('footprints') || raw.includes('step') || name.includes('walk') || name.includes('step')) return 'ic_habit_walking';
+  if (raw.includes('protein') || raw.includes('restaurant') || raw.includes('forkknife') || raw.includes('diet') || raw.includes('meal') || name.includes('protein') || name.includes('diet') || name.includes('food') || name.includes('meal')) return 'ic_habit_protein';
+  if (raw.includes('coldshower') || raw.includes('ac_unit') || raw.includes('snowflake') || raw.includes('shower') || name.includes('shower') || name.includes('cold')) return 'ic_habit_coldshower';
   if (raw.includes('journal') || raw.includes('edit_note') || raw.includes('notepencil') || raw.includes('pencil') || raw.includes('writing') || name.includes('journal') || name.includes('write') || name.includes('note')) return 'ic_habit_journal';
   if (raw.includes('energy') || raw.includes('bolt') || raw.includes('lightning') || name.includes('energy')) return 'ic_habit_energy';
   if (raw.includes('screentime') || raw.includes('smartphone') || raw.includes('devicemobile') || raw.includes('phone') || name.includes('screen') || name.includes('phone')) return 'ic_habit_screentime';
-  if (raw.includes('sunlight') || raw.includes('sun') || name.includes('sun')) return 'ic_habit_sunlight';
-  if (raw.includes('heart') || raw.includes('health') || name.includes('heart') || name.includes('health')) return 'ic_habit_heart';
-  if (raw.includes('coffee') || raw.includes('caffeine') || name.includes('coffee')) return 'ic_habit_coffee';
-  if (raw.includes('rocket') || raw.includes('custom') || (h.id && h.id.startsWith('custom_'))) return 'ic_habit_rocket';
+  if (raw.includes('sunlight') || raw.includes('sun') || name.includes('sun') || name.includes('outdoor')) return 'ic_habit_sunlight';
+  if (raw.includes('heart') || raw.includes('health') || raw.includes('cardio') || name.includes('heart') || name.includes('health')) return 'ic_habit_heart';
+  if (raw.includes('coffee') || raw.includes('caffeine') || raw.includes('tea') || name.includes('coffee') || name.includes('tea')) return 'ic_habit_coffee';
+  if (raw.includes('drink') || name.includes('drink')) return 'ic_habit_wine';
 
-  return 'ic_habit_default';
+  // 2. Deterministic diverse rotation for unknown / short custom habits (e.g. "Hi", "X3", "E3")
+  // Ensures every habit gets a unique, beautiful icon rather than identical stars
+  const DIVERSE_FALLBACKS = [
+    'ic_habit_rocket',
+    'ic_habit_target',
+    'ic_habit_flame',
+    'ic_habit_trophy',
+    'ic_habit_lightning',
+    'ic_habit_brain',
+    'ic_habit_heart',
+    'ic_habit_workout'
+  ];
+
+  const str = (h.id || h.name || 'habit') + '';
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) & 0xffffffff;
+  }
+  const fallbackIdx = Math.abs(hash + index) % DIVERSE_FALLBACKS.length;
+  return DIVERSE_FALLBACKS[fallbackIdx];
 }
 
 /**
@@ -484,10 +508,10 @@ export async function scheduleDailyReminder(settings, user) {
     triggerDate.setDate(triggerDate.getDate() + 1);
   }
 
-  const habitItems = sampleHabits.slice(0, 4).map(h => ({
+  const habitItems = sampleHabits.slice(0, 4).map((h, idx) => ({
     name: h.name || 'Habit',
     target: formatHabitTarget(h, 'long'),
-    drawable: getHabitDrawable([h])
+    drawable: getHabitDrawable([h], idx)
   }));
 
   // 1. Android Native Platform scheduling via custom RemoteViews or LocalNotifications
@@ -613,10 +637,10 @@ export async function sendTestNotification(bedtimeStr = '22:00', user = null) {
   const title = `${count} ${count === 1 ? 'Habit' : 'Habits'} Remaining`;
   const subtitle = `Complete your day before ${bedtimeDisplay}.`;
 
-  const habitItems = incomplete.slice(0, 4).map(h => ({
+  const habitItems = incomplete.slice(0, 4).map((h, idx) => ({
     name: h.name || 'Habit',
     target: formatHabitTarget(h, 'long'),
-    drawable: getHabitDrawable([h])
+    drawable: getHabitDrawable([h], idx)
   }));
 
   const content = buildNotificationContent(incomplete, bedtimeStr);
