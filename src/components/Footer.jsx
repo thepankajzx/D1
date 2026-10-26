@@ -199,7 +199,7 @@ export default function Footer({ hideCta = false }) {
             <span>•</span>
             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <a href="mailto:thelastpercent01@gmail.com?subject=Definite%20App%20Support" className="hover:text-primary transition-colors">Support</a>
+            <a href="mailto:support@thedefinite.one?subject=Definite%20App%20Support" className="hover:text-primary transition-colors">Support</a>
           </div>
         </div>
 

@@ -32,7 +32,7 @@ export default function Terms() {
           </div>
           <div>
             <h1 className="font-headline-md text-headline-md font-bold text-on-surface mb-1">Terms of Service</h1>
-            <p className="text-on-surface-variant font-body-md">Last updated: {new Date().toLocaleDateString()}</p>
+            <p className="text-on-surface-variant font-body-md">Last updated: 26/10/2026</p>
           </div>
         </div>
 
@@ -43,7 +43,7 @@ export default function Terms() {
               <Icon name="verified" className="text-primary" />
               Agreement to Terms
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               By accessing our Definite Habit Tracker web application, you agree to be bound by these Terms of Service and to comply with all applicable laws and regulations. If you disagree with any part of these terms, you may not access the service.
             </p>
           </section>
@@ -53,7 +53,7 @@ export default function Terms() {
               <Icon name="person" className="text-primary" />
               User Accounts
             </h2>
-            <ul className="list-disc list-inside space-y-2 text-on-surface-variant ml-2">
+            <ul className="list-disc list-inside space-y-2 text-on-surface-variant ml-2 leading-relaxed">
               <li>You must provide accurate and complete information when creating an account (e.g., via Google OAuth).</li>
               <li>You are responsible for safeguarding the password or credentials that you use to access the service.</li>
               <li>You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</li>
@@ -65,7 +65,7 @@ export default function Terms() {
               <Icon name="block" className="text-primary" />
               Acceptable Use
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               You agree not to use the application in any way that causes, or may cause, damage to the application or impairment of the availability or accessibility of the service. You must not use the application to copy, store, host, transmit, send, use, publish, or distribute any material which consists of (or is linked to) any spyware, computer virus, Trojan horse, or other malicious computer software.
             </p>
           </section>
@@ -75,7 +75,7 @@ export default function Terms() {
               <Gavel weight="bold" className="text-primary" />
               Termination
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
             </p>
           </section>
@@ -85,8 +85,18 @@ export default function Terms() {
               <Icon name="info" className="text-primary" />
               Changes
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="font-title-lg text-title-lg font-bold flex items-center gap-2">
+              <Icon name="contact_support" className="text-primary" />
+              Contact Us
+            </h2>
+            <p className="text-on-surface-variant leading-relaxed">
+              For any questions regarding these Terms, contact us at <a href="mailto:support@thedefinite.one" className="text-primary font-bold hover:underline">support@thedefinite.one</a>
             </p>
           </section>
         </div>

@@ -32,7 +32,7 @@ export default function Privacy() {
           </div>
           <div>
             <h1 className="font-headline-md text-headline-md font-bold text-on-surface mb-1">Privacy Policy</h1>
-            <p className="text-on-surface-variant font-body-md">Last updated: {new Date().toLocaleDateString()}</p>
+            <p className="text-on-surface-variant font-body-md">Last updated: 26/10/2026</p>
           </div>
         </div>
 
@@ -43,8 +43,8 @@ export default function Privacy() {
               <Icon name="info" className="text-primary" />
               Introduction
             </h2>
-            <p className="text-on-surface-variant">
-              Welcome to Definite Habit Tracker ("we", "our", or "us"). We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us.
+            <p className="text-on-surface-variant leading-relaxed">
+              Welcome to Definite Habit Tracker ("we", "our", or "us"). We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at <a href="mailto:support@thedefinite.one" className="text-primary font-semibold hover:underline">support@thedefinite.one</a>.
             </p>
           </section>
 
@@ -53,7 +53,7 @@ export default function Privacy() {
               <Icon name="database" className="text-primary" />
               Information We Collect
             </h2>
-            <ul className="list-disc list-inside space-y-2 text-on-surface-variant ml-2">
+            <ul className="list-disc list-inside space-y-2 text-on-surface-variant ml-2 leading-relaxed">
               <li><strong>Personal Information provided by you:</strong> We collect email addresses, names, and authentication data (via Google OAuth) when you register.</li>
               <li><strong>Habit and Usage Data:</strong> We store your tracked habits, daily logs, streaks, and application usage data to provide our core analytics features.</li>
               <li><strong>Device Data:</strong> We may collect device information necessary for cross-platform synchronization (via Capacitor/Firebase).</li>
@@ -65,7 +65,7 @@ export default function Privacy() {
               <LockKey weight="bold" className="text-primary" />
               How We Keep Your Information Safe
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               We have implemented appropriate technical and organizational security measures (including strict Google Firestore Security Rules) designed to protect the security of any personal information we process. Your data is scoped strictly to your authenticated User ID, and historical data integrity is maintained through read-only access controls where appropriate.
             </p>
           </section>
@@ -75,7 +75,7 @@ export default function Privacy() {
               <Icon name="share" className="text-primary" />
               Sharing Your Information
             </h2>
-            <p className="text-on-surface-variant">
+            <p className="text-on-surface-variant leading-relaxed">
               We only share information with your consent, to comply with laws, to provide you with services, to protect your rights, or to fulfill business obligations. We do not sell your personal data to third parties.
             </p>
           </section>
@@ -85,8 +85,8 @@ export default function Privacy() {
               <Icon name="contact_support" className="text-primary" />
               Contact Us
             </h2>
-            <p className="text-on-surface-variant">
-              If you have questions or comments about this notice, you may email us at our support address.
+            <p className="text-on-surface-variant leading-relaxed">
+              If you have questions or comments about this notice, you may email us at our support address: <a href="mailto:support@thedefinite.one" className="text-primary font-bold hover:underline">support@thedefinite.one</a>
             </p>
           </section>
         </div>
