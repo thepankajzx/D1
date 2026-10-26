@@ -89,10 +89,11 @@ export default function Dashboard() {
       if (showKpiHelp) { setShowKpiHelp(false); e.preventDefault(); return; }
       if (showPartialSaveModal) { setShowPartialSaveModal(false); e.preventDefault(); return; }
       if (showKpiLockModal) { setShowKpiLockModal(false); e.preventDefault(); return; }
+      if (showDayOneSetup) { setShowDayOneSetup(false); e.preventDefault(); return; }
     };
     window.addEventListener('d1_hardware_back', handleHardwareBack);
     return () => window.removeEventListener('d1_hardware_back', handleHardwareBack);
-  }, [showPaywall, showCoreYCheckIn, showKpiHelp, showPartialSaveModal, showKpiLockModal]);
+  }, [showPaywall, showCoreYCheckIn, showKpiHelp, showPartialSaveModal, showKpiLockModal, showDayOneSetup]);
 
 
   // Fetch entries when selectedDate changes

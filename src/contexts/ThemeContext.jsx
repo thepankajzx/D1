@@ -4,12 +4,12 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return true;
+    if (typeof window === 'undefined') return false;
     const stored = localStorage.getItem('theme');
     if (stored === 'dark') return true;
     if (stored === 'light') return false;
-    // D1 is dark-first habit OS by default
-    return true;
+    // D1 defaults to Day (Light) mode
+    return false;
   });
 
   useEffect(() => {
@@ -34,17 +34,8 @@ export const ThemeProvider = ({ children }) => {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    const mediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
-    const handleMediaChange = (e) => {
-      if (!localStorage.getItem('theme')) {
-        setIsDark(e.matches);
-      }
-    };
-    mediaQuery?.addEventListener?.('change', handleMediaChange);
-
     return () => {
       observer.disconnect();
-      mediaQuery?.removeEventListener?.('change', handleMediaChange);
     };
   }, []);
 

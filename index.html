@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- PWA Primary Manifest & Meta -->
     <link rel="manifest" href="/manifest.json?v=14" />
-    <meta name="theme-color" content="#0F141C" />
+    <meta name="theme-color" content="#f7faf8" id="meta-theme-color" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Definite" />
 
@@ -45,9 +45,15 @@
       html, body {
         margin: 0;
         padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html.dark, html.dark body {
         background-color: #0f141c !important;
         color: #f8fafc !important;
-        -webkit-tap-highlight-color: transparent;
+      }
+      html:not(.dark), html:not(.dark) body {
+        background-color: #f7faf8 !important;
+        color: #0f172a !important;
       }
     </style>
     
@@ -55,15 +61,18 @@
       (function() {
         try {
           var stored = localStorage.getItem('theme');
-          var isDark = stored ? stored === 'dark' : true;
-          if (!isDark) {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.style.backgroundColor = '#f7faf8';
-            document.documentElement.style.colorScheme = 'light';
-          } else {
+          var isDark = stored === 'dark'; // Day mode by default!
+          var meta = document.getElementById('meta-theme-color');
+          if (isDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.backgroundColor = '#0f141c';
             document.documentElement.style.colorScheme = 'dark';
+            if (meta) meta.setAttribute('content', '#0f141c');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#f7faf8';
+            document.documentElement.style.colorScheme = 'light';
+            if (meta) meta.setAttribute('content', '#f7faf8');
           }
         } catch (e) {}
       })();
