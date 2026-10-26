@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { InstagramLogo, X, ArrowUpRight, PlayCircle } from '@phosphor-icons/react';
+import openExternalUrl from '../utils/openExternalUrl';
 
 export default function DayTwoDiscoveryBanner() {
   const { isHinglish } = useLanguage();
@@ -15,9 +16,9 @@ export default function DayTwoDiscoveryBanner() {
     setIsDismissed(true);
   };
 
-  const handleOpenInstagram = () => {
-    // Open official Instagram page in browser / Instagram app
-    window.open('https://www.instagram.com/definite.d1/', '_blank', 'noopener,noreferrer');
+  const handleOpenInstagram = (e) => {
+    // Open official Instagram page in native Instagram app / browser
+    openExternalUrl('https://www.instagram.com/definite.d1/', e);
   };
 
   return (

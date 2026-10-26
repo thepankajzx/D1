@@ -1,6 +1,7 @@
 import DataMigrationModal from '../components/DataMigrationModal';
 import DayTwoDiscoveryBanner from '../components/DayTwoDiscoveryBanner';
 import WhatsAppIcon from '../components/WhatsAppIcon';
+import openExternalUrl from '../utils/openExternalUrl';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -1287,7 +1288,10 @@ export default function Profile() {
               </span>
 
               {/* WhatsApp Channel Card */}
-              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div 
+                onClick={(e) => openExternalUrl('https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p', e)}
+                className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/15 transition-all active:scale-[0.99]"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-xs">
                     <WhatsAppIcon size={18} className="text-white" />
@@ -1303,6 +1307,7 @@ export default function Profile() {
                   href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => openExternalUrl('https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p', e)}
                   className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-opacity cursor-pointer shrink-0 flex items-center gap-1 active:scale-95"
                 >
                   <span>Join</span>
@@ -1311,7 +1316,10 @@ export default function Profile() {
               </div>
 
               {/* Instagram Tutorials & Guides Card */}
-              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20">
+              <div 
+                onClick={(e) => openExternalUrl('https://www.instagram.com/definite.d1/', e)}
+                className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20 cursor-pointer hover:border-purple-500/40 transition-all active:scale-[0.99]"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-xs">
                     <InstagramLogo size={18} weight="bold" />
@@ -1327,6 +1335,7 @@ export default function Profile() {
                   href="https://www.instagram.com/definite.d1/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => openExternalUrl('https://www.instagram.com/definite.d1/', e)}
                   className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-bold text-xs shadow-xs transition-opacity cursor-pointer shrink-0 flex items-center gap-1 active:scale-95"
                 >
                   <span>Follow</span>
@@ -1386,7 +1395,10 @@ export default function Profile() {
           <div className="p-3.5 sm:p-4 pt-0 border-t border-slate-100 dark:border-slate-800/80 space-y-3 animate-in fade-in duration-150">
             
             {/* WhatsApp Broadcast Channel Card */}
-            <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div 
+              onClick={(e) => openExternalUrl('https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p', e)}
+              className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 cursor-pointer hover:bg-emerald-500/15 transition-all active:scale-[0.99]"
+            >
               <div className="flex items-start gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-600/20 mt-0.5 sm:mt-0">
                   <WhatsAppIcon size={22} className="text-white" />
@@ -1411,6 +1423,7 @@ export default function Profile() {
                 href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => openExternalUrl('https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p', e)}
                 className="w-full sm:w-auto h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-wide shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <span>{isHinglish ? 'चैनल जॉइन करें' : 'Join WhatsApp'}</span>
@@ -1419,7 +1432,10 @@ export default function Profile() {
             </div>
 
             {/* Instagram Tutorials & Video Guides Card */}
-            <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div 
+              onClick={(e) => openExternalUrl('https://www.instagram.com/definite.d1/', e)}
+              className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 cursor-pointer hover:border-purple-500/40 transition-all active:scale-[0.99]"
+            >
               <div className="flex items-start gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-rose-500/20 mt-0.5 sm:mt-0">
                   <InstagramLogo size={22} weight="bold" />
@@ -1444,6 +1460,7 @@ export default function Profile() {
                 href="https://www.instagram.com/definite.d1/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => openExternalUrl('https://www.instagram.com/definite.d1/', e)}
                 className="w-full sm:w-auto h-9 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-bold text-xs tracking-wide shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <span>{isHinglish ? 'फॉलो करें' : 'Follow @definite.d1'}</span>

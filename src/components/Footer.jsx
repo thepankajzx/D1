@@ -5,6 +5,7 @@ import {
   CheckCircle
 } from '@phosphor-icons/react';
 import WhatsAppIcon from './WhatsAppIcon';
+import openExternalUrl from '../utils/openExternalUrl';
 import { useTheme } from '../contexts/ThemeContext';
 import { useData } from '../contexts/DataContext';
 
@@ -144,7 +145,8 @@ export default function Footer({ hideCta = false }) {
                 href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-emerald-500/50 text-on-surface-variant hover:text-emerald-500 transition-all cursor-pointer shadow-2xs text-xs font-bold"
+                onClick={(e) => openExternalUrl('https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p', e)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-emerald-500/50 text-on-surface-variant hover:text-emerald-500 transition-all cursor-pointer shadow-2xs text-xs font-bold active:scale-95"
                 title="D1 WhatsApp Channel"
               >
                 <WhatsAppIcon size={14} className="text-[#25D366]" />
@@ -154,7 +156,8 @@ export default function Footer({ hideCta = false }) {
                 href="https://www.instagram.com/definite.d1/"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-pink-500/50 text-on-surface-variant hover:text-pink-500 transition-all cursor-pointer shadow-2xs text-xs font-bold"
+                onClick={(e) => openExternalUrl('https://www.instagram.com/definite.d1/', e)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-pink-500/50 text-on-surface-variant hover:text-pink-500 transition-all cursor-pointer shadow-2xs text-xs font-bold active:scale-95"
                 title="Instagram @definite.d1"
               >
                 <InstagramLogo size={14} weight="bold" className="text-pink-500" />
