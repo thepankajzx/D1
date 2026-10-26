@@ -1,4 +1,6 @@
 import DataMigrationModal from '../components/DataMigrationModal';
+import DayTwoDiscoveryBanner from '../components/DayTwoDiscoveryBanner';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Icon from '../components/Icon';
 import HabitIcon from '../components/HabitIcon';
@@ -18,7 +20,7 @@ import { HABITS_SEED_DATA } from '../lib/premadeHabits';
 import { formatDuration, normalizeDurationToMinutes, formatHabitTarget } from '../lib/formatDuration';
 import { calculateStreakData, getNextMilestone, MILESTONE_TARGETS } from '../lib/streakEngine';
 import { calculateTowerProgress, getStreakTrackingPreference } from '../lib/progressTowerEngine';
-import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun, Check, ArrowLeft, Crown, Prohibit, BellRinging, Trash, Lightning } from '@phosphor-icons/react';
+import { Flame, Trophy, Lock, CheckCircle, Sparkle, DownloadSimple, DeviceMobile, Buildings, TreeEvergreen, Clock, FloppyDisk, PencilSimple, Target, SlidersHorizontal, TreeStructure, Compass, Flask, ArrowRight, X, CaretRight, WarningCircle, Robot, Moon, Sun, Check, ArrowLeft, Crown, Prohibit, BellRinging, Trash, Lightning, InstagramLogo, ArrowUpRight } from '@phosphor-icons/react';
 import { 
   getReminderSettings, 
   saveReminderSettings, 
@@ -305,6 +307,7 @@ export default function Profile() {
   // Accordion Dropdown Open States (All closed by default until tapped)
   const [openSections, setOpenSections] = useState({
     myProfile: false,
+    communityGuides: false,
     myHabits: false,
     b2bSection: false,
     headerWidgets: false,
@@ -763,6 +766,9 @@ export default function Profile() {
           </p>
         </div>
       </div>
+
+      {/* ── Instagram Tutorials & App Guides Discovery Banner (Dismissible) ───── */}
+      <DayTwoDiscoveryBanner />
 
 
 
@@ -1274,6 +1280,61 @@ export default function Profile() {
               )}
             </div>
 
+            {/* Official Community & Video Guides */}
+            <div className="space-y-2 pt-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                {isHinglish ? 'ऑफिशियल गाइड्स व कम्युनिटी' : 'Official Guides & Community'}
+              </span>
+
+              {/* WhatsApp Channel Card */}
+              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-xs">
+                    <WhatsAppIcon size={18} className="text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white truncate">WhatsApp Channel</h4>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                      {isHinglish ? 'डेली हैबिट इनसाइट्स & सिस्टम अपडेट्स' : 'Daily habit coaching & updates'}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-opacity cursor-pointer shrink-0 flex items-center gap-1 active:scale-95"
+                >
+                  <span>Join</span>
+                  <ArrowUpRight size={12} weight="bold" />
+                </a>
+              </div>
+
+              {/* Instagram Tutorials & Guides Card */}
+              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-xs">
+                    <InstagramLogo size={18} weight="bold" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white truncate">Instagram (@definite.d1)</h4>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                      {isHinglish ? 'वीडियो गाइड्स और AI कोच ट्यूटोरियल्स' : 'Watch video walkthroughs & reels'}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="https://www.instagram.com/definite.d1/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-bold text-xs shadow-xs transition-opacity cursor-pointer shrink-0 flex items-center gap-1 active:scale-95"
+                >
+                  <span>Follow</span>
+                  <ArrowUpRight size={12} weight="bold" />
+                </a>
+              </div>
+            </div>
+
             {/* Logout & Developer Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
               <button 
@@ -1291,7 +1352,110 @@ export default function Profile() {
         )}
       </section>
 
-      {/* ── 2. MY HABITS (SECOND ACCORDION COLUMN) ────────────────────────────── */}
+      {/* ── 2. D1 PROTOCOL GUIDES & COMMUNITY (DROPDOWN ACCORDION) ───────────── */}
+      <section className="bg-white dark:bg-[#131722] border border-emerald-500/30 dark:border-emerald-500/20 rounded-2xl overflow-hidden shadow-2xs transition-all">
+        <button 
+          type="button"
+          onClick={() => toggleSection('communityGuides')}
+          className="w-full p-3 sm:p-3.5 flex items-center justify-between cursor-pointer select-none bg-white dark:bg-[#131722] hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black shrink-0 shadow-2xs">
+              <Compass size={18} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs sm:text-[13px] font-black text-slate-900 dark:text-white truncate">
+                  {isHinglish ? 'गाइड्स, ट्यूटोरियल्स एवं कम्युनिटी' : 'Guides, Tutorials & Community'}
+                </h2>
+                <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1">
+                  <span>WhatsApp + IG</span>
+                </span>
+              </div>
+              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                {isHinglish ? 'ऑफिशियल वीडियो गाइड्स, AI कोच व डेली हैबिट टिप्स' : 'Official video walkthroughs, habit tips & community channels'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Icon name={openSections.communityGuides ? "expand_less" : "expand_more"} className="text-slate-400 text-xl" />
+          </div>
+        </button>
+
+        {openSections.communityGuides && (
+          <div className="p-3.5 sm:p-4 pt-0 border-t border-slate-100 dark:border-slate-800/80 space-y-3 animate-in fade-in duration-150">
+            
+            {/* WhatsApp Broadcast Channel Card */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-600/20 mt-0.5 sm:mt-0">
+                  <WhatsAppIcon size={22} className="text-white" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                      Official D1 WhatsApp Channel
+                    </h3>
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
+                      LIVE BROADCAST
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+                    {isHinglish 
+                      ? 'डेली हैबिट इनसाइट्स, नई रिलीज़ के अपडेट्स और कंसिस्टेंसी गाइड्स सबसे पहले सीधे व्हाट्सऐप पर पाएं।' 
+                      : 'Get daily habit consistency insights, release notes, and protocol updates directly on WhatsApp.'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-wide shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <span>{isHinglish ? 'चैनल जॉइन करें' : 'Join WhatsApp'}</span>
+                <ArrowUpRight size={14} weight="bold" />
+              </a>
+            </div>
+
+            {/* Instagram Tutorials & Video Guides Card */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-rose-500/20 mt-0.5 sm:mt-0">
+                  <InstagramLogo size={22} weight="bold" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                      Official Instagram (@definite.d1)
+                    </h3>
+                    <span className="text-[9px] font-black text-purple-600 dark:text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">
+                      VIDEO GUIDES
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+                    {isHinglish 
+                      ? 'AI Coach कैसे इस्तेमाल करें, 0-हैबिट रीसेट, और 30-सेकंड के फीचर्स वॉकथ्रू वीडियो रील्स देखें।' 
+                      : 'Watch 30-second feature walkthroughs, AI Coach demos, and habit science visual reels.'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://www.instagram.com/definite.d1/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto h-9 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-bold text-xs tracking-wide shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <span>{isHinglish ? 'फॉलो करें' : 'Follow @definite.d1'}</span>
+                <ArrowUpRight size={14} weight="bold" />
+              </a>
+            </div>
+
+          </div>
+        )}
+      </section>
+
+      {/* ── 3. MY HABITS (ACCORDION COLUMN) ────────────────────────────── */}
       <section className="bg-white dark:bg-[#131722] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
         <button 
           type="button"

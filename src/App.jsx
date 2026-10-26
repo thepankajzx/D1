@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider, useData } from './contexts/DataContext';
@@ -66,7 +66,6 @@ const OnboardingTargets = lazyRetry(() => import('./pages/OnboardingTargets'));
 const Subscription = lazyRetry(() => import('./pages/Subscription'));
 const Privacy = lazyRetry(() => import('./pages/Privacy'));
 const Terms = lazyRetry(() => import('./pages/Terms'));
-const D1OnboardingCarousel = lazyRetry(() => import('./components/D1OnboardingCarousel'));
 
 // B2B Professional Collaboration Layer
 const ProDashboard = lazyRetry(() => import('./pro/pages/ProDashboard'));
@@ -479,7 +478,9 @@ function BotLayer() {
   const aiCoachEnabled = dataCtx.aiCoachEnabled;
   const userRole = authCtx.userRole;
 
-  const isEnabled = isGuest ? (aiCoachEnabled !== false) : (aiCoachEnabled === true && localStorage.getItem('preference_ai_coach_enabled') !== 'false');
+  const isEnabled = isGuest 
+    ? (aiCoachEnabled !== false) 
+    : (aiCoachEnabled !== false && localStorage.getItem('preference_ai_coach_enabled') !== 'false');
   if (!isEnabled) return null;
 
   // Strict Check for Clinical Copilot (Only for Doctors/Clinic Admins on clinical portal routes)
@@ -567,11 +568,11 @@ function App() {
                     <Route path="/onboarding/select" element={<OnboardingSelect />} />
                   </Route>
 
-                  <Route path="/onboarding/welcome" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
-                  <Route path="/intro" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
-                  <Route path="/carousel" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
-                  <Route path="/landing" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
-                  <Route path="/welcome" element={<D1OnboardingCarousel onComplete={() => window.location.hash = '#/'} onAddHabit={() => window.location.hash = '#/onboarding/select'} onChooseBundle={() => window.location.hash = '#/onboarding/select'} />} />
+                  <Route path="/onboarding/welcome" element={<Navigate to="/onboarding/select" replace />} />
+                  <Route path="/intro" element={<Navigate to="/onboarding/select" replace />} />
+                  <Route path="/carousel" element={<Navigate to="/onboarding/select" replace />} />
+                  <Route path="/landing" element={<Navigate to="/onboarding/select" replace />} />
+                  <Route path="/welcome" element={<Navigate to="/onboarding/select" replace />} />
                   <Route path="/onboarding/targets" element={<OnboardingTargets />} />
                   
                   {/* B2B Professional Collaboration Routes */}

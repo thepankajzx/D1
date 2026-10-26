@@ -101,13 +101,13 @@ export function DataProvider({ children }) {
     }
   };
 
-  // AI Habit Coach Preference (Default: false / off until toggled in Upcoming Beta Lab)
+  // AI Habit Coach Preference (Default: true / ON)
   const [aiCoachEnabled, setAiCoachEnabledState] = useState(() => {
     try {
       const localVal = localStorage.getItem('preference_ai_coach_enabled');
       if (localVal !== null) return localVal === 'true';
     } catch (e) {}
-    return false;
+    return true;
   });
 
   const setAiCoachEnabled = async (enabled) => {

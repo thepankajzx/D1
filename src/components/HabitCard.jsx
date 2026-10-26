@@ -187,7 +187,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
       if (newVal > max) newVal = max;
       valRef.current = newVal / multiplier;
       setVal(valRef.current);
-      if (navigator.vibrate) navigator.vibrate(20);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(18); } catch (e) {}
+      }
     };
 
     performStep();
@@ -359,7 +361,9 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                     value={val}
                     onChange={(e) => {
                        setVal(Number(e.target.value));
-                       if (navigator.vibrate) navigator.vibrate(50);
+                       if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                         try { navigator.vibrate(18); } catch (err) {}
+                       }
                     }}
                     onPointerUp={(e) => handleChange(Number(e.target.value))}
                     onTouchEnd={(e) => handleChange(Number(e.target.value))}
@@ -492,14 +496,14 @@ export default function HabitCard({ habit, entry, onUpdate, allSummaries, isSave
                         if (navigator.vibrate) {
                             const prevPct = (prevValue / maxSlider) * 100;
                             const newPct = (newValue / maxSlider) * 100;
-                            if (Math.floor(newPct / 5) !== Math.floor(prevPct / 5)) {
-                                navigator.vibrate(50);
+                            if (newValue !== prevValue) {
+                                navigator.vibrate(15);
                             }
                             if (
                               (prevValue < dTarget100 && newValue >= dTarget100) ||
                               (prevValue > dTarget100 && newValue <= dTarget100)
                             ) {
-                                navigator.vibrate(50);
+                                navigator.vibrate(15);
                             }
                         }
                     }}

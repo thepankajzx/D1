@@ -1,5 +1,5 @@
 import Icon from '../components/Icon';
-import { Target, Flame, Lightning, SlidersHorizontal, Check, CheckCircle, FloppyDisk, ChartLineUp, CaretRight, X } from '@phosphor-icons/react';
+import { Target, Flame, Lightning, SlidersHorizontal, Check, CheckCircle, FloppyDisk, ChartLineUp, CaretRight, X, ArrowRight, Sparkle } from '@phosphor-icons/react';
 import ProModal from '../components/ProModal';
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
@@ -14,7 +14,7 @@ import StreakWidget from '../components/StreakWidget';
 import TodayTopKpis from '../components/TodayTopKpis';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useGuest } from '../contexts/GuestContext';
-const D1OnboardingCarousel = lazy(() => import('../components/D1OnboardingCarousel'));
+import DayOneQuickSetupModal from '../components/DayOneQuickSetupModal';
 import DailyCheckIn from '../corex/ui/DailyCheckIn';
 import { getCoreXConfigs, saveCoreXLog, getCoreXLogs } from '../corex/data/schema';
 
@@ -77,6 +77,9 @@ export default function Dashboard() {
   const [showPartialSaveModal, setShowPartialSaveModal] = useState(false);
   const [showKpiLockModal, setShowKpiLockModal] = useState(false);
   const [missingHabitsForSave, setMissingHabitsForSave] = useState([]);
+  const [showDayOneSetup, setShowDayOneSetup] = useState(() => {
+    return localStorage.getItem('d1_day1_setup_completed') !== 'true';
+  });
 
   // Hardware Back: close open modals before anything else
   useEffect(() => {
@@ -441,16 +444,29 @@ export default function Dashboard() {
       );
   }
 
-  // Handle Empty State: When user has 0 habits, show D1 Value Reveal Carousel directly!
+  // Handle Empty State: When user has 0 habits, direct them to build their first habit!
   if (habits.length === 0) {
     return (
-      <Suspense fallback={<div className="min-h-screen bg-[#0F141C]" />}>
-        <D1OnboardingCarousel
-          onComplete={() => navigate('/onboarding/select')}
-          onChooseBundle={() => navigate('/onboarding/select')}
-          onAddHabit={() => navigate('/onboarding/select')}
-        />
-      </Suspense>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4 shadow-sm">
+          <Sparkle size={32} weight="fill" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">
+          {isHinglish ? 'अपनी पहली हैबिट बनाएँ' : 'Build Your First Habit'}
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">
+          {isHinglish 
+            ? 'अपनी दिनचर्या को ट्रैक करना शुरू करें और अपनी कंसिस्टेंसी का रियल डेटा देखें।' 
+            : 'Start tracking your daily routine and uncover real behavioral intelligence.'}
+        </p>
+        <button
+          onClick={() => navigate('/onboarding/select')}
+          className="h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/25 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <span>{isHinglish ? 'हैबिट चुनें या बनाएँ' : 'Build Your First Habit'}</span>
+          <ArrowRight size={18} weight="bold" />
+        </button>
+      </div>
     );
   }
 
@@ -821,6 +837,12 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Day 1 Essential First-Run Quick Setup Modal */}
+      <DayOneQuickSetupModal 
+        isOpen={showDayOneSetup && habits && habits.length > 0} 
+        onClose={() => setShowDayOneSetup(false)} 
+      />
     </div>
   );
 }

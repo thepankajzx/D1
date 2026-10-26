@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  XLogo,
-  DiscordLogo,
-  TelegramLogo,
   InstagramLogo,
   CheckCircle
 } from '@phosphor-icons/react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useTheme } from '../contexts/ThemeContext';
 import { useData } from '../contexts/DataContext';
 
@@ -140,43 +138,27 @@ export default function Footer({ hideCta = false }) {
               Join Us
             </h3>
 
-            {/* Social Icons Row */}
-            <div className="flex items-center gap-2">
+            {/* Social Icons Row - WhatsApp & Instagram Only */}
+            <div className="flex items-center gap-2 flex-wrap">
               <a
-                href="https://twitter.com"
+                href="https://whatsapp.com/channel/0029Vb9OPYH9xVJmbO4S2E1p"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-                title="Twitter / X"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-emerald-500/50 text-on-surface-variant hover:text-emerald-500 transition-all cursor-pointer shadow-2xs text-xs font-bold"
+                title="D1 WhatsApp Channel"
               >
-                <XLogo size={14} weight="bold" />
-              </a>
-              <a
-                href="https://discord.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-                title="Discord"
-              >
-                <DiscordLogo size={14} weight="bold" />
-              </a>
-              <a
-                href="https://telegram.org"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-                title="Telegram"
-              >
-                <TelegramLogo size={14} weight="bold" />
+                <WhatsAppIcon size={14} className="text-[#25D366]" />
+                <span>WhatsApp</span>
               </a>
               <a
                 href="https://www.instagram.com/definite.d1/"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-                title="Instagram"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant hover:border-pink-500/50 text-on-surface-variant hover:text-pink-500 transition-all cursor-pointer shadow-2xs text-xs font-bold"
+                title="Instagram @definite.d1"
               >
-                <InstagramLogo size={14} weight="bold" />
+                <InstagramLogo size={14} weight="bold" className="text-pink-500" />
+                <span>@definite.d1</span>
               </a>
             </div>
 
