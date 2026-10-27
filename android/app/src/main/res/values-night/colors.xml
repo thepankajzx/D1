@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#06251b</color>
+    <color name="colorPrimaryDark">#06251b</color>
+    <color name="colorAccent">#087653</color>
+    <color name="cream_bg">#0F141C</color>
+    <color name="app_bg_dark">#0F141C</color>
+
+    <!-- Notification Theme Colors (Night / Dark Mode) -->
+    <color name="notif_title_color">#FFFFFF</color>
+    <color name="notif_subtitle_color">#94A3B8</color>
+    <color name="notif_card_bg_color">#1E293B</color>
+    <color name="notif_card_stroke_color">#334155</color>
+    <color name="notif_card_title_color">#F1F5F9</color>
+    <color name="notif_card_target_color">#94A3B8</color>
+</resources>

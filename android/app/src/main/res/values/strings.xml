@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">D1</string>
+    <string name="title_activity_main">D1</string>
+    <string name="package_name">com.definite.habittracker</string>
+    <string name="custom_url_scheme">com.definite.habittracker</string>
+    <string name="default_web_client_id">223282254697-qpr69hb79l83eudd3i1e83u5nh373ojq.apps.googleusercontent.com</string>
+</resources>
