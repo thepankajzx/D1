@@ -19,7 +19,7 @@ export default function OnboardingSelect() {
   
   const { currentUser } = useAuth();
   const { habits: existingHabits = [], userDoc } = useData();
-  const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+  const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin === true;
   const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
   const navigate = useNavigate();
 

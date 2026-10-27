@@ -32,7 +32,7 @@ export default function HabitTargetEditModal({
   onSaveComplete
 }) {
   const { currentUser } = useAuth();
-  const { habits, setHabits, refreshData } = useData();
+  const { habits, setHabits, refreshData, userDoc } = useData();
 
   const [saving, setSaving] = useState(false);
   const [target100, setTarget100] = useState(10);
@@ -151,7 +151,7 @@ export default function HabitTargetEditModal({
     }
   };
 
-  const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com', 'test2025@gmail.com'].includes(currentUser?.email?.toLowerCase() || '');
+  const isSuperAdmin = userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin === true;
 
   return (
     <div 

@@ -124,14 +124,8 @@ export function DataProvider({ children }) {
     }
   };
 
-  // Early Unlock All Insights Preference (Default: false / locked)
-  const [earlyUnlockAll, setEarlyUnlockAllState] = useState(() => {
-    try {
-      const localVal = localStorage.getItem('preference_early_unlock_all');
-      if (localVal !== null) return localVal === 'true';
-    } catch (e) {}
-    return false;
-  });
+  // Early Unlock All Insights Preference (Default: false / locked, only Firestore upgrades)
+  const [earlyUnlockAll, setEarlyUnlockAllState] = useState(false);
 
   const setEarlyUnlockAll = async (enabled) => {
     setEarlyUnlockAllState(enabled);
@@ -235,7 +229,7 @@ function GuestDataProvider({ children, timeFormat, setTimeFormat }) {
   const [coreXEnabled, setCoreXEnabled] = useState(true);
   const [todayCompassEnabled, setTodayCompassEnabled] = useState(true);
   const [aiCoachEnabled, setAiCoachEnabled] = useState(true);
-  const [earlyUnlockAll, setEarlyUnlockAll] = useState(true);
+  const [earlyUnlockAll, setEarlyUnlockAll] = useState(false);
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(true);
 
   return (

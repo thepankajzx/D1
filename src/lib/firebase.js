@@ -30,9 +30,9 @@ let appCheck = null;
 if (typeof window !== "undefined") {
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   try {
-    if (import.meta.env.DEV) {
-      // Enable debug token in development to avoid blocking local testing
-      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    if (import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DEBUG_TOKEN) {
+      // Enable specific debug token in development if explicitly configured
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_APPCHECK_DEBUG_TOKEN;
     }
     if (recaptchaSiteKey) {
       appCheck = initializeAppCheck(app, {

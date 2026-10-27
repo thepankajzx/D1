@@ -337,7 +337,7 @@ export default function AdvancedHabitSelector() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { habits: existingHabits = [], refreshData, userDoc } = useData();
-  const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+  const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin === true;
   const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
 
   const [loading, setLoading] = useState(false);
@@ -480,7 +480,7 @@ export default function AdvancedHabitSelector() {
       setViewMode('summary');
       window.scrollTo(0, 0);
     } else if (viewMode === 'summary') {
-      const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+      const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin === true;
       if (isSuperAdmin) {
         executeSave();
       } else {
@@ -1255,7 +1255,7 @@ export default function AdvancedHabitSelector() {
                     )}
 
                     {activeCategories.includes('Custom') && (() => {
-                      const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+                      const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin === true;
                       const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
                       const existingCustomsCount = existingHabits.filter(h => h.id.startsWith('custom_') || h.category === 'Custom').length;
                       const totalCustoms = customHabits.length + existingCustomsCount;

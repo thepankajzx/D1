@@ -125,9 +125,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // System Errors (Anonymous/Client error telemetry logging: append-only)
+    // System Errors (Client error telemetry logging: strictly schema-validated, no arbitrary data)
     match /system_errors/{errorId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasOnly(['errorMessage','stackTrace','componentStack','url','userAgent','userId','timestamp','resolved']) &&
+                       request.resource.data.errorMessage is string &&
+                       request.resource.data.resolved == false &&
+                       (request.auth == null || request.resource.data.userId == request.auth.uid);
       allow read, update, delete: if false;
     }
 
@@ -155,9 +158,9 @@ service cloud.firestore {
       }
     }
 
+    // Dietitian Profiles (Restricted to owner only)
     match /dietitians/{dietitianId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(dietitianId);
+      allow read, write: if isOwner(dietitianId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
