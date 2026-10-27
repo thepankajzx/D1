@@ -791,7 +791,7 @@ export default function HabitDiagnostics() {
             <Lightbulb size={16} weight="fill" className="text-emerald-500 shrink-0 mt-0.5" />
             <div>
               <span className="block font-black text-[11px] uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                {isHinglish ? 'सुझाया गया समाधान' : 'Prescribed Actionable Fix'}
+                {isHinglish ? 'सुझाया गया समाधान' : 'Recommended Actionable Fix'}
               </span>
               <span className="text-slate-700 dark:text-slate-300 text-[11px] leading-snug mt-0.5 block font-normal">
                 {rootCauseDiagnosis.fix}

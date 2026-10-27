@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode web",
+    "build:web": "vite build --mode web",
+    "build:android": "vite build --mode android",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node --test test/*.test.js",

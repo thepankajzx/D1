@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider, useData } from './contexts/DataContext';
 // Defer bot components to avoid blocking the initial Dashboard critical path
 const HabitAiCoachBot = lazyRetry(() => import('./components/HabitAiCoachBot'));
-const ClinicalAiCopilot = lazyRetry(() => import('./components/ClinicalAiCopilot'));
+import { getB2bRoutes, renderActiveBot } from './routes/platformB2bRoutes';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -67,14 +67,7 @@ const Subscription = lazyRetry(() => import('./pages/Subscription'));
 const Privacy = lazyRetry(() => import('./pages/Privacy'));
 const Terms = lazyRetry(() => import('./pages/Terms'));
 
-// B2B Professional Collaboration Layer
-const ProDashboard = lazyRetry(() => import('./pro/pages/ProDashboard'));
-const JoinInvitePage = lazyRetry(() => import('./pro/pages/JoinInvitePage'));
-const AdminDashboard = lazyRetry(() => import('./pro/pages/AdminDashboard'));
-const OrgAdminPortal = lazyRetry(() => import('./pro/pages/OrgAdminPortal'));
-const OrgSetupPage = lazyRetry(() => import('./pro/pages/OrgSetupPage'));
-const JoinOrgDoctorPage = lazyRetry(() => import('./pro/pages/JoinOrgDoctorPage'));
-const SuperAdminPortal = lazyRetry(() => import('./pro/pages/SuperAdminPortal'));
+
 
 function Layout({ children }) {
   const { currentUser, logout } = useAuth();
@@ -476,29 +469,15 @@ function BotLayer() {
 
   const isGuest = guestCtx.isGuest;
   const aiCoachEnabled = dataCtx.aiCoachEnabled;
-  const userRole = authCtx.userRole;
 
   const isEnabled = isGuest 
     ? (aiCoachEnabled !== false) 
     : (aiCoachEnabled !== false && localStorage.getItem('preference_ai_coach_enabled') !== 'false');
   if (!isEnabled) return null;
 
-  // Strict Check for Clinical Copilot (Only for Doctors/Clinic Admins on clinical portal routes)
-  const isClinicalPortal = (
-    location.pathname === '/pro' ||
-    location.pathname.startsWith('/pro/') ||
-    location.pathname.startsWith('/org') || 
-    location.pathname.startsWith('/admin') || 
-    location.pathname.startsWith('/coach') ||
-    location.pathname.startsWith('/super-admin') ||
-    location.pathname.startsWith('/join')
-  ) && !location.pathname.startsWith('/profile') && !location.pathname.startsWith('/progress');
-
-  const isClinician = userRole === 'doctor' || userRole === 'org_admin' || userRole === 'super_admin';
-
   return (
     <Suspense fallback={null}>
-      {isClinicalPortal && isClinician ? <ClinicalAiCopilot /> : <HabitAiCoachBot />}
+      {renderActiveBot({ location, userRole: authCtx.userRole, HabitAiCoachBot })}
     </Suspense>
   );
 }
@@ -576,16 +555,7 @@ function App() {
                   <Route path="/onboarding/targets" element={<OnboardingTargets />} />
                   
                   {/* B2B Professional Collaboration Routes */}
-                  <Route path="/pro" element={<ProDashboard />} />
-                  <Route path="/coach" element={<ProDashboard />} />
-                  <Route path="/join" element={<JoinInvitePage />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/org-portal" element={<OrgAdminPortal />} />
-                  <Route path="/org" element={<OrgAdminPortal />} />
-                  <Route path="/org-setup" element={<OrgSetupPage />} />
-                  <Route path="/join-org" element={<JoinOrgDoctorPage />} />
-                  <Route path="/super-admin" element={<SuperAdminPortal />} />
-                  <Route path="/master-command" element={<SuperAdminPortal />} />
+                  {getB2bRoutes()}
 
                   <Route path="*" element={<Layout><Dashboard /></Layout>} />
                 </Routes>
