@@ -4,7 +4,8 @@
  */
 
 export async function sendNewCustomerAlert(userData = {}) {
-  const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxImVbXFvf8RhdRiIbaDUU1bPZKDBnxBy9IjSvzzcJncwQl0pFabw_GZtjvdnLqOm6u/exec";
+  const WEBHOOK_URL = import.meta.env.VITE_CUSTOMER_ALERT_WEBHOOK_URL || "https://script.google.com/macros/s/AKfycbxImVbXFvf8RhdRiIbaDUU1bPZKDBnxBy9IjSvzzcJncwQl0pFabw_GZtjvdnLqOm6u/exec";
+  const SECRET = import.meta.env.VITE_CUSTOMER_ALERT_SECRET || "merafirebase_secret_123";
 
   try {
     await fetch(WEBHOOK_URL, {
@@ -14,7 +15,7 @@ export async function sendNewCustomerAlert(userData = {}) {
         "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify({
-        secret: "merafirebase_secret_123",
+        secret: SECRET,
         name: userData.name || "New Customer",
         email: userData.email || "Not Provided",
         uid: userData.uid || "Not Provided",
