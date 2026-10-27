@@ -150,20 +150,29 @@ export default function Profile() {
     try {
       const uid = currentUser.uid;
 
-      // 1. Delete all Firestore user data subcollections
+      // 1. Delete all Firestore user data subcollections safely with chunked batches (GDPR & Google Play compliance)
       try {
-        const habitsSnap = await getDocs(collection(db, 'users', uid, 'habits'));
-        const batch = writeBatch(db);
-        habitsSnap.forEach(d => batch.delete(d.ref));
+        const subcollections = ['habits', 'dailySummaries', 'entries', 'notes', 'userSettings'];
+        const allDocRefs = [];
+        
+        for (const sub of subcollections) {
+          try {
+            const snap = await getDocs(collection(db, 'users', uid, sub));
+            snap.forEach(d => allDocRefs.push(d.ref));
+          } catch (_) {}
+        }
+        
+        // Add root user document
+        allDocRefs.push(doc(db, 'users', uid));
 
-        const summariesSnap = await getDocs(collection(db, 'users', uid, 'dailySummaries'));
-        summariesSnap.forEach(d => batch.delete(d.ref));
-
-        const entriesSnap = await getDocs(collection(db, 'users', uid, 'entries'));
-        entriesSnap.forEach(d => batch.delete(d.ref));
-
-        batch.delete(doc(db, 'users', uid));
-        await batch.commit();
+        // Delete in safe chunks of 400 (Firestore max is 500 per batch)
+        const CHUNK_SIZE = 400;
+        for (let i = 0; i < allDocRefs.length; i += CHUNK_SIZE) {
+          const chunk = allDocRefs.slice(i, i + CHUNK_SIZE);
+          const batch = writeBatch(db);
+          chunk.forEach(ref => batch.delete(ref));
+          await batch.commit();
+        }
       } catch (firestoreErr) {
         console.warn('Firestore cleanup notice:', firestoreErr);
       }
