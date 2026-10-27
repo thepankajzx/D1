@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
 import Icon from '../../components/Icon';
 import { collection, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -8,7 +9,11 @@ import { getProTypeConfig, getAllProTypes } from '../proConfig';
 
 export default function AdminDashboard() {
   const { currentUser } = useAuth();
+  const { userDoc } = useData();
   const navigate = useNavigate();
+
+  const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
+
   const [prosList, setProsList] = useState([]);
   const [linksCount, setLinksCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -126,6 +131,11 @@ export default function AdminDashboard() {
       setIsSubmitting(false);
     }
   };
+
+  // Security Guard: Immediately redirect non-admin users to Home
+  if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans pb-24">

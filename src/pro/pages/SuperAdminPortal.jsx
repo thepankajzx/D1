@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
 import Icon from '../../components/Icon';
 import WhatsAppIcon from '../../components/WhatsAppIcon';
 import { 
@@ -12,18 +13,12 @@ import {
   getSavedDoctors 
 } from '../services/orgService';
 
-const SUPER_ADMIN_EMAILS = [
-  'zxofficial84@gmail.com', 
-  'zedxofficial84@gmail.com', 
-  'dummytest2025@example.com', 
-  'test2025@gmail.com'
-];
-
 export default function SuperAdminPortal() {
   const { currentUser } = useAuth();
+  const { userDoc } = useData();
   const navigate = useNavigate();
 
-  const isSuperAdmin = import.meta.env.DEV || SUPER_ADMIN_EMAILS.includes(currentUser?.email?.toLowerCase() || '');
+  const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
 
   // Theme mode: Default to crisp, modern White Theme (true = dark, false = light)
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -168,35 +163,9 @@ export default function SuperAdminPortal() {
     o.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Security Lock Screen for unauthorized users
+  // Security Guard: Immediately redirect unauthorized users to Home
   if (!isSuperAdmin) {
-    return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center p-6 text-center select-none">
-        <div className="w-16 h-16 rounded-3xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-3xl font-black mb-4 shadow-sm">
-          🔒
-        </div>
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-          Sovereign Clearance Required
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-md leading-relaxed">
-          Access restricted. This multi-tenant portal is strictly reserved for authorized platform administrators.
-        </p>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            to="/profile"
-            className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition-colors"
-          >
-            ← Back to Profile
-          </Link>
-          <Link
-            to="/"
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors shadow-xs"
-          >
-            Go to Habit Tracker
-          </Link>
-        </div>
-      </div>
-    );
+    return <Navigate to="/" replace />;
   }
 
   // Theme container classes
