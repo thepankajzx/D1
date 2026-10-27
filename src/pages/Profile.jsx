@@ -228,43 +228,6 @@ export default function Profile() {
     }
   }, [timeFormat]);
 
-  useEffect(() => {
-    if (currentUser?.email === 'zxofficial84@gmail.com') {
-      const fixedFlag = localStorage.getItem('fixed_dates_zx_jul24');
-      if (!fixedFlag && habits.length > 0) {
-        console.log("Fixing dates for zxofficial84");
-        const fixDates = async () => {
-          try {
-            const batch = writeBatch(db);
-            const targetDate = "2026-07-24T00:00:00.000Z";
-            let changed = 0;
-            
-            habits.forEach(habit => {
-              const nameLower = habit.name.toLowerCase();
-              if (
-                !nameLower.includes('cold shower') && 
-                !nameLower.includes('freelance') && 
-                !nameLower.includes('gratitude')
-              ) {
-                 const ref = doc(db, 'users', currentUser.uid, 'habits', habit.id);
-                 batch.update(ref, { createdAt: targetDate });
-                 changed++;
-              }
-            });
-            if (changed > 0) {
-              await batch.commit();
-              console.log(`Dates fixed successfully for ${changed} habits!`);
-            }
-            localStorage.setItem('fixed_dates_zx_jul24', 'true');
-          } catch (e) {
-            console.error(e);
-          }
-        };
-        fixDates();
-      }
-    }
-  }, [currentUser, habits]);
-
   const handleToggleStreakTracking = async (enabled) => {
     if (navigator.vibrate) navigator.vibrate(25);
     await setStreakTrackingEnabled(enabled);
@@ -548,7 +511,7 @@ export default function Profile() {
     const setDate = new Date(prioritySetHabit.prioritySetAt || prioritySetHabit.createdAt || Date.now());
     const diffDays = Math.ceil((new Date() - setDate) / (1000 * 60 * 60 * 24));
     const remaining = 30 - diffDays;
-    const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+    const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
     if (remaining > 0 && !isSuperAdmin) return { locked: true, daysRemaining: remaining };
     return { locked: false, daysRemaining: 0 };
   };
@@ -675,7 +638,7 @@ export default function Profile() {
     if (habitToDelete && habitToDelete.createdAt) {
       const createdDate = new Date(habitToDelete.createdAt);
       const diffDays = Math.ceil((new Date() - createdDate) / (1000 * 60 * 60 * 24));
-      const isSuperAdmin = import.meta.env.DEV || ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+      const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
       if (diffDays <= 30 && !isSuperAdmin) {
         setDeleteLockDays(Math.max(1, 30 - diffDays));
         setShowDeleteLockedModal(true);
@@ -741,7 +704,7 @@ export default function Profile() {
       alert("You are currently exploring in Demo Mode. Sign up free to create and track your custom habits!");
       return;
     }
-    const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com'].includes(currentUser?.email?.toLowerCase());
+    const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
     const isPro = userDoc?.isPro || userDoc?.tier === 'pro' || isSuperAdmin;
     if (habits.length >= 8 && !isPro) {
       setShowPaywall(true);
@@ -750,15 +713,15 @@ export default function Profile() {
     }
   };
 
-  const isSuperAdmin = ['dummytest2025@example.com', 'zxofficial84@gmail.com', 'test2025@gmail.com'].includes(currentUser?.email?.toLowerCase() || '');
+  const isSuperAdmin = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin;
   const isAllowedToEditTargets = isSuperAdmin || (allSummaries?.length || 0) >= 30;
   const { locked: priorityIsLocked, daysRemaining: priorityDaysRemaining } = getPriorityLockStatus();
   const hasPriorities = habits.some(h => h.priorityRank);
   const trackedDays = allSummaries.length;
 
-  // B2B Enterprise System (STRICTLY for zxofficial84@gmail.com on Web only)
+  // B2B Enterprise System (STRICTLY for authorized B2B administrators on Web only)
   const isWebsiteOnly = !Capacitor.isNativePlatform();
-  const isB2BAuthorized = (currentUser?.email?.toLowerCase() === 'zxofficial84@gmail.com');
+  const isB2BAuthorized = import.meta.env.DEV || userDoc?.role === 'super_admin' || userDoc?.isSuperAdmin || userDoc?.isB2BAuthorized;
   const showB2BSection = isWebsiteOnly && isB2BAuthorized;
 
   return (
@@ -1684,7 +1647,7 @@ export default function Profile() {
         )}
       </section>
 
-      {/* ── B2B ENTERPRISE HUB (STRICTLY FOR zxofficial84@gmail.com ON WEB) ─────────────── */}
+      {/* ── B2B ENTERPRISE HUB (FOR AUTHORIZED ADMINISTRATORS ON WEB) ─────────────── */}
       {showB2BSection && (
         <section className="bg-white dark:bg-[#131722] border border-indigo-200/90 dark:border-indigo-900/70 rounded-2xl overflow-hidden shadow-2xs transition-all">
           <button 
@@ -1724,7 +1687,7 @@ export default function Profile() {
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
                   <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-200 truncate">
-                    Authorized B2B Master: <strong className="font-black">zxofficial84@gmail.com</strong>
+                    Authorized B2B Master: <strong className="font-black">{currentUser?.email || 'Administrator'}</strong>
                   </span>
                 </div>
                 <span className="text-[9.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-white dark:bg-[#10141d] px-2 py-0.5 rounded-md border border-indigo-200/50 dark:border-indigo-800/40 shrink-0">

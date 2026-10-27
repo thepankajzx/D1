@@ -179,7 +179,7 @@ export default function SuperAdminPortal() {
           Sovereign Clearance Required
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-md leading-relaxed">
-          Access restricted. This multi-tenant sovereign portal is strictly reserved for the Definite Platform Founder (<span className="text-rose-600 font-mono font-bold">zxofficial84@gmail.com</span>).
+          Access restricted. This multi-tenant portal is strictly reserved for authorized platform administrators.
         </p>
         <div className="mt-6 flex items-center gap-3">
           <Link

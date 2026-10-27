@@ -319,8 +319,7 @@ function RealDataProvider({
     return c ? JSON.parse(c) : [];
   });
   const [priorityModeEnabled, setPriorityModeEnabled] = useState(false);
-  const DEV_PRO_EMAILS = ['dummytest2025@example.com','test2025@gmail.com','zxofficial84@gmail.com'];
-  const isDevPro = import.meta.env.DEV || DEV_PRO_EMAILS.includes(user?.email?.toLowerCase() ?? '');
+  const isDevPro = import.meta.env.DEV;
   const [userDocData, setUserDocData] = useState(() => {
     const uid = getCachedUid();
     if (uid) {
@@ -387,8 +386,7 @@ function RealDataProvider({
         const ud = await getDoc(doc(db, 'users', activeUid));
         if (ud.exists()) {
           const data = ud.data();
-          const le = user?.email?.toLowerCase() ?? '';
-          if (import.meta.env.DEV || DEV_PRO_EMAILS.includes(le)) data.isPro = true;
+          if (import.meta.env.DEV) data.isPro = true;
           setUserDocData(data); 
           try {
             localStorage.setItem('user_doc_' + activeUid, JSON.stringify(data));
@@ -453,8 +451,7 @@ function RealDataProvider({
             }
           } catch (e) {}
         } else {
-          const le = user?.email?.toLowerCase() ?? '';
-          if (import.meta.env.DEV || DEV_PRO_EMAILS.includes(le)) setUserDocData({ isPro: true });
+          if (import.meta.env.DEV) setUserDocData({ isPro: true });
         }
       } catch (err) { 
         console.warn("User doc fetch offline/fallback:", err); 
