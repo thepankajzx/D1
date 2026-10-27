@@ -26,8 +26,18 @@ dist-ssr
 # Local backups and binaries
 backups/
 *.apk
-android/
-capacitor.config.json
+*.jks
+*.keystore
+CREDENTIALS.md
+
+# Android build outputs and local secrets
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+android/app/*.jks
+android/app/*.keystore
 
 # Scratch and temporary scripts
 *.cjs
@@ -35,7 +45,6 @@ capacitor.config.json
 *.patch
 hib_write.js
 replace_heatmap.js
-
 
 # Env Files
 .env*
