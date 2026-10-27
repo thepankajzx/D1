@@ -55,12 +55,6 @@ export default function Dashboard() {
   const [coreXLogsYesterdayMap, setCoreXLogsYesterdayMap] = useState({});
   const [showCoreYCheckIn, setShowCoreYCheckIn] = useState(false);
   
-  // Debug log
-  useEffect(() => {
-    console.log("Dashboard rendered. Habits count:", habits?.length);
-    console.log("Habits array:", habits);
-  }, [habits]);
-  
   // State
   const dateInputRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(() => getTodayDate());

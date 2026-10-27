@@ -7,6 +7,9 @@ import path from 'path'
 export default defineConfig(({ mode }) => {
   return {
     base: './',
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : []
+    },
     server: {
       host: true, // Listen on all local network addresses (0.0.0.0)
       port: 5173,

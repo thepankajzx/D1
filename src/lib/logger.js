@@ -14,7 +14,6 @@ export async function logErrorToDb(error, errorInfo) {
       timestamp: serverTimestamp(),
       resolved: false
     });
-    console.log('Error successfully logged to system_errors database.');
   } catch (e) {
     // If logging fails, fall back to console so we don't crash the error handler itself
     console.error('Failed to log error to database:', e);
