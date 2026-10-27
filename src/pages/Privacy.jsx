@@ -82,6 +82,20 @@ export default function Privacy() {
 
           <section className="space-y-3">
             <h2 className="font-title-lg text-title-lg font-bold flex items-center gap-2">
+              <Icon name="delete" className="text-primary" />
+              Data Deletion &amp; Account Removal
+            </h2>
+            <p className="text-on-surface-variant leading-relaxed">
+              We respect your right to control your personal data. You can delete individual habits or permanently remove your entire account and all associated data at any time through either of the following methods:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-on-surface-variant ml-2 leading-relaxed">
+              <li><strong>In-App Deletion:</strong> Open the D1 application &gt; Navigate to Profile &gt; Tap "Delete Account" &gt; Confirm deletion. This will immediately and permanently erase your user profile, habits, daily logs, streaks, and Firestore records from our production servers.</li>
+              <li><strong>Web / Email Request:</strong> You can submit a deletion request by emailing us at <a href="mailto:support@thedefinite.one" className="text-primary font-bold hover:underline">support@thedefinite.one</a> with the subject "Data Deletion Request". We will verify and completely purge your account and all associated records within 48 hours.</li>
+            </ul>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="font-title-lg text-title-lg font-bold flex items-center gap-2">
               <Icon name="contact_support" className="text-primary" />
               Contact Us
             </h2>
