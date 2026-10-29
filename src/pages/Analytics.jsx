@@ -248,6 +248,52 @@ function formatLocalYMD(d) {
     return firstLogDate && firstLogDate > startDate ? firstLogDate : startDate;
   }, [startDate, allSummaries]);
 
+  // Track each habit's earliest historical presence with self-healing slot detection
+  const habitFirstDateMap = useMemo(() => {
+    const map = {};
+    const firstLoggedMap = {};
+
+    // 1. Find actual earliest date each habit was ever scored/tracked in summaries
+    allSummaries.forEach(s => {
+      if (s.habitScores) {
+        Object.keys(s.habitScores).forEach(hId => {
+          if (s.habitScores[hId] !== undefined && s.habitScores[hId] !== null) {
+            if (!firstLoggedMap[hId] || s.id < firstLoggedMap[hId]) {
+              firstLoggedMap[hId] = s.id;
+            }
+          }
+        });
+      }
+    });
+
+    const todayStr = getLocalISODate();
+
+    habits.forEach(h => {
+      let createdDate = null;
+      if (h.createdAt) {
+        createdDate = typeof h.createdAt === 'string' ? h.createdAt.split('T')[0] :
+          h.createdAt.toDate ? getLocalISODate(h.createdAt.toDate()) :
+          typeof h.createdAt === 'number' ? getLocalISODate(new Date(h.createdAt)) : null;
+      }
+      const firstLogged = firstLoggedMap[h.id];
+
+      // Self-healing: If habit has logged data, but createdAt is > 14 days earlier than its first log
+      // (indicating an inherited slot from migration or renaming), snap to its first actual log date
+      if (createdDate && firstLogged) {
+        const cTime = new Date(createdDate).getTime();
+        const lTime = new Date(firstLogged).getTime();
+        const diffDays = Math.round((lTime - cTime) / (1000 * 60 * 60 * 24));
+        if (diffDays > 14) {
+          createdDate = firstLogged;
+        }
+      }
+
+      map[h.id] = firstLogged || createdDate || todayStr;
+    });
+
+    return map;
+  }, [habits, allSummaries]);
+
   // Chart Data Prep
   const chartData = useMemo(() => {
     const dates = [];
@@ -267,9 +313,15 @@ function formatLocalYMD(d) {
       const dataPoint = { date: dateStr };
       const summary = summaries.find(s => (s.id === dateStr || s.date === dateStr));
       
+      const habitsOnDate = habits.filter(h => {
+        const firstDate = habitFirstDateMap[h.id];
+        return !firstDate || firstDate <= dateStr;
+      });
+      const expectedOnDay = habitsOnDate.length || 1;
+
       if (dateStr > todayStr || !summary) {
         dataPoint.overallScore = null;
-        dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: habits.length };
+        dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: expectedOnDay };
       } else {
         let recordedCount = 0;
         if (summary) {
@@ -280,7 +332,7 @@ function formatLocalYMD(d) {
         dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : 0;
         dataPoint.meta = {
            recordedCount,
-           expectedCount: summary.habitsTotal || habits.length
+           expectedCount: summary.habitsTotal || expectedOnDay
         };
       }
       
@@ -651,43 +703,6 @@ function formatLocalYMD(d) {
         label
     };
   }, [rangeOption, startDate, allSummaries, selectedHabit, kpis, chartData]);
-
-  // Track each habit's earliest historical presence
-  const habitFirstDateMap = useMemo(() => {
-    const map = {};
-    // 1. If habit has createdAt timestamp
-    habits.forEach(h => {
-      if (h.createdAt) {
-        const dateStr = typeof h.createdAt === 'string' ? h.createdAt.split('T')[0] :
-          h.createdAt.toDate ? getLocalISODate(h.createdAt.toDate()) :
-          typeof h.createdAt === 'number' ? getLocalISODate(new Date(h.createdAt)) : null;
-        if (dateStr) map[h.id] = dateStr;
-      }
-    });
-
-    // 2. Also check all summaries to find the earliest date this habit was ever scored/tracked
-    allSummaries.forEach(s => {
-      if (s.habitScores) {
-        Object.keys(s.habitScores).forEach(hId => {
-          if (s.habitScores[hId] !== undefined && s.habitScores[hId] !== null) {
-            if (!map[hId] || s.id < map[hId]) {
-              map[hId] = s.id;
-            }
-          }
-        });
-      }
-    });
-
-    // 3. For any habit with neither past summaries nor createdAt, default to today's date
-    const todayStr = getLocalISODate();
-    habits.forEach(h => {
-      if (!map[h.id]) {
-        map[h.id] = todayStr;
-      }
-    });
-
-    return map;
-  }, [habits, allSummaries]);
 
   return (
 

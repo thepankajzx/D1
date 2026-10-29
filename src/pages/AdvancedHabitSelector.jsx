@@ -803,7 +803,8 @@ export default function AdvancedHabitSelector() {
       target0: target0Val,
       target100: target100Val,
       userTolerance: cbTolerance ? 10 : 0,
-      isCustom: true
+      isCustom: true,
+      createdAt: editingCustomHabitId ? (customHabits.find(h => h.id === editingCustomHabitId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
     });
 
     if (editingCustomHabitId) {

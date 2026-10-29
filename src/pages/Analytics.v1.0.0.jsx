@@ -1,0 +1,1494 @@
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
+import { useLanguage } from '../contexts/LanguageContext';
+
+import { 
+  computeKPIs, 
+  generateHeatmapGrid, 
+  computeHabitBreakdown, 
+  identifyAreasToImprove 
+} from '../lib/analytics';
+import { renderToString } from 'react-dom/server';
+import ReactEChartsCoreLib from 'echarts-for-react/lib/core';
+const ReactEChartsCore = ReactEChartsCoreLib.default || ReactEChartsCoreLib;
+import * as echarts from 'echarts/core';
+import { LineChart, ScatterChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent, DataZoomComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, CanvasRenderer]);
+import { Link, useSearchParams } from 'react-router-dom';
+import RadialGauge from '../components/RadialGauge';
+import Icon from '../components/Icon';
+import HabitIcon from '../components/HabitIcon';
+import ProModal from '../components/ProModal';
+import ProCustomDateModal from '../components/ProCustomDateModal';
+import HabitStreakTimeline from '../components/HabitStreakTimeline';
+import SwipeableHabitSelector from '../components/SwipeableHabitSelector';
+
+const getPerfBandClass = (score) => {
+  if (score === null || score === undefined) return '';
+  if (score <= 10) return 'bg-perf-1';
+  if (score <= 20) return 'bg-perf-2';
+  if (score <= 30) return 'bg-perf-3';
+  if (score <= 40) return 'bg-perf-4';
+  if (score <= 50) return 'bg-perf-5';
+  if (score <= 60) return 'bg-perf-6';
+  if (score <= 70) return 'bg-perf-7';
+  if (score <= 80) return 'bg-perf-8';
+  if (score <= 90) return 'bg-perf-9';
+  return 'bg-perf-10';
+};
+
+// Helper to get local date string matching Dashboard logic to prevent UTC timezone offset bugs
+function getLocalISODate(d) {
+  const date = d || new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const getPerformanceBand = (score) => {
+  if (score === null || score === undefined) return { id: 0, label: 'None' };
+  if (score <= 10) return { id: 1, label: 'Poor' };
+  if (score <= 20) return { id: 2, label: 'Poor' };
+  if (score <= 30) return { id: 3, label: 'Poor' };
+  if (score <= 40) return { id: 4, label: 'Poor' };
+  if (score <= 50) return { id: 5, label: 'Average' };
+  if (score <= 60) return { id: 6, label: 'Average' };
+  if (score <= 70) return { id: 7, label: 'Good' };
+  if (score <= 80) return { id: 8, label: 'Good' };
+  if (score <= 90) return { id: 9, label: 'Excellent' };
+  return { id: 10, label: 'Excellent' };
+};
+
+const getPerfTextColorClass = (score) => {
+  if (score === null || score === undefined) return 'text-on-surface-variant';
+  if (score <= 10) return 'text-perf-1';
+  if (score <= 20) return 'text-perf-2';
+  if (score <= 30) return 'text-perf-3';
+  if (score <= 40) return 'text-perf-4';
+  if (score <= 50) return 'text-perf-5';
+  if (score <= 60) return 'text-perf-6';
+  if (score <= 70) return 'text-perf-7';
+  if (score <= 80) return 'text-perf-8';
+  if (score <= 90) return 'text-perf-9';
+  return 'text-perf-10';
+};
+
+export default function Analytics() {
+  const { currentUser: user } = useAuth();
+  const { habits, allSummaries, userDoc, loadingData, streakTrackingEnabled } = useData();
+  const { isHinglish, t } = useLanguage();
+  
+  // Date Range State
+  const [rangeOption, setRangeOption] = useState('7'); // '7', '30', '90', 'custom'
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [appliedCustomStart, setAppliedCustomStart] = useState('');
+  const [appliedCustomEnd, setAppliedCustomEnd] = useState('');
+  const [isCustomDropdownOpen, setIsCustomDropdownOpen] = useState(false);
+  const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
+  const [showWeightedInfoModal, setShowWeightedInfoModal] = useState(false);
+  const dateSelectorRef = useRef(null);
+  const chartContainerRef = useRef(null);
+  const echartsInstanceRef = useRef(null);
+  const lastVibratedIndexRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideInteraction = (e) => {
+      if (chartContainerRef.current && !chartContainerRef.current.contains(e.target)) {
+        if (echartsInstanceRef.current) {
+          echartsInstanceRef.current.dispatchAction({ type: 'hideTip' });
+        }
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsideInteraction);
+    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true });
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideInteraction);
+      document.removeEventListener('touchstart', handleOutsideInteraction);
+    };
+  }, []);
+
+  
+
+  const [searchParams] = useSearchParams();
+  // Filter States
+  const [selectedHabit, setSelectedHabit] = useState(() => searchParams.get('habit') || 'overall'); // 'overall' or habit ID
+  const [chartMode, setChartMode] = useState('combined'); // 'combined' or 'separate'
+  const [viewMode, setViewMode] = useState('charts'); // 'charts' or 'heatmap'
+  const [isChartDropdownOpen, setIsChartDropdownOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  
+  // Heatmap State
+  const [isZoomedOut, setIsZoomedOut] = useState(false);
+  const [heatmapPeriod, setHeatmapPeriod] = useState('day'); // 'day', 'week', 'month'
+  const [showPercentages, setShowPercentages] = useState(false);
+  const [isHeatmapExpanded, setIsHeatmapExpanded] = useState(false);
+  
+  // Data States
+  const [summaries, setSummaries] = useState([]);
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
+
+function formatLocalYMD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+  // Tracks today's local date string - refreshes every minute so endDate stays current after midnight
+  const [todayStr, setTodayStr] = useState(() => formatLocalYMD(new Date()));
+  useEffect(() => {
+    const tick = () => {
+      const next = formatLocalYMD(new Date());
+      setTodayStr(prev => (prev !== next ? next : prev));
+    };
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Compute actual start/end based on option
+  const { startDate, endDate, isFutureOnly } = useMemo(() => {
+    const today = new Date();
+    const end = formatLocalYMD(today);
+    
+    if (rangeOption === 'custom' && appliedCustomStart && appliedCustomEnd) {
+      const futureOnly = appliedCustomStart > end;
+      const cappedEnd = appliedCustomEnd > end ? end : appliedCustomEnd;
+      return { startDate: appliedCustomStart, endDate: cappedEnd, isFutureOnly: futureOnly };
+    }
+    
+    // Default fallback if custom is selected but not applied yet
+    if (rangeOption === 'custom') {
+      let days = 7;
+      const startObj = new Date();
+      startObj.setDate(today.getDate() - days + 1);
+      return {
+        startDate: formatLocalYMD(startObj),
+        endDate: end,
+        isFutureOnly: false
+      };
+    }
+    
+    let days = parseInt(rangeOption) || 30;
+    const startObj = new Date();
+    startObj.setDate(today.getDate() - days + 1); // +1 because inclusive of today
+    
+    return {
+      startDate: formatLocalYMD(startObj),
+      endDate: end,
+      isFutureOnly: false
+    };
+  }, [rangeOption, appliedCustomStart, appliedCustomEnd, todayStr]);
+
+
+  // Reactive summaries for the date range directly from DataContext
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    
+    // Use local date parsing to avoid UTC midnight shift bug (IST = UTC+5:30)
+    const [sY, sM, sD] = startDate.split('-').map(Number);
+    const [eY, eM, eD] = endDate.split('-').map(Number);
+    const startLocal = new Date(sY, sM - 1, sD);
+    const endLocal = new Date(eY, eM - 1, eD);
+    const days = Math.round((endLocal - startLocal) / (1000 * 60 * 60 * 24)) + 1;
+    
+    const prevStartLocal = new Date(sY, sM - 1, sD);
+    prevStartLocal.setDate(prevStartLocal.getDate() - days);
+    const previousStartDate = formatLocalYMD(prevStartLocal);
+
+    const rangeSummaries = (allSummaries || []).filter(s => {
+      const d = s.id || s.date;
+      return d && d >= previousStartDate && d <= endDate;
+    });
+    setSummaries(rangeSummaries);
+  }, [allSummaries, startDate, endDate]);
+
+  // Computations
+  const baseKpis = useMemo(() => computeKPIs(summaries, startDate, endDate, allSummaries), [summaries, startDate, endDate, allSummaries]);
+  const breakdown = useMemo(() => computeHabitBreakdown(habits, summaries, startDate, endDate, allSummaries), [habits, summaries, startDate, endDate, allSummaries]);
+  const kpis = useMemo(() => {
+    if (selectedHabit === 'overall') return baseKpis;
+    const hb = breakdown.find(b => b.id === selectedHabit);
+    if (!hb) return baseKpis;
+    return {
+        ...baseKpis,
+        averageScore: Math.round(hb.avgScore),
+        totalHabitsRecorded: hb.trackedDays,
+        expectedHabitsTotal: hb.totalDays,
+        dataCoverage: Math.round((hb.trackedDays / hb.totalDays) * 100) || 0,
+        bestDayScore: hb.bestScore,
+        lowestDayScore: hb.lowestScore,
+        consistency: hb.consistency,
+        currentStreak: hb.currentStreak,
+        bestStreak: hb.bestStreak,
+        bestDay: 'Selected Habit'
+    };
+  }, [baseKpis, breakdown, selectedHabit]);
+
+  const heatmapGrid = useMemo(() => {
+      if (summaries.length === 0) return [];
+      return generateHeatmapGrid(summaries, selectedHabit === 'overall' ? 'overall' : 'habit', selectedHabit, startDate, endDate);
+  }, [summaries, selectedHabit, startDate, endDate]);
+
+  const areasToImprove = useMemo(() => identifyAreasToImprove(breakdown), [breakdown]);
+
+  const effectiveStartDate = useMemo(() => {
+    const firstLogDate = allSummaries.length > 0 
+      ? allSummaries.reduce((min, s) => s.id < min ? s.id : min, allSummaries[0].id) 
+      : null;
+    return firstLogDate && firstLogDate > startDate ? firstLogDate : startDate;
+  }, [startDate, allSummaries]);
+
+  // Chart Data Prep
+  const chartData = useMemo(() => {
+    const dates = [];
+    const [sY, sM, sD] = effectiveStartDate.split('-').map(Number);
+    const [eY, eM, eD] = endDate.split('-').map(Number);
+    let current = new Date(sY, sM - 1, sD);
+    const end = new Date(eY, eM - 1, eD);
+    
+    while (current <= end) {
+      dates.push(formatLocalYMD(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    const todayStr = formatLocalYMD(new Date());
+
+    return dates.map(dateStr => {
+      const dataPoint = { date: dateStr };
+      const summary = summaries.find(s => (s.id === dateStr || s.date === dateStr));
+      
+      if (dateStr > todayStr || !summary) {
+        dataPoint.overallScore = null;
+        dataPoint.meta = { isFuture: dateStr > todayStr, recordedCount: 0, expectedCount: habits.length };
+      } else {
+        let recordedCount = 0;
+        if (summary) {
+          if (Array.isArray(summary.loggedHabitIds)) recordedCount = summary.loggedHabitIds.length;
+          else if (summary.habitScores && typeof summary.habitScores === 'object' && Object.keys(summary.habitScores).length > 0) recordedCount = Object.keys(summary.habitScores).length;
+          else if (typeof summary.habitsCompleted === 'number') recordedCount = summary.habitsCompleted;
+        }
+        dataPoint.overallScore = summary.overallScore !== undefined ? summary.overallScore : 0;
+        dataPoint.meta = {
+           recordedCount,
+           expectedCount: summary.habitsTotal || habits.length
+        };
+      }
+      
+      habits.forEach(h => {
+        if (dateStr > todayStr || !summary || summary.habitScores?.[h.id] === undefined) {
+          dataPoint[h.id] = null;
+        } else {
+          dataPoint[h.id] = summary.habitScores[h.id];
+        }
+      });
+      return dataPoint;
+    });
+  }, [effectiveStartDate, endDate, summaries, habits]);
+
+  const dailyDataForHeatmap = useMemo(() => {
+    return chartData.map(d => ({
+        date: d.date,
+        score: selectedHabit === 'overall' ? d.overallScore : (d[selectedHabit] !== undefined ? d[selectedHabit] : null)
+    })).filter(d => d.score !== null);
+  }, [chartData, selectedHabit]);
+
+  const getWeekStart = (dateStr) => {
+    const result = new Date(dateStr);
+    const day = result.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    result.setDate(result.getDate() + diff);
+    return getLocalISODate(result);
+  };
+
+  const aggregatedHeatmapData = useMemo(() => {
+    if (heatmapPeriod === 'day') return null;
+    const groups = new Map();
+    dailyDataForHeatmap.forEach(item => {
+        const date = new Date(item.date);
+        let key, label;
+        if (heatmapPeriod === 'week') {
+            key = getWeekStart(item.date);
+            const start = new Date(key);
+            const end = new Date(start); end.setDate(end.getDate() + 6);
+            const format = (d) => d.toLocaleDateString("en-US", { day: "numeric", month: "short" }).toUpperCase();
+            label = `${format(start)} - ${format(end)}`;
+        } else if (heatmapPeriod === 'month') {
+            key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
+            label = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase();
+        }
+        if (!groups.has(key)) groups.set(key, { keyDate: new Date(key), label, scores: [] });
+        if (item.score !== null && item.score !== undefined) groups.get(key).scores.push(item.score);
+    });
+    return Array.from(groups.values()).sort((a, b) => a.keyDate - b.keyDate).map(group => ({
+        label: group.label,
+        average: group.scores.length ? Math.round(group.scores.reduce((a, b) => a + b, 0) / group.scores.length) : 0
+    }));
+  }, [dailyDataForHeatmap, heatmapPeriod]);
+
+  const getInterpolatedValue = (dataArray, index, key) => {
+    let prevValid = null;
+    let prevIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (dataArray[i][key] !== null && dataArray[i][key] !== undefined) {
+        prevValid = dataArray[i][key];
+        prevIndex = i;
+        break;
+      }
+    }
+    let nextValid = null;
+    let nextIndex = -1;
+    for (let i = index + 1; i < dataArray.length; i++) {
+      if (dataArray[i][key] !== null && dataArray[i][key] !== undefined) {
+        nextValid = dataArray[i][key];
+        nextIndex = i;
+        break;
+      }
+    }
+    if (prevValid !== null && nextValid !== null) {
+      const ratio = (index - prevIndex) / (nextIndex - prevIndex);
+      return prevValid + (nextValid - prevValid) * ratio;
+    } else if (prevValid !== null) return prevValid;
+    else if (nextValid !== null) return nextValid;
+  };
+
+  // ECharts Options Generator
+  const getEChartOption = (habitId) => {
+    const isOverall = habitId === 'overall';
+    const series = isOverall
+      ? (() => {
+          const formattedData = chartData.map((d, i, arr) => {
+            const isFuture = d.meta && d.meta.isFuture;
+            let val = d.overallScore;
+            
+            if (isFuture) return { value: '-', symbol: 'none', meta: d.meta };
+            
+            if (val === null || val === undefined) {
+               val = getInterpolatedValue(arr, i, 'overallScore');
+            }
+
+            const recorded = d.meta.recordedCount || 0;
+            const expected = d.meta.expectedCount || 1;
+            
+            if (recorded === 0) {
+               return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#0f172a', borderColor: '#0f172a', borderWidth: 2 }, isUnrecorded: true, meta: d.meta };
+            } else if (recorded < expected) {
+               return { value: val, symbol: 'emptyCircle', symbolSize: 6, itemStyle: { color: '#ffffff', borderColor: '#0f172a', borderWidth: 2 }, meta: d.meta };
+            } else {
+               return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#10b981' }, meta: d.meta };
+            }
+          });
+          return [
+            {
+              name: 'Overall Score',
+              type: 'line',
+              data: formattedData,
+              connectNulls: true,
+              itemStyle: { color: '#8b5cf6' },
+              lineStyle: { width: 3, color: '#8b5cf6' },
+              areaStyle: {
+                color: {
+                  type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                  colorStops: [
+                    { offset: 0, color: 'rgba(139, 92, 246, 0.25)' },
+                    { offset: 1, color: 'rgba(139, 92, 246, 0.01)' }
+                  ]
+                }
+              },
+              showSymbol: true,
+              smooth: true
+            }
+          ];
+        })()
+      : [habitId].map((id) => {
+          const habit = habits.find(h => h.id === id);
+          const globalIndex = habits.findIndex(h => h.id === id);
+          const colors = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+          const color = colors[globalIndex % colors.length];
+          
+          const formattedData = chartData.map((d, i, arr) => {
+            const isFuture = d.meta && d.meta.isFuture;
+            if (isFuture) return { value: '-', symbol: 'none', meta: d.meta };
+
+            let val = d[id];
+            let isUnrecorded = false;
+            
+            if (val === null || val === undefined) {
+              val = getInterpolatedValue(arr, i, id);
+              isUnrecorded = true;
+            }
+
+            if (isUnrecorded) {
+              // Not Logged -> Solid Black Dot
+              return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: '#0f172a', borderColor: '#0f172a', borderWidth: 2 }, isUnrecorded: true, meta: d.meta };
+            } else {
+              // Logged -> Solid Dot with Habit Color (NO RING EVER)
+              return { value: val, symbol: 'circle', symbolSize: 6, itemStyle: { color: color }, meta: d.meta };
+            }
+          });
+
+          return [
+            {
+              name: habit?.name || id,
+              type: 'line',
+              data: formattedData,
+              connectNulls: true,
+              itemStyle: { color },
+              lineStyle: { width: 3, color },
+              areaStyle: {
+                color: {
+                  type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                  colorStops: [
+                    { offset: 0, color: color + '40' },
+                    { offset: 1, color: color + '02' }
+                  ]
+                }
+              },
+              showSymbol: true,
+              smooth: true
+            }
+          ];
+        }).flat();
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'transparent',
+
+        borderWidth: 0,
+        padding: 0,
+        shadowColor: 'transparent',
+        confine: true,
+        hideDelay: 100,
+        extraCssText: 'z-index: 20 !important; pointer-events: none;',
+        formatter: function (params) {
+          if (!params || !params.length) return '';
+          const dataIndex = params[0].dataIndex;
+
+          // Haptic tactile tick on mobile when hovering / scrubbing each date point
+          if (lastVibratedIndexRef.current !== dataIndex) {
+            lastVibratedIndexRef.current = dataIndex;
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              try { navigator.vibrate(15); } catch(e) {}
+            }
+          }
+
+          const pointData = chartData[dataIndex];
+          const dateObj = new Date(pointData.date + 'T00:00:00');
+          const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          const isOverallMode = selectedHabit === 'overall';
+          
+          const isOverallUnrec = isOverallMode && (pointData.overallScore === null || pointData.overallScore === undefined);
+          const isHabitUnrec = !isOverallMode && (pointData[selectedHabit] === null || pointData[selectedHabit] === undefined);
+          
+          let html = `<div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); border: 1px solid #f1f5f9; padding: 10px 14px; font-family: system-ui, -apple-system, sans-serif; min-width: 150px;">`;
+          html += `<div style="font-size: 11px; color: #64748b; margin-bottom: 7px; font-weight: 600; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">${dateStr}</div>`;
+          
+          if (isOverallUnrec || isHabitUnrec) {
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #0f172a; background: #ffffff; display: inline-block;"></span>
+                  <span style="font-size: 13px; font-weight: 700; color: #0f172a;">Not Recorded</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">No Data</span>
+              </div>
+            `;
+          } else {
+            params.forEach(param => {
+              const valObj = param.data;
+              const isUnrecPoint = valObj && valObj.value === 0 && valObj.isUnrecorded;
+              if (isUnrecPoint) {
+                html += `
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #0f172a; background: #ffffff; display: inline-block;"></span>
+                      <span style="font-size: 13px; font-weight: 700; color: #0f172a;">Not Recorded</span>
+                    </div>
+                    <span style="font-size: 11px; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">No Data</span>
+                  </div>
+                `;
+              } else {
+                const score = valObj && valObj.value !== undefined ? Math.round(valObj.value) : Math.round(param.value);
+                const color = param.color || (isOverallMode ? '#8b5cf6' : '#3b82f6');
+                const label = isOverallMode ? 'Weighted Average' : (habits.find(h => h.id === selectedHabit)?.name || 'Performance');
+                
+                html += `
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 6px; height: 6px; border-radius: 50%; background: ${color}; display: inline-block;"></span>
+                      <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${label}</span>
+                    </div>
+                    <strong style="font-size: 14px; font-weight: 800; color: #0f172a;">${score}%</strong>
+                  </div>
+                `;
+              }
+            });
+          }
+          
+          html += `</div>`;
+          return html;
+        }
+      },
+      legend: {
+        show: false
+      },
+
+
+      dataZoom: [
+        {
+          type: 'inside',
+          xAxisIndex: 0,
+          filterMode: 'filter'
+        }
+      ],
+      grid: { left: '3%', right: '4%', bottom: '15%', top: '5%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: chartData.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        axisLabel: { color: '#868381', fontSize: 10 },
+        axisLine: { show: false },
+        axisTick: { show: false }
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: 100,
+        axisLabel: { color: '#868381', fontSize: 10 },
+        splitLine: { lineStyle: { type: 'dashed', color: 'rgba(150, 150, 150, 0.15)' } }
+      },
+      series: series
+    };
+  };
+
+  if (!loadingData && habits.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 px-4">
+        <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
+          <Icon name="bar_chart" className=" text-5xl text-primary" />
+        </div>
+        <h1 className="font-headline-lg text-headline-lg text-on-surface">No Data Available</h1>
+        <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+          Your analytics will appear here once you start tracking habits. 
+        </p>
+        <Link 
+          to="/onboarding/select" 
+          className="mt-4 bg-primary text-on-primary px-6 py-3 rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity"
+        >
+          Add a Habit
+        </Link>
+      </div>
+    );
+  }
+
+  const trendData = useMemo(() => {
+    const isOverall = selectedHabit === 'overall';
+    let diff = 0;
+    let label = 'vs prev';
+
+    if (rangeOption !== 'all' && rangeOption !== 'custom') {
+        const days = parseInt(rangeOption) || 30;
+        const prevStartObj = new Date(startDate);
+        prevStartObj.setDate(prevStartObj.getDate() - days);
+        const previousStartDate = getLocalISODate(prevStartObj);
+        const previousEndDateObj = new Date(startDate);
+        previousEndDateObj.setDate(previousEndDateObj.getDate() - 1);
+        const previousEndDate = getLocalISODate(previousEndDateObj);
+        
+        let prevSum = 0;
+        let prevCount = 0;
+        
+        if (isOverall) {
+            allSummaries.forEach(s => {
+                if (s.id >= previousStartDate && s.id <= previousEndDate) {
+                    if (s.overallScore !== undefined) {
+                        prevSum += s.overallScore;
+                        prevCount++;
+                    }
+                }
+            });
+        } else {
+            allSummaries.forEach(s => {
+                if (s.id >= previousStartDate && s.id <= previousEndDate) {
+                    if (s.habitScores && s.habitScores[selectedHabit] !== undefined) {
+                        prevSum += s.habitScores[selectedHabit];
+                        prevCount++;
+                    }
+                }
+            });
+        }
+        
+        const prevAvg = prevCount > 0 ? prevSum / prevCount : 0;
+        const currentAvg = kpis.averageScore || 0;
+        
+        diff = Math.round(currentAvg) - Math.round(prevAvg);
+        label = `vs last ${days} days`;
+    } else {
+        const validScores = chartData.map(d => isOverall ? d.overallScore : (d[selectedHabit] !== undefined ? d[selectedHabit] : 0)).filter(s => s !== null && s > 0);
+        const latestScore = validScores.length > 0 ? validScores[validScores.length - 1] : 0;
+        const prevScore = validScores.length > 1 ? validScores[validScores.length - 2] : 0;
+        diff = Math.round(latestScore) - Math.round(prevScore);
+        label = `vs prev day`;
+    }
+    
+    return {
+        diff,
+        isUp: diff >= 0,
+        text: `${diff >= 0 ? '↑' : '↓'} ${Math.abs(diff)}%`,
+        label
+    };
+  }, [rangeOption, startDate, allSummaries, selectedHabit, kpis, chartData]);
+
+  // Track each habit's earliest historical presence
+  const habitFirstDateMap = useMemo(() => {
+    const map = {};
+    // 1. If habit has createdAt timestamp
+    habits.forEach(h => {
+      if (h.createdAt) {
+        const dateStr = typeof h.createdAt === 'string' ? h.createdAt.split('T')[0] :
+          h.createdAt.toDate ? getLocalISODate(h.createdAt.toDate()) :
+          typeof h.createdAt === 'number' ? getLocalISODate(new Date(h.createdAt)) : null;
+        if (dateStr) map[h.id] = dateStr;
+      }
+    });
+
+    // 2. Also check all summaries to find the earliest date this habit was ever scored/tracked
+    allSummaries.forEach(s => {
+      if (s.habitScores) {
+        Object.keys(s.habitScores).forEach(hId => {
+          if (s.habitScores[hId] !== undefined && s.habitScores[hId] !== null) {
+            if (!map[hId] || s.id < map[hId]) {
+              map[hId] = s.id;
+            }
+          }
+        });
+      }
+    });
+
+    // 3. For any habit with neither past summaries nor createdAt, default to today's date
+    const todayStr = getLocalISODate();
+    habits.forEach(h => {
+      if (!map[h.id]) {
+        map[h.id] = todayStr;
+      }
+    });
+
+    return map;
+  }, [habits, allSummaries]);
+
+  return (
+
+    <div className="flex flex-col gap-4 w-full -mt-2">
+      {/* 1. Header Controls Layout */}
+
+      <div className="flex flex-col gap-2 w-full mt-2 relative">
+        {/* Top Row: Left = Chart/Heatmap Toggle, Right = Habit Selector (Overall) */}
+        <div className="flex items-center justify-between gap-2.5 w-full">
+          {/* Left: Chart/Heatmap Toggle Pill */}
+          <div className="flex bg-surface-container-lowest rounded-[10px] p-[3px] border border-outline-variant/40 h-[36px] flex-1 sm:w-44 sm:flex-none shrink-0">
+            <button 
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setViewMode('charts'); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'charts' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            >
+              <Icon name="insights" className="text-[16px] sm:text-[18px]" />
+              <span className="text-[12px] sm:text-[13px]">Chart</span>
+            </button>
+            <button 
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setViewMode('heatmap'); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-[8px] transition-all duration-200 ${viewMode === 'heatmap' ? 'bg-on-surface text-surface-container-lowest font-medium shadow-sm' : 'text-on-surface-variant hover:bg-surface-variant'}`}
+            >
+              <Icon name="apps" className="text-[16px] sm:text-[18px]" />
+              <span className="text-[12px] sm:text-[13px]">Heatmap</span>
+            </button>
+          </div>
+          
+          {/* Right: Habit Selector Dropdown (Swipeable) */}
+          <div className="w-36 sm:w-44 min-w-0 shrink-0">
+            <SwipeableHabitSelector 
+              habits={habits} 
+              selectedHabitId={selectedHabit} 
+              onChange={(id) => {
+                setSelectedHabit(id);
+                setSearchParams(prev => {
+                  const p = new URLSearchParams(prev);
+                  p.set('habit', id);
+                  return p;
+                });
+              }} 
+            />
+          </div>
+        </div>
+
+        {/* Second Row: Timeframe Selector Dropdown (Right-aligned, exact same width as Overall selector) */}
+        <div className="flex justify-end w-full">
+          <div ref={dateSelectorRef} className="relative z-20 flex items-center justify-between bg-surface-container-lowest border border-outline-variant/40 rounded-[10px] h-[36px] px-2.5 hover:border-outline-variant transition-colors w-36 sm:w-44 shrink-0">
+            <Icon name="calendar_today" className="text-on-surface-variant text-[14px] sm:text-[16px] shrink-0" />
+            <select 
+              value={rangeOption}
+              onClick={(e) => {
+                if (rangeOption === 'custom' && !isCustomDropdownOpen) {
+                  setIsCustomDropdownOpen(true);
+                }
+              }}
+              onChange={(e) => {
+                const val = e.target.value;
+                if ((val === '365' || val === 'all') && !userDoc?.isPro) {
+                  setShowProUpgradeModal(true);
+                  return;
+                }
+                setRangeOption(val);
+                if (val === 'custom') {
+                  setIsCustomDropdownOpen(true);
+                } else {
+                  setIsCustomDropdownOpen(false);
+                }
+              }}
+              className="appearance-none bg-transparent text-on-surface font-semibold text-[12px] sm:text-[13px] pl-1.5 pr-6 focus:outline-none cursor-pointer w-full truncate"
+            >
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 180 Days</option>
+              <option value="365">Last 365 Days{userDoc?.isPro ? '' : ' (PRO)'}</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <Icon name="keyboard_arrow_down" className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]" />
+            
+            {/* Inline custom date panel */}
+            {isCustomDropdownOpen && rangeOption === 'custom' && (
+              <div className="absolute top-full right-0 mt-2 bg-surface border border-outline-variant/40 rounded-[16px] p-2 flex flex-col sm:flex-row items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200 z-50 w-max max-w-[calc(100vw-32px)]">
+                <div className="relative flex-1 min-w-0 sm:w-[130px] border border-outline-variant/40 rounded-full px-2 bg-surface-container-lowest">
+                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs py-1.5 bg-transparent border-none text-on-surface focus:outline-none appearance-none" />
+                </div>
+                <span className="text-on-surface-variant text-xs font-bold">TO</span>
+                <div className="relative flex-1 min-w-0 sm:w-[130px] border border-outline-variant/40 rounded-full px-2 bg-surface-container-lowest">
+                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs py-1.5 bg-transparent border-none text-on-surface focus:outline-none appearance-none" />
+                </div>
+                <button 
+                  onClick={() => {
+                     if(customStart && customEnd) {
+                        const s = new Date(customStart);
+                        const e = new Date(customEnd);
+                        const diffDays = Math.round(Math.abs(e - s) / (1000 * 60 * 60 * 24)) + 1;
+                        if (diffDays > 180 && !userDoc?.isPro) {
+                          setShowProUpgradeModal(true);
+                          return;
+                        }
+                        setAppliedCustomStart(customStart);
+                        setAppliedCustomEnd(customEnd);
+                        setIsCustomDropdownOpen(false);
+                     } else {
+                        alert("Please select both start and end dates.");
+                     }
+                  }}
+                  className="h-7 px-3 rounded-full bg-on-surface text-surface-container-lowest text-xs font-bold hover:bg-on-surface/90 transition-colors shadow-sm"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+
+      {/* Dynamic Content */}
+      {loadingData ? (
+        <div className="flex flex-col gap-8 w-full animate-pulse mt-4">
+          <div className="h-64 bg-surface-container-high rounded-2xl w-full"></div>
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-[120px] bg-surface-container-high rounded-2xl"></div>)}
+          </div>
+        </div>
+      ) : (
+      <div className="flex flex-col gap-5 w-full animate-in fade-in duration-500 mt-2">
+
+        <div className="custom-dashed-line"></div>
+
+        {/* Hero Performance Card */}
+        {isFutureOnly ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[18px] shadow-sm text-center">
+              <Icon name="event_upcoming" className="text-5xl text-on-surface-variant mb-4" />
+              <h3 className="font-headline-md text-on-surface mb-2">Future Date Selected</h3>
+              <p className="font-body-md text-on-surface-variant max-w-md mx-auto">
+                No data available for future dates. Please select a valid past or current date range.
+              </p>
+          </div>
+        ) : (
+          <div className="flex flex-col relative w-full gap-4">
+            <div className="px-2 sm:px-5 flex justify-between items-start">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-on-surface font-bold text-[14px]">
+                    {selectedHabit === 'overall' ? 'Weighted Average' : habits.find(h => h.id === selectedHabit)?.name || 'Performance'}
+                  </span>
+                  {selectedHabit === 'overall' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (echartsInstanceRef.current) {
+                          echartsInstanceRef.current.dispatchAction({ type: 'hideTip' });
+                        }
+                        setShowWeightedInfoModal(true);
+                      }}
+                      className="w-5 h-5 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
+                      title="How Weighted Average Works"
+                    >
+                      <Icon name="info" className="text-[14px]" />
+                    </button>
+                  )}
+                </div>
+                <span className="text-[44px] font-black text-primary leading-[1.1] tracking-tight">
+                  {Math.round(kpis.averageScore || 0)}%
+                </span>
+              </div>
+              
+              <div className="flex flex-col items-end">
+                <span 
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-bold leading-none gap-0.5"
+                  style={{
+                    color: trendData.isUp ? '#18a56c' : '#ef4444',
+                    backgroundColor: trendData.isUp ? 'rgba(24, 165, 108, 0.1)' : 'rgba(239, 68, 68, 0.1)'
+                  }}
+                >
+                  {trendData.text}
+                </span>
+                <span className="text-on-surface-variant/60 text-[11px] font-medium mt-1">
+                  {trendData.label}
+                </span>
+              </div>
+            </div>
+
+            <div className="custom-dashed-line"></div>
+            
+            {/* ECharts Instance or Heatmap */}
+            <div className={isHeatmapExpanded ? "fixed inset-0 z-[100] bg-background overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col custom-scrollbar" : "w-full flex-grow min-h-[180px] -mb-2"}>
+              {viewMode === 'charts' && !isHeatmapExpanded ? (
+                <div ref={chartContainerRef} className="flex flex-col w-full">
+                  {/* Legend: Solid Dots for Habits and Solid Black Dot for Not Recorded */}
+                  <div className="flex items-center justify-end gap-3 px-2 sm:px-5 mb-1.5">
+                    {selectedHabit === 'overall' && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-900 dark:border-white bg-white dark:bg-slate-900 inline-block"></span>
+                        <span>Partial Logged</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white inline-block"></span>
+                      <span>Not Recorded</span>
+                    </div>
+                  </div>
+                  <ReactEChartsCore 
+                    echarts={echarts} 
+                    onChartReady={(instance) => { echartsInstanceRef.current = instance; }}
+                    option={getEChartOption(selectedHabit)} 
+                    style={{ height: '180px', width: '100%' }} 
+                  />
+                </div>
+              ) : (
+
+
+                <div className={`flex flex-col ${isHeatmapExpanded ? 'max-w-[1400px] mx-auto w-full' : 'px-5 pb-5'}`}>
+                  <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/40 shadow-sm">
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('day'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'day' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Day</button>
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('week'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'week' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Week</button>
+                        <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setHeatmapPeriod('month'); }} className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors ${heatmapPeriod === 'month' ? 'bg-on-surface text-surface-container-lowest' : 'text-on-surface-variant'}`}>Month</button>
+                      </div>
+                      {heatmapPeriod === 'day' && (
+                        <button 
+                          onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setShowPercentages(!showPercentages); }}
+                          className={`px-3 h-8 rounded-full flex items-center justify-center gap-1 transition-colors border shadow-sm ${showPercentages ? 'bg-on-surface text-surface-container-lowest border-on-surface' : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-variant/50'}`}
+                          title="Toggle Percentages"
+                        >
+                          <Icon name={showPercentages ? 'visibility' : 'visibility_off'} className="text-[16px]" />
+                          <span className="text-[12px] font-bold leading-none">%</span>
+                        </button>
+                      )}
+                    </div>
+                    {heatmapPeriod === 'day' && (
+                      <button 
+                        onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsHeatmapExpanded(!isHeatmapExpanded); }}
+                        className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant/40 shadow-sm"
+                        title={isHeatmapExpanded ? "Exit Fullscreen" : "Fullscreen Heatmap"}
+                      >
+                        <Icon name={isHeatmapExpanded ? "close" : "fullscreen"} className="text-[18px]" />
+                      </button>
+                    )}
+                  </div>
+                  <div className={`flex-grow flex flex-col ${isHeatmapExpanded ? '' : 'overflow-x-auto overflow-y-hidden pb-2 custom-scrollbar'}`}>
+                    {heatmapPeriod === 'day' ? (
+                      <div className={`flex gap-4 ${isHeatmapExpanded ? 'flex-wrap justify-center sm:justify-start' : 'w-max min-w-full'}`}>
+                        {heatmapGrid.map((monthData, mIndex) => (
+                          <div key={mIndex} className="flex gap-2">
+                            {(mIndex === 0) && (
+                              <div className="grid-heatmap pr-2 font-mono-data text-[10px] text-on-surface-variant shrink-0 mt-[20px]">
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Mon</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Tue</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Wed</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Thu</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Fri</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Sat</div>
+                                <div className="flex items-center justify-end h-[30px] leading-tight">Sun</div>
+                              </div>
+                            )}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1 text-center">{monthData.monthLabel}</span>
+                              <div className="grid-heatmap">
+                                  {monthData.cells.map((cell, i) => {
+                                    const isOverall = selectedHabit === 'overall';
+                                    let recorded = 0;
+                                    if (cell.meta) {
+                                      if (Array.isArray(cell.meta.loggedHabitIds)) recorded = cell.meta.loggedHabitIds.length;
+                                      else if (cell.meta.habitScores && typeof cell.meta.habitScores === 'object' && Object.keys(cell.meta.habitScores).length > 0) recorded = Object.keys(cell.meta.habitScores).length;
+                                      else if (typeof cell.meta.habitsCompleted === 'number') recorded = cell.meta.habitsCompleted;
+                                      else if (cell.meta.recordedCount !== undefined) recorded = cell.meta.recordedCount;
+                                    }
+                                    const expected = cell.meta ? (cell.meta.habitsTotal || cell.meta.expectedCount || habits.length) : (isOverall ? habits.length : 1);
+                                    const isPartial = isOverall && recorded > 0 && recorded < expected;
+                                    
+                                    let titleText = '';
+                                    if (!cell.isPad) {
+                                      const dateObj = new Date(cell.date + 'T00:00:00');
+                                      const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                      const statusText = cell.score === null ? 'No data recorded' : (isPartial ? 'Partial data' : 'Complete');
+                                      const scoreText = cell.score === null ? 'No data' : `Score: ${Math.round(cell.score)}%`;
+                                      titleText = `${dateStr}\n${scoreText}\n${isOverall ? recorded + ' / ' + expected + ' habits' : '1 / 1 habit'}\n${statusText}`;
+                                    }
+
+                                    return (
+                                      <div 
+                                        key={i} 
+                                        title={titleText}
+                                        onClick={() => { if (!cell.isPad) { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(cell.date); } }}
+                                        className={`transition-colors relative flex items-center justify-center font-mono-data heatmap-cell ${cell.isPad ? 'bg-transparent cursor-default' : 'cursor-pointer hover:ring-2 hover:ring-primary/50'} ${!cell.isPad && cell.score === null ? 'bg-surface-container' : !cell.isPad ? 'bg-perf-' + cell.perfBand : ''}`}
+                                        style={{ opacity: isPartial ? 0.85 : 1 }}
+                                      >
+                                        {(!cell.isPad && cell.score !== null && showPercentages) && (
+                                          <span className={`text-[11px] font-bold z-10 ${[1, 2, 3, 4, 8, 9, 10].includes(cell.perfBand) ? 'text-white' : 'text-black'}`}>{Math.round(cell.score)}</span>
+                                        )}
+                                        {(!cell.isPad && cell.score === null) && (
+                                          <div className="w-[6px] h-[6px] rounded-full bg-slate-800/85 dark:bg-slate-200/90 shadow-2xs pointer-events-none"></div>
+                                        )}
+                                        {(!cell.isPad && isPartial && !showPercentages) && (
+                                          <div className="w-[6px] h-[6px] rounded-full bg-white shadow-xs pointer-events-none"></div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex gap-3 w-max">
+                        {aggregatedHeatmapData.map((period, i) => (
+                          <div key={i} className={`flex flex-col items-center justify-center rounded-[14px] p-4 min-w-[90px] ${getPerfBandClass(period.average)} shadow-sm border border-outline-variant/20`}>
+                            <span className="text-[11px] font-bold text-surface-container-lowest/90 text-center leading-tight mb-2 uppercase tracking-widest">{period.label}</span>
+                            <span className="text-3xl font-black text-surface-container-lowest">{period.average}</span>
+                            <span className="text-[10px] font-bold text-surface-container-lowest/70 uppercase mt-1">/100</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Heatmap Legend - Positioned at BOTTOM */}
+                  {heatmapPeriod === 'day' && (
+                    <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-outline-variant/20 text-[11px] text-on-surface-variant font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 rounded-[4px] bg-perf-10 shadow-2xs"></div>
+                        <span>Score intensity</span>
+                      </div>
+                      
+                      {selectedHabit === 'overall' && (
+                        <div className="flex items-center gap-1.5">
+                          <div className="relative w-3.5 h-3.5 rounded-[4px] bg-perf-7 flex items-center justify-center shadow-2xs" style={{ opacity: 0.85 }}>
+                            <div className="w-[5px] h-[5px] rounded-full bg-white shadow-xs pointer-events-none"></div>
+                          </div>
+                          <span>Partial data</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 rounded-[4px] bg-surface-container flex items-center justify-center border border-outline-variant/40">
+                          <div className="w-[5px] h-[5px] rounded-full bg-slate-800/85 dark:bg-slate-200/90 shadow-2xs"></div>
+                        </div>
+                        <span>No data</span>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+
+
+        <div className="custom-dashed-line mt-2 mb-2"></div>
+
+        {/* Habit Streak Timeline */}
+        {streakTrackingEnabled && !isFutureOnly && summaries.length > 0 && (
+          <div className="flex flex-col gap-1 w-full mt-4">
+            <span className="text-[18px] font-black text-on-surface px-2 sm:px-5">Streak</span>
+            <HabitStreakTimeline 
+              habits={selectedHabit === 'overall' ? habits : habits.filter(h => h.id === selectedHabit)}
+              summaries={summaries}
+              allSummaries={allSummaries}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
+        )}
+
+        {streakTrackingEnabled && <div className="custom-dashed-line mt-2 mb-2"></div>}
+
+        {/* Compact KPI Grid */}
+        {!isFutureOnly && (
+          <div className={`grid ${streakTrackingEnabled ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'} gap-3 w-full mb-6`}>
+            {/* KPI 1: Average */}
+            <div className="flex flex-col items-center justify-center text-center py-2">
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-4"/></svg>
+              </div>
+              <span className="text-[24px] font-black text-primary leading-none mb-1">{Math.round(kpis.averageScore || 0)}%</span>
+              <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Average<br/>Performance</span>
+            </div>
+            
+            {/* KPI 2: Consistency */}
+            {(() => {
+              const cons = kpis.consistency || 0;
+              let colorClass = "text-perf-poor";
+              let bgClass = "bg-perf-poor/10";
+              if (cons >= 80) { colorClass = "text-perf-high"; bgClass = "bg-perf-high/10"; }
+              else if (cons >= 50) { colorClass = "text-yellow-500"; bgClass = "bg-yellow-500/10"; }
+              
+              return (
+              <div className="flex flex-col items-center justify-center text-center py-2">
+                <div className={`w-10 h-10 rounded-full ${bgClass} ${colorClass} flex items-center justify-center mb-2`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <span className={`text-[24px] font-black ${colorClass} leading-none mb-1`}>{cons}%</span>
+                <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Consistency<br/>Rate</span>
+              </div>
+              );
+            })()}
+
+            {/* KPI 3 & 4: Only when Streak Tracking is enabled */}
+            {streakTrackingEnabled && (
+              <>
+                {/* KPI 3: Current Streak */}
+                <div className="flex flex-col items-center justify-center text-center py-2">
+                  <div className="w-10 h-10 rounded-full bg-perf-medium/10 text-perf-medium flex items-center justify-center mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </div>
+                  <span className="text-[24px] font-black text-perf-medium leading-none mb-1">{kpis.currentStreak || 0}</span>
+                  <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Current Streak<br/>Days</span>
+                </div>
+
+                {/* KPI 4: Best Streak */}
+                <div className="flex flex-col items-center justify-center text-center py-2">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+                  </div>
+                  <span className="text-[24px] font-black text-purple-500 leading-none mb-1">{kpis.bestStreak || 0}</span>
+                  <span className="text-on-surface-variant text-[11px] font-semibold leading-tight max-w-[80%]">Best Streak<br/>Days</span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+
+        {/* Performance Insights */}
+        {!isFutureOnly && (
+          <div className="flex flex-col gap-0 mt-2 mb-8">
+            <h2 className="text-[15px] font-bold text-on-surface ml-1 mb-3">Performance Insights</h2>
+            
+            <div className="custom-dashed-line"></div>
+            
+            <div className="flex flex-col">
+              {/* Insight 1: Best Day */}
+              <div className="flex items-center justify-between p-4 custom-dashed-border-b hover:bg-surface-container transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-perf-high/10 text-perf-high flex items-center justify-center shrink-0">
+                    <Icon name="emoji_events" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Best Day</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
+                      {kpis.bestDay && kpis.bestDay !== 'N/A' ? new Date(kpis.bestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-perf-high">{kpis.bestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
+                </div>
+              </div>
+
+              {/* Insight 2: Worst Day */}
+              <div className="flex items-center justify-between p-4 custom-dashed-border-b hover:bg-surface-container transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-perf-poor/10 text-perf-poor flex items-center justify-center shrink-0">
+                    <Icon name="error" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Lowest Day</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
+                      {kpis.lowestDay && kpis.lowestDay !== 'N/A' ? new Date(kpis.lowestDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-perf-poor">{kpis.lowestDayScore || 0}%</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
+                </div>
+              </div>
+
+              {/* Insight 3: Tracked Days */}
+              <div className="flex items-center justify-between p-4 hover:bg-surface-container transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                    <Icon name="calendar_today" className="text-[18px]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-on-surface text-[14px] font-bold leading-tight">Tracked Days</span>
+                    <span className="text-on-surface-variant text-[12px] font-medium mt-0.5">
+                      out of {kpis.totalDays || 0} days
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-black text-blue-500">{kpis.trackedDays || 0}/{kpis.totalDays || 0}</span>
+                  <Icon name="chevron_right" className="text-on-surface-variant/40 text-[18px]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+              </div>
+      )}
+      
+      {/* Day Details Modal */}
+      {selectedDay && (
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container">
+              <div>
+                <h3 className="text-[20px] font-bold text-on-surface leading-tight">
+                  {new Date(selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </h3>
+                <p className="text-on-surface-variant text-[13px] font-medium mt-1">Daily Performance</p>
+              </div>
+              <button 
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setSelectedDay(null); }}
+                className="w-10 h-10 rounded-full bg-surface-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant/50 hover:text-on-surface transition-colors"
+              >
+                <Icon name="close" className="text-[22px]" />
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto custom-scrollbar flex-grow bg-surface-container-lowest">
+              {(() => {
+                const daySummary = summaries.find(s => s.id === selectedDay);
+                if (!daySummary) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
+                        <Icon name="event_busy" className="text-[28px] text-on-surface-variant/40" />
+                      </div>
+                      <p className="text-on-surface font-semibold text-[16px]">No Data Filled</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't fill any data here.</p>
+                    </div>
+                  );
+                }
+
+                const isOverall = selectedHabit === 'overall';
+                const mainScore = isOverall ? daySummary.overallScore : daySummary.habitScores?.[selectedHabit];
+                
+                if (mainScore === undefined) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4">
+                        <Icon name="event_busy" className="text-[28px] text-on-surface-variant/40" />
+                      </div>
+                      <p className="text-on-surface font-semibold text-[16px]">No Data Filled</p>
+                      <p className="text-on-surface-variant text-[14px] mt-1">You didn't fill any data here.</p>
+                    </div>
+                  );
+                }
+
+                const mainLabel = isOverall ? 'Overall Score' : habits.find(h => h.id === selectedHabit)?.name;
+                const mainBand = getPerformanceBand(mainScore).id;
+
+                // Only consider habits that were already created on or before selectedDay
+                const activeHabitsForDay = habits.filter(h => {
+                  const firstDate = habitFirstDateMap[h.id];
+                  return !firstDate || selectedDay >= firstDate;
+                });
+
+                const recordedCount = activeHabitsForDay.filter(h => {
+                  const s = daySummary.habitScores?.[h.id];
+                  return s !== undefined && s !== null;
+                }).length;
+
+                const totalExpected = activeHabitsForDay.length > 0 ? activeHabitsForDay.length : (daySummary.habitsTotal || habits.length);
+
+                return (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[16px] border border-primary/10">
+                      <span className="text-[15px] font-bold text-on-surface">{mainLabel}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[26px] font-black text-perf-${mainBand}`}>
+                          {Math.round(mainScore)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {isOverall && (
+                      <div>
+                        <div className="flex items-center justify-between mb-3 ml-1">
+                          <h4 className="text-[12px] font-bold text-on-surface-variant uppercase tracking-wider">Habit Breakdown</h4>
+                          <span className="text-[11px] font-bold text-on-surface-variant bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant/30">
+                            {recordedCount} of {totalExpected} recorded
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {activeHabitsForDay.map(h => {
+                            const score = daySummary.habitScores?.[h.id];
+                            const isRecorded = score !== undefined && score !== null;
+
+                            if (!isRecorded) {
+                              return (
+                                <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container/40 border border-outline-variant/20 rounded-[14px] opacity-80">
+                                  <div className="flex items-center gap-3">
+                                    <HabitIcon habit={h} size={28} className="shrink-0" />
+                                    <span className="text-[14px] font-semibold text-on-surface-variant">{h.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant border border-outline-variant/30">
+                                      Not Recorded
+                                    </span>
+                                    <span className="text-[14px] font-bold text-on-surface-variant w-8 text-right"> - </span>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            const band = getPerformanceBand(score).id;
+                            return (
+                              <div key={h.id} className="flex items-center justify-between p-3.5 bg-surface-container-lowest border border-outline-variant/30 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-[14px]">
+                                <div className="flex items-center gap-3">
+                                  <HabitIcon habit={h} size={28} className="shrink-0" />
+                                  <span className="text-[14px] font-semibold text-on-surface">{h.name}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-2 rounded-full bg-surface-variant/30 overflow-hidden">
+                                    <div className={`h-full bg-perf-${band} rounded-full`} style={{ width: `${score}%` }}></div>
+                                  </div>
+                                  <span className={`text-[14px] font-bold text-perf-${band} w-10 text-right`}>{Math.round(score)}%</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+      {/* Weighted Average Explainer Modal - Mobile First */}
+      {showWeightedInfoModal && (
+        <div 
+
+          className="fixed inset-0 bg-black/75 backdrop-blur-md z-[9999] flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in duration-200"
+          onClick={() => setShowWeightedInfoModal(false)}
+        >
+          <div 
+            className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl border border-outline-variant/30 overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[82vh] animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Mobile Sheet Handle */}
+            <div className="w-10 h-1 rounded-full bg-outline-variant/50 mx-auto mt-3 mb-1 sm:hidden shrink-0"></div>
+
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container/40 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+                  <Icon name="balance" className="text-[20px]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-on-surface leading-tight">
+                    {isHinglish ? 'Weighted Average Kaise Kaam Karta Hai' : 'How Weighted Average Works'}
+                  </h3>
+                  <p className="text-xs text-on-surface-variant font-medium mt-0.5">
+                    {isHinglish ? 'Tumhari core priorities par focused smart scoring' : 'Smart scoring focused on your core priorities'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowWeightedInfoModal(false)}
+                className="w-8 h-8 rounded-full bg-surface-variant/40 hover:bg-surface-variant text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-2"
+              >
+                <Icon name="close" className="text-[18px]" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-3 text-xs text-on-surface leading-relaxed custom-scrollbar">
+              
+              {/* 00 - Traditional Average */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/8 border border-amber-500/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-extrabold text-amber-600 dark:text-amber-400 text-xs">
+                    <Icon name="warning" className="text-[15px]" />
+                    <span>Traditional Average</span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-on-surface-variant/70">
+                    {isHinglish ? 'Dusre trackers' : 'Other trackers'}
+                  </span>
+                </div>
+                <div className="text-[11.5px] text-on-surface-variant space-y-1 pl-1 leading-snug">
+                  <p>• {isHinglish ? 'Har habit ko barabar weight milta hai (1 min task = 1 hr workout).' : 'Every habit gets equal weight (1 min task = 1 hr workout).'}</p>
+                  <p>• {isHinglish ? 'Missed habits 0% penalty ke sath score niche gira deti hain.' : 'Missed habits drag your score down with a 0% penalty.'}</p>
+                </div>
+              </div>
+
+              {/* 01 - Priority Multipliers */}
+              <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] font-black shrink-0">1</span>
+                  <h4 className="font-extrabold text-on-surface text-xs">Priority Multipliers</h4>
+                </div>
+                
+                {/* 3 Visual Tier Badges */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center flex flex-col items-center justify-center">
+                    <span className="text-[9.5px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">P1 Core</span>
+                    <span className="text-xs font-black text-purple-700 dark:text-purple-300 mt-0.5">3× Weight</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center flex flex-col items-center justify-center">
+                    <span className="text-[9.5px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">P2 Important</span>
+                    <span className="text-xs font-black text-blue-700 dark:text-blue-300 mt-0.5">2× Weight</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-500/10 border border-slate-500/20 text-center flex flex-col items-center justify-center">
+                    <span className="text-[9.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">P3 Normal</span>
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-300 mt-0.5">1× Weight</span>
+                  </div>
+                </div>
+
+                <p className="text-[11.5px] text-on-surface-variant leading-relaxed pl-1">
+                  {isHinglish 
+                    ? 'Tumhari top priorities sabse zyada weight rakhti hain aur daily score ko drive karti hain.' 
+                    : 'Your top priorities carry the most weight and drive the majority of your daily score.'}
+                </p>
+              </div>
+
+              {/* 02 - Track What Matters */}
+              <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">2</span>
+                  <h4 className="font-extrabold text-on-surface text-xs">
+                    {isHinglish ? 'Wahi Track Karo Jo Zaroori Hai' : 'Track What Matters'}
+                  </h4>
+                </div>
+                <div className="text-[11.5px] text-on-surface-variant space-y-1.5 pl-1 leading-snug">
+                  <p>• {isHinglish ? 'Tumhara daily score sirf unhi habits ka average nikalta hai jo tumne complete & log kari hain.' : 'Your daily score averages only the habits you completed & logged.'}</p>
+                  <p>• {isHinglish ? 'Unlogged habits 0% ka jhootha score nahi banati, jo kiya hai wahi dikhta hai.' : "Unlogged habits don't fake a 0% score, protecting the integrity of what you actually did."}</p>
+                </div>
+              </div>
+
+              {/* 03 - How Your Score Works */}
+              <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">3</span>
+                  <h4 className="font-extrabold text-on-surface text-xs">
+                    {isHinglish ? 'Tumhara Score Kaise Kaam Karta Hai' : 'How Your Score Works'}
+                  </h4>
+                </div>
+                
+                <div className="space-y-2 bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-on-surface">Completed Habits</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px]">Scored</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-on-surface">Missed Habits</span>
+                    <span className="font-bold text-on-surface-variant bg-surface-variant/40 px-2.5 py-0.5 rounded-full text-[11px]">
+                      {isHinglish ? '0 nahi count hota' : 'Not counted as 0'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-on-surface">Top Priorities</span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full text-[11px]">
+                      {isHinglish ? 'Zyada Asar' : 'Higher Impact'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 sm:p-4 bg-surface-container/50 border-t border-outline-variant/20 flex justify-end shrink-0">
+              <button
+                onClick={() => setShowWeightedInfoModal(false)}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-on-surface text-surface-container-lowest font-bold text-xs hover:bg-on-surface/90 transition-colors cursor-pointer text-center"
+              >
+                {isHinglish ? 'Samajh Gaya' : 'Got It'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      <ProModal 
+        isOpen={showProUpgradeModal} 
+        onClose={() => setShowProUpgradeModal(false)} 
+        source="custom_analytics" 
+      />
+
+    </div>
+  );
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+

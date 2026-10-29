@@ -346,6 +346,33 @@ function RealDataProvider({
     if (cs) setAllSummaries(JSON.parse(cs));
     let unsubH = () => {}, unsubS = () => {};
 
+    const healLegacyHabitTimestamps = async (activeList, summaryList) => {
+      if (!activeUid || !Array.isArray(activeList) || !Array.isArray(summaryList) || activeList.length === 0 || summaryList.length === 0) return;
+      for (const h of activeList) {
+        let firstLoggedDate = null;
+        for (let i = summaryList.length - 1; i >= 0; i--) {
+          const s = summaryList[i];
+          if (s.habitScores && s.habitScores[h.id] !== undefined && s.habitScores[h.id] !== null) {
+            firstLoggedDate = s.id;
+            break;
+          }
+        }
+        if (firstLoggedDate && h.createdAt) {
+          const cDate = typeof h.createdAt === 'string' ? (h.createdAt.includes('T') ? h.createdAt.split('T')[0] : h.createdAt) : null;
+          if (cDate) {
+            const diffDays = Math.round((new Date(firstLoggedDate).getTime() - new Date(cDate).getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays > 14) {
+              const healedIso = `${firstLoggedDate}T00:00:00.000Z`;
+              h.createdAt = healedIso;
+              try {
+                await updateDoc(doc(db, 'users', activeUid, 'habits', h.id), { createdAt: healedIso });
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    };
+
     // ⚡ Attach real-time snapshot listeners IMMEDIATELY (never wait for getDoc!)
     unsubH = onSnapshot(collection(db, 'users/' + activeUid + '/habits'), (snap) => {
       const fhAll = normalizeHabits(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -356,6 +383,11 @@ function RealDataProvider({
       localStorage.setItem('habits_' + activeUid, JSON.stringify(active));
       localStorage.setItem('deleted_habits_' + activeUid, JSON.stringify(deleted));
       setLoadingData(false);
+
+      try {
+        const storedSums = localStorage.getItem('summaries_' + activeUid);
+        if (storedSums) healLegacyHabitTimestamps(active, JSON.parse(storedSums));
+      } catch (_) {}
     }, (err) => { 
       console.warn("Habits snapshot listener offline/fallback:", err); 
       setLoadingData(false); 
@@ -365,6 +397,11 @@ function RealDataProvider({
       const fs2 = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.id.localeCompare(a.id)).slice(0, 365);
       setAllSummaries(fs2); 
       localStorage.setItem('summaries_' + activeUid, JSON.stringify(fs2));
+
+      try {
+        const storedH = localStorage.getItem('habits_' + activeUid);
+        if (storedH) healLegacyHabitTimestamps(JSON.parse(storedH), fs2);
+      } catch (_) {}
     }, (err) => { 
       console.warn("DailySummaries snapshot listener offline/fallback:", err); 
     });

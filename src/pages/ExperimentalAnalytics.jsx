@@ -229,18 +229,15 @@ export default function ExperimentalAnalytics() {
   // Helper map: determine the earliest date each habit was ever created / present
   const habitFirstDateMap = useMemo(() => {
     const map = {};
-    activeHabits.forEach(h => {
-      if (h.createdAt) {
-        map[h.id] = h.createdAt.includes('T') ? h.createdAt.split('T')[0] : h.createdAt;
-      }
-    });
+    const firstLoggedMap = {};
 
+    // 1. Find actual earliest date each habit was ever logged in daily summaries
     realSummaries.forEach(s => {
       if (s.habitScores) {
         Object.keys(s.habitScores).forEach(hId => {
           if (s.habitScores[hId] !== undefined && s.habitScores[hId] !== null) {
-            if (!map[hId] || s.id < map[hId]) {
-              map[hId] = s.id;
+            if (!firstLoggedMap[hId] || s.id < firstLoggedMap[hId]) {
+              firstLoggedMap[hId] = s.id;
             }
           }
         });
@@ -248,10 +245,23 @@ export default function ExperimentalAnalytics() {
     });
 
     const todayStr = new Date().toISOString().split('T')[0];
+
     activeHabits.forEach(h => {
-      if (!map[h.id]) {
-        map[h.id] = todayStr;
+      let createdDate = h.createdAt ? (h.createdAt.includes('T') ? h.createdAt.split('T')[0] : h.createdAt) : null;
+      const firstLogged = firstLoggedMap[h.id];
+
+      // Self-healing: If habit has logged data, but createdAt is > 14 days earlier than its first log
+      // (indicating an inherited slot from migration or renaming), snap to its first actual log date
+      if (createdDate && firstLogged) {
+        const cTime = new Date(createdDate).getTime();
+        const lTime = new Date(firstLogged).getTime();
+        const diffDays = Math.round((lTime - cTime) / (1000 * 60 * 60 * 24));
+        if (diffDays > 14) {
+          createdDate = firstLogged;
+        }
       }
+
+      map[h.id] = firstLogged || createdDate || todayStr;
     });
 
     return map;
@@ -901,12 +911,11 @@ export default function ExperimentalAnalytics() {
     };
   }, [dateSeries, summaryMap, selectedHabitId, isHinglish]);
 
-  // Weekly breakdown bars
+  // Weekly breakdown bars (Date-Aware Historical Habits Lifecycle)
   const weeklyBreakdown = useMemo(() => {
     const weeksCount = dateSeries.length <= 7 ? 1 : dateSeries.length <= 14 ? 2 : dateSeries.length <= 30 ? 4 : Math.min(12, Math.ceil(dateSeries.length / 7));
     const daysPerWeek = Math.floor(dateSeries.length / weeksCount);
     const result = [];
-    const activeHabitsCount = (realHabits || []).filter(h => h.status !== 'deleted').length || 1;
 
     for (let w = 0; w < weeksCount; w++) {
       const sliceDates = dateSeries.slice(w * daysPerWeek, (w + 1) * daysPerWeek);
@@ -922,7 +931,13 @@ export default function ExperimentalAnalytics() {
           if (loggedHabitKeys.length > 0) {
             daysWithLogs++;
             totalLoggedEntries += loggedHabitKeys.length;
-            totalExpectedEntries += activeHabitsCount;
+            
+            // Dynamic date-aware habit count: how many habits actually existed on this specific historical date?
+            const habitsOnDay = activeHabits.filter(h => {
+              const firstDate = habitFirstDateMap[h.id];
+              return !firstDate || firstDate <= dStr;
+            });
+            totalExpectedEntries += (habitsOnDay.length || 1);
           }
           return sum.overallScore;
         }
@@ -933,8 +948,10 @@ export default function ExperimentalAnalytics() {
       const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
       
       const isPartial = selectedHabitId === 'all' && daysWithLogs > 0 && totalLoggedEntries < totalExpectedEntries;
+      const avgExpected = daysWithLogs > 0 ? Math.max(1, Math.round(totalExpectedEntries / daysWithLogs)) : 1;
+      const avgLogged = daysWithLogs > 0 ? Math.max(1, Math.round(totalLoggedEntries / daysWithLogs)) : 0;
       const loggedRatio = isPartial 
-        ? `${Math.max(1, Math.round(totalLoggedEntries / daysWithLogs))}/${activeHabitsCount}`
+        ? `${avgLogged}/${avgExpected}`
         : null;
 
       // Calculate formatted date range, e.g. "7 Jun - 14 Jun"
