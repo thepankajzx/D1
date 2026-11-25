@@ -46,28 +46,24 @@ export default function DayOneQuickSetupModal({ isOpen, onClose }) {
   const handleSaveAndStart = async () => {
     setIsSaving(true);
     try {
-      if (setTimeFormat && selectedFormat !== timeFormat) {
-        await setTimeFormat(selectedFormat);
-      }
+      // 1. Instantly persist all preferences locally
       localStorage.setItem('preference_time_format', selectedFormat);
       localStorage.setItem('preference_bedtime_reminder_enabled', remindersEnabled ? 'true' : 'false');
-
-      // Persist chosen theme (Day / Night Mode)
-      setTheme(selectedTheme);
       localStorage.setItem('theme', selectedTheme);
+      localStorage.setItem('d1_day1_setup_completed', 'true');
+      setTheme(selectedTheme);
 
-      // Schedule notification if enabled
-      if (remindersEnabled) {
-        try {
-          await saveReminderSettings({ enabled: true, offsetMinutes: 15 }, null);
-          await scheduleDailyReminder({ enabled: true, offsetMinutes: 15 }, null);
-        } catch (e) {
-          console.warn('[DayOneSetup] Could not schedule reminder immediately:', e);
-        }
+      // 2. Background sync (non-blocking: never hang modal dismissal on web notifications/firestore)
+      if (setTimeFormat && selectedFormat !== timeFormat) {
+        Promise.resolve(setTimeFormat(selectedFormat)).catch(() => {});
       }
 
-      // Mark Day 1 setup as completed so it never shows again
-      localStorage.setItem('d1_day1_setup_completed', 'true');
+      if (remindersEnabled) {
+        Promise.resolve(saveReminderSettings({ enabled: true, offsetMinutes: 15 }, null)).catch(() => {});
+        Promise.resolve(scheduleDailyReminder({ enabled: true, offsetMinutes: 15 }, null)).catch(() => {});
+      }
+
+      // 3. Immediately dismiss modal
       onClose();
     } catch (err) {
       console.error('[DayOneSetup] Save error:', err);
