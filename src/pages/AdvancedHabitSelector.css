@@ -25,8 +25,8 @@
     background-color: var(--ahs-bg-page);
     color: var(--ahs-text-main);
     line-height: 1.5;
-    padding-top: max(env(safe-area-inset-top, 0px), 28px);
-    padding-bottom: 120px;
+    padding-top: max(env(safe-area-inset-top, 0px), 12px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 144px);
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
@@ -332,7 +332,7 @@
     .ahs-sidebar { position: static; display: grid; grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 768px) {
-    .ahs-wrap { padding-bottom: 160px; }
+    .ahs-wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); }
     .ahs-container { padding: 16px; }
     .ahs-header-main { flex-direction: column; gap: 16px; margin-bottom: 24px;}
     .ahs-progress-widget { width: 100%; }

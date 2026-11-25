@@ -1,14 +1,14 @@
 {
-  "id": "/",
-  "name": "Definite - Habit Intelligence",
-  "short_name": "Definite",
+  "id": "com.definite.d1habits",
+  "name": "D1 - Habit Intelligence",
+  "short_name": "D1 Habits",
   "description": "Understand your habits, not just track them.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
-  "background_color": "#0B0F19",
-  "theme_color": "#0B0F19",
+  "background_color": "#0F141C",
+  "theme_color": "#0F141C",
   "orientation": "portrait-primary",
   "lang": "en",
   "dir": "ltr",
@@ -53,6 +53,31 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/windows/Square44x44Logo.png",
+      "sizes": "44x44",
+      "type": "image/png"
+    },
+    {
+      "src": "/windows/Square50x50Logo.png",
+      "sizes": "50x50",
+      "type": "image/png"
+    },
+    {
+      "src": "/windows/Square150x150Logo.png",
+      "sizes": "150x150",
+      "type": "image/png"
+    },
+    {
+      "src": "/windows/Wide310x150Logo.png",
+      "sizes": "310x150",
+      "type": "image/png"
+    },
+    {
+      "src": "/windows/SplashScreen.png",
+      "sizes": "620x300",
+      "type": "image/png"
     }
   ],
   "shortcuts": [

@@ -354,7 +354,7 @@ export default function AdvancedHabitSelector() {
   
   const [selectedHabits, setSelectedHabits] = useState([]);
   const [customHabits, setCustomHabits] = useState([]);
-  const [activeCategories, setActiveCategories] = useState(['Selected']);
+  const [activeCategories, setActiveCategories] = useState(['All']);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   const [showPaywall, setShowPaywall] = useState(false);
@@ -433,7 +433,7 @@ export default function AdvancedHabitSelector() {
   const showPrioritySection = isFirstTimeSetup && !hasLockedPriorities;
   const showFeatureToggles = isFirstTimeSetup;
 
-  const categories = ['Selected', 'All', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
+  const categories = ['All', 'Selected', ...new Set(habitLibrary.map(h => h.category)), 'Custom'];
   const displayedHabits = activeCategories.includes('Selected')
     ? [
         ...habitLibrary.filter(h => selectedHabits.some(sh => sh.id === h.id)),
@@ -441,7 +441,9 @@ export default function AdvancedHabitSelector() {
       ]
     : activeCategories.includes('All') 
       ? habitLibrary 
-      : habitLibrary.filter(h => activeCategories.includes(h.category));
+      : activeCategories.includes('Custom')
+        ? []
+        : habitLibrary.filter(h => activeCategories.includes(h.category));
 
   const openScoringModalForHabit = (habit) => {
     let type = 'build';
@@ -1115,7 +1117,7 @@ export default function AdvancedHabitSelector() {
       <div className="ahs-container">
         
         {/* Top Bar */}
-        <div className="flex items-center justify-between gap-3 mb-2 pt-1">
+        <div className="flex items-center justify-between gap-3 mb-2 pt-0 sm:pt-1">
           <button 
             type="button"
             onClick={handleBack}
@@ -1125,18 +1127,33 @@ export default function AdvancedHabitSelector() {
             <span>Back</span>
           </button>
 
-          <button 
-            type="button" 
-            onClick={() => setScoringModal('all')}
-            className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[11px] font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
-          >
-            <Icon name="help_outline" className="text-[13px] text-primary" /> 
-            <span>How Scoring Works</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(20);
+                setActiveCategories(['Custom']);
+              }}
+              className="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[11px] font-black bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all cursor-pointer shadow-2xs"
+            >
+              <Icon name="add" className="text-[13px]" />
+              <span>+ Custom Habit</span>
+            </button>
+
+            <button 
+              type="button" 
+              onClick={() => setScoringModal('all')}
+              className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[11px] font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shadow-2xs" 
+            >
+              <Icon name="help_outline" className="text-[13px] text-primary" /> 
+              <span className="hidden sm:inline">How Scoring Works</span>
+              <span className="sm:hidden">Guide</span>
+            </button>
+          </div>
         </div>
 
         {viewMode === 'selection' && (
-          <div id="view-selection" className="space-y-3">
+          <div id="view-selection" className="space-y-3 pb-36">
             {/* Title & Lock Notice */}
             <div className="mb-2">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -1147,94 +1164,82 @@ export default function AdvancedHabitSelector() {
               </p>
             </div>
 
-            {/* 3 Main View Tabs (All Habits, Selected, + Custom) */}
-            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-2xs">
+            {/* Filter Tabs: All (20) -> Selected (N) -> Categories -> Custom (+) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 hide-scrollbar no-scrollbar scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               
-              {/* Tab 1: All Habits */}
+              {/* Tab 1: All (20) (Default Active) */}
               <button
                 type="button"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['All']);
                 }}
-                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
-                  !activeCategories.includes('Selected') && !activeCategories.includes('Custom')
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                  activeCategories.length === 1 && activeCategories[0] === 'All'
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs'
+                    : 'bg-white dark:bg-[#151a26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                 }`}
               >
                 <Icon name="grid_view" className="text-[13px] shrink-0" />
                 <span>All ({habitLibrary.length})</span>
               </button>
 
-              {/* Tab 2: Selected */}
+              {/* Tab 2: Selected (N) */}
               <button
                 type="button"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['Selected']);
                 }}
-                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
                   activeCategories.includes('Selected')
-                    ? 'bg-violet-600 text-white shadow-xs shadow-violet-500/30'
-                    : 'text-violet-700 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30'
+                    ? 'bg-violet-600 text-white border-violet-600 shadow-xs shadow-violet-500/20'
+                    : 'bg-white dark:bg-[#151a26] text-violet-700 dark:text-violet-400 border-slate-200 dark:border-slate-800 hover:border-violet-300'
                 }`}
               >
                 <Icon name="check" className="text-[13px] shrink-0" />
                 <span>Selected ({selectedHabits.length + customHabits.length})</span>
               </button>
 
-              {/* Tab 3: Custom */}
+              {/* Category Pills */}
+              {[...new Set(habitLibrary.map(h => h.category))].map(cat => {
+                const isCatActive = activeCategories.length === 1 && activeCategories[0] === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(20);
+                      setActiveCategories([cat]);
+                    }}
+                    className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                      isCatActive
+                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs'
+                        : 'bg-white dark:bg-[#151a26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+
+              {/* Tab Last: Custom (+) */}
               <button
                 type="button"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(20);
                   setActiveCategories(['Custom']);
                 }}
-                className={`flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
                   activeCategories.includes('Custom')
-                    ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/30'
-                    : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs shadow-emerald-500/20'
+                    : 'bg-white dark:bg-[#151a26] text-emerald-700 dark:text-emerald-400 border-slate-200 dark:border-slate-800 hover:border-emerald-300'
                 }`}
               >
                 <Icon name="add" className="text-[13px] shrink-0" />
-                <span>Custom</span>
+                <span>Custom (+)</span>
               </button>
             </div>
-
-            {/* Sub-Category Pills */}
-            {!activeCategories.includes('Selected') && !activeCategories.includes('Custom') && (
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 hide-scrollbar no-scrollbar scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategories(['All'])}
-                  className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer border ${
-                    activeCategories.length === 1 && activeCategories[0] === 'All'
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white'
-                      : 'bg-white dark:bg-[#151a26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                  }`}
-                >
-                  All Categories
-                </button>
-                {[...new Set(habitLibrary.map(h => h.category))].map(cat => {
-                  const isCatActive = activeCategories.length === 1 && activeCategories[0] === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setActiveCategories([cat])}
-                      className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer border ${
-                        isCatActive
-                          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white'
-                          : 'bg-white dark:bg-[#151a26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
 
             <div className="ahs-layout-grid">
               <main>
@@ -1738,7 +1743,10 @@ export default function AdvancedHabitSelector() {
             </div>
 
             {/* Sticky Bottom Bar for Selection Mode */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+            <div 
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+              className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]"
+            >
               <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
                 <button
                   type="button"
@@ -1767,7 +1775,7 @@ export default function AdvancedHabitSelector() {
         )}
 
         {viewMode === 'summary' && (
-          <div id="view-summary" className="pt-0 pb-28">
+          <div id="view-summary" className="pt-0 pb-36">
             <div className="ahs-summary-header mt-0 sm:mt-1 mb-3 sm:mb-4 text-center sm:text-left">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Review Your Plan</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Check your targets before locking them in. You can edit selections below.</p>
@@ -1936,7 +1944,10 @@ export default function AdvancedHabitSelector() {
             </div>
 
             {/* Sticky Bottom Bar for Review Mode */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+            <div 
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+              className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f141c]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 py-3 px-4 sm:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]"
+            >
               <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
                 <button
                   type="button"

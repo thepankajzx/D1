@@ -106,8 +106,13 @@ export function AuthProvider({ children }) {
         }
         return result;
       } catch (nativeErr) {
-        console.error("Native Google Auth failed:", nativeErr);
-        throw nativeErr;
+        console.warn("Native Google Auth failed / Credential Manager unsupported. Engaging Web Popup fallback...", nativeErr);
+        try {
+          return await signInWithPopup(auth, googleProvider);
+        } catch (popupErr) {
+          console.error("Popup fallback also failed:", popupErr);
+          throw popupErr;
+        }
       }
     }
     return signInWithPopup(auth, googleProvider);

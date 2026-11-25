@@ -1,17 +1,19 @@
 {
   "name": "definite-habit-tracker",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build --mode web",
     "build:web": "vite build --mode web",
     "build:android": "vite build --mode android",
+    "build:msix": "powershell -ExecutionPolicy Bypass -File scripts/build_windows_msix.ps1",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node --test test/*.test.js",
-    "ship": "powershell -ExecutionPolicy Bypass -File scripts/ship_all.ps1"
+    "ship": "powershell -ExecutionPolicy Bypass -File scripts/ship_all.ps1",
+    "ship:all": "powershell -ExecutionPolicy Bypass -File scripts/ship_all_stores.ps1"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.5.2",

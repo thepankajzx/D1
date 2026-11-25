@@ -26,9 +26,19 @@ dist-ssr
 # Local backups and binaries
 backups/
 *.apk
+*.aab
+*.msix
+*.msixbundle
+*.pfx
 *.jks
 *.keystore
 CREDENTIALS.md
+windows_store_build/*.msix
+windows_store_build/*.msixbundle
+windows_store_build/*.pfx
+windows_store_build/*.zip
+windows_store_build/extracted/
+android_store_build/
 
 # Android build outputs and local secrets
 android/.gradle/
